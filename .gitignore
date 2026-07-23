@@ -41,3 +41,11 @@ assets_vertex_placeholders/
 
 # OpenSpec artifacts (if using file-based SDD)
 openspec/
+
+# Git backup (from repo migration)
+.git_old/
+
+# Tool-specific files
+.gga
+.mimocode/
+.mimoignore
