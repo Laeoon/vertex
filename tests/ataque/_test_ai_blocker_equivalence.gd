@@ -217,9 +217,10 @@ func _parte_b_replay_10_turnos() -> void:
 
 
 ## Punto único de invocación de la IA — se edita en la task 3.3 para apuntar
-## al `AIBlocker` migrado. Pre-migración llama al `_turno_ia` inline.
+## al `AIBlocker` migrado. Pre-migración llamaba al `_turno_ia` inline.
+## Post-migración (3.3+): usa el `_ai_blocker` del juego.
 func _invoke_ai() -> void:
-	_juego._turno_ia()
+	_juego._ai_blocker.take_turn()
 
 
 func _snapshot(idx: int) -> String:

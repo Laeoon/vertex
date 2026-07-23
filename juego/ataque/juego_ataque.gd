@@ -7,6 +7,7 @@ const GameRendererClass = preload("res://juego/ataque/game_renderer.gd")
 const HackerMechanicsClass = preload("res://juego/system/hacker_mechanics.gd")
 const InputHandlerClass = preload("res://juego/ataque/input_handler.gd")
 const DefenderBrainClass = preload("res://juego/ataque/defender_brain.gd")
+const AIBlockerClass = preload("res://juego/ataque/ai_blocker.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -113,6 +114,7 @@ var _budget_display: float = 0.0
 # Fase 1: Componentes extraídos
 var _input_handler: InputHandler
 var _defender_brain: DefenderBrain
+var _ai_blocker: AIBlocker
 var _renderer: GameRendererClass
 
 func _process(_delta: float) -> void:
@@ -165,6 +167,11 @@ func _ready() -> void:
 	add_child(_input_handler)
 	_input_handler.game = self
 	_connect_input_signals()
+
+	# IA bloqueadora (fase-0/slice-3): se inicializa ANTES de _load_graph()
+	# porque reset_state() dispara el bloqueo inicial via _ai_blocker.
+	_ai_blocker = AIBlockerClass.new()
+	_ai_blocker.setup(self)
 
 	_load_graph()
 
@@ -269,24 +276,11 @@ func reset_state() -> void:
 		print("Waypoints: ", waypoints)
 		mensaje_estado = "Ve hacia %s" % _target_actual()
 
-	# Bloqueo inicial de la IA si está configurado
-	if ai_enabled and ai_bloquea_al_inicio and _ai_blocks_used < max_ai_blocks and not game_over:
-		_ai_blocks_used += 1
-		var target: StringName = _target_actual()
-		var result: Dictionary = DefensivePathfinder.find_path_with_cost(graph, player_pos, target, runtime)
-		if result["reachable"] and not result["path"].is_empty() and result["path"].size() >= 2:
-			var path: Array[StringName] = result["path"]
-			var idx_bloqueo: int = path.size() - 2
-			while idx_bloqueo >= 0:
-				var from_n: StringName = path[idx_bloqueo]
-				var to_n: StringName = path[idx_bloqueo + 1]
-				var edge_key: String = "%s→%s" % [from_n, to_n]
-				if not _is_blocked(edge_key) and _no_aisla_al_jugador(edge_key):
-					_block_edge(edge_key, from_n, to_n)
-					print("  IA bloqueo inicial: %s → %s" % [from_n, to_n])
-					break
-				idx_bloqueo -= 1
-		mensaje_estado = "IA bloqueo una ruta al inicio"
+	# Bloqueo inicial de la IA si está configurado (fase-0/slice-3):
+	# migrado a `_ai_blocker.initial_block()` (porta el bucle viejo lines
+	# 272-289 verbatim). Equivalencia cubierta por
+	# tests/ataque/_test_ai_blocker_equivalence.{gd,tscn}.
+	_ai_blocker.initial_block()
 
 	mostrar_ruta()
 	_auto_select_vecino()
@@ -469,7 +463,7 @@ func _mover_jugador(destino: StringName) -> void:
 	_limpiar_bloqueos_expirados()
 
 	if ai_enabled:
-		_turno_ia()
+		_ai_blocker.take_turn()  # fase-0/slice-3: antes _turno_ia() inline
 
 	if hacker_mode and not game_over:
 		# Si hay persists activos, el ruido no decae (mantienes acceso audible)
