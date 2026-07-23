@@ -1,0 +1,106 @@
+{
+  "id": "tut4_hacker",
+  "title": "Tutorial 4: Modo Hacker",
+  "graph_path": "res://juego/hacker/hacker_n1.tres",
+  "start_node": "DMZ",
+  "target_node": "Core",
+  "waypoints": ["WebServer", "AdminPanel"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 2,
+  "max_turns": 18,
+  "titulo_nivel": "Tutorial 4: Modo Hacker",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 2,
+    "escalate": 1,
+    "persist": 1
+  },
+  "steps": [
+    {
+      "id": "intro_hacker",
+      "text": "MODO HACKER activado.\nTienes acceso a herramientas de infiltracion.\nObjetivo: llegar al Core pasando por WebServer y AdminPanel.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "scan_explain",
+      "text": "ESCANEAR [X]: Analiza un nodo vecino.\nRevela su TIPO, RIESGO y si tiene debilidades.\nAumenta el RUIDO (barra derecha).",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "top",
+      "highlight_nodes": ["WebServer", "MailServer"],
+      "highlight_edges": ["DMZ→WebServer", "DMZ→MailServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_scan",
+      "text": "Primero: selecciona WebServer con [Tab] o haciendo clic.\nLuego presiona [X] para escanearlo.\nObserva el resultado en el panel derecho.",
+      "anchor_type": "node",
+      "anchor_id": "DMZ",
+      "position": "bottom",
+      "highlight_nodes": ["DMZ", "WebServer"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "input",
+      "auto_advance_after": null
+    },
+    {
+      "id": "exploit_explain",
+      "text": "EXPLOITS — HERRAMIENTAS DE HACKER:\n\n[1] BYPASS (Infiltración): Salta un nodo protegido.\nÚsalo cuando un nodo tiene defensa alta.\nCosto: +15 ruido.\n\n[2] ESCALATE (Elevación): Accede a áreas restringidas.\nÚsalo para llegar a nodos con privilegios.\nCosto: +25 ruido.\n\n[3] PERSIST (Mantenimiento): Conserva acceso 3 turnos.\nÚsalo para explorar sin perder posición.\nCosto: +10 ruido.\n\nRECUERDA: Cada exploit genera RUIDO.\nSi el ruido supera 60, aparecen perseguidores.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "noise_explain",
+      "text": "RUIDO: Cuanto mas ruido generas, mas riesgo.\nNIVEL BAJO (<30): Seguro.\nNIVEL ALTO (30-60): Pueden aparecer perseguidores.\nCRITICO (60+): Seguridad reforzada.\nEl ruido DECAE 3pt por turno.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "left",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_move",
+      "text": "Ahora prueba: muevete hacia WebServer.\nPlanifica tu ruta: necesitas pasar por WebServer y AdminPanel para llegar a Core.",
+      "anchor_type": "node",
+      "anchor_id": "WebServer",
+      "position": "bottom",
+      "highlight_nodes": ["WebServer"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "move",
+      "auto_advance_after": null
+    },
+    {
+      "id": "after_first_move_hacker",
+      "text": "Bien! Llegaste a WebServer.\nContinua hacia AdminPanel y luego a Core.\nUsa [P] para ver la ruta optima.\nGestiona tu ruido y exploits con cuidado.",
+      "anchor_type": "node",
+      "anchor_id": "Core",
+      "position": "top",
+      "highlight_nodes": ["AdminPanel", "Core"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    }
+  ]
+}

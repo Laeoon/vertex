@@ -1,0 +1,182 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Inicio"]
+script = ExtResource("2_node")
+id = &"Inicio"
+display_name = "Inicio"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(60, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_Puerta"]
+script = ExtResource("2_node")
+id = &"Puerta"
+display_name = "Puerta Enlace"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 150)
+metadata = {
+"detection_chance": 0.08,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_RPA"]
+script = ExtResource("2_node")
+id = &"RPA"
+display_name = "RPA Interno"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 450)
+metadata = {
+"detection_chance": 0.05
+}
+
+[sub_resource type="Resource" id="Node_Seguridad"]
+script = ExtResource("2_node")
+id = &"Seguridad"
+display_name = "Seguridad"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 300)
+metadata = {
+"detection_chance": 0.15,
+"has_firewall": true,
+"security_spawn": true
+}
+
+[sub_resource type="Resource" id="Node_CPD"]
+script = ExtResource("2_node")
+id = &"CPD"
+display_name = "CPD"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 150)
+metadata = {
+"detection_chance": 0.20
+}
+
+[sub_resource type="Resource" id="Node_Cajas"]
+script = ExtResource("2_node")
+id = &"Cajas"
+display_name = "Cajas Fuertes"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 450)
+metadata = {
+"detection_chance": 0.18
+}
+
+[sub_resource type="Resource" id="Node_Sala"]
+script = ExtResource("2_node")
+id = &"Sala"
+display_name = "Sala Principal"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(740, 300)
+metadata = {
+"detection_chance": 0.12
+}
+
+[sub_resource type="Resource" id="Node_Boveda"]
+script = ExtResource("2_node")
+id = &"Boveda"
+display_name = "Boveda"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(880, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Edge_Inicio_Puerta"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"Puerta"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Inicio_RPA"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"RPA"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Puerta_Seguridad"]
+script = ExtResource("3_edge")
+from_id = &"Puerta"
+to_id = &"Seguridad"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_RPA_Seguridad"]
+script = ExtResource("3_edge")
+from_id = &"RPA"
+to_id = &"Seguridad"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Seguridad_CPD"]
+script = ExtResource("3_edge")
+from_id = &"Seguridad"
+to_id = &"CPD"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Seguridad_Cajas"]
+script = ExtResource("3_edge")
+from_id = &"Seguridad"
+to_id = &"Cajas"
+transit_cost = 3.0
+mitigation_capacity = 1.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_CPD_Sala"]
+script = ExtResource("3_edge")
+from_id = &"CPD"
+to_id = &"Sala"
+transit_cost = 2.0
+mitigation_capacity = 3.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Cajas_Sala"]
+script = ExtResource("3_edge")
+from_id = &"Cajas"
+to_id = &"Sala"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Sala_Boveda"]
+script = ExtResource("3_edge")
+from_id = &"Sala"
+to_id = &"Boveda"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Cajas_Boveda"]
+script = ExtResource("3_edge")
+from_id = &"Cajas"
+to_id = &"Boveda"
+transit_cost = 4.0
+mitigation_capacity = 1.0
+protocol = &"HTTPS"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Inicio"), SubResource("Node_Puerta"), SubResource("Node_RPA"), SubResource("Node_Seguridad"), SubResource("Node_CPD"), SubResource("Node_Cajas"), SubResource("Node_Sala"), SubResource("Node_Boveda")])
+edges = Array[Resource]([SubResource("Edge_Inicio_Puerta"), SubResource("Edge_Inicio_RPA"), SubResource("Edge_Puerta_Seguridad"), SubResource("Edge_RPA_Seguridad"), SubResource("Edge_Seguridad_CPD"), SubResource("Edge_Seguridad_Cajas"), SubResource("Edge_CPD_Sala"), SubResource("Edge_Cajas_Sala"), SubResource("Edge_Sala_Boveda"), SubResource("Edge_Cajas_Boveda")])
+directed = true

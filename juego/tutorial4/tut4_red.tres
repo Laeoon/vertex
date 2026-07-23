@@ -1,0 +1,140 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Internet"]
+script = ExtResource("2_node")
+id = &"Internet"
+display_name = "Internet"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(60, 300)
+metadata = {
+"detection_chance": 0.0,
+"label": "Origen del ataque"
+}
+
+[sub_resource type="Resource" id="Node_FirewallPer"]
+script = ExtResource("2_node")
+id = &"FirewallPer"
+display_name = "Firewall Perimetral"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 150)
+metadata = {
+"detection_chance": 0.0,
+"has_firewall": true,
+"label": "Primera linea de defensa"
+}
+
+[sub_resource type="Resource" id="Node_DMZ"]
+script = ExtResource("2_node")
+id = &"DMZ"
+display_name = "DMZ"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 450)
+metadata = {
+"detection_chance": 0.0,
+"label": "Zona desmilitarizada"
+}
+
+[sub_resource type="Resource" id="Node_Proxy"]
+script = ExtResource("2_node")
+id = &"Proxy"
+display_name = "Proxy"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 150)
+metadata = {
+"detection_chance": 0.0,
+"label": "Proxy de red"
+}
+
+[sub_resource type="Resource" id="Node_Internal"]
+script = ExtResource("2_node")
+id = &"Internal"
+display_name = "Red Interna"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 450)
+metadata = {
+"detection_chance": 0.0,
+"label": "Segmento interno"
+}
+
+[sub_resource type="Resource" id="Node_DataCenter"]
+script = ExtResource("2_node")
+id = &"DataCenter"
+display_name = "Data Center"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(600, 300)
+metadata = {
+"detection_chance": 0.0,
+"label": "Nodo critico a proteger"
+}
+
+[sub_resource type="Resource" id="Edge_Internet_Firewall"]
+script = ExtResource("3_edge")
+from_id = &"Internet"
+to_id = &"FirewallPer"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"EXTERNAL"
+
+[sub_resource type="Resource" id="Edge_Internet_DMZ"]
+script = ExtResource("3_edge")
+from_id = &"Internet"
+to_id = &"DMZ"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"EXTERNAL"
+
+[sub_resource type="Resource" id="Edge_Firewall_Proxy"]
+script = ExtResource("3_edge")
+from_id = &"FirewallPer"
+to_id = &"Proxy"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_DMZ_Internal"]
+script = ExtResource("3_edge")
+from_id = &"DMZ"
+to_id = &"Internal"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Proxy_DataCenter"]
+script = ExtResource("3_edge")
+from_id = &"Proxy"
+to_id = &"DataCenter"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Internal_DataCenter"]
+script = ExtResource("3_edge")
+from_id = &"Internal"
+to_id = &"DataCenter"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Firewall_DMZ"]
+script = ExtResource("3_edge")
+from_id = &"FirewallPer"
+to_id = &"DMZ"
+transit_cost = 3.0
+mitigation_capacity = 1.0
+protocol = &"MIRROR"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Internet"), SubResource("Node_FirewallPer"), SubResource("Node_DMZ"), SubResource("Node_Proxy"), SubResource("Node_Internal"), SubResource("Node_DataCenter")])
+edges = Array[Resource]([SubResource("Edge_Internet_Firewall"), SubResource("Edge_Internet_DMZ"), SubResource("Edge_Firewall_Proxy"), SubResource("Edge_DMZ_Internal"), SubResource("Edge_Proxy_DataCenter"), SubResource("Edge_Internal_DataCenter"), SubResource("Edge_Firewall_DMZ")])
+directed = true

@@ -1,0 +1,16 @@
+{
+  "id": "cyber_n1",
+  "world": "cybersecurity",
+  "graph_path": "res://juego/cyber/cyber_n1.tres",
+  "start_node": "Internet",
+  "target_node": "Database",
+  "waypoints": ["InternalFW"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": true,
+  "max_ai_blocks": 3,
+  "max_turns": 12,
+  "titulo_nivel": "Cybersecurity — Defensa en Capas",
+  "difficulty": 3,
+  "description": "Defiende la red configurando firewalls y monitoreando tráfico."
+}

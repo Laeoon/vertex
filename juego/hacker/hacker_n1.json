@@ -1,0 +1,22 @@
+{
+  "id": "hacker_n1",
+  "world": "hacker",
+  "graph_path": "res://juego/hacker/hacker_n1.tres",
+  "start_node": "DMZ",
+  "target_node": "Core",
+  "waypoints": ["WebServer", "AdminPanel"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 5,
+  "max_turns": 18,
+  "titulo_nivel": "Hacker — Lateral Movement",
+  "difficulty": 2,
+  "description": "Movimiento lateral a través de servidores para llegar al Core.",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 2,
+    "escalate": 1,
+    "persist": 1
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "id": "tut4_defensa",
+  "title": "Tutorial: Introducción a Defensa",
+  "graph_path": "res://juego/cyber/cyber_n1.tres",
+  "start_node": "Internet",
+  "target_node": "Database",
+  "waypoints": [],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_turns": 18,
+  "titulo_nivel": "Tutorial: Introducción a Defensa",
+  "defender_mode": true,
+  "defender_blocks_per_turn": 3,
+  "defender_block_duration": 5,
+  "enemy_start_node": "Internet",
+  "enemy_target_node": "Database",
+  "max_ai_blocks": 12,
+  "steps": [
+    {
+      "id": "intro_defensa",
+      "text": "MODO DEFENSOR.\nTu objetivo: PROTEGER la red.\nUn atacante avanza desde Internet hacia Database.\nBloquea rutas para detenerlo.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["Internet", "Database"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "how_to_block",
+      "text": "CÓMO BLOQUEAR:\nHaz clic SOBRE UNA ARISTA (línea) para bloquearla.\nLa arista se marca en ROJO con X.\nCada turno puedes colocar hasta 3 bloqueos.\nLos bloqueos duran 5 turnos.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": ["Internet→FirewallPer", "Internet→Proxy", "Internet→IDS"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_block",
+      "text": "Intenta bloquear una arista del atacante.\nHaz clic en una línea que conecte nodos.\nLuego presiona [Enter] para resolver el turno.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "bottom",
+      "highlight_nodes": [],
+      "highlight_edges": ["Internet→FirewallPer"],
+      "pause_game": false,
+      "action_required": "input",
+      "auto_advance_after": null
+    },
+    {
+      "id": "enemy_moves",
+      "text": "El atacante usa DIJKSTRA para buscar la ruta más corta.\nSi bloqueas su camino, RECALCULA.\nNunca se detiene — siempre avanza.\nTu objetivo: que NO llegue en 18 turnos.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "strategy",
+      "text": "ESTRATEGIA:\n- Bloquea CERCA del origen = rutas largas\n- Bloquea CERCA del destino = protección directa\n- Observa la línea NARANJA = ruta actual del atacante\n- Bloquea AHÍ para máximo impacto",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "win_condition",
+      "text": "CONDICIONES:\nGANAS si el atacante NO llega en 18 turnos.\nPIERDES si alcanza Database.\n\n¡Planifica, anticipa y protege!",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["Database"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": 3.0
+    }
+  ]
+}

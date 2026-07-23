@@ -1,0 +1,89 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Inicio"]
+script = ExtResource("2_node")
+id = &"Inicio"
+display_name = "Inicio"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(100, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_PuertaA"]
+script = ExtResource("2_node")
+id = &"Puerta_A"
+display_name = "Puerta A"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(350, 150)
+metadata = {
+"detection_chance": 0.08,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_PuertaB"]
+script = ExtResource("2_node")
+id = &"Puerta_B"
+display_name = "Puerta B"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(350, 450)
+metadata = {
+"detection_chance": 0.05,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_Target"]
+script = ExtResource("2_node")
+id = &"Target"
+display_name = "Objetivo"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(650, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Edge_Inicio_A"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"Puerta_A"
+transit_cost = 1.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Inicio_B"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"Puerta_B"
+transit_cost = 1.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_A_Target"]
+script = ExtResource("3_edge")
+from_id = &"Puerta_A"
+to_id = &"Target"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_B_Target"]
+script = ExtResource("3_edge")
+from_id = &"Puerta_B"
+to_id = &"Target"
+transit_cost = 5.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Inicio"), SubResource("Node_PuertaA"), SubResource("Node_PuertaB"), SubResource("Node_Target")])
+edges = Array[Resource]([SubResource("Edge_Inicio_A"), SubResource("Edge_Inicio_B"), SubResource("Edge_A_Target"), SubResource("Edge_B_Target")])
+directed = true

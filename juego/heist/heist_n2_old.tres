@@ -1,0 +1,238 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Inicio"]
+script = ExtResource("2_node")
+id = &"Inicio"
+display_name = "Inicio"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(60, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_Perimetro"]
+script = ExtResource("2_node")
+id = &"Perimetro"
+display_name = "Perímetro"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(200, 150)
+metadata = {
+"detection_chance": 0.05
+}
+
+[sub_resource type="Resource" id="Node_Lobby"]
+script = ExtResource("2_node")
+id = &"Lobby"
+display_name = "Lobby"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(350, 150)
+metadata = {
+"detection_chance": 0.08,
+"label": "Zona de acceso"
+}
+
+[sub_resource type="Resource" id="Node_Oficina"]
+script = ExtResource("2_node")
+id = &"Oficina"
+display_name = "Oficina"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(500, 150)
+metadata = {
+"detection_chance": 0.12
+}
+
+[sub_resource type="Resource" id="Node_ServerRoom"]
+script = ExtResource("2_node")
+id = &"ServerRoom"
+display_name = "Server Room"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(650, 250)
+metadata = {
+"detection_chance": 0.18,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_Boveda"]
+script = ExtResource("2_node")
+id = &"Boveda"
+display_name = "Bóveda"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(800, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_Almacen"]
+script = ExtResource("2_node")
+id = &"Almacen"
+display_name = "Almacén"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(300, 450)
+metadata = {
+"detection_chance": 0.06
+}
+
+[sub_resource type="Resource" id="Node_Cajas"]
+script = ExtResource("2_node")
+id = &"Cajas"
+display_name = "Cajas Fuertes"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(500, 450)
+metadata = {
+"detection_chance": 0.15,
+"security_spawn": true
+}
+
+[sub_resource type="Resource" id="Node_SegExt"]
+script = ExtResource("2_node")
+id = &"SegExt"
+display_name = "Seguridad Externa"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(200, 500)
+metadata = {
+"detection_chance": 0.10,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_CCTV"]
+script = ExtResource("2_node")
+id = &"CCTV"
+display_name = "CCTV"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 550)
+metadata = {
+"detection_chance": 0.25,
+"label": "Cámaras de vigilancia"
+}
+
+[sub_resource type="Resource" id="Edge_Inicio_Perimetro"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"Perimetro"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Inicio_SegExt"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"SegExt"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Perimetro_Lobby"]
+script = ExtResource("3_edge")
+from_id = &"Perimetro"
+to_id = &"Lobby"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Lobby_Oficina"]
+script = ExtResource("3_edge")
+from_id = &"Lobby"
+to_id = &"Oficina"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Oficina_ServerRoom"]
+script = ExtResource("3_edge")
+from_id = &"Oficina"
+to_id = &"ServerRoom"
+transit_cost = 4.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_ServerRoom_Boveda"]
+script = ExtResource("3_edge")
+from_id = &"ServerRoom"
+to_id = &"Boveda"
+transit_cost = 5.0
+mitigation_capacity = 1.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Perimetro_Almacen"]
+script = ExtResource("3_edge")
+from_id = &"Perimetro"
+to_id = &"Almacen"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Almacen_Cajas"]
+script = ExtResource("3_edge")
+from_id = &"Almacen"
+to_id = &"Cajas"
+transit_cost = 4.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Cajas_ServerRoom"]
+script = ExtResource("3_edge")
+from_id = &"Cajas"
+to_id = &"ServerRoom"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_SegExt_CCTV"]
+script = ExtResource("3_edge")
+from_id = &"SegExt"
+to_id = &"CCTV"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Lobby_CCTV"]
+script = ExtResource("3_edge")
+from_id = &"Lobby"
+to_id = &"CCTV"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_CCTV_Perimetro"]
+script = ExtResource("3_edge")
+from_id = &"CCTV"
+to_id = &"Perimetro"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_CCTV_Oficina"]
+script = ExtResource("3_edge")
+from_id = &"CCTV"
+to_id = &"Oficina"
+transit_cost = 4.0
+mitigation_capacity = 1.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_CCTV_Cajas"]
+script = ExtResource("3_edge")
+from_id = &"CCTV"
+to_id = &"Cajas"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Inicio"), SubResource("Node_Perimetro"), SubResource("Node_Lobby"), SubResource("Node_Oficina"), SubResource("Node_ServerRoom"), SubResource("Node_Boveda"), SubResource("Node_Almacen"), SubResource("Node_Cajas"), SubResource("Node_SegExt"), SubResource("Node_CCTV")])
+edges = Array[Resource]([SubResource("Edge_Inicio_Perimetro"), SubResource("Edge_Inicio_SegExt"), SubResource("Edge_Perimetro_Lobby"), SubResource("Edge_Lobby_Oficina"), SubResource("Edge_Lobby_CCTV"), SubResource("Edge_Oficina_ServerRoom"), SubResource("Edge_ServerRoom_Boveda"), SubResource("Edge_Perimetro_Almacen"), SubResource("Edge_Almacen_Cajas"), SubResource("Edge_Cajas_ServerRoom"), SubResource("Edge_SegExt_CCTV"), SubResource("Edge_CCTV_Oficina"), SubResource("Edge_CCTV_Perimetro"), SubResource("Edge_CCTV_Cajas")])
+directed = true

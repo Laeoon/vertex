@@ -1,0 +1,19 @@
+{
+  "id": "heist_n3",
+  "world": "heist",
+  "graph_path": "res://juego/heist/heist_n3.tres",
+  "start_node": "Entrada",
+  "target_node": "SalidaSecreta",
+  "waypoints": ["DataCenter", "CriptoVault"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 2,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 5,
+  "max_turns": 25,
+  "max_movement_points": 20,
+  "titulo_nivel": "Heist — Escape del Casino Digital",
+  "hacker_mode": false,
+  "defender_mode": false,
+  "difficulty": 3,
+  "description": "Infiltra el casino digital, extrae los datos cifrados y escapa por la salida secreta."
+}

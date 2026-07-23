@@ -1,0 +1,233 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" format=3]
+
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="1_0r1jk"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_m0rku"]
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="3_lsu3d"]
+
+[sub_resource type="Resource" id="Resource_he2ly"]
+resource_name = "Inicio_to_PuertaExterior"
+script = ExtResource("1_0r1jk")
+from_id = &"Inicio"
+to_id = &"PuertaExterior"
+
+[sub_resource type="Resource" id="Resource_nier1"]
+resource_name = "Inicio_to_FirewallPerimetral"
+script = ExtResource("1_0r1jk")
+from_id = &"Inicio"
+to_id = &"FirewallPerimetral"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_5n8pg"]
+resource_name = "PuertaExterior_to_DMZ"
+script = ExtResource("1_0r1jk")
+from_id = &"PuertaExterior"
+to_id = &"DMZ"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_2vmm2"]
+resource_name = "PuertaExterior_to_SegmentoInterno"
+script = ExtResource("1_0r1jk")
+from_id = &"PuertaExterior"
+to_id = &"SegmentoInterno"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_aen1l"]
+resource_name = "FirewallPerimetral_to_DMZ"
+script = ExtResource("1_0r1jk")
+from_id = &"FirewallPerimetral"
+to_id = &"DMZ"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_uqb1p"]
+resource_name = "FirewallPerimetral_to_SegmentoInterno"
+script = ExtResource("1_0r1jk")
+from_id = &"FirewallPerimetral"
+to_id = &"SegmentoInterno"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_o7e3i"]
+resource_name = "DMZ_to_ServidorWeb"
+script = ExtResource("1_0r1jk")
+from_id = &"DMZ"
+to_id = &"ServidorWeb"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ai4d5"]
+resource_name = "DMZ_to_BaseDatos"
+script = ExtResource("1_0r1jk")
+from_id = &"DMZ"
+to_id = &"BaseDatos"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_relup"]
+resource_name = "SegmentoInterno_to_BaseDatos"
+script = ExtResource("1_0r1jk")
+from_id = &"SegmentoInterno"
+to_id = &"BaseDatos"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_bmkek"]
+resource_name = "SegmentoInterno_to_AuthServer"
+script = ExtResource("1_0r1jk")
+from_id = &"SegmentoInterno"
+to_id = &"AuthServer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_d5n60"]
+resource_name = "ServidorWeb_to_LogsCentral"
+script = ExtResource("1_0r1jk")
+from_id = &"ServidorWeb"
+to_id = &"LogsCentral"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_yacjy"]
+resource_name = "ServidorWeb_to_BaseDatos"
+script = ExtResource("1_0r1jk")
+from_id = &"ServidorWeb"
+to_id = &"BaseDatos"
+
+[sub_resource type="Resource" id="Resource_wygdf"]
+resource_name = "BaseDatos_to_LogsCentral"
+script = ExtResource("1_0r1jk")
+from_id = &"BaseDatos"
+to_id = &"LogsCentral"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_14cvr"]
+resource_name = "BaseDatos_to_CriptoModulo"
+script = ExtResource("1_0r1jk")
+from_id = &"BaseDatos"
+to_id = &"CriptoModulo"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_go5ev"]
+resource_name = "AuthServer_to_LogsCentral"
+script = ExtResource("1_0r1jk")
+from_id = &"AuthServer"
+to_id = &"LogsCentral"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_6fm15"]
+resource_name = "AuthServer_to_CriptoModulo"
+script = ExtResource("1_0r1jk")
+from_id = &"AuthServer"
+to_id = &"CriptoModulo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1ded5"]
+resource_name = "LogsCentral_to_VaultDatos"
+script = ExtResource("1_0r1jk")
+from_id = &"LogsCentral"
+to_id = &"VaultDatos"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1n0ra"]
+resource_name = "CriptoModulo_to_VaultDatos"
+script = ExtResource("1_0r1jk")
+from_id = &"CriptoModulo"
+to_id = &"VaultDatos"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_ujrbw"]
+resource_name = "VaultDatos_to_Salida"
+script = ExtResource("1_0r1jk")
+from_id = &"VaultDatos"
+to_id = &"Salida"
+
+[sub_resource type="Resource" id="Resource_1foeu"]
+resource_name = "BaseDatos_to_VaultDatos"
+script = ExtResource("1_0r1jk")
+from_id = &"BaseDatos"
+to_id = &"VaultDatos"
+transit_cost = 5.0
+
+[sub_resource type="Resource" id="Resource_taxgg"]
+resource_name = "PuertaExterior_to_AuthServer"
+script = ExtResource("1_0r1jk")
+from_id = &"PuertaExterior"
+to_id = &"AuthServer"
+transit_cost = 5.0
+
+[sub_resource type="Resource" id="Resource_gwmli"]
+resource_name = "FirewallPerimetral_to_ServidorWeb"
+script = ExtResource("1_0r1jk")
+from_id = &"FirewallPerimetral"
+to_id = &"ServidorWeb"
+transit_cost = 5.0
+
+[sub_resource type="Resource" id="Resource_ovuv1"]
+resource_name = "Inicio"
+script = ExtResource("2_m0rku")
+id = &"Inicio"
+position = Vector2(80, 350)
+
+[sub_resource type="Resource" id="Resource_ny744"]
+resource_name = "PuertaExterior"
+script = ExtResource("2_m0rku")
+id = &"PuertaExterior"
+position = Vector2(200, 250)
+
+[sub_resource type="Resource" id="Resource_g4kwd"]
+resource_name = "FirewallPerimetral"
+script = ExtResource("2_m0rku")
+id = &"FirewallPerimetral"
+position = Vector2(200, 450)
+
+[sub_resource type="Resource" id="Resource_1fulj"]
+resource_name = "DMZ"
+script = ExtResource("2_m0rku")
+id = &"DMZ"
+position = Vector2(350, 200)
+
+[sub_resource type="Resource" id="Resource_s6nqa"]
+resource_name = "SegmentoInterno"
+script = ExtResource("2_m0rku")
+id = &"SegmentoInterno"
+position = Vector2(350, 500)
+
+[sub_resource type="Resource" id="Resource_jgcvk"]
+resource_name = "ServidorWeb"
+script = ExtResource("2_m0rku")
+id = &"ServidorWeb"
+position = Vector2(500, 150)
+
+[sub_resource type="Resource" id="Resource_npemv"]
+resource_name = "BaseDatos"
+script = ExtResource("2_m0rku")
+id = &"BaseDatos"
+position = Vector2(500, 300)
+
+[sub_resource type="Resource" id="Resource_gigp6"]
+resource_name = "AuthServer"
+script = ExtResource("2_m0rku")
+id = &"AuthServer"
+position = Vector2(500, 450)
+
+[sub_resource type="Resource" id="Resource_ke35x"]
+resource_name = "LogsCentral"
+script = ExtResource("2_m0rku")
+id = &"LogsCentral"
+position = Vector2(650, 200)
+
+[sub_resource type="Resource" id="Resource_whpuu"]
+resource_name = "CriptoModulo"
+script = ExtResource("2_m0rku")
+id = &"CriptoModulo"
+position = Vector2(650, 400)
+
+[sub_resource type="Resource" id="Resource_3n7we"]
+resource_name = "VaultDatos"
+script = ExtResource("2_m0rku")
+id = &"VaultDatos"
+position = Vector2(800, 300)
+
+[sub_resource type="Resource" id="Resource_mt357"]
+resource_name = "Salida"
+script = ExtResource("2_m0rku")
+id = &"Salida"
+position = Vector2(900, 350)
+
+[resource]
+script = ExtResource("3_lsu3d")
+nodes = Array[ExtResource("2_m0rku")]([SubResource("Resource_ovuv1"), SubResource("Resource_ny744"), SubResource("Resource_g4kwd"), SubResource("Resource_1fulj"), SubResource("Resource_s6nqa"), SubResource("Resource_jgcvk"), SubResource("Resource_npemv"), SubResource("Resource_gigp6"), SubResource("Resource_ke35x"), SubResource("Resource_whpuu"), SubResource("Resource_3n7we"), SubResource("Resource_mt357")])
+edges = Array[ExtResource("1_0r1jk")]([SubResource("Resource_he2ly"), SubResource("Resource_nier1"), SubResource("Resource_5n8pg"), SubResource("Resource_2vmm2"), SubResource("Resource_aen1l"), SubResource("Resource_uqb1p"), SubResource("Resource_o7e3i"), SubResource("Resource_ai4d5"), SubResource("Resource_relup"), SubResource("Resource_bmkek"), SubResource("Resource_d5n60"), SubResource("Resource_yacjy"), SubResource("Resource_wygdf"), SubResource("Resource_14cvr"), SubResource("Resource_go5ev"), SubResource("Resource_6fm15"), SubResource("Resource_1ded5"), SubResource("Resource_1n0ra"), SubResource("Resource_ujrbw"), SubResource("Resource_1foeu"), SubResource("Resource_taxgg"), SubResource("Resource_gwmli")])

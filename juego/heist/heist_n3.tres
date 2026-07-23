@@ -1,0 +1,257 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" format=3]
+
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="1_07ei5"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_mdbpd"]
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="3_m0hub"]
+
+[sub_resource type="Resource" id="Resource_kst1r"]
+resource_name = "Entrada_to_Vestibulo"
+script = ExtResource("1_07ei5")
+from_id = &"Entrada"
+to_id = &"Vestibulo"
+
+[sub_resource type="Resource" id="Resource_11qeo"]
+resource_name = "Vestibulo_to_Seguridad"
+script = ExtResource("1_07ei5")
+from_id = &"Vestibulo"
+to_id = &"Seguridad"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_jpan2"]
+resource_name = "Vestibulo_to_Monitoreo"
+script = ExtResource("1_07ei5")
+from_id = &"Vestibulo"
+to_id = &"Monitoreo"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_247wb"]
+resource_name = "Seguridad_to_Monitoreo"
+script = ExtResource("1_07ei5")
+from_id = &"Seguridad"
+to_id = &"Monitoreo"
+
+[sub_resource type="Resource" id="Resource_xcxaa"]
+resource_name = "Seguridad_to_Oficinas"
+script = ExtResource("1_07ei5")
+from_id = &"Seguridad"
+to_id = &"Oficinas"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_l0sr1"]
+resource_name = "Monitoreo_to_DataCenter"
+script = ExtResource("1_07ei5")
+from_id = &"Monitoreo"
+to_id = &"DataCenter"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_dolho"]
+resource_name = "Monitoreo_to_Archivo"
+script = ExtResource("1_07ei5")
+from_id = &"Monitoreo"
+to_id = &"Archivo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_rex36"]
+resource_name = "Oficinas_to_Archivo"
+script = ExtResource("1_07ei5")
+from_id = &"Oficinas"
+to_id = &"Archivo"
+
+[sub_resource type="Resource" id="Resource_cyoph"]
+resource_name = "Oficinas_to_Cafeteria"
+script = ExtResource("1_07ei5")
+from_id = &"Oficinas"
+to_id = &"Cafeteria"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_20we3"]
+resource_name = "Archivo_to_DataCenter"
+script = ExtResource("1_07ei5")
+from_id = &"Archivo"
+to_id = &"DataCenter"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_0wxx1"]
+resource_name = "Cafeteria_to_Direccion"
+script = ExtResource("1_07ei5")
+from_id = &"Cafeteria"
+to_id = &"Direccion"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_dh3xf"]
+resource_name = "DataCenter_to_Servidores"
+script = ExtResource("1_07ei5")
+from_id = &"DataCenter"
+to_id = &"Servidores"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_vna1i"]
+resource_name = "Servidores_to_CriptoVault"
+script = ExtResource("1_07ei5")
+from_id = &"Servidores"
+to_id = &"CriptoVault"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_k4r5h"]
+resource_name = "Servidores_to_RedPrivada"
+script = ExtResource("1_07ei5")
+from_id = &"Servidores"
+to_id = &"RedPrivada"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_sawnr"]
+resource_name = "CriptoVault_to_RedPrivada"
+script = ExtResource("1_07ei5")
+from_id = &"CriptoVault"
+to_id = &"RedPrivada"
+
+[sub_resource type="Resource" id="Resource_ee8mu"]
+resource_name = "RedPrivada_to_Firewall"
+script = ExtResource("1_07ei5")
+from_id = &"RedPrivada"
+to_id = &"Firewall"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_j8vol"]
+resource_name = "Firewall_to_Direccion"
+script = ExtResource("1_07ei5")
+from_id = &"Firewall"
+to_id = &"Direccion"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_b1auh"]
+resource_name = "Firewall_to_SalidaSecreta"
+script = ExtResource("1_07ei5")
+from_id = &"Firewall"
+to_id = &"SalidaSecreta"
+
+[sub_resource type="Resource" id="Resource_iekdy"]
+resource_name = "DataCenter_to_Firewall"
+script = ExtResource("1_07ei5")
+from_id = &"DataCenter"
+to_id = &"Firewall"
+transit_cost = 5.0
+
+[sub_resource type="Resource" id="Resource_5rsuv"]
+resource_name = "Archivo_to_Servidores"
+script = ExtResource("1_07ei5")
+from_id = &"Archivo"
+to_id = &"Servidores"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_0tmcv"]
+resource_name = "Vestibulo_to_DataCenter"
+script = ExtResource("1_07ei5")
+from_id = &"Vestibulo"
+to_id = &"DataCenter"
+transit_cost = 5.0
+
+[sub_resource type="Resource" id="Resource_0bdij"]
+resource_name = "Entrada_to_Cafeteria"
+script = ExtResource("1_07ei5")
+from_id = &"Entrada"
+to_id = &"Cafeteria"
+transit_cost = 6.0
+
+[sub_resource type="Resource" id="Resource_e54qu"]
+resource_name = "CriptoVault_to_SalidaSecreta"
+script = ExtResource("1_07ei5")
+from_id = &"CriptoVault"
+to_id = &"SalidaSecreta"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_coy5l"]
+resource_name = "Monitoreo_to_RedPrivada"
+script = ExtResource("1_07ei5")
+from_id = &"Monitoreo"
+to_id = &"RedPrivada"
+transit_cost = 6.0
+
+[sub_resource type="Resource" id="Resource_rbpbp"]
+resource_name = "Entrada"
+script = ExtResource("2_mdbpd")
+id = &"Entrada"
+position = Vector2(80, 80)
+
+[sub_resource type="Resource" id="Resource_5gffq"]
+resource_name = "Vestibulo"
+script = ExtResource("2_mdbpd")
+id = &"Vestibulo"
+position = Vector2(200, 150)
+
+[sub_resource type="Resource" id="Resource_smxlf"]
+resource_name = "Seguridad"
+script = ExtResource("2_mdbpd")
+id = &"Seguridad"
+position = Vector2(120, 280)
+
+[sub_resource type="Resource" id="Resource_xwgpw"]
+resource_name = "Monitoreo"
+script = ExtResource("2_mdbpd")
+id = &"Monitoreo"
+position = Vector2(300, 300)
+
+[sub_resource type="Resource" id="Resource_vnudb"]
+resource_name = "Oficinas"
+script = ExtResource("2_mdbpd")
+id = &"Oficinas"
+position = Vector2(200, 450)
+
+[sub_resource type="Resource" id="Resource_y6wr5"]
+resource_name = "Archivo"
+script = ExtResource("2_mdbpd")
+id = &"Archivo"
+position = Vector2(350, 460)
+
+[sub_resource type="Resource" id="Resource_3reik"]
+resource_name = "Cafeteria"
+script = ExtResource("2_mdbpd")
+id = &"Cafeteria"
+position = Vector2(100, 550)
+
+[sub_resource type="Resource" id="Resource_m6gud"]
+resource_name = "DataCenter"
+script = ExtResource("2_mdbpd")
+id = &"DataCenter"
+position = Vector2(450, 350)
+
+[sub_resource type="Resource" id="Resource_j3bpo"]
+resource_name = "Servidores"
+script = ExtResource("2_mdbpd")
+id = &"Servidores"
+position = Vector2(550, 280)
+
+[sub_resource type="Resource" id="Resource_7qfb7"]
+resource_name = "CriptoVault"
+script = ExtResource("2_mdbpd")
+id = &"CriptoVault"
+position = Vector2(650, 180)
+
+[sub_resource type="Resource" id="Resource_066sy"]
+resource_name = "RedPrivada"
+script = ExtResource("2_mdbpd")
+id = &"RedPrivada"
+position = Vector2(750, 300)
+
+[sub_resource type="Resource" id="Resource_mujkr"]
+resource_name = "Firewall"
+script = ExtResource("2_mdbpd")
+id = &"Firewall"
+position = Vector2(650, 450)
+
+[sub_resource type="Resource" id="Resource_j3ahn"]
+resource_name = "Direccion"
+script = ExtResource("2_mdbpd")
+id = &"Direccion"
+position = Vector2(500, 550)
+
+[sub_resource type="Resource" id="Resource_f3hyy"]
+resource_name = "SalidaSecreta"
+script = ExtResource("2_mdbpd")
+id = &"SalidaSecreta"
+position = Vector2(800, 500)
+
+[resource]
+script = ExtResource("3_m0hub")
+nodes = Array[ExtResource("2_mdbpd")]([SubResource("Resource_rbpbp"), SubResource("Resource_5gffq"), SubResource("Resource_smxlf"), SubResource("Resource_xwgpw"), SubResource("Resource_vnudb"), SubResource("Resource_y6wr5"), SubResource("Resource_3reik"), SubResource("Resource_m6gud"), SubResource("Resource_j3bpo"), SubResource("Resource_7qfb7"), SubResource("Resource_066sy"), SubResource("Resource_mujkr"), SubResource("Resource_j3ahn"), SubResource("Resource_f3hyy")])
+edges = Array[ExtResource("1_07ei5")]([SubResource("Resource_kst1r"), SubResource("Resource_11qeo"), SubResource("Resource_jpan2"), SubResource("Resource_247wb"), SubResource("Resource_xcxaa"), SubResource("Resource_l0sr1"), SubResource("Resource_dolho"), SubResource("Resource_rex36"), SubResource("Resource_cyoph"), SubResource("Resource_20we3"), SubResource("Resource_0wxx1"), SubResource("Resource_dh3xf"), SubResource("Resource_vna1i"), SubResource("Resource_k4r5h"), SubResource("Resource_sawnr"), SubResource("Resource_ee8mu"), SubResource("Resource_j8vol"), SubResource("Resource_b1auh"), SubResource("Resource_iekdy"), SubResource("Resource_5rsuv"), SubResource("Resource_0tmcv"), SubResource("Resource_0bdij"), SubResource("Resource_e54qu"), SubResource("Resource_coy5l")])

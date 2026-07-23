@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Inicio"]
+script = ExtResource("2_node")
+id = &"Inicio"
+display_name = "Inicio"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(100, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_Relay"]
+script = ExtResource("2_node")
+id = &"Relay"
+display_name = "Relay"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_Target"]
+script = ExtResource("2_node")
+id = &"Target"
+display_name = "Objetivo"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(700, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Edge_Inicio_Relay"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"Relay"
+transit_cost = 1.0
+mitigation_capacity = 1.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Relay_Target"]
+script = ExtResource("3_edge")
+from_id = &"Relay"
+to_id = &"Target"
+transit_cost = 1.0
+mitigation_capacity = 1.0
+protocol = &"INTERNAL"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Inicio"), SubResource("Node_Relay"), SubResource("Node_Target")])
+edges = Array[Resource]([SubResource("Edge_Inicio_Relay"), SubResource("Edge_Relay_Target")])
+directed = true

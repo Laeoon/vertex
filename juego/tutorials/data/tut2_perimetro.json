@@ -1,0 +1,100 @@
+{
+  "id": "tut2_perimetro",
+  "title": "Tutorial: Perímetro e IA Adaptativa",
+  "graph_path": "res://juego/tutorial2/tut2_red.tres",
+  "start_node": "Inicio",
+  "target_node": "Target",
+  "waypoints": [],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": true,
+  "max_ai_blocks": 1,
+  "max_turns": 0,
+  "titulo_nivel": "Tutorial 2: Perímetro e IA",
+  "steps": [
+    {
+      "id": "intro",
+      "text": "Ahora la IA está ACTIVA.\nElla analiza tu ruta con DIJKSTRA y BLOQUEA\nla arista más cercana a tu destino.\nDebes encontrar rutas alternativas.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "ai_block_explain",
+      "text": "¿CÓMO PIENSA LA IA?\n1. Calcula tu ruta óptima actual\n2. Identifica la arista clave cerca del destino\n3. La BLOQUEA (marca X roja)\n4. Tú debes RECALCULAR tu ruta\n\nEs un sistema reactivo de defensa perimetral.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "ai_already_blocked",
+      "text": "La IA ya bloqueó la Puerta_A al inicio.\nLa arista está marcada en ROJO con una X.\nEl bloqueo dura 3 TURNOS.\nTienes una ruta alternativa por Puerta_B.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["Puerta_A", "Puerta_B"],
+      "highlight_edges": ["Inicio→Puerta_A", "Inicio→Puerta_B"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "find_alt",
+      "text": "Analiza el grafo:\n- Puerta_A → Target cuesta 3\n- Puerta_B → Target cuesta 5\nAunque Puerta_B es más caro, SIGUE SIENDO VÁLIDO.\nA veces la ruta larga es la ÚNICA disponible.",
+      "anchor_type": "node",
+      "anchor_id": "Inicio",
+      "position": "bottom",
+      "highlight_nodes": ["Inicio", "Puerta_A", "Puerta_B"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_move",
+      "text": "Usa [Click] en Puerta_B o [Tab] para seleccionarlo.\nLuego [Enter] para moverte.\nLa IA reaccionará tras tu movimiento.",
+      "anchor_type": "node",
+      "anchor_id": "Target",
+      "position": "top",
+      "highlight_nodes": ["Target"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": "move",
+      "auto_advance_after": null
+    },
+    {
+      "id": "after_ai_turn",
+      "text": "La IA bloqueó otra arista.\nObserva el patrón: siempre bloquea la arista\nMÁS CERCANA a tu destino en tu ruta actual.\n\nESTRATEGIA:\n- Toma rutas largas al inicio para \"gastar\"\n  los bloqueos de la IA en aristas irrelevantes\n- Acelera al final cuando la IA se queda sin recursos",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "conclusion",
+      "text": "La IA tiene recursos LIMITADOS (max_ai_blocks).\nSi la IA se queda sin bloqueos, tienes vía libre.\nUsa [P] para ver tu ruta óptima actualizada.\n\nConcepto: CORTE MÍNIMO (Min-Cut).\nLa IA busca aristas cuyo bloqueo te afecte más.\nEso es teoría de grafos en acción.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    }
+  ]
+}

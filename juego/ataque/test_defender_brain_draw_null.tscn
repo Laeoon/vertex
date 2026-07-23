@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://juego/ataque/test_defender_brain_draw_null.gd" id="1"]
+
+[node name="TestDefenderBrainDrawNull" type="Node"]
+script = ExtResource("1")

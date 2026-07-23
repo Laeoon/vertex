@@ -1,0 +1,66 @@
+{
+  "id": "tut6_combined",
+  "title": "Tutorial 6: Nivel Experto",
+  "graph_path": "res://juego/tutorial6/tut6_red.tres",
+  "start_node": "Exterior",
+  "target_node": "CentroDatos",
+  "waypoints": ["Oficina"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": true,
+  "max_ai_blocks": 3,
+  "max_turns": 12,
+  "max_movement_points": 10,
+  "titulo_nivel": "Tutorial 6: Nivel Experto",
+  "defender_mode": false,
+  "steps": [
+    {
+      "id": "intro_combined",
+      "text": "NIVEL EXPERTO:\nOperaciones combinadas requieren versatilidad.\nDebes INFILTRARTE hasta la Oficina,\ny luego seguir hasta el Centro de Datos.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": [],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "phase_attack",
+      "text": "Waypoint: OFICINA.\nPasa por la Oficina obligatoriamente.\nLuego continua hacia el Centro de Datos.\nLa IA bloquea rutas. Gestiona tu presupuesto.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "bottom",
+      "highlight_nodes": ["Exterior", "Oficina", "CentroDatos"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_attack",
+      "text": "Muevete hacia la Oficina.\nTienes 10 puntos de movimiento.\nLa IA bloquea 1 arista por turno.",
+      "anchor_type": "node",
+      "anchor_id": "Exterior",
+      "position": "bottom",
+      "highlight_nodes": ["Exterior"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "input",
+      "auto_advance_after": null
+    },
+    {
+      "id": "phase_defense",
+      "text": "BIEN! Llegaste a la Oficina.\nRumbo al Centro de Datos.\nCuidado con los perseguidores en el camino.\nPlanifica bien tu ruta final.",
+      "anchor_type": "node",
+      "anchor_id": "CentroDatos",
+      "position": "top",
+      "highlight_nodes": ["CentroDatos"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    }
+  ]
+}

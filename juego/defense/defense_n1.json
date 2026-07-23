@@ -1,0 +1,22 @@
+{
+  "id": "defense_n1",
+  "world": "cybersecurity",
+  "graph_path": "res://juego/defense/defense_n1.tres",
+  "start_node": "Internet",
+  "target_node": "DataCenter",
+  "waypoints": [],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 0,
+  "max_turns": 12,
+  "max_movement_points": 0,
+  "titulo_nivel": "Cybersecurity — Defensa Perimetral",
+  "difficulty": 2,
+  "description": "Protege la red como defensor. Bloquea rutas para detener al atacante.",
+  "defender_mode": true,
+  "defender_blocks_per_turn": 2,
+  "defender_block_duration": 4,
+  "enemy_start_node": "Internet",
+  "enemy_target_node": "DataCenter"
+}

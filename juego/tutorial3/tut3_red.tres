@@ -1,0 +1,151 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Inicio"]
+script = ExtResource("2_node")
+id = &"Inicio"
+display_name = "Inicio"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(100, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_FW"]
+script = ExtResource("2_node")
+id = &"Firewall"
+display_name = "Firewall"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(300, 150)
+metadata = {
+"detection_chance": 0.12,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_Router"]
+script = ExtResource("2_node")
+id = &"Router"
+display_name = "Router"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(300, 450)
+metadata = {
+"detection_chance": 0.10
+}
+
+[sub_resource type="Resource" id="Node_DMZ"]
+script = ExtResource("2_node")
+id = &"DMZ"
+display_name = "DMZ"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(500, 300)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Node_IDS"]
+script = ExtResource("2_node")
+id = &"IDS"
+display_name = "IDS"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(700, 150)
+metadata = {
+"detection_chance": 0.18
+}
+
+[sub_resource type="Resource" id="Node_Servidor"]
+script = ExtResource("2_node")
+id = &"Servidor"
+display_name = "Servidor"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(700, 450)
+metadata = {
+"detection_chance": 0.0,
+"security_spawn": true
+}
+
+[sub_resource type="Resource" id="Edge_IDS_DMZ"]
+script = ExtResource("3_edge")
+from_id = &"IDS"
+to_id = &"DMZ"
+transit_cost = 1.0
+mitigation_capacity = 1.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Inicio_FW"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"Firewall"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Inicio_Router"]
+script = ExtResource("3_edge")
+from_id = &"Inicio"
+to_id = &"Router"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_FW_DMZ"]
+script = ExtResource("3_edge")
+from_id = &"Firewall"
+to_id = &"DMZ"
+transit_cost = 4.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Router_DMZ"]
+script = ExtResource("3_edge")
+from_id = &"Router"
+to_id = &"DMZ"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_FW_IDS"]
+script = ExtResource("3_edge")
+from_id = &"Firewall"
+to_id = &"IDS"
+transit_cost = 6.0
+mitigation_capacity = 1.0
+protocol = &"MIRROR"
+
+[sub_resource type="Resource" id="Edge_Router_IDS"]
+script = ExtResource("3_edge")
+from_id = &"Router"
+to_id = &"IDS"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_DMZ_Servidor"]
+script = ExtResource("3_edge")
+from_id = &"DMZ"
+to_id = &"Servidor"
+transit_cost = 5.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_IDS_Servidor"]
+script = ExtResource("3_edge")
+from_id = &"IDS"
+to_id = &"Servidor"
+transit_cost = 2.0
+mitigation_capacity = 3.0
+protocol = &"HTTPS"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Inicio"), SubResource("Node_FW"), SubResource("Node_Router"), SubResource("Node_DMZ"), SubResource("Node_IDS"), SubResource("Node_Servidor")])
+edges = Array[Resource]([SubResource("Edge_Inicio_FW"), SubResource("Edge_Inicio_Router"), SubResource("Edge_FW_DMZ"), SubResource("Edge_Router_DMZ"), SubResource("Edge_FW_IDS"), SubResource("Edge_Router_IDS"), SubResource("Edge_DMZ_Servidor"), SubResource("Edge_IDS_Servidor"), SubResource("Edge_IDS_DMZ")])
+directed = true

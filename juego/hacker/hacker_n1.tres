@@ -1,0 +1,241 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_DMZ"]
+script = ExtResource("2_node")
+id = &"DMZ"
+display_name = "DMZ"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(60, 300)
+metadata = {
+"detection_chance": 0.0,
+"label": "Zona desmilitarizada"
+}
+
+[sub_resource type="Resource" id="Node_WebServer"]
+script = ExtResource("2_node")
+id = &"WebServer"
+display_name = "Web Server"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 150)
+metadata = {
+"detection_chance": 0.10,
+"label": "Servidor web público",
+"exploit_type": "bypass"
+}
+
+[sub_resource type="Resource" id="Node_AppServer"]
+script = ExtResource("2_node")
+id = &"AppServer"
+display_name = "App Server"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 150)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Node_DBServer"]
+script = ExtResource("2_node")
+id = &"DBServer"
+display_name = "DB Server"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 150)
+metadata = {
+"detection_chance": 0.20,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_Core"]
+script = ExtResource("2_node")
+id = &"Core"
+display_name = "Core"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(800, 300)
+metadata = {
+"detection_chance": 0.0,
+"label": "Base de datos central"
+}
+
+[sub_resource type="Resource" id="Node_MailServer"]
+script = ExtResource("2_node")
+id = &"MailServer"
+display_name = "Mail Server"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 450)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Node_FileServer"]
+script = ExtResource("2_node")
+id = &"FileServer"
+display_name = "File Server"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 450)
+metadata = {
+"detection_chance": 0.12
+}
+
+[sub_resource type="Resource" id="Node_Printer"]
+script = ExtResource("2_node")
+id = &"Printer"
+display_name = "Printer"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(200, 550)
+metadata = {
+"detection_chance": 0.05,
+"label": "Impresora de red (vulnerable)",
+"exploit_type": "bypass"
+}
+
+[sub_resource type="Resource" id="Node_HRPC"]
+script = ExtResource("2_node")
+id = &"HRPC"
+display_name = "HR PC"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 550)
+metadata = {
+"detection_chance": 0.10,
+"label": "PC del departamento de RRHH"
+}
+
+[sub_resource type="Resource" id="Node_VPNGateway"]
+script = ExtResource("2_node")
+id = &"VPNGateway"
+display_name = "VPN Gateway"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 500)
+metadata = {
+"detection_chance": 0.15,
+"has_firewall": true,
+"exploit_type": "escalate"
+}
+
+[sub_resource type="Resource" id="Node_AdminPanel"]
+script = ExtResource("2_node")
+id = &"AdminPanel"
+display_name = "Admin Panel"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(700, 400)
+metadata = {
+"detection_chance": 0.20,
+"security_spawn": true,
+"label": "Panel de administración",
+"exploit_type": "escalate"
+}
+
+[sub_resource type="Resource" id="Edge_DMZ_WebServer"]
+script = ExtResource("3_edge")
+from_id = &"DMZ"
+to_id = &"WebServer"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_DMZ_MailServer"]
+script = ExtResource("3_edge")
+from_id = &"DMZ"
+to_id = &"MailServer"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"SMTP"
+
+[sub_resource type="Resource" id="Edge_WebServer_AppServer"]
+script = ExtResource("3_edge")
+from_id = &"WebServer"
+to_id = &"AppServer"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_AppServer_DBServer"]
+script = ExtResource("3_edge")
+from_id = &"AppServer"
+to_id = &"DBServer"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_DBServer_AdminPanel"]
+script = ExtResource("3_edge")
+from_id = &"DBServer"
+to_id = &"AdminPanel"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_AdminPanel_Core"]
+script = ExtResource("3_edge")
+from_id = &"AdminPanel"
+to_id = &"Core"
+transit_cost = 2.0
+mitigation_capacity = 1.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_MailServer_FileServer"]
+script = ExtResource("3_edge")
+from_id = &"MailServer"
+to_id = &"FileServer"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_FileServer_AdminPanel"]
+script = ExtResource("3_edge")
+from_id = &"FileServer"
+to_id = &"AdminPanel"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_MailServer_Printer"]
+script = ExtResource("3_edge")
+from_id = &"MailServer"
+to_id = &"Printer"
+transit_cost = 1.0
+mitigation_capacity = 1.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Printer_HRPC"]
+script = ExtResource("3_edge")
+from_id = &"Printer"
+to_id = &"HRPC"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_HRPC_VPNGateway"]
+script = ExtResource("3_edge")
+from_id = &"HRPC"
+to_id = &"VPNGateway"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"VPN"
+
+[sub_resource type="Resource" id="Edge_VPNGateway_AdminPanel"]
+script = ExtResource("3_edge")
+from_id = &"VPNGateway"
+to_id = &"AdminPanel"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_DMZ"), SubResource("Node_WebServer"), SubResource("Node_AppServer"), SubResource("Node_DBServer"), SubResource("Node_Core"), SubResource("Node_MailServer"), SubResource("Node_FileServer"), SubResource("Node_Printer"), SubResource("Node_HRPC"), SubResource("Node_VPNGateway"), SubResource("Node_AdminPanel")])
+edges = Array[Resource]([SubResource("Edge_DMZ_WebServer"), SubResource("Edge_DMZ_MailServer"), SubResource("Edge_WebServer_AppServer"), SubResource("Edge_AppServer_DBServer"), SubResource("Edge_DBServer_AdminPanel"), SubResource("Edge_AdminPanel_Core"), SubResource("Edge_MailServer_FileServer"), SubResource("Edge_FileServer_AdminPanel"), SubResource("Edge_MailServer_Printer"), SubResource("Edge_Printer_HRPC"), SubResource("Edge_HRPC_VPNGateway"), SubResource("Edge_VPNGateway_AdminPanel")])
+directed = true

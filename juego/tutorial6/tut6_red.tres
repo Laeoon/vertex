@@ -1,0 +1,153 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Exterior"]
+script = ExtResource("2_node")
+id = &"Exterior"
+display_name = "Exterior"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(60, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Node_Entrada"]
+script = ExtResource("2_node")
+id = &"Entrada"
+display_name = "Entrada"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 200)
+metadata = {
+"detection_chance": 0.05
+}
+
+[sub_resource type="Resource" id="Node_Guardia"]
+script = ExtResource("2_node")
+id = &"Guardia"
+display_name = "Guardia"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 400)
+metadata = {
+"detection_chance": 0.15,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Node_Oficina"]
+script = ExtResource("2_node")
+id = &"Oficina"
+display_name = "Oficina"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(440, 300)
+metadata = {
+"detection_chance": 0.10
+}
+
+[sub_resource type="Resource" id="Node_Archivo"]
+script = ExtResource("2_node")
+id = &"Archivo"
+display_name = "Archivo"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(620, 200)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Node_Backup"]
+script = ExtResource("2_node")
+id = &"Backup"
+display_name = "Backup"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(620, 400)
+metadata = {
+"detection_chance": 0.12
+}
+
+[sub_resource type="Resource" id="Node_CentroDatos"]
+script = ExtResource("2_node")
+id = &"CentroDatos"
+display_name = "Centro de Datos"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(800, 300)
+metadata = {
+"detection_chance": 0.0
+}
+
+[sub_resource type="Resource" id="Edge_Exterior_Entrada"]
+script = ExtResource("3_edge")
+from_id = &"Exterior"
+to_id = &"Entrada"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Exterior_Guardia"]
+script = ExtResource("3_edge")
+from_id = &"Exterior"
+to_id = &"Guardia"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Entrada_Oficina"]
+script = ExtResource("3_edge")
+from_id = &"Entrada"
+to_id = &"Oficina"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Guardia_Oficina"]
+script = ExtResource("3_edge")
+from_id = &"Guardia"
+to_id = &"Oficina"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Oficina_Archivo"]
+script = ExtResource("3_edge")
+from_id = &"Oficina"
+to_id = &"Archivo"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Oficina_Backup"]
+script = ExtResource("3_edge")
+from_id = &"Oficina"
+to_id = &"Backup"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Archivo_CentroDatos"]
+script = ExtResource("3_edge")
+from_id = &"Archivo"
+to_id = &"CentroDatos"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Backup_CentroDatos"]
+script = ExtResource("3_edge")
+from_id = &"Backup"
+to_id = &"CentroDatos"
+transit_cost = 4.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Exterior"), SubResource("Node_Entrada"), SubResource("Node_Guardia"), SubResource("Node_Oficina"), SubResource("Node_Archivo"), SubResource("Node_Backup"), SubResource("Node_CentroDatos")])
+edges = Array[Resource]([SubResource("Edge_Exterior_Entrada"), SubResource("Edge_Exterior_Guardia"), SubResource("Edge_Entrada_Oficina"), SubResource("Edge_Guardia_Oficina"), SubResource("Edge_Oficina_Archivo"), SubResource("Edge_Oficina_Backup"), SubResource("Edge_Archivo_CentroDatos"), SubResource("Edge_Backup_CentroDatos")])
+directed = true

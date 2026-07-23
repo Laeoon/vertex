@@ -1,0 +1,24 @@
+{
+  "id": "hacker_n2",
+  "world": "hacker",
+  "graph_path": "res://juego/hacker/hacker_n2.tres",
+  "start_node": "Inicio",
+  "target_node": "VaultDatos",
+  "waypoints": ["DMZ", "BaseDatos"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": true,
+  "max_ai_blocks": 4,
+  "max_turns": 20,
+  "max_movement_points": 0,
+  "titulo_nivel": "Hacker — Brecha en la Red Corporativa",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 1,
+    "escalate": 1,
+    "decoy": 1
+  },
+  "defender_mode": false,
+  "difficulty": 3,
+  "description": "Penetra las capas de seguridad de la red corporativa usando exploits avanzados."
+}

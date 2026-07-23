@@ -1,0 +1,21 @@
+{
+  "id": "cyber_n1",
+  "world": "cybersecurity",
+  "graph_path": "res://juego/cyber/cyber_n1.tres",
+  "start_node": "Defensor",
+  "target_node": "Database",
+  "waypoints": [],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 12,
+  "max_turns": 18,
+  "titulo_nivel": "Cybersecurity — Defensa en Capas",
+  "difficulty": 3,
+  "description": "Protege la red corporativa. Bloquea las rutas del atacante antes de que llegue a la base de datos.",
+  "defender_mode": true,
+  "defender_blocks_per_turn": 3,
+  "defender_block_duration": 5,
+  "enemy_start_node": "Internet",
+  "enemy_target_node": "Database"
+}

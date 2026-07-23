@@ -1,0 +1,160 @@
+extends Node
+
+var passed: int = 0
+var failed: int = 0
+
+
+func _ready() -> void:
+	call_deferred("_run_tests")
+
+
+func _run_tests() -> void:
+	print("--- TUTORIAL SYSTEM TEST ---")
+
+	var tutorial_scene = preload("res://juego/tutorials/tutorial_player.tscn")
+	var tutorial_root = tutorial_scene.instantiate()
+	get_tree().root.add_child(tutorial_root)
+	var tp = tutorial_root.get_node("Control")
+	await get_tree().process_frame
+
+	# TEST 1: JSON loads
+	var loaded: bool = tp.load_tutorial("res://juego/tutorials/data/tut1_movimiento.json")
+	if loaded and tp.steps.size() == 5:
+		print("PASS: tutorial JSON carga (5 pasos)")
+		passed += 1
+	else:
+		print("FAIL: tutorial JSON no cargo (loaded=%s steps=%d)" % [loaded, tp.steps.size()])
+		failed += 1
+
+	# TEST 2: Start at step 0
+	tp.start()
+	if tp.is_active and tp.current_step_index == 0:
+		print("PASS: inicia en paso 0")
+		passed += 1
+	else:
+		print("FAIL: no inicio (active=%s step=%d)" % [tp.is_active, tp.current_step_index])
+		failed += 1
+
+	# TEST 3: Step data correct
+	var step0: Dictionary = tp.steps[0]
+	if step0.get("id", "") == "intro" and step0.get("pause_game", false) == true:
+		print("PASS: paso 0 correcto (id=intro)")
+		passed += 1
+	else:
+		print("FAIL: paso 0 datos: %s" % str(step0))
+		failed += 1
+
+	# TEST 4: Advance works (step 0 has no action_required)
+	tp.advance()
+	if tp.current_step_index == 1:
+		print("PASS: advance() → paso 1")
+		passed += 1
+	else:
+		print("FAIL: advance() fallo (step=%d)" % tp.current_step_index)
+		failed += 1
+
+	# TEST 5: Step 1 has pause
+	if tp.is_game_paused():
+		print("PASS: is_game_paused()=true en paso 1")
+		passed += 1
+	else:
+		print("FAIL: is_game_paused()=false en paso 1")
+		failed += 1
+
+	# TEST 6: Step 2 has action_required="move"
+	var step2: Dictionary = tp.steps[2]
+	if step2.get("action_required", "") == "move":
+		print("PASS: paso 2 tiene action_required=move")
+		passed += 1
+	else:
+		print("FAIL: paso 2 action_required=%s" % step2.get("action_required"))
+		failed += 1
+
+	# TEST 7: Advance to step 2 (no blocking since step 1 has no action)
+	tp.advance()
+	if tp.current_step_index == 2:
+		print("PASS: advance() → paso 2")
+		passed += 1
+	else:
+		print("FAIL: advance() a paso 2 fallo (step=%d)" % tp.current_step_index)
+		failed += 1
+
+	# TEST 8: Action required blocks advance
+	tp.advance()
+	if tp.current_step_index == 2 and tp._waiting_for_action:
+		print("PASS: action_required bloquea advance")
+		passed += 1
+	else:
+		print("FAIL: no bloqueo (step=%d wait=%s)" % [tp.current_step_index, tp._waiting_for_action])
+		failed += 1
+
+	# TEST 9: notify_action fulfills and auto-advances
+	tp.notify_action("move")
+	if tp.current_step_index == 3:
+		print("PASS: notify_action() cumple y avanza a paso 3")
+		passed += 1
+	else:
+		print("FAIL: notify_action() (step=%d)" % tp.current_step_index)
+		failed += 1
+
+	# TEST 10: Already advanced, no need to call advance()
+	if tp.current_step_index == 3:
+		print("PASS: ya en paso 3 (auto-advance)")
+		passed += 1
+	else:
+		print("FAIL: no auto-advanco (step=%d)" % tp.current_step_index)
+		failed += 1
+
+	# TEST 11: Highlight nodes on step with highlights
+	var highlights: Array = tp.get_highlight_nodes()
+	if highlights.size() == 1 and highlights[0] == "Target":
+		print("PASS: get_highlight_nodes() correcto")
+		passed += 1
+	else:
+		print("FAIL: highlights: %s (step=%d)" % [str(highlights), tp.current_step_index])
+		failed += 1
+
+	# TEST 12: Skip
+	tp.skip()
+	if not tp.is_active and tp.current_step_index == -1:
+		print("PASS: skip() desactiva")
+		passed += 1
+	else:
+		print("FAIL: skip() (active=%s step=%d)" % [tp.is_active, tp.current_step_index])
+		failed += 1
+
+	# TEST 13: Load tut2
+	var loaded2: bool = tp.load_tutorial("res://juego/tutorials/data/tut2_perimetro.json")
+	if loaded2 and tp.steps.size() == 5:
+		print("PASS: tut2 carga")
+		passed += 1
+	else:
+		print("FAIL: tut2 no cargo")
+		failed += 1
+
+	# TEST 14: Load tut3
+	var loaded3: bool = tp.load_tutorial("res://juego/tutorials/data/tut3_avanzado.json")
+	if loaded3 and tp.steps.size() == 6:
+		print("PASS: tut3 carga (6 pasos)")
+		passed += 1
+	else:
+		print("FAIL: tut3 no cargo")
+		failed += 1
+
+	# TEST 15: is_game_paused on active tutorial
+	tp.start()
+	if tp.is_game_paused():
+		print("PASS: is_game_paused() en tut3")
+		passed += 1
+	else:
+		print("FAIL: is_game_paused() fallo")
+		failed += 1
+
+	_quit()
+
+
+func _quit() -> void:
+	print("---")
+	print("Results: %d passed, %d failed" % [passed, failed])
+	await get_tree().create_timer(0.05).timeout
+	get_tree().quit(0 if failed == 0 else 1)

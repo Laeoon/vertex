@@ -1,0 +1,161 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Internet"]
+script = ExtResource("2_node")
+id = &"Internet"
+display_name = "Internet"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(60, 300)
+metadata = {
+"detection_chance": 0.0,
+"label": "Origen del ataque"
+}
+
+[sub_resource type="Resource" id="Node_FirewallExt"]
+script = ExtResource("2_node")
+id = &"FirewallExt"
+display_name = "FW Externo"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 150)
+metadata = {
+"detection_chance": 0.0,
+"has_firewall": true,
+"label": "Primera línea"
+}
+
+[sub_resource type="Resource" id="Node_DMZ"]
+script = ExtResource("2_node")
+id = &"DMZ"
+display_name = "DMZ"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(420, 150)
+metadata = {
+"detection_chance": 0.0,
+"label": "Zona desmilitarizada"
+}
+
+[sub_resource type="Resource" id="Node_FirewallInt"]
+script = ExtResource("2_node")
+id = &"FirewallInt"
+display_name = "FW Interno"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(600, 250)
+metadata = {
+"detection_chance": 0.0,
+"has_firewall": true,
+"label": "Capa interna"
+}
+
+[sub_resource type="Resource" id="Node_DataCenter"]
+script = ExtResource("2_node")
+id = &"DataCenter"
+display_name = "Data Center"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(800, 300)
+metadata = {
+"detection_chance": 0.0,
+"label": "Datos críticos"
+}
+
+[sub_resource type="Resource" id="Node_Proxy"]
+script = ExtResource("2_node")
+id = &"Proxy"
+display_name = "Proxy"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(220, 450)
+metadata = {
+"detection_chance": 0.0,
+"label": "Proxy inverso"
+}
+
+[sub_resource type="Resource" id="Node_BackupRoute"]
+script = ExtResource("2_node")
+id = &"BackupRoute"
+display_name = "Ruta Backup"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(420, 450)
+metadata = {
+"detection_chance": 0.0,
+"label": "Enlace secundario"
+}
+
+[sub_resource type="Resource" id="Edge_Internet_FWExt"]
+script = ExtResource("3_edge")
+from_id = &"Internet"
+to_id = &"FirewallExt"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"EXTERNAL"
+
+[sub_resource type="Resource" id="Edge_Internet_Proxy"]
+script = ExtResource("3_edge")
+from_id = &"Internet"
+to_id = &"Proxy"
+transit_cost = 2.0
+mitigation_capacity = 3.0
+protocol = &"EXTERNAL"
+
+[sub_resource type="Resource" id="Edge_FWExt_DMZ"]
+script = ExtResource("3_edge")
+from_id = &"FirewallExt"
+to_id = &"DMZ"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Proxy_DMZ"]
+script = ExtResource("3_edge")
+from_id = &"Proxy"
+to_id = &"DMZ"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_DMZ_FWInt"]
+script = ExtResource("3_edge")
+from_id = &"DMZ"
+to_id = &"FirewallInt"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_DMZ_Backup"]
+script = ExtResource("3_edge")
+from_id = &"DMZ"
+to_id = &"BackupRoute"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_FWInt_DC"]
+script = ExtResource("3_edge")
+from_id = &"FirewallInt"
+to_id = &"DataCenter"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Backup_DC"]
+script = ExtResource("3_edge")
+from_id = &"BackupRoute"
+to_id = &"DataCenter"
+transit_cost = 5.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Internet"), SubResource("Node_FirewallExt"), SubResource("Node_DMZ"), SubResource("Node_FirewallInt"), SubResource("Node_DataCenter"), SubResource("Node_Proxy"), SubResource("Node_BackupRoute")])
+edges = Array[Resource]([SubResource("Edge_Internet_FWExt"), SubResource("Edge_Internet_Proxy"), SubResource("Edge_FWExt_DMZ"), SubResource("Edge_Proxy_DMZ"), SubResource("Edge_DMZ_FWInt"), SubResource("Edge_DMZ_Backup"), SubResource("Edge_FWInt_DC"), SubResource("Edge_Backup_DC")])
+directed = true
