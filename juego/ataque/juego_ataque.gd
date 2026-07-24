@@ -8,6 +8,7 @@ const HackerMechanicsClass = preload("res://juego/system/hacker_mechanics.gd")
 const InputHandlerClass = preload("res://juego/ataque/input_handler.gd")
 const DefenderBrainClass = preload("res://juego/ataque/defender_brain.gd")
 const AIBlockerClass = preload("res://juego/ataque/ai_blocker.gd")
+const PursuitSystemClass = preload("res://juego/ataque/pursuit_system.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -115,6 +116,7 @@ var _budget_display: float = 0.0
 var _input_handler: InputHandler
 var _defender_brain: DefenderBrain
 var _ai_blocker: AIBlocker
+var _pursuit_system: PursuitSystem
 var _renderer: GameRendererClass
 
 func _process(_delta: float) -> void:
@@ -172,6 +174,12 @@ func _ready() -> void:
 	# porque reset_state() dispara el bloqueo inicial via _ai_blocker.
 	_ai_blocker = AIBlockerClass.new()
 	_ai_blocker.setup(self)
+
+	# Sistema de detección/persecución (fase-0/slice-4): se inicializa ANTES
+	# de _load_graph() porque reset_state() (vía _load_graph) invoca
+	# `_pursuit_system.reset()` para limpiar alertas/perseguidores.
+	_pursuit_system = PursuitSystemClass.new()
+	_pursuit_system.setup(self)
 
 	_load_graph()
 
@@ -236,9 +244,11 @@ func reset_state() -> void:
 	showing_path = false
 	player_pos = start_node
 	current_waypoint_idx = -1 if waypoints.is_empty() else 0
-	alerted_nodes.clear()
-	pursuers.clear()
-	_pursuer_next_id = 1
+	# Detección/persecución (fase-0/slice-4): limpieza migrada a
+	# `_pursuit_system.reset()` (porta el viejo `alerted_nodes.clear()` +
+	# `pursuers.clear()` + `_pursuer_next_id = 1`). Equivalencia cubierta por
+	# tests/ataque/_test_pursuit_system_equivalence.{gd,tscn} (snapshot RESET).
+	_pursuit_system.reset()
 	show_optimal_overlay = false
 	optimal_overlay_path.clear()
 	player_total_cost = 0.0
@@ -432,7 +442,7 @@ func _mover_jugador(destino: StringName) -> void:
 	player_pos = destino
 	AudioManager.play_sfx("move")
 
-	_chequear_deteccion()
+	_pursuit_system.check_detection(player_pos)  # fase-0/slice-4: antes _chequear_deteccion() inline
 
 	if tutorial_player != null and tutorial_player.is_active:
 		tutorial_player.notify_moved()
@@ -1123,17 +1133,13 @@ func _check_hacker_consequences() -> void:
 	match alert_level:
 		"critical":
 			mensaje_estado = "⚠ RUIDO CRÍTICO — Seguridad máxima activada"
-			# Spawnear pursuedor extra
+			# Spawnear pursuedor extra (fase-0/slice-4): spawn dict + id
+			# increment migrados a `_pursuit_system.spawn_pursuer(delay=1,
+			# speed=2)` — el helper deduplica el bloque que vivía inline
+			# (idéntico al de `_chequear_deteccion` con delay/speed por defecto).
 			if hacker_state.get("noise", 0) >= 85 and pursuers.size() < 4:
-				var spawn_node: StringName = _find_spawn_node(player_pos, _find_node_resource(player_pos))
-				pursuers.append({
-					"id": _pursuer_next_id,
-					"pos": spawn_node,
-					"delay": 1,
-					"speed": 2,
-					"active": false
-				})
-				_pursuer_next_id += 1
+				var spawn_node: StringName = _pursuit_system.find_spawn_node(player_pos, _find_node_resource(player_pos))
+				_pursuit_system.spawn_pursuer(spawn_node, 1, 2)
 		"high":
 			mensaje_estado = "⚠ Ruido alto — cuidado con los movimientos"
 		"low":

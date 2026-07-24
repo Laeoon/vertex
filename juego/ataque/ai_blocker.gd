@@ -72,7 +72,7 @@ func take_turn() -> void:
 		return
 	if _game.defender_mode:
 		return  # En defender mode, el atacante se maneja en _enemy_move().
-	_game._process_pursuers()
+	_game._pursuit_system.process_pursuers(_game.player_pos)  # fase-0/slice-4
 	if _game.game_over:
 		return
 

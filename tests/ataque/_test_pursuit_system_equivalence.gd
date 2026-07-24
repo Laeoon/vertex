@@ -58,7 +58,7 @@ const CAPTURE := false
 # false (pre-migración 4.2): llama al inline `_chequear_deteccion` /
 #   `_process_pursuers` (presentes hasta la task 4.4).
 # true (post-migración 4.3+): llama al `PursuitSystem` cableado en `_ready`.
-var USE_PURSUIT_SYSTEM := false
+var USE_PURSUIT_SYSTEM := true
 
 var passed: int = 0
 var failed: int = 0
