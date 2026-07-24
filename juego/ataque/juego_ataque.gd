@@ -490,64 +490,6 @@ func _mover_jugador(destino: StringName) -> void:
 	_turn_locked_until = Time.get_ticks_msec() + 200
 
 
-func _turno_ia() -> void:
-	if defender_mode:
-		return  # En defender mode, el atacante se maneja en _enemy_move()
-	_process_pursuers()
-	if game_over:
-		return
-
-	if _ai_blocks_used >= max_ai_blocks:
-		mensaje_estado = "IA sin recursos para bloquear"
-		return
-	_ai_blocks_used += 1
-
-	var target: StringName = _target_actual()
-	var result: Dictionary = DefensivePathfinder.find_path_with_cost(graph, player_pos, target, runtime)
-	if not result["reachable"] or result["path"].is_empty():
-		mensaje_estado = "No hay ruta hacia %s — busca otro camino" % target
-		return
-
-	var path: Array[StringName] = result["path"]
-	print("  IA detecta ruta: ", path)
-
-	if path.size() < 2:
-		mensaje_estado = "Estas al lado de %s, pero la arista esta bloqueada" % target
-		return
-
-	var bloqueos: int = 0
-	# Iterar desde el final de la ruta (bloquear rio abajo primero)
-	var idx: int = path.size() - 2
-	while idx >= 0 and bloqueos < ai_block_per_turn:
-		var from_n: StringName = path[idx]
-		var to_n: StringName = path[idx + 1]
-		var edge_key: String = "%s→%s" % [from_n, to_n]
-		if not _is_blocked(edge_key):
-			if _no_aisla_al_jugador(edge_key):
-				_block_edge(edge_key, from_n, to_n)
-				print("  IA bloquea: %s → %s" % [from_n, to_n])
-				bloqueos += 1
-			else:
-				print("  IA evita aislar: saltando %s" % edge_key)
-		idx -= 1
-
-	if bloqueos > 0:
-		mensaje_estado = "IA bloqueo %d arista(s)" % bloqueos
-	else:
-		mensaje_estado = "IA no pudo bloquear mas aristas"
-
-	mostrar_ruta()
-
-	var result2: Dictionary = DefensivePathfinder.find_path_with_cost(graph, player_pos, target, runtime)
-	if not result2["reachable"] or result2["path"].is_empty():
-		_perder("IA bloqueo todas las rutas!")
-		return
-
-	print("  Nueva ruta: ", result2["path"], " (coste %.1f)" % result2["cost"])
-	mensaje_estado += " — Tu turno"
-	queue_redraw()
-
-
 func _is_blocked(edge_key: String) -> bool:
 	if blocked_edges.has(edge_key):
 		return true
@@ -605,31 +547,6 @@ func _limpiar_bloqueos_expirados() -> void:
 		_unblock_edge(key)
 	if expired.size() > 0:
 		print("  Bloqueos expirados: %d" % expired.size())
-
-
-func _no_aisla_al_jugador(edge_key: String) -> bool:
-	var parts: PackedStringArray = edge_key.split("→")
-	if parts.size() != 2:
-		return true
-	var from_n: StringName = parts[0] as StringName
-	var to_n: StringName = parts[1] as StringName
-	var target: StringName = _target_actual()
-
-	# Guardar coste original
-	var orig: float = -1.0
-	for e in graph.edges:
-		if e != null and e.from_id == from_n and e.to_id == to_n:
-			orig = e.transit_cost
-			break
-	if orig < 0:
-		return true
-
-	# Simular bloqueo y verificar que el target sigue alcanzable
-	runtime.set_transit_cost(from_n, to_n, INF)
-	var result: Dictionary = DefensivePathfinder.find_path_with_cost(graph, player_pos, target, runtime)
-	runtime.set_transit_cost(from_n, to_n, orig)
-
-	return result["reachable"] and not result["path"].is_empty()
 
 
 func _chequear_deteccion() -> void:
