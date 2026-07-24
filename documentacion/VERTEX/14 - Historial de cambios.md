@@ -12,7 +12,57 @@ tags:
 ## Fase 0 — Auditoría y Estabilización (SDD, 2026-07-23, en curso)
 
 Cambio SDD `fase-0-auditoria` — 10 slices encadenados (stacked-to-main) para
-estabilizar el simulador. Avance: Slices 0-3 completados (14/39 tareas).
+estabilizar el simulador. Avance: Slices 0-4 completados (18/39 tareas).
+
+### Slice 4 — Extraer sistema de detección/persecución a `PursuitSystem` (2026-07-23)
+
+- **Agregado**: `juego/ataque/pursuit_system.gd` (158 líneas) — `class_name
+  PursuitSystem extends RefCounted` siguiendo el patrón `AIBlocker`/
+  `DefenderBrain` (RefCounted + ref `_game`). API: `setup(game)`,
+  `check_detection(player_pos)` (era `_chequear_deteccion`, porte VERBATIM
+  conservando orden/cantidad de `randf()` para replays con `seed`),
+  `process_pursuers(player_pos) -> bool` (era `_process_pursuers`, devuelve
+  `true` si captura), `find_spawn_node(detected, node_res)` (era
+  `_find_spawn_node`), `spawn_pursuer(spawn_node, delay, speed)` (helper que
+  deduplica el bloque de append+incremento del perseguidor, compartido entre
+  la detección normal y el spawn de ruido crítico del hacker), `reset()`
+  (reagrupa los clears de `alerted_nodes`/`pursuers`/`_pursuer_next_id` que
+  vivían al final de `reset_state`).
+- **Agregado**: `tests/ataque/_test_pursuit_system_equivalence.gd` + `.tscn`
+  (304 líneas) — scene-based (excluida del runner `--script` por prefijo
+  `_`, toca autoloads; misma convención que `_test_ai_blocker_equivalence`).
+  Parte A: replay determinista `seed(42)` de 4 pasos (detección → alerta →
+  spawn en `security_spawn` → countdown de delay → activación →
+  re-detección en nodo ya alertado → 2.º spawn → chase+captura → reset)
+  contra un golden capturado con la lógica original inline (9 snapshots
+  estructurales: `alerted_nodes`, `pursuers` dict, `_pursuer_next_id`,
+  `game_over`, `mensaje_estado`, contador de capturas). Parte B: sanity
+  unitario del helper `spawn_pursuer(delay=1, speed=2)` (camino del spawn
+  del hacker crítico de ruido). 9 golden + 1 sanity = 10/10 verde.
+- **Modificado**: `juego/ataque/juego_ataque.gd` — cableado `_pursuit_system`
+  en `_ready` (antes de `_load_graph`, mismo patrón que `_ai_blocker`);
+  `reset_state` migrado a `_pursuit_system.reset()`; `_mover_jugador` a
+  `_pursuit_system.check_detection(player_pos)`; el spawn de ruido crítico
+  del hacker (`_check_hacker_consequences`) migrado a
+  `_pursuit_system.spawn_pursuer`+`find_spawn_node`. **Borrados** los cuerpos
+  inline de `_chequear_deteccion`, `_process_pursuers`, `_find_spawn_node`.
+- **Modificado**: `juego/ataque/ai_blocker.gd` — `AIBlocker.take_turn` migra
+  `_game._process_pursuers()` → `_game._pursuit_system.process_pursuers(...)`
+  (necesario para que el borrado del inline no deje callers rotos).
+- **Modificado**: `juego/ataque/test_pursuit.gd` — sus 2 llamadas a
+  `inst._process_pursuers()` migradas a `inst._pursuit_system.process_pursuers`
+  (el inline privado fue borrado; API pública equivalente probada).
+- **Reducción**: `juego_ataque.gd` 1140 → 1086 líneas (−54 netas en el slice;
+  −60 en el commit 4.4). Objetivo `god-script-extraction` ≤700; Slices 5-6
+  continúan el recorte (ProgressService, ProgressUtil, LocUtil).
+- **Verificación**: equivalencia PursuitSystem 10/10 (reproduce golden
+  capturado con inline original); equivalencia AIBlocker (slice 3) 19/19
+  — la migración del `take_turn` no rompe la equivalencia de IA del slice 3;
+  las 6 scene-based regression verdes (block_duration 5, defender_brain_draw
+  _null 3, detection 3, pursuit 2, restart 2, heist_sanity 8); `run_all.gd`
+  6/6 verde. Total 58 verificaciones verde.
+- **Commits**: `ec1f3bf` (4.1), `c94742f` (4.2), `2019e65` (4.3),
+  `98c8e78` (4.4).
 
 ### Slice 3 — Extraer lógica de turno IA a `AIBlocker` (2026-07-23)
 
