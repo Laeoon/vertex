@@ -9,6 +9,55 @@ tags:
 
 # Historial de Cambios
 
+## Fase 0 — Auditoría y Estabilización (SDD, 2026-07-23, en curso)
+
+Cambio SDD `fase-0-auditoria` — 10 slices encadenados (stacked-to-main) para
+estabilizar el simulador. Avance: Slices 0-3 completados (14/39 tareas).
+
+### Slice 3 — Extraer lógica de turno IA a `AIBlocker` (2026-07-23)
+
+- **Agregado**: `juego/ataque/ai_blocker.gd` (165 líneas) — `class_name
+  AIBlocker extends RefCounted` siguiendo el patrón `DefenderBrain`
+  (RefCounted + ref `_game`). API: `setup(game)`, `take_turn()` (era
+  `_turno_ia`), `would_isolate(edge)` (era `_no_aisla_al_jugador` con
+  semántica honesta y flip de booleano), `initial_block()` (porta el bucle
+  de bloqueo inicial que vivía en `reset_state`).
+- **Agregado**: `tests/ataque/_test_ai_blocker_equivalence.gd` + `.tscn`
+  (277 líneas) — prueba scene-based (excluida del runner `--script` por
+  prefijo `_`, toca autoloads). Parte A: flip `would_isolate` vs referencia
+  congelada (9 aristas, 9/9 verde). Parte B: replay determinista de 10
+  turnos de IA vs golden capturado con la lógica original inline (10/10
+  verde). `seed(42)`, `tut3_red` con `detection_chance=0`.
+- **Modificado**: `juego/ataque/juego_ataque.gd` — cableado `_ai_blocker` en
+  `_ready` (antes de `_load_graph`), bucle inicial de `reset_state`
+  reemplazado por `_ai_blocker.initial_block()`, llamada per-turn en
+  `_mover_jugador` reemplazada por `_ai_blocker.take_turn()`. **Borrados**
+  los cuerpos inline de `_turno_ia` y `_no_aisla_al_jugador`.
+- **Reducción**: `juego_ataque.gd` 1229 → 1140 líneas (−89). Objetivo
+  `god-script-extraction` ≤700; Slices 4-6 continúan el recorte
+  (PursuitSystem, ProgressService, LocUtil).
+- **Verificación**: equivalencia 19/19 verde; las 6 scene-based regression
+  (`test_block_duration`, `test_defender_brain_draw_null`,
+  `test_detection`, `test_pursuit`, `test_restart`, `test_heist_sanity`)
+  verdes; `run_all.gd` 6/6 verde.
+- **Hallazgo (fuera de scope)**: bug pre-existente en `juego_ataque._ganar`
+  línea 710 — `waypoints[current_waypoint_idx]` con `current_waypoint_idx =
+  -1` y `waypoints` vacío produce OOB al llegar al objetivo sin waypoints.
+  Reportado en apply-progress; la prueba de equivalencia evita el camino
+  viajando SOLO la lógica de IA. Recomendado para un slice futuro de bug
+  fixes (no bloquea Slice 3).
+- **Commits**: `9811432` (3.1), `4093a87` (3.2), `9b10921` (3.3),
+  `e3e4330` (3.4).
+
+### Slices 0-2 (2026-07-22/23)
+
+Documentados en `sdd/fase-0-auditoria/apply-progress` (Engram):
+- Slice 0: Test runner (`tests/runner/run_all.gd`, `_run_one.gd`).
+- Slice 1: 4 bug fixes HIGH (InputHandler null guard, `ia_defensora.gd`
+  borrado, `mostrar_ruta()` no-op, `_draw()` null guard).
+- Slice 2: Core algorithm tests (Dijkstra, Edmonds-Karp, MinHeap; 70
+  asserts, helper `_graph_builder.gd`).
+
 ## Versión 0.1.0-alpha (2026-07-10)
 
 **Alpha release** — Menú funcional, tutoriales corregidos, feedback visual

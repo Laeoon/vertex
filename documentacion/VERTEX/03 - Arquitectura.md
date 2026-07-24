@@ -68,9 +68,35 @@ Ver: [[09 - Defensa#Event Bus]]
 Ver: [[04 - Mecánicas#Algoritmos]]
 
 ### Lógica de juego
-- **juego_ataque.gd**: Orquestador principal (~1300 líneas)
+- **juego_ataque.gd**: Orquestador principal (~1300 líneas → 1140 tras
+  Fase 0 Slice 3; objetivo ≤700 al cerrar Slices 4-6)
 - **GameRenderer**: Rendering separado de lógica
 - **hacker_mechanics.gd**: Sistema de ruido y exploits
+- **DefenderBrain** (`juego/ataque/defender_brain.gd`): RefCounted con
+  ref `_game`; encapsula todo el modo defensor y emite señales.
+- **AIBlocker** (`juego/ataque/ai_blocker.gd`, Fase 0 Slice 3):
+  RefCounted con ref `_game` (mismo patrón que `DefenderBrain`). Encapsula
+  el turno de la IA bloqueadora del modo ataque. API:
+  - `setup(game)` — inyecta el juego.
+  - `take_turn()` — el viejo `_turno_ia` (procesa perseguidores vía
+    `_game._process_pursuers`, calcula ruta del jugador, bloquea aristas
+    rio abajo evitando aislarlo).
+  - `would_isolate(edge)` — el viejo `_no_aisla_al_jugador` con semántica
+    honesta: `true` SI bloquear `edge` aislaría al jugador del objetivo
+    (el original devolvía `true` cuando NO aisla; al renombrar se invierte
+    el booleano y los call sites usan `not would_isolate(...)`).
+  - `initial_block()` — el bucle de bloqueo inicial que vivía inline en
+    `reset_state`.
+
+  El estado compartido (`blocked_edges`, `runtime`, `_ai_blocks_used`,
+  `max_ai_blocks`, `turn`, `mensaje_estado`) sigue en `juego_ataque.gd`
+  porque también lo usa el modo defensor (vía `DefenderBrain` que llama de
+  vuelta a `_game._block_edge`/`_game._is_blocked`). `AIBlocker` solo
+  aporta la LÓGICA de decisión del turno, no posee estado persistente.
+
+  Equivalencia conductual probada por
+  `tests/ataque/_test_ai_blocker_equivalence.{gd,tscn}` (scene-based,
+  10-turn replay + flip `would_isolate` vs referencia congelada).
 
 ### Presentación
 - **GameRenderer**: HUD en 3 zonas, grid de fondo, hints opcionales
