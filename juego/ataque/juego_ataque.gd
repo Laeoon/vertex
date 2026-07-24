@@ -314,15 +314,6 @@ func _find_node_resource(nid: StringName):
 	return null
 
 
-func _find_spawn_node(detected: StringName, node_res) -> StringName:
-	if node_res != null and node_res.metadata.get("has_firewall", false):
-		return detected
-	for n in graph.nodes:
-		if n != null and n.metadata.get("security_spawn", false):
-			return n.id
-	return detected
-
-
 func mostrar_ruta() -> void:
 	# La visualización de la ruta NO se renderiza automáticamente sobre el
 	# tablero. El jugador puede pedirla explícitamente con [P]
@@ -557,57 +548,6 @@ func _limpiar_bloqueos_expirados() -> void:
 		_unblock_edge(key)
 	if expired.size() > 0:
 		print("  Bloqueos expirados: %d" % expired.size())
-
-
-func _chequear_deteccion() -> void:
-	var node_res = _find_node_resource(player_pos)
-	if node_res == null:
-		return
-	var detect_chance: float = float(node_res.metadata.get("detection_chance", 0.0))
-	if detect_chance <= 0.0:
-		return
-	if randf() > detect_chance:
-		return
-	# Alertado!
-	if alerted_nodes.has(player_pos):
-		return
-	alerted_nodes.append(player_pos)
-	if pursuers.size() < pursuer_max:
-		var spawn_node: StringName = _find_spawn_node(player_pos, node_res)
-		pursuers.append({
-			"id": _pursuer_next_id,
-			"pos": spawn_node,
-			"delay": pursuer_delay,
-			"speed": pursuer_speed,
-			"active": false
-		})
-		_pursuer_next_id += 1
-		print("  ¡ALERTA! %s (roll %.3f <= %.3f) → perseguidor %d en %s" % [
-			player_pos, randf(), detect_chance, _pursuer_next_id - 1, spawn_node])
-	mensaje_estado = "¡Alerta en %s! Seguridad en camino..." % str(player_pos)
-	queue_redraw()
-
-
-func _process_pursuers() -> void:
-	for p in pursuers:
-		if p["delay"] > 0:
-			p["delay"] -= 1
-			if p["delay"] == 0:
-				p["active"] = true
-				print("  Perseguidor %d activado en %s" % [p["id"], p["pos"]])
-			continue
-		if not p["active"]:
-			continue
-		var result: Dictionary = DefensivePathfinder.find_path_with_cost(graph, p["pos"], player_pos, runtime)
-		if not result["reachable"] or result["path"].is_empty():
-			continue
-		var path: Array = result["path"]
-		var steps: int = mini(p["speed"], path.size() - 1)
-		p["pos"] = path[steps]
-		print("  Perseguidor %d → %s" % [p["id"], p["pos"]])
-		if p["pos"] == player_pos:
-			_perder("Capturado por seguridad (perseguidor %d)" % p["id"])
-			return
 
 
 func _reveal_optimal_route() -> void:

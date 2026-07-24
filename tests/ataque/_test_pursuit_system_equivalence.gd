@@ -12,9 +12,10 @@ extends Node
 ## transformación semántica que contrastar bloque-a-bloque. La equivalencia se
 ## prueba entonces con un replay determinista (`seed`) contra un golden
 ## capturado con la lógica ORIGINAL inline, exactamente como la Parte B del
-## slice 3. El flag `USE_PURSUIT_SYSTEM` conmuta entre el camino inline
-## (pre-migración, task 4.2) y el camino extraído (`PursuitSystem`,
-## post-migración task 4.3); el golden debe reproducirse idéntico en ambos.
+## slice 3. Durante 4.2→4.3 un flag `USE_PURSUIT_SYSTEM` conmutaba entre el
+## camino inline y el `PursuitSystem` para verificar que ambos reproducían
+## idéntico el mismo golden; en 4.4 (borrado del inline) se colapsó a una
+## invocación directa que vive en este archivo.
 ##
 ## Escenario (determinista — detección forzada a 1.0): conduce SOLO la lógica
 ## de detección/persecución fijando `player_pos` directamente e invocando
@@ -33,10 +34,10 @@ extends Node
 ##
 ## Recaptura del golden: poner `CAPTURE = true`, correr la escena, copiar el
 ## bloque `=== CAPTURE ===` a `_golden_pasos`, devolver `CAPTURE = false` y
-## re-correr. El golden se captura con `USE_PURSUIT_SYSTEM = false` (inline,
-## HEAD de task 4.2, pre-migración), `seed(42)`, tut3_red con detección
-## forzada. Tras la migración 4.3 (USE=true), la corrida debe reproducir
-## idéntico el golden.
+## re-correr. El golden se capturó originalmente (task 4.2) con la lógica
+## inline via el flag `USE_PURSUIT_SYSTEM=false` (HEAD pre-migración),
+## `seed(42)`, tut3_red con detección forzada; tras la migración 4.3/4.4 la
+## corrida (ya sin inline) debe reproducir idéntico el mismo golden.
 ##
 ## Por qué `_` prefijo + `.tscn`: la prueba instancia `escena_juego.tscn`,
 ## cuyo script raíz referencia autoloads (SceneParams, AudioManager, Events).
@@ -54,11 +55,11 @@ const SEMILLA := 42
 # (regenerar golden). false → afirma contra `_golden_pasos`.
 const CAPTURE := false
 
-# Conmutador de camino de invocación — se edita en la task 4.3.
-# false (pre-migración 4.2): llama al inline `_chequear_deteccion` /
-#   `_process_pursuers` (presentes hasta la task 4.4).
-# true (post-migración 4.3+): llama al `PursuitSystem` cableado en `_ready`.
-var USE_PURSUIT_SYSTEM := true
+# El camino de invocación apunta siempre al `PursuitSystem` cableado en
+# `_ready` desde la task 4.3. El antiguo flag `USE_PURSUIT_SYSTEM` (que
+# conmutaba entre inline y PursuitSystem durante 4.2→4.3) se retiró en la
+# task 4.4 porque el inline `_chequear_deteccion`/`_process_pursuers` fue
+# borrado (mismo patrón que `_test_ai_blocker_equivalence` en slice 3).
 
 var passed: int = 0
 var failed: int = 0
@@ -168,7 +169,7 @@ func _parte_a_replay_deteccion_persecucion() -> void:
 		for s in snapshots:
 			print("\t\"%s\"," % s)
 		print("=== CAPTURE END ===")
-		print("PASS (capture A): %d snapshots impresos — copiar a _golden_pasos y poner CAPTURE=false (USE=%s)" % [snapshots.size(), str(USE_PURSUIT_SYSTEM)])
+		print("PASS (capture A): %d snapshots impresos — copiar a _golden_pasos y poner CAPTURE=false (PursuitSystem)" % [snapshots.size()])
 		passed += 1
 		return
 
@@ -210,17 +211,9 @@ func _parte_b_spawn_pursuer_sanity() -> void:
 	var p: Dictionary = _juego.pursuers[0] if ok_count else {}
 	var ok_struct: bool = ok_count and p["id"] == 7 and p["pos"] == &"DMZ" and int(p["delay"]) == 1 and int(p["speed"]) == 2 and p["active"] == false
 
-	if USE_PURSUIT_SYSTEM and ok_id and ok_count and ok_struct:
+	if ok_id and ok_count and ok_struct:
 		print("PASS B.0 spawn_pursuer custom delay/speed OK")
 		passed += 1
-	elif not USE_PURSUIT_SYSTEM:
-		# Pre-migración (4.2), Parte B no depende del flag USE, corre igual.
-		if ok_id and ok_count and ok_struct:
-			print("PASS B.0 spawn_pursuer custom delay/speed OK")
-			passed += 1
-		else:
-			print("FAIL B.0 spawn_pursuer: next_id=%d count=%d struct_ok=%s" % [_juego._pursuer_next_id, _juego.pursuers.size(), str(ok_struct)])
-			failed += 1
 	else:
 		print("FAIL B.0 spawn_pursuer: next_id=%d count=%d struct_ok=%s" % [_juego._pursuer_next_id, _juego.pursuers.size(), str(ok_struct)])
 		failed += 1
@@ -239,19 +232,11 @@ func _step(player_pos: StringName, lbl: String, out: Array) -> void:
 
 
 func _invoke_check_detection() -> void:
-	if USE_PURSUIT_SYSTEM:
-		_juego._pursuit_system.check_detection(_juego.player_pos)
-	else:
-		_juego._chequear_deteccion()
+	_juego._pursuit_system.check_detection(_juego.player_pos)
 
 
 func _invoke_process_pursuers() -> void:
-	var captured: bool
-	if USE_PURSUIT_SYSTEM:
-		captured = _juego._pursuit_system.process_pursuers(_juego.player_pos)
-	else:
-		_juego._process_pursuers()
-		captured = _juego.game_over  # el inline no devuelve bool; proxy
+	var captured: bool = _juego._pursuit_system.process_pursuers(_juego.player_pos)
 	if captured:
 		_captures += 1
 

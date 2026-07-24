@@ -37,7 +37,8 @@ func _run_tests() -> void:
 		"active": true
 	})
 	inst._mover_jugador(&"Puerta_A")
-	inst._process_pursuers()
+	# fase-0/slice-4: antes inst._process_pursuers() inline (borrado en 4.4).
+	inst._pursuit_system.process_pursuers(inst.player_pos)
 	await get_tree().process_frame
 
 	if inst.game_over and not inst.game_won:
@@ -67,7 +68,10 @@ func _run_tests() -> void:
 	# Player at Inicio, pursuer at Inicio.
 	# Move to Puerta_A -> pursuer follows along Inicio→Puerta_A (1 step) -> capture
 	inst._mover_jugador(&"Puerta_A")
-	inst._process_pursuers()
+	# fase-0/slice-4: antes inst._process_pursuers() inline (borrado en 4.4).
+	# Migrado a la API pública de PursuitSystem (equivalencia probada por
+	# tests/ataque/_test_pursuit_system_equivalence.{gd,tscn}).
+	inst._pursuit_system.process_pursuers(inst.player_pos)
 	await get_tree().process_frame
 
 	if inst.game_over and not inst.game_won:
