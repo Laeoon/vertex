@@ -9,6 +9,7 @@ const InputHandlerClass = preload("res://juego/ataque/input_handler.gd")
 const DefenderBrainClass = preload("res://juego/ataque/defender_brain.gd")
 const AIBlockerClass = preload("res://juego/ataque/ai_blocker.gd")
 const PursuitSystemClass = preload("res://juego/ataque/pursuit_system.gd")
+const ProgressServiceClass = preload("res://juego/ataque/progress_service.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -118,6 +119,7 @@ var _input_handler: InputHandler
 var _defender_brain: DefenderBrain
 var _ai_blocker: AIBlocker
 var _pursuit_system: PursuitSystem
+var _progress_service  # ProgressService — type omitted to avoid class_name resolution order
 var _renderer: GameRendererClass
 
 func _process(_delta: float) -> void:
@@ -182,6 +184,11 @@ func _ready() -> void:
 	# `_pursuit_system.reset()` para limpiar alertas/perseguidores.
 	_pursuit_system = PursuitSystemClass.new()
 	_pursuit_system.setup(self)
+
+	# Servicio de progreso/estrellas (fase-0/slice-5): se inicializa ANTES
+	# de _load_graph() porque _ganar/_perder lo usan para persistir.
+	_progress_service = ProgressServiceClass.new()
+	_progress_service.setup(self)
 
 	_load_graph()
 
