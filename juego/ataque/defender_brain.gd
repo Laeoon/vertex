@@ -57,22 +57,22 @@ func init() -> void:
 	firewall_mode = false
 	calc_enemy_path()
 	message.emit("🛡️ DEFENSOR — Coloca bloqueos en las rutas del atacante")
-	print("  Defensor iniciado. Enemigo en: %s, objetivo: %s" % [enemy_pos, enemy_target_node])
+	Logger.info("DefenderBrain", "Defensor iniciado. Enemigo en: %s, objetivo: %s" % [enemy_pos, enemy_target_node])
 
 	# Análisis estratégico — corte mínimo
 	if _graph != null and enemy_start_node != &"" and enemy_target_node != &"":
 		min_cut_analysis = StrategicAnalyzer.find_min_cut(_graph, enemy_start_node, enemy_target_node)
 		if not min_cut_analysis.is_empty() and not min_cut_analysis["cut_edges"].is_empty():
-			print("  ✂ Corte mínimo: flujo máximo = %.1f, %d aristas sugeridas" % [
+			Logger.debug("DefenderBrain", "Corte mínimo: flujo máximo = %.1f, %d aristas sugeridas" % [
 				min_cut_analysis.get("max_flow", 0.0),
 				min_cut_analysis["cut_edges"].size()
 			])
 			var edge_list: String = ""
 			for ce in min_cut_analysis["cut_edges"]:
 				edge_list += " %s→%s" % [ce["from_id"], ce["to_id"]]
-			print("    Sugeridas:" + edge_list)
+			Logger.debug("DefenderBrain", "Sugeridas:%s" % edge_list)
 		else:
-			print("  Corte mínimo: sin resultados")
+			Logger.debug("DefenderBrain", "Corte mínimo: sin resultados")
 	state_changed.emit()
 
 
@@ -86,11 +86,11 @@ func calc_enemy_path() -> void:
 	var result: Dictionary = DEFENSIVE_PATHFINDER.find_path_with_cost(_graph, enemy_pos, enemy_target_node, _runtime)
 	if result["reachable"] and not result["path"].is_empty():
 		enemy_path = result["path"]
-		print("  Ruta enemiga recalculada: ", enemy_path)
+		Logger.debug("DefenderBrain", "Ruta enemiga recalculada: %s" % str(enemy_path))
 		path_calculated.emit(enemy_pos, enemy_target_node, enemy_path, result.get("cost", 0.0))
 	else:
 		enemy_path.clear()
-		print("  Enemigo sin ruta hacia %s" % str(enemy_target_node))
+		Logger.debug("DefenderBrain", "Enemigo sin ruta hacia %s" % str(enemy_target_node))
 
 
 func block_edge(edge_key: String) -> void:
@@ -156,7 +156,7 @@ func block_edge(edge_key: String) -> void:
 		feedback += " — [Enter] para resolver"
 	if blocks_left <= 5:
 		feedback += " (%d restantes)" % blocks_left
-	print("  🛡️ DEFENSOR bloquea: %s (%d/%d turno, %d totales)" % [edge_key, defender_blocks_placed, defender_blocks_per_turn, defender_blocks_total_used])
+	Logger.debug("DefenderBrain", "DEFENSOR bloquea: %s (%d/%d turno, %d totales)" % [edge_key, defender_blocks_placed, defender_blocks_per_turn, defender_blocks_total_used])
 	selected_edge = edge_key
 	message.emit(feedback)
 	state_changed.emit()
@@ -222,7 +222,7 @@ func move_enemy() -> void:
 			return
 		next_step = result["path"][1] as StringName
 		enemy_path = result["path"]
-	print("  ATACANTE: %s → %s (hacia %s)" % [enemy_pos, next_step, target_check])
+	Logger.debug("DefenderBrain", "ATACANTE: %s → %s (hacia %s)" % [enemy_pos, next_step, target_check])
 	enemy_pos = next_step
 	# Notificar al juego para flash visual
 	if _game.has_method("_on_enemy_moved"):
@@ -290,7 +290,7 @@ func place_firewall(node_id: StringName) -> void:
 		feedback += " — Quedan %d bloqueo(s). [Enter] para resolver" % remaining
 	else:
 		feedback += " — [Enter] para resolver"
-	print("  🧱 FIREWALL en %s: %d aristas bloqueadas permanentemente" % [node_id, edges_blocked])
+	Logger.debug("DefenderBrain", "FIREWALL en %s: %d aristas bloqueadas permanentemente" % [node_id, edges_blocked])
 	message.emit(feedback)
 	state_changed.emit()
 
@@ -356,7 +356,7 @@ func _win(reason: String) -> void:
 	for i in range(3):
 		star_str += "★" if i < stars else "☆"
 	var msg: String = "✅ VICTORIA DEFENSIVA: %s  %s" % [reason, star_str]
-	print("🏆 VICTORIA DEFENSIVA: ", reason, " | estrellas: ", stars)
+	Logger.info("DefenderBrain", "VICTORIA DEFENSIVA: %s | estrellas: %d" % [reason, stars])
 	defender_won.emit(reason, stars)
 	message.emit(msg)
 	state_changed.emit()
@@ -364,7 +364,7 @@ func _win(reason: String) -> void:
 
 func _lose(reason: String) -> void:
 	var msg: String = "DERROTA: %s" % reason
-	print("💀 DERROTA: ", reason)
+	Logger.info("DefenderBrain", "DERROTA: %s" % reason)
 	defender_lost.emit(reason)
 	message.emit(msg)
 	state_changed.emit()

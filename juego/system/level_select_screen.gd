@@ -173,6 +173,3 @@ func _draw_nodes(vp: Vector2) -> void:
 
 func _draw_back_hint(vp: Vector2) -> void:
 	draw_string(font, Vector2(60, vp.y - 30), "[ESC] Volver al menú  |  [Enter] Jugar nivel seleccionado", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.45, 0.5, 0.6))
-
-
-

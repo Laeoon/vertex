@@ -197,9 +197,9 @@ func _ready() -> void:
 
 	if defender_mode and not game_over:
 		_init_defender_mode()
-		print("🛡️ MODO DEFENSOR activado")
-		print("  Enemigo: %s → %s" % [enemy_start_node, enemy_target_node])
-		print("  Bloques/turno: %d, Duración: %d" % [defender_blocks_per_turn, defender_block_duration])
+		Logger.info("JuegoAtaque", "MODO DEFENSOR activado")
+		Logger.info("JuegoAtaque", "Enemigo: %s → %s" % [enemy_start_node, enemy_target_node])
+		Logger.info("JuegoAtaque", "Bloques/turno: %d, Duración: %d" % [defender_blocks_per_turn, defender_block_duration])
 
 
 func _load_graph() -> void:
@@ -289,10 +289,10 @@ func reset_state() -> void:
 			_init_defender_mode()
 	else:
 		mensaje_estado = "Tu turno: haz clic en un vecino para moverte"
-	print("--- %s ---" % titulo_nivel)
-	print("Inicio: %s, Meta: %s" % [start_node, target_node])
+	Logger.info("JuegoAtaque", "--- %s ---" % titulo_nivel)
+	Logger.info("JuegoAtaque", "Inicio: %s, Meta: %s" % [start_node, target_node])
 	if not waypoints.is_empty():
-		print("Waypoints: ", waypoints)
+		Logger.info("JuegoAtaque", "Waypoints: %s" % str(waypoints))
 		mensaje_estado = "Ve hacia %s" % _target_actual()
 
 	# Bloqueo inicial de la IA si está configurado (fase-0/slice-3):
@@ -416,12 +416,12 @@ func _mover_jugador(destino: StringName) -> void:
 	if _is_blocked(edge_key):
 		# Si el destino tiene persist activa, ignorar bloqueo
 		if hacker_mode and hacker_state.get("active_persists", {}).has(str(destino)):
-			print("  ♻ Persist activo en %s — ignorando bloqueo" % str(destino))
+			Logger.debug("JuegoAtaque", "Persist activo en %s — ignorando bloqueo" % str(destino))
 		else:
 			return
 
 	mensaje_estado = ""
-	print("[Turno %d] Jugador: %s → %s" % [turn + 1, player_pos, destino])
+	Logger.debug("JuegoAtaque", "[Turno %d] Jugador: %s → %s" % [turn + 1, player_pos, destino])
 
 	var edge_cost: float = 0.0
 	for e in graph.edges:
@@ -457,7 +457,7 @@ func _mover_jugador(destino: StringName) -> void:
 			if player_pos == next:
 				_ganar()
 				return
-			print("  Waypoint %s alcanzado! Siguiente: %s" % [target_check, next])
+			Logger.info("JuegoAtaque", "Waypoint %s alcanzado! Siguiente: %s" % [target_check, next])
 			mensaje_estado = "Waypoint alcanzado! Ve hacia %s" % next
 			mostrar_ruta()
 			queue_redraw()
@@ -480,7 +480,7 @@ func _mover_jugador(destino: StringName) -> void:
 		if hacker_state.get("active_persists", {}).is_empty():
 			HackerMechanicsClass.decay_noise(hacker_state)
 		else:
-			print("  ♻ Persist activo — decay de ruido suspendido")
+			Logger.debug("JuegoAtaque", "Persist activo — decay de ruido suspendido")
 
 	# Revisar consecuencias de ruido/persists cada turno
 	if hacker_mode:
@@ -556,7 +556,7 @@ func _limpiar_bloqueos_expirados() -> void:
 			Events.node_state_changed.emit(parts[1] as StringName, 1, 0)
 		_unblock_edge(key)
 	if expired.size() > 0:
-		print("  Bloqueos expirados: %d" % expired.size())
+		Logger.debug("JuegoAtaque", "Bloqueos expirados: %d" % expired.size())
 
 
 func _reveal_optimal_route() -> void:
@@ -590,7 +590,7 @@ func _ganar() -> void:
 	for i in range(3):
 		star_str += "★" if i < stars else "☆"
 	mensaje_estado = "GANASTE! Llegaste a %s en %d turnos  %s" % [target, turn, star_str]
-	print("🏆 VICTORIA en turno ", turn, " | estrellas: ", stars, " | coste: ", player_total_cost)
+	Logger.info("JuegoAtaque", "VICTORIA en turno %d | estrellas: %d | coste: %.1f" % [turn, stars, player_total_cost])
 	queue_redraw()
 
 
@@ -600,7 +600,7 @@ func _perder(razon: String) -> void:
 	game_won = false
 	AudioManager.play_sfx("lose")
 	mensaje_estado = "PERDISTE: %s" % razon
-	print("💀 DERROTA: ", razon)
+	Logger.info("JuegoAtaque", "DERROTA: %s" % razon)
 	# Track pérdida en estadísticas (fase-0/slice-5: migrado a ProgressService)
 	_progress_service.record_loss()
 	queue_redraw()
@@ -897,7 +897,7 @@ func _scan_selected_node() -> void:
 	var type_label: String = result.get("node_type", "unknown")
 	var hint: String = result.get("exploit_hint", "")
 	mensaje_estado = "ESCANEADO %s → %s | %s" % [str(selected_neighbor), type_label.to_upper(), hint]
-	print("  [SCAN] %s: %s — %s" % [str(selected_neighbor), type_label, hint])
+	Logger.debug("JuegoAtaque", "[SCAN] %s: %s — %s" % [str(selected_neighbor), type_label, hint])
 	queue_redraw()
 
 
@@ -968,7 +968,7 @@ func _use_hacker_exploit(exploit_type: String) -> void:
 			hacker_state["active_persists"][node_key] = 3
 			mensaje_estado = "♻ Persistencia activa en %s por 3 turnos" % str(selected_neighbor)
 	mensaje_estado = "%s %s aplicado en %s (ruido: %d)" % [result.get("icon", ""), result.get("name", ""), str(selected_neighbor), hacker_state.get("noise", 0)]
-	print("  [EXPLOIT] %s en %s — ruido: %d" % [exploit_type, str(selected_neighbor), hacker_state.get("noise", 0)])
+	Logger.debug("JuegoAtaque", "[EXPLOIT] %s en %s — ruido: %d" % [exploit_type, str(selected_neighbor), hacker_state.get("noise", 0)])
 	_check_hacker_consequences()
 	queue_redraw()
 
@@ -983,7 +983,7 @@ func _check_hacker_consequences() -> void:
 				expired.append(node_key)
 		for node_key: String in expired:
 			hacker_state["active_persists"].erase(node_key)
-			print("  ♻ Persist expirado en %s" % node_key)
+			Logger.debug("JuegoAtaque", "Persist expirado en %s" % node_key)
 
 	var alert_level: String = HackerMechanicsClass.get_alert_level(hacker_state)
 	match alert_level:

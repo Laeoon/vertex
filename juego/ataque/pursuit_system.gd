@@ -88,7 +88,7 @@ func check_detection(player_pos: StringName) -> void:
 		spawn_pursuer(spawn_node, _game.pursuer_delay, _game.pursuer_speed)
 		# El print original llama `randf()` de nuevo para mostrar el roll —
 		# se conserva verbatim para no alterar el flujo del RNG.
-		print("  ¡ALERTA! %s (roll %.3f <= %.3f) → perseguidor %d en %s" % [
+		Logger.debug("PursuitSystem", "¡ALERTA! %s (roll %.3f <= %.3f) → perseguidor %d en %s" % [
 			player_pos, randf(), detect_chance, _game._pursuer_next_id - 1, spawn_node])
 	_game.mensaje_estado = "¡Alerta en %s! Seguridad en camino..." % str(player_pos)
 	_game.queue_redraw()
@@ -105,7 +105,7 @@ func process_pursuers(player_pos: StringName) -> bool:
 			p["delay"] -= 1
 			if p["delay"] == 0:
 				p["active"] = true
-				print("  Perseguidor %d activado en %s" % [p["id"], p["pos"]])
+				Logger.debug("PursuitSystem", "Perseguidor %d activado en %s" % [p["id"], p["pos"]])
 			continue
 		if not p["active"]:
 			continue
@@ -115,7 +115,7 @@ func process_pursuers(player_pos: StringName) -> bool:
 		var path: Array = result["path"]
 		var steps: int = mini(p["speed"], path.size() - 1)
 		p["pos"] = path[steps]
-		print("  Perseguidor %d → %s" % [p["id"], p["pos"]])
+		Logger.debug("PursuitSystem", "Perseguidor %d → %s" % [p["id"], p["pos"]])
 		if p["pos"] == player_pos:
 			_game._perder("Capturado por seguridad (perseguidor %d)" % p["id"])
 			return true

@@ -45,7 +45,7 @@ func cycle_locale() -> void:
 func _apply_locale(locale: String) -> void:
 	_current_locale = locale
 	_translations = _load_file("res://core/locale/%s.json" % locale)
-	print("Locale: ", locale)
+	Logger.info("LocaleManager", "Locale aplicado: %s" % locale)
 
 
 func _load_file(path: String) -> Dictionary:
