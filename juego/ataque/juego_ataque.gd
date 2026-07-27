@@ -584,8 +584,8 @@ func _ganar() -> void:
 	game_won = true
 	AudioManager.play_sfx("win")
 	var target: StringName = _target_actual()
-	var stars: int = _calcular_estrellas()
-	_guardar_progreso(stars)
+	var stars: int = _progress_service.calculate_stars()
+	_progress_service.save(stars)
 	var star_str: String = ""
 	for i in range(3):
 		star_str += "★" if i < stars else "☆"
@@ -686,16 +686,8 @@ func _perder(razon: String) -> void:
 	AudioManager.play_sfx("lose")
 	mensaje_estado = "PERDISTE: %s" % razon
 	print("💀 DERROTA: ", razon)
-	# Track pérdida en estadísticas
-	var stats_cfg := ConfigFile.new()
-	stats_cfg.load("user://stats.cfg")
-	var losses: int = stats_cfg.get_value("stats", "total_losses", 0)
-	stats_cfg.set_value("stats", "total_losses", losses + 1)
-	var key: String = _level_key()
-	var level_losses: int = stats_cfg.get_value("levels", key + "_losses", 0)
-	stats_cfg.set_value("levels", key + "_losses", level_losses + 1)
-	stats_cfg.set_value("stats", "total_attempts", stats_cfg.get_value("stats", "total_attempts", 0) + 1)
-	stats_cfg.save("user://stats.cfg")
+	# Track pérdida en estadísticas (fase-0/slice-5: migrado a ProgressService)
+	_progress_service.record_loss()
 	queue_redraw()
 
 
@@ -801,7 +793,7 @@ func _on_brain_defender_won(reason: String, stars: int) -> void:
 	_game_over_time = Time.get_ticks_msec() / 1000.0
 	game_won = true
 	AudioManager.play_sfx("win")
-	_guardar_progreso(stars)
+	_progress_service.save(stars)
 	queue_redraw()
 
 
@@ -951,7 +943,7 @@ func _draw() -> void:
 		r.draw_tutorial_highlights(tutorial_player, node_positions, node_radius)
 
 	if game_over:
-		var stars: int = _defender_brain.calcular_estrellas() if defender_mode and _defender_brain != null else _calcular_estrellas()
+		var stars: int = _defender_brain.calcular_estrellas() if defender_mode and _defender_brain != null else _progress_service.calculate_stars()
 		if defender_mode:
 			r.draw_defender_game_over(vp_size, game_won, mensaje_estado, stars, _game_over_time)
 		else:
