@@ -9,6 +9,7 @@ signal state_changed()
 signal path_calculated(from: StringName, to: StringName, path: Array[StringName], cost: float)
 
 const DEFENSIVE_PATHFINDER = preload("res://core/agents/defensive_pathfinder.gd")
+const StrategicAnalyzer = preload("res://core/agents/strategic_analyzer.gd")
 
 # ─── Estado defensor ──────────────────────────────────────────────
 var firewall_cost: int = 2  # Costo de firewall (configurable por nivel)
@@ -83,7 +84,7 @@ func calc_enemy_path() -> void:
 	if enemy_pos == enemy_target_node:
 		enemy_path.clear()
 		return
-	var result: Dictionary = DEFENSIVE_PATHFINDER.find_path_with_cost(_graph, enemy_pos, enemy_target_node, _runtime)
+	var result: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, enemy_target_node, _runtime)
 	if result["reachable"] and not result["path"].is_empty():
 		enemy_path = result["path"]
 		GameLogger.debug("DefenderBrain", "Ruta enemiga recalculada: %s" % str(enemy_path))
@@ -132,7 +133,7 @@ func block_edge(edge_key: String) -> void:
 	defender_blocks_total_used += 1
 
 	# Verificar aislamiento
-	var iso: Dictionary = DEFENSIVE_PATHFINDER.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
+	var iso: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
 	if not iso["reachable"] or iso["path"].is_empty():
 		_win("¡Aislamiento total! Bloqueaste TODAS las rutas hacia %s" % str(target_check))
 		return
@@ -208,7 +209,7 @@ func move_enemy() -> void:
 	if enemy_pos == &"":
 		return
 	var target_check: StringName = enemy_target_node if enemy_target_node != &"" else _game.target_node
-	var result: Dictionary = DEFENSIVE_PATHFINDER.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
+	var result: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
 	if not result["reachable"] or result["path"].is_empty() or result["path"].size() < 2:
 		_win("Atacante sin ruta hacia %s!" % target_check)
 		return
@@ -216,7 +217,7 @@ func move_enemy() -> void:
 	var next_step: StringName = result["path"][1] as StringName
 	var edge_key: String = "%s→%s" % [enemy_pos, next_step]
 	if _is_blocked(edge_key):
-		result = DEFENSIVE_PATHFINDER.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
+		result = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
 		if not result["reachable"] or result["path"].is_empty() or result["path"].size() < 2:
 			_win("Atacante sin ruta hacia %s!" % target_check)
 			return
@@ -277,7 +278,7 @@ func place_firewall(node_id: StringName) -> void:
 	defender_blocks_total_used += firewall_cost
 
 	var actual_target: StringName = enemy_target_node if enemy_target_node != &"" else _game.target_node
-	var iso: Dictionary = DEFENSIVE_PATHFINDER.find_path_with_cost(_graph, enemy_pos, actual_target, _runtime)
+	var iso: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, actual_target, _runtime)
 	if not iso["reachable"] or iso["path"].is_empty():
 		_win("¡Firewall estratégico! Aislaste al atacante de %s" % str(actual_target))
 		return

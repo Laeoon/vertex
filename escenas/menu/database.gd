@@ -97,14 +97,6 @@ func _get_max_scroll() -> float:
 	return 0.0
 
 
-func loc(key: String) -> String:
-	var tree := get_tree()
-	if tree != null and tree.has_group("locale_manager"):
-		var nodes := tree.get_nodes_in_group("locale_manager")
-		if nodes.size() > 0:
-			return nodes[0].loc(key)
-	return key
-
 
 func _draw() -> void:
 	var vp := get_viewport_rect().size
