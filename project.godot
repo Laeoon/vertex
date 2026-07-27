@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Logger="*res://core/autoloads/logger.gd"
 Events="*res://core/autoloads/events.gd"
 SceneParams="*res://core/autoloads/scene_params.gd"
 LocaleManager="*res://core/locale/locale_manager.tscn"
