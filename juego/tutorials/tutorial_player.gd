@@ -88,7 +88,7 @@ func load_tutorial(path: String) -> bool:
 	_panel_alpha = 0.0
 	_target_alpha = 1.0
 
-	print("Tutorial cargado: %s (%d pasos)" % [tutorial_data.get("id", "?"), steps.size()])
+	Logger.info("TutorialPlayer", "Tutorial cargado: %s (%d pasos)" % [tutorial_data.get("id", "?"), steps.size()])
 	return true
 
 
@@ -104,7 +104,7 @@ func skip() -> void:
 	var tid: String = tutorial_data.get("id", "")
 	_finish_tutorial()
 	tutorial_skipped.emit(tid)
-	print("Tutorial saltado: ", tid)
+	Logger.info("TutorialPlayer", "Tutorial saltado: %s" % tid)
 
 
 func advance() -> void:
@@ -182,7 +182,7 @@ func _advance_to_step(idx: int) -> void:
 	_target_alpha = 1.0
 
 	step_changed.emit(idx, step)
-	print("Tutorial paso %d/%d: %s" % [idx + 1, steps.size(), step.get("id", "?")])
+	Logger.info("TutorialPlayer", "Tutorial paso %d/%d: %s" % [idx + 1, steps.size(), step.get("id", "?")])
 
 
 func _finish_tutorial() -> void:
@@ -198,7 +198,7 @@ func _finish_tutorial() -> void:
 		is_paused_by_tutorial = false
 
 	tutorial_completed.emit(tid)
-	print("Tutorial completado: ", tid)
+	Logger.info("TutorialPlayer", "Tutorial completado: %s" % tid)
 
 	await get_tree().create_timer(0.3).timeout
 	visible = false
