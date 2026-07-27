@@ -96,6 +96,7 @@ var _node_cache: Dictionary = {}  # n.id → NodeResource (cache O(1))
 var firewall_cost: int = 2  # Block resources to place one node firewall
 
 var block_duration: int = 3
+var level_key: String = ""
 const DEFENDER_PHASE_ATTACK: String = "defense"
 const DEFENDER_PHASE_RESOLVE: String = "resolve"
 const DEFENDER_PHASE_WAIT: String = "wait"
@@ -160,6 +161,7 @@ func _ready() -> void:
 	pursuer_delay = SceneParams.pursuer_delay
 	pursuer_max = SceneParams.max_pursuers
 	pursuer_speed = SceneParams.pursuer_speed
+	level_key = SceneParams.level_key
 
 	# Cachear renderer (no crear new cada frame)
 	_renderer = GameRendererClass.new(self, font, font_size, big_font_size, small_font_size, tiny_font_size)
