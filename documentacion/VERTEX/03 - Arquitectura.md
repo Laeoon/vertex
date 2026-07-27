@@ -155,6 +155,23 @@ Ver: [[04 - Mecánicas#Algoritmos]]
   4 aserciones de star count (movement_points mode: 3/2/1 stars + cost_ratio
   mode) + 10 aserciones de round-trip de archivo (save → lectura directa
   de ConfigFile, verificación de overwrite rules, record_loss, load_all).
+- **ProgressUtil** (`juego/utils/progress_util.gd`, Fase 0 Slice 6):
+  RefCounted con funciones estáticas para cargar progreso del jugador.
+  Consolida `_cargar_progreso()` duplicado en `main_menu.gd`,
+  `tutorials_menu.gd`, `level_select_screen.gd` y `database.gd`. API:
+  - `cargar_progreso() -> Dictionary` (static) — carga `{level_key:
+    estrellas}` de `user://progress.cfg`.
+  - `get_stars(level_key) -> int` (static) — obtiene estrellas de un
+    nivel específico.
+  - `cargar_misiones(missions)` (static) — pobla un array de misiones
+    con `stars`/`completed` (usado por `database.gd`).
+- **LocUtil** (`juego/utils/loc_util.gd`, Fase 0 Slice 6):
+  RefCounted con funciones estáticas para localización. Consolida `loc()`
+  duplicado en 5 archivos de menú. API:
+  - `loc(node, key) -> String` (static) — traduce clave vía
+    LocaleManager (requiere Node para acceder al SceneTree).
+  - `set_locale(node, lang)` (static) — cambia locale activo.
+  - `get_manager(node)` (static) — devuelve LocaleManager o null.
 
 ### Presentación
 - **GameRenderer**: HUD en 3 zonas, grid de fondo, hints opcionales

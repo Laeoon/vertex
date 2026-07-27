@@ -12,7 +12,42 @@ tags:
 ## Fase 0 — Auditoría y Estabilización (SDD, 2026-07-23, en curso)
 
 Cambio SDD `fase-0-auditoria` — 10 slices encadenados (stacked-to-main) para
-estabilizar el simulador. Avance: Slices 0-5 completados (22/39 tareas).
+estabilizar el simulador. Avance: Slices 0-6 completados (26/39 tareas).
+
+### Slice 6 — Consolidar utilidades duplicadas (2026-07-27)
+
+- **Agregado**: `juego/utils/progress_util.gd` (51 líneas) — `class_name
+  ProgressUtil extends RefCounted` con funciones estáticas para cargar
+  progreso del jugador. API: `cargar_progreso() -> Dictionary` (carga
+  `{level_key: estrellas}` de `user://progress.cfg`), `get_stars(level_key)
+  -> int`, `cargar_misiones(missions)` (pobla array con stars/completed).
+- **Agregado**: `juego/utils/loc_util.gd` (45 líneas) — `class_name LocUtil
+  extends RefCounted` con funciones estáticas para localización. API:
+  `loc(node, key) -> String` (traduce clave vía LocaleManager),
+  `set_locale(node, lang)`, `get_manager(node)`.
+- **Modificado**: 6 archivos migrados a utilidades compartidas:
+  - `escenas/main_menu.gd`: `_cargar_progreso()` → `ProgressUtil
+    .cargar_progreso()`, `loc()` → `LocUtil.loc()`, eliminado
+    `_get_locale_manager()`.
+  - `escenas/main_menu/tutorials_menu.gd`: `_cargar_progreso()` →
+    `ProgressUtil.cargar_progreso()`, `loc()` → `LocUtil.loc()`.
+  - `juego/system/level_select_screen.gd`: `_cargar_progreso()` →
+    `ProgressUtil.cargar_progreso()`.
+  - `escenas/menu/database.gd`: `_load_progress()` → `ProgressUtil
+    .cargar_misiones()`, `loc()` → `LocUtil.loc()`.
+  - `escenas/menu/profile.gd`: `loc()` → `LocUtil.loc()`.
+  - `escenas/menu/options.gd`: `loc()` → `LocUtil.loc()`, acceso directo
+    a locale_manager → `LocUtil.set_locale()`.
+- **Eliminado**: código duplicado de `_cargar_progreso()` (3 copias),
+  `_load_progress()` (1 copia), `loc()` (5 copias), `_get_locale_manager()`
+  (1 copia). Reducción neta: −75 líneas.
+- **Commits**:
+  - `f5dcaf2` refactor(utils): crear ProgressUtil compartido
+  - `e415750` refactor(utils): crear LocUtil compartido
+  - `eca3c09` refactor: migrar call sites a utilidades compartidas
+- **Verificación**: `run_all.gd` 6/6 verde (84+ aserciones). Sin
+  regresiones.
+- **Issues**: Ninguno.
 
 ### Slice 5 — Extraer persistencia de progreso y estrellas a `ProgressService` (2026-07-26)
 
