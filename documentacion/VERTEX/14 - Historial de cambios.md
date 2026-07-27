@@ -12,7 +12,41 @@ tags:
 ## Fase 0 — Auditoría y Estabilización (SDD, 2026-07-23, en curso)
 
 Cambio SDD `fase-0-auditoria` — 10 slices encadenados (stacked-to-main) para
-estabilizar el simulador. Avance: Slices 0-6 completados (26/39 tareas).
+estabilizar el simulador. Avance: Slices 0-7 completados (30/39 tareas).
+
+### Slice 7 — Sistema de logging estructurado (2026-07-27)
+
+- **Agregado**: `core/autoloads/logger.gd` (70 líneas) — Autoload singleton
+  `Logger` con niveles de log (DEBUG, INFO, WARN, ERROR). API: `debug()`,
+  `info()`, `warn()`, `error()`. Formato: `[LEVEL] [Module] message`. Nivel
+  por defecto: DEBUG en debug builds, INFO en release. Configurable vía
+  `set_level(level)`.
+- **Modificado**: `project.godot` — Logger agregado como primer autoload
+  (antes de Events) para disponibilidad universal.
+- **Migrado**: ~55 `print()` reemplazados por llamadas a Logger en código
+  de producción:
+  - `core/locale/locale_manager.gd`: 1 print → Logger.info (LocaleManager).
+  - `juego/ataque/ai_blocker.gd`: 5 prints → Logger.debug (AIBlocker).
+  - `juego/ataque/defender_brain.gd`: 11 prints → Logger.debug/info
+    (DefenderBrain).
+  - `juego/ataque/juego_ataque.gd`: 16 prints → Logger.debug/info
+    (JuegoAtaque).
+  - `juego/ataque/progress_service.gd`: 2 prints → Logger.error/info
+    (ProgressService).
+  - `juego/ataque/pursuit_system.gd`: 3 prints → Logger.debug
+    (PursuitSystem).
+  - `juego/tutorials/tutorial_player.gd`: 4 prints → Logger.info
+    (TutorialPlayer).
+- **No migrado**: `print()` en archivos de test (`test_*.gd`, `_test_*.gd`,
+  `run_all.gd`) — output intencional del runner de pruebas.
+- **Commits**:
+  - `af76308` feat(core): crear Logger autoload con niveles de log
+  - `09d7376` chore: configurar Logger en autoloads
+  - `479066f` refactor: migrar print() a Logger en core y juego/ataque
+  - `857d740` refactor: migrar print() a Logger en tutoriales
+- **Verificación**: Todos los prints de producción migrados. Solo queda
+  `print()` en logger.gd (implementación) y archivos de test (intencional).
+- **Issues**: Ninguno.
 
 ### Slice 6 — Consolidar utilidades duplicadas (2026-07-27)
 

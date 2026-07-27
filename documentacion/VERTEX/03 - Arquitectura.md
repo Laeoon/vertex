@@ -57,6 +57,15 @@ Ver: [[04 - Mecánicas#Pesos duales]]
   - **Emisores**: juego_ataque.gd, network_node.gd, reactive_analyzer.gd, reactive_pathfinder.gd
   - **Consumidores**: Solo wrappers reactivos (Hito 5) y sandboxes de test. El UI no consume eventos (diseño actual: datos directos al renderer)
 - **FSM**: Estados DISPONIBLE → ALERTADO → CAPTURADO por nodo
+- **Logger** (`core/autoloads/logger.gd`, Fase 0 Slice 7): Autoload singleton
+  para logging estructurado. API:
+  - `debug(module, message)` — información detallada para desarrollo.
+  - `info(module, message)` — operación normal del sistema.
+  - `warn(module, message)` — problemas recuperables.
+  - `error(module, message)` — fallos que requieren atención.
+  - Formato de salida: `[LEVEL] [Module] message`.
+  - Nivel por defecto: DEBUG en debug builds, INFO en release.
+  - Configurable vía `set_level(level)`.
 
 Ver: [[09 - Defensa#Event Bus]]
 
