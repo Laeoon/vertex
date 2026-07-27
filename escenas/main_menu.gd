@@ -43,7 +43,7 @@ func _ready() -> void:
 	]
 
 	_load_lang_setting()
-	progress = _cargar_progreso()
+	progress = ProgressUtil.cargar_progreso()
 	queue_redraw()
 
 
@@ -133,27 +133,13 @@ func _cycle_lang(dir: int) -> void:
 	_lang_idx = (_lang_idx + dir) % _lang_options.size()
 	if _lang_idx < 0:
 		_lang_idx = _lang_options.size() - 1
-	var locale_manager = _get_locale_manager()
-	if locale_manager:
-		locale_manager.set_locale(_lang_options[_lang_idx])
+	LocUtil.set_locale(self, _lang_options[_lang_idx])
 	_save_lang_setting()
 	_refresh_texts()
 
 
-func _get_locale_manager():
-	var tree := get_tree()
-	if tree.has_group("locale_manager"):
-		var nodes := tree.get_nodes_in_group("locale_manager")
-		if nodes.size() > 0:
-			return nodes[0]
-	return null
-
-
 func loc(key: String) -> String:
-	var lm = _get_locale_manager()
-	if lm:
-		return lm.loc(key)
-	return key
+	return LocUtil.loc(self, key)
 
 
 func _refresh_texts() -> void:
@@ -182,9 +168,7 @@ func _load_lang_setting() -> void:
 		_lang_idx = _lang_options.find(saved)
 		if _lang_idx < 0:
 			_lang_idx = 0
-		var lm = _get_locale_manager()
-		if lm:
-			lm.set_locale(_lang_options[_lang_idx])
+		LocUtil.set_locale(self, _lang_options[_lang_idx])
 
 
 func _save_lang_setting() -> void:
@@ -194,17 +178,7 @@ func _save_lang_setting() -> void:
 	cfg.save("user://settings.cfg")
 
 
-func _cargar_progreso() -> Dictionary:
-	var cfg := ConfigFile.new()
-	var err := cfg.load("user://progress.cfg")
-	if err != OK:
-		return {}
-	var result: Dictionary = {}
-	for k in cfg.get_section_keys("estrellas"):
-		if k.ends_with("_mejor_coste"):
-			continue
-		result[k] = cfg.get_value("estrellas", k, 0)
-	return result
+
 
 
 func _draw() -> void:

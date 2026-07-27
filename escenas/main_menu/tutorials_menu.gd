@@ -31,7 +31,7 @@ func _ready() -> void:
 			"desc": "Aprende a proteger nodos críticos bloqueando rutas enemigas"},
 	]
 
-	progress = _cargar_progreso()
+	progress = ProgressUtil.cargar_progreso()
 	queue_redraw()
 
 
@@ -159,26 +159,8 @@ func _launch(key: StringName) -> void:
 	SceneTransition.fade_to_scene("res://juego/ataque/escena_juego.tscn")
 
 
-func _cargar_progreso() -> Dictionary:
-	var cfg: ConfigFile = ConfigFile.new()
-	var err: int = cfg.load("user://progress.cfg")
-	if err != OK:
-		return {}
-	var result: Dictionary = {}
-	for k in cfg.get_section_keys("estrellas"):
-		if k.ends_with("_mejor_coste"):
-			continue
-		result[k] = cfg.get_value("estrellas", k, 0)
-	return result
-
-
 func loc(key: String) -> String:
-	var tree := get_tree()
-	if tree.has_group("locale_manager"):
-		var nodes := tree.get_nodes_in_group("locale_manager")
-		if nodes.size() > 0:
-			return nodes[0].loc(key)
-	return key
+	return LocUtil.loc(self, key)
 
 
 func _draw() -> void:

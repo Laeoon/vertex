@@ -145,11 +145,7 @@ func _apply_graphics(id: String, value: bool) -> void:
 func _apply_language(idx: int) -> void:
 	var _langs: Array[String] = ["es", "en", "pt"]
 	var lang: String = _langs[idx]
-	var tree := get_tree()
-	if tree != null and tree.has_group("locale_manager"):
-		var nodes := tree.get_nodes_in_group("locale_manager")
-		if nodes.size() > 0:
-			nodes[0].set_locale(lang)
+	LocUtil.set_locale(self, lang)
 
 
 func _save_settings() -> void:
@@ -183,12 +179,7 @@ func _load_settings() -> void:
 
 
 func loc(key: String) -> String:
-	var tree := get_tree()
-	if tree != null and tree.has_group("locale_manager"):
-		var nodes := tree.get_nodes_in_group("locale_manager")
-		if nodes.size() > 0:
-			return nodes[0].loc(key)
-	return key
+	return LocUtil.loc(self, key)
 
 
 func _draw() -> void:

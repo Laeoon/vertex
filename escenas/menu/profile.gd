@@ -187,12 +187,7 @@ func _load_stats() -> void:
 
 
 func loc(key: String) -> String:
-	var tree := get_tree()
-	if tree != null and tree.has_group("locale_manager"):
-		var nodes := tree.get_nodes_in_group("locale_manager")
-		if nodes.size() > 0:
-			return nodes[0].loc(key)
-	return key
+	return LocUtil.loc(self, key)
 
 
 func _format_time(seconds: int) -> String:

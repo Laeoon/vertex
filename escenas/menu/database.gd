@@ -43,19 +43,12 @@ func _ready() -> void:
 	font = ThemeDB.fallback_font
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
-	_load_progress()
+	ProgressUtil.cargar_misiones(missions)
 	queue_redraw()
 
 
-func _load_progress() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load("user://progress.cfg") != OK:
-		return
-	for i in missions.size():
-		var key: String = missions[i]["id"]
-		var stars: int = cfg.get_value("estrellas", key, 0)
-		missions[i]["stars"] = stars
-		missions[i]["completed"] = stars > 0
+func loc(key: String) -> String:
+	return LocUtil.loc(self, key)
 
 
 func _input(event: InputEvent) -> void:

@@ -23,7 +23,7 @@ func _ready() -> void:
 	var sp = get_node_or_null("/root/SceneParams")
 	if sp:
 		world_id = sp.titulo_nivel
-	progress = _cargar_progreso()
+	progress = ProgressUtil.cargar_progreso()
 	_load_world_data()
 	queue_redraw()
 
@@ -175,14 +175,4 @@ func _draw_back_hint(vp: Vector2) -> void:
 	draw_string(font, Vector2(60, vp.y - 30), "[ESC] Volver al menú  |  [Enter] Jugar nivel seleccionado", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.45, 0.5, 0.6))
 
 
-func _cargar_progreso() -> Dictionary:
-	var cfg: ConfigFile = ConfigFile.new()
-	var err: int = cfg.load("user://progress.cfg")
-	if err != OK:
-		return {}
-	var result: Dictionary = {}
-	for k in cfg.get_section_keys("estrellas"):
-		if k.ends_with("_mejor_coste"):
-			continue
-		result[k] = cfg.get_value("estrellas", k, 0)
-	return result
+
