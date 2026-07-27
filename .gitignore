@@ -49,3 +49,6 @@ openspec/
 .gga
 .mimocode/
 .mimoignore
+
+# Personal addon (not tracked in this repo)
+addons/ziva_agent/
