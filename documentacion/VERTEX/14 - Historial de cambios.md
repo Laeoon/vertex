@@ -12,7 +12,30 @@ tags:
 ## Fase 0 — Auditoría y Estabilización (SDD, 2026-07-23, en curso)
 
 Cambio SDD `fase-0-auditoria` — 10 slices encadenados (stacked-to-main) para
-estabilizar el simulador. Avance: Slices 0-7 completados (30/39 tareas).
+estabilizar el simulador. Avance: Slices 0-8 completados (33/39 tareas).
+
+### Slice 8 — SceneParams Validation (2026-07-27)
+
+- **Modificado**: `core/autoloads/scene_params.gd` (63 → 183 líneas) —
+  Añadida validación de tipos y rangos con setters:
+  - 12 propiedades numéricas con `clampi()`: `ai_block_per_turn` (0-10),
+    `max_ai_blocks` (0-9999), `max_turns` (0-1000), `max_movement_points`
+    (0-100), `defender_blocks_per_turn` (0-20), `defender_block_duration`
+    (1-100), `defender_max_blocks` (0-9999), `firewall_cost` (1-100),
+    `block_duration` (1-100), `pursuer_delay` (0-50), `max_pursuers` (1-20),
+    `pursuer_speed` (1-10).
+  - 2 propiedades de string con validación no-vacío: `graph_path`, `level_key`.
+  - 1 propiedad de string opcional (acepta vacío): `tutorial_path`.
+  - `GameLogger.warn()` cuando se clampea un valor fuera de rango.
+  - `reset()` mantiene acceso directo para evitar validación innecesaria.
+- **Agregado**: `tests/core/test_scene_params_validation.gd` (378 líneas) —
+  82 aserciones: 12 tests de rangos numéricos (min, max, clamp), 3 tests de
+  strings, 1 test de reset().
+- **Commits**:
+  - `3fd72be` refactor(scene-params): añadir validación de tipos y rangos con setters
+  - `42c3f1d` test(scene-params): añadir tests de validación de rangos y tipos
+- **Verificación**: Todos los tests pasan. Sin errores de parseo.
+- **Issues**: Ninguno.
 
 ### Slice 7 — Sistema de logging estructurado (2026-07-27)
 

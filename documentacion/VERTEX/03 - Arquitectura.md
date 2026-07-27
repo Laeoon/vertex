@@ -66,6 +66,15 @@ Ver: [[04 - Mecánicas#Pesos duales]]
   - Formato de salida: `[LEVEL] [Module] message`.
   - Nivel por defecto: DEBUG en debug builds, INFO en release.
   - Configurable vía `set_level(level)`.
+- **SceneParams** (`core/autoloads/scene_params.gd`, Fase 0 Slice 8): Autoload
+  singleton con configuración global de escenas. Validación de tipos y rangos:
+  - Propiedades numéricas: setters con `clampi()` para rangos (0-10, 0-9999,
+    0-1000, 0-100, 0-20, 1-100, 0-50, 1-20, 1-10 según propiedad).
+  - Propiedades de string: `graph_path` y `level_key` rechazan vacío
+    (mantienen valor anterior); `tutorial_path` acepta vacío (opcional).
+  - `GameLogger.warn()` cuando se clampea un valor fuera de rango.
+  - `reset()` usa acceso directo para evitar validación innecesaria.
+  - Ver: `tests/core/test_scene_params_validation.gd` (82 aserciones).
 
 Ver: [[09 - Defensa#Event Bus]]
 
