@@ -60,7 +60,7 @@ func initial_block() -> void:
 			# preservar la condición "bloquear solo si NO aísla".
 			if not _game._is_blocked(edge_key) and not would_isolate(edge_key):
 				_game._block_edge(edge_key, from_n, to_n)
-				Logger.debug("AIBlocker", "Bloqueo inicial: %s → %s" % [from_n, to_n])
+				GameLogger.debug("AIBlocker", "Bloqueo inicial: %s → %s" % [from_n, to_n])
 				break
 			idx_bloqueo -= 1
 	_game.mensaje_estado = "IA bloqueo una ruta al inicio"
@@ -88,7 +88,7 @@ func take_turn() -> void:
 		return
 
 	var path: Array[StringName] = result["path"]
-	Logger.debug("AIBlocker", "Detecta ruta: %s" % str(path))
+	GameLogger.debug("AIBlocker", "Detecta ruta: %s" % str(path))
 
 	if path.size() < 2:
 		_game.mensaje_estado = "Estas al lado de %s, pero la arista esta bloqueada" % target
@@ -107,10 +107,10 @@ func take_turn() -> void:
 			# cuando NO aisla → `if not would_isolate(edge_key):`.
 			if not would_isolate(edge_key):
 				_game._block_edge(edge_key, from_n, to_n)
-				Logger.debug("AIBlocker", "Bloquea: %s → %s" % [from_n, to_n])
+				GameLogger.debug("AIBlocker", "Bloquea: %s → %s" % [from_n, to_n])
 				bloqueos += 1
 			else:
-				Logger.debug("AIBlocker", "Evita aislar: saltando %s" % edge_key)
+				GameLogger.debug("AIBlocker", "Evita aislar: saltando %s" % edge_key)
 		idx -= 1
 
 	if bloqueos > 0:
@@ -125,7 +125,7 @@ func take_turn() -> void:
 		_game._perder("IA bloqueo todas las rutas!")
 		return
 
-	Logger.debug("AIBlocker", "Nueva ruta: %s (coste %.1f)" % [str(result2["path"]), result2["cost"]])
+	GameLogger.debug("AIBlocker", "Nueva ruta: %s (coste %.1f)" % [str(result2["path"]), result2["cost"]])
 	_game.mensaje_estado += " — Tu turno"
 	_game.queue_redraw()
 

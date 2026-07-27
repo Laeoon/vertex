@@ -1,13 +1,13 @@
 extends Node
 
 ## Logger — Sistema de logging estructurado para VERTEX.
-## Autoload registrado en project.godot como `Logger`.
+## Autoload registrado en project.godot como `GameLogger`.
 ## Accesible globalmente desde cualquier script.
 ##
 ## Uso:
-##   Logger.info("Pathfinder", "Ruta calculada: %s" % path)
-##   Logger.error("ProgressService", "Error cargando progress: %d" % err)
-##   Logger.debug("AIBlocker", "Bloqueando: %s → %s" % [from, to])
+##   GameLogger.info("Pathfinder", "Ruta calculada: %s" % path)
+##   GameLogger.error("ProgressService", "Error cargando progress: %d" % err)
+##   GameLogger.debug("AIBlocker", "Bloqueando: %s → %s" % [from, to])
 ##
 ## Niveles de log:
 ##   DEBUG — información detallada para desarrollo (solo en debug builds)

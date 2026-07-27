@@ -92,13 +92,13 @@ func save(nuevas_estrellas: int) -> void:
 	var cfg: ConfigFile = ConfigFile.new()
 	var err: int = cfg.load("user://progress.cfg")
 	if err != OK and err != ERR_FILE_NOT_FOUND:
-		Logger.error("ProgressService", "Error cargando progress: %d" % err)
+		GameLogger.error("ProgressService", "Error cargando progress: %d" % err)
 	var prev: int = cfg.get_value("estrellas", key, 0)
 	if nuevas_estrellas > prev:
 		cfg.set_value("estrellas", key, nuevas_estrellas)
 		cfg.set_value("estrellas", key + "_mejor_coste", _game.player_total_cost)
 		cfg.save("user://progress.cfg")
-		Logger.info("ProgressService", "Progreso guardado: %s → %d estrellas" % [key, nuevas_estrellas])
+		GameLogger.info("ProgressService", "Progreso guardado: %s → %d estrellas" % [key, nuevas_estrellas])
 		if prev > 0:
 			_game.mensaje_estado += " (nuevo record!)"
 
