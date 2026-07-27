@@ -68,7 +68,7 @@ Ver: [[09 - Defensa#Event Bus]]
 Ver: [[04 - Mecánicas#Algoritmos]]
 
 ### Lógica de juego
-- **juego_ataque.gd**: Orquestador principal (~1300 líneas → 1086 tras
+- **juego_ataque.gd**: Orquestador principal (~1300 líneas → 1002 tras
   Fase 0 Slice 4; objetivo ≤700 al cerrar Slices 5-6)
 - **GameRenderer**: Rendering separado de lógica
 - **hacker_mechanics.gd**: Sistema de ruido y exploits
@@ -134,6 +134,27 @@ Ver: [[04 - Mecánicas#Algoritmos]]
   ya alertado → 2.º spawn → chase+captura → reset) contra un golden
   capturado con la lógica ORIGINAL inline, más un sanity unitario del
   helper `spawn_pursuer`.
+- **ProgressService** (`juego/ataque/progress_service.gd`, Fase 0 Slice 5):
+  RefCounted con ref `_game` (mismo patrón que `DefenderBrain`/
+  `AIBlocker`/`PursuitSystem`). Encapsula la persistencia de progreso y
+  el cálculo de estrellas del modo ataque. API:
+  - `setup(game)` — inyecta el juego.
+  - `calculate_stars() -> int` — el viejo `_calcular_estrellas` (ratio de
+    `movement_points` si `max_movement_points > 0`, sino cost_ratio vs
+    `STAR_THRESHOLDS` + turn_ratio vs `max_turns`; devuelve el mínimo).
+  - `save(nuevas_estrellas)` — el viejo `_guardar_progreso` (actualiza
+    `user://progress.cfg` si `nuevas_estrellas > prev`, registra victoria
+    en `user://stats.cfg`).
+  - `record_loss()` — el tracking de derrota que vivía en `_perder()`
+    (registra pérdida en `user://stats.cfg`).
+  - `load_all() -> Dictionary` (static) — el viejo `_cargar_progreso`
+    (carga `{level_key: estrellas}` de `user://progress.cfg`).
+
+  Equivalencia conductual probada por
+  `tests/ataque/_test_progress_service_equivalence.{gd,tscn}` (scene-based):
+  4 aserciones de star count (movement_points mode: 3/2/1 stars + cost_ratio
+  mode) + 10 aserciones de round-trip de archivo (save → lectura directa
+  de ConfigFile, verificación de overwrite rules, record_loss, load_all).
 
 ### Presentación
 - **GameRenderer**: HUD en 3 zonas, grid de fondo, hints opcionales

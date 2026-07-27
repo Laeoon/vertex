@@ -12,7 +12,43 @@ tags:
 ## Fase 0 — Auditoría y Estabilización (SDD, 2026-07-23, en curso)
 
 Cambio SDD `fase-0-auditoria` — 10 slices encadenados (stacked-to-main) para
-estabilizar el simulador. Avance: Slices 0-4 completados (18/39 tareas).
+estabilizar el simulador. Avance: Slices 0-5 completados (22/39 tareas).
+
+### Slice 5 — Extraer persistencia de progreso y estrellas a `ProgressService` (2026-07-26)
+
+- **Agregado**: `juego/ataque/progress_service.gd` (163 líneas) — `class_name
+  ProgressService extends RefCounted` siguiendo el patrón `AIBlocker`/
+  `PursuitSystem`/`DefenderBrain` (RefCounted + ref `_game`). API:
+  `setup(game)`, `calculate_stars() -> int` (era `_calcular_estrellas`),
+  `save(nuevas_estrellas)` (era `_guardar_progreso` + stats de victoria),
+  `record_loss()` (stats de derrota que vivía en `_perder`),
+  `load_all() -> Dictionary` (static, era `_cargar_progreso`).
+- **Agregado**: `tests/ataque/_test_progress_service_equivalence.{gd,tscn}`
+  (212+3 líneas) — scene-based, 14 aserciones: 4 star count (movement_points
+  mode 3/2/1 + cost_ratio mode) + 10 round-trip de archivo (save → lectura
+  directa ConfigFile, overwrite rules, record_loss, load_all).
+- **Modificado**: `juego/ataque/juego_ataque.gd`:
+  - Cableado `_progress_service` en `_ready` (antes de `_load_graph`).
+  - `_ganar`: `_calcular_estrellas()` + `_guardar_progreso(stars)` →
+    `_progress_service.calculate_stars()` + `_progress_service.save(stars)`.
+  - `_on_brain_defender_won`: `_guardar_progreso(stars)` →
+    `_progress_service.save(stars)`.
+  - `_perder`: bloque de stats inline (8 líneas) → `_progress_service.record_loss()`.
+  - `_draw`: `_calcular_estrellas()` → `_progress_service.calculate_stars()`.
+  - Añadido `level_key: String` property (poblado desde `SceneParams.level_key`
+    en `_ready`) para que ProgressService acceda vía `_game.level_key` en
+    lugar de depender directamente del autoload SceneParams.
+  - Borrados `_level_key`, `_calcular_estrellas`, `_guardar_progreso`,
+    `_cargar_progreso` (82 líneas netas eliminadas).
+- **Reducción**: `juego_ataque.gd` 1087 → 1002 líneas (−85 netas en el slice).
+  Objetivo `god-script-extraction` ≤700; Slices 6 continúan (ProgressUtil,
+  LocUtil).
+- **Commits**:
+  - `532849f` refactor(ataque): extraer persistencia de progreso y estrellas a ProgressService
+  - `9cdf0fe` test(ataque): añadir tests de equivalencia para ProgressService
+  - `804f91c` refactor(ataque): migrar call sites a ProgressService
+  - `7ff57cb` refactor(ataque): eliminar lógica vieja de progreso/estrellas
+- **Issues**: Ninguno. Migración limpia sin desviaciones del design.
 
 ### Slice 4 — Extraer sistema de detección/persecución a `PursuitSystem` (2026-07-23)
 
