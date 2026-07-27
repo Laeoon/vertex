@@ -46,9 +46,9 @@ func _ready() -> void:
 	print("==============================================")
 
 	if _tests_failed > 0:
-		quit(1)
+		get_tree().quit(1)
 	else:
-		quit(0)
+		get_tree().quit(0)
 
 
 func _assert(condition: bool, message: String) -> void:
@@ -317,9 +317,9 @@ func _test_graph_path() -> void:
 	_params.graph_path = "res://levels/test.tscn"
 	_assert(_params.graph_path == "res://levels/test.tscn", "String válido aceptado")
 
-	var previous := _params.graph_path
+	var previous_graph: String = _params.graph_path
 	_params.graph_path = ""
-	_assert(_params.graph_path == previous, "String vacío rechazado — mantiene valor anterior")
+	_assert(_params.graph_path == previous_graph, "String vacío rechazado — mantiene valor anterior")
 
 
 func _test_level_key() -> void:
@@ -328,9 +328,9 @@ func _test_level_key() -> void:
 	_params.level_key = "level_01"
 	_assert(_params.level_key == "level_01", "String válido aceptado")
 
-	var previous := _params.level_key
+	var previous_key: String = _params.level_key
 	_params.level_key = ""
-	_assert(_params.level_key == previous, "String vacío rechazado — mantiene valor anterior")
+	_assert(_params.level_key == previous_key, "String vacío rechazado — mantiene valor anterior")
 
 
 func _test_tutorial_path() -> void:
