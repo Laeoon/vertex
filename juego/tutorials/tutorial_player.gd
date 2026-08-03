@@ -59,6 +59,9 @@ var _tooltip_timer: float = 0.0
 var _tooltip_delay: float = 0.5
 var _tooltip_buttons: Array[Dictionary] = []
 
+# QoL: First-load help overlay
+var _show_help_overlay: bool = false
+
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -141,6 +144,25 @@ func skip() -> void:
 	_finish_tutorial()
 	tutorial_skipped.emit(tid)
 	GameLogger.info("TutorialPlayer", "Tutorial saltado: %s" % tid)
+
+
+func complete_tutorial() -> void:
+	"""Marca el tutorial como completado desde el juego (ej: al alcanzar el target).
+	Muestra un mensaje de confirmación y oculta el panel tras una pausa breve."""
+	if not is_active:
+		return
+	var tid: String = tutorial_data.get("id", "")
+	# Marcar el último paso como alcanzado para mostrar el tutorial completo
+	current_step_index = steps.size() - 1
+	_waiting_for_action = false
+	_action_fulfilled = true
+	_hint_shown = false
+	queue_redraw()
+	# Esperar un momento breve para que el jugador vea que completó
+	await get_tree().create_timer(0.5).timeout
+	_finish_tutorial()
+	tutorial_completed.emit(tid)
+	GameLogger.info("TutorialPlayer", "Tutorial completado desde juego: %s" % tid)
 
 
 func advance() -> void:
@@ -366,7 +388,9 @@ func _input(event: InputEvent) -> void:
 			KEY_H:
 				if _waiting_for_action:
 					show_hint()
-					get_viewport().set_input_as_handled()
+				else:
+					_show_help_overlay = not _show_help_overlay
+				get_viewport().set_input_as_handled()
 			KEY_ENTER, KEY_SPACE:
 				if not _waiting_for_action:
 					_on_next_pressed()
@@ -413,12 +437,21 @@ func _update_tooltip_buttons() -> void:
 		"en": "View all steps"
 	})
 
+	# Glossary (G) area
+	var gls_rect: Rect2 = Rect2(Vector2(270.0, vp_size.y - 30.0), Vector2(65.0, 24.0))
+	_tooltip_buttons.append({
+		"rect": gls_rect,
+		"text": "Abrir glosario",
+		"en": "Open glossary"
+	})
+
 	# Hint (H) area
-	var hint_rect: Rect2 = Rect2(Vector2(280.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
+	var hint_label: String = "Mostrar pista" if _waiting_for_action else "Ayuda de controles"
+	var hint_rect: Rect2 = Rect2(Vector2(340.0, vp_size.y - 30.0), Vector2(100.0, 24.0))
 	_tooltip_buttons.append({
 		"rect": hint_rect,
-		"text": "Mostrar pista",
-		"en": "Show hint"
+		"text": hint_label,
+		"en": "Show hint" if _waiting_for_action else "Controls help"
 	})
 
 
@@ -466,11 +499,18 @@ func _draw() -> void:
 		_draw_floating_panel(text, position)
 		_draw_next_button()
 		_draw_step_indicator()
-		_draw_skip_hint()
+		_draw_controls_bar()
 		if _hint_shown:
 			_draw_hint_panel()
 		if _show_step_index:
 			_draw_step_index_overlay()
+		if _show_help_overlay:
+			_draw_help_overlay()
+			# Show minimize hint for help overlay
+			var vp_size: Vector2 = get_viewport_rect().size
+			var close_hint: String = "[H / F1] Cerrar ayuda"
+			var close_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, vp_size.y - 8.0)
+			draw_string(font, close_pos, close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.5, 0.5, 0.5, _panel_alpha * 0.8))
 
 		# Draw tooltip
 		if _tooltip_text != "":
@@ -589,23 +629,55 @@ func _draw_step_indicator() -> void:
 			color = Color(0.3, 0.3, 0.3, _panel_alpha * 0.4)
 		draw_circle(Vector2(cx, y), dot_r, color)
 
+	# Progress bar beneath dots
+	var bar_w: float = total_w
+	var bar_h: float = 4.0
+	var bar_y: float = y + 12.0
+	var pct: float = float(current_step_index + 1) / float(total)
+	# Background bar
+	draw_rect(Rect2(Vector2(start_x, bar_y), Vector2(bar_w, bar_h)), Color(0.15, 0.15, 0.15, _panel_alpha * 0.6))
+	# Filled bar
+	if pct > 0:
+		draw_rect(Rect2(Vector2(start_x, bar_y), Vector2(bar_w * pct, bar_h)), Color(_accent_color.r, _accent_color.g, _accent_color.b, _panel_alpha * 0.8))
+	# Rounded ends
+	draw_circle(Vector2(start_x + bar_w * pct, bar_y + bar_h / 2.0), bar_h / 2.0 + 1.0, Color(_accent_color.r, _accent_color.g, _accent_color.b, _panel_alpha * 0.8))
+
+	# Percentage text
+	var pct_text: String = "%d%%" % int(pct * 100)
+	var pct_pos: Vector2 = Vector2(start_x + bar_w + 8.0, bar_y - 2.0)
+	draw_string(font, pct_pos, pct_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 2, Color(_accent_color.r, _accent_color.g, _accent_color.b, _panel_alpha * 0.7))
+
 	var step_label: String = "%s %d %s %d: %s" % [t("tutorial.step"), current_step_index + 1, t("tutorial.of"), steps.size(), step_title]
-	var label_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(step_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, y + 18.0)
+	var label_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(step_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, bar_y + 18.0)
 	draw_string(font, label_pos, step_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, _panel_alpha * 0.7))
 
 	# Draw tutorial objective if present
 	var objective: String = tutorial_data.get("objective", "")
 	if objective != "":
-		var obj_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(objective, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, y + 34.0)
+		var obj_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(objective, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, bar_y + 34.0)
 		draw_string(font, obj_pos, objective, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.5, 0.5, 0.7, _panel_alpha * 0.6))
 
 
-func _draw_skip_hint() -> void:
+func _draw_controls_bar() -> void:
+	"""Barra de controles siempre visible en la parte inferior de la pantalla."""
 	var vp_size: Vector2 = get_viewport_rect().size
-	var text: String = "[←] %s  [Enter] %s  [ESC] %s  [I] %s  [G] Glosario" % [t("tutorial.previous"), t("tutorial.next"), t("tutorial.skip"), t("tutorial.index")]
-	var alpha: float = _panel_alpha * 0.5
-	var text_width: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
-	draw_string(font, Vector2((vp_size.x - text_width) / 2.0, vp_size.y - 15.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, alpha))
+	var bar_h: float = 28.0
+	var bar_pos: Vector2 = Vector2(0.0, vp_size.y - bar_h)
+	var alpha: float = _panel_alpha
+
+	# Draw semi-transparent background bar for controls
+	draw_rect(Rect2(bar_pos, Vector2(vp_size.x, bar_h)), Color(0.02, 0.02, 0.06, alpha * 0.85))
+	draw_rect(Rect2(bar_pos, Vector2(vp_size.x, bar_h)), Color(_accent_color.r, _accent_color.g, _accent_color.b, alpha * 0.3), false, 1.0)
+
+	var controls_text: String
+	if _waiting_for_action:
+		controls_text = "[" + t("tutorial.hint_action") + "]  [←] %s  [I] Índice  [G] Glosario  [H] Pista  [ESC] Saltar" % t("tutorial.previous")
+	else:
+		controls_text = "[Enter/Espacio] %s  [←] %s  [I] Índice  [G] Glosario  [H] Ayuda  [ESC] Saltar" % [t("tutorial.next"), t("tutorial.previous")]
+
+	var text_w: float = font.get_string_size(controls_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
+	var text_x: float = (vp_size.x - text_w) / 2.0
+	draw_string(font, Vector2(text_x, bar_pos.y + bar_h * 0.65), controls_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.8, 0.8, 0.8, alpha))
 
 
 func _draw_hint_panel() -> void:
@@ -671,6 +743,53 @@ func _draw_step_index_overlay() -> void:
 
 	var close_hint: String = "[I] %s" % t("tutorial.index")
 	draw_string(font, Vector2(overlay_pos.x + (overlay_w - font.get_string_size(close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, overlay_pos.y + overlay_h - 10.0), close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.5, 0.5, 0.5, _panel_alpha * 0.7))
+
+
+func _draw_help_overlay() -> void:
+	"""Overlay de ayuda con todos los controles del tutorial (presiona H/F1)."""
+	var vp_size: Vector2 = get_viewport_rect().size
+	var overlay_w: float = min(420.0, vp_size.x - 40.0)
+	var line_h: float = 18.0
+	var margin: float = 16.0
+
+	var help_lines: Array[String] = [
+		"CONTROLES DEL TUTORIAL",
+		"",
+		"Enter / Espacio  — Avanzar al siguiente paso",
+		"← (flecha izq)  — Volver al paso anterior",
+		"Backspace         — Volver al paso anterior",
+		"I                  — Mostrar índice de pasos",
+		"G                 — Abrir glosario de términos",
+		"H                 — Mostrar/ocultar esta ayuda",
+		"ESC               — Saltar tutorial",
+		"",
+		"DURANTE UNA ACCIÓN:",
+		"H                 — Mostrar pista",
+		"",
+		"Presiona [H] para cerrar esta ayuda."
+	]
+
+	var overlay_h: float = help_lines.size() * line_h + 48.0
+	var overlay_pos: Vector2 = Vector2(
+		(vp_size.x - overlay_w) / 2.0,
+		(vp_size.y - overlay_h) / 2.0
+	)
+
+	var bg: Color = Color(0.05, 0.05, 0.12, 0.95)
+	var border: Color = Color(_accent_color.r, _accent_color.g, _accent_color.b, 0.9)
+	draw_rect(Rect2(overlay_pos, Vector2(overlay_w, overlay_h)), bg)
+	draw_rect(Rect2(overlay_pos, Vector2(overlay_w, overlay_h)), border, false, 2.0)
+
+	for i in range(help_lines.size()):
+		var line_text: String = help_lines[i]
+		var color: Color
+		if i == 0:
+			color = Color(_accent_color.r, _accent_color.g, _accent_color.b, 1.0)
+		elif line_text != "":
+			color = Color(0.8, 0.8, 0.8, 0.9)
+		else:
+			color = Color(0.5, 0.5, 0.5, 0.1)  # spacing line, nearly invisible
+		draw_string(font, Vector2(overlay_pos.x + margin, overlay_pos.y + 18.0 + i * line_h), line_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, color)
 
 
 func _draw_tooltip(tip_text: String) -> void:
