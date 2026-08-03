@@ -699,12 +699,21 @@ func _on_defender_toggle_firewall() -> void:
 func _on_defender_block_edge(edge_key: String) -> void:
 	AudioManager.play_sfx("block")
 	if _defender_brain != null:
+		var antes: int = _defender_brain.defender_blocks_total_used
 		_defender_brain.block_edge(edge_key)
+		# Slice 3.8 v2: solo notificar si el bloqueo se aplicó de verdad
+		# (block_edge puede rechazarlo: ya bloqueado, sin recursos, sin arista).
+		if _defender_brain.defender_blocks_total_used > antes:
+			_notify_tutorial_input()
 
 
 func _on_defender_place_firewall(node_id: StringName) -> void:
 	if _defender_brain != null:
+		var antes: int = _defender_brain.defender_blocks_total_used
 		_defender_brain.place_firewall(node_id)
+		# Slice 3.8 v2: notificar solo si el firewall se colocó realmente.
+		if _defender_brain.defender_blocks_total_used > antes:
+			_notify_tutorial_input()
 
 
 func _on_defender_hover_edge(edge_key: String) -> void:
@@ -717,6 +726,14 @@ func _on_defender_hover_edge(edge_key: String) -> void:
 func _on_tutorial_skipped_input() -> void:
 	if tutorial_player != null and is_instance_valid(tutorial_player):
 		tutorial_player.skip()
+
+
+func _notify_tutorial_input() -> void:
+	## Slice 3.8 v2: reporta al tutorial que se ejecutó una acción de tipo
+	## "input" (escanear, explotar, bloquear, firewall). El tutorial marca el
+	## paso como cumplido; el jugador confirma con [Enter] para avanzar.
+	if tutorial_player != null and is_instance_valid(tutorial_player):
+		tutorial_player.notify_input()
 
 
 # ─── Señales de DefenderBrain ─────────────────────────────────────
@@ -873,7 +890,9 @@ func _draw() -> void:
 		r.draw_optimal_overlay(optimal_overlay_path, node_positions, node_radius)
 
 	if tutorial_player != null and tutorial_player.is_active:
-		r.draw_tutorial_highlights(tutorial_player, node_positions, node_radius)
+		# Slice 3.8 v2: pasar player_pos para dibujar la flecha guía (Rail 3);
+		# en modo defensor no hay jugador, así que se omite la flecha.
+		r.draw_tutorial_highlights(tutorial_player, node_positions, node_radius, (player_pos if not defender_mode else &""))
 
 	if game_over:
 		var stars: int = _defender_brain.calcular_estrellas() if defender_mode and _defender_brain != null else _progress_service.calculate_stars()
@@ -917,6 +936,9 @@ func _scan_selected_node() -> void:
 	var hint: String = result.get("exploit_hint", "")
 	mensaje_estado = "ESCANEADO %s → %s | %s" % [str(selected_neighbor), type_label.to_upper(), hint]
 	GameLogger.debug("JuegoAtaque", "[SCAN] %s: %s — %s" % [str(selected_neighbor), type_label, hint])
+	# Slice 3.8 v2: el escaneo es una acción de tutorial (try_scan) → avisar al
+	# tutorial para que marque el paso como cumplido y el jugador confirme con Enter.
+	_notify_tutorial_input()
 	queue_redraw()
 
 
@@ -988,6 +1010,9 @@ func _use_hacker_exploit(exploit_type: String) -> void:
 			mensaje_estado = "♻ Persistencia activa en %s por 3 turnos" % str(selected_neighbor)
 	mensaje_estado = "%s %s aplicado en %s (ruido: %d)" % [result.get("icon", ""), result.get("name", ""), str(selected_neighbor), hacker_state.get("noise", 0)]
 	GameLogger.debug("JuegoAtaque", "[EXPLOIT] %s en %s — ruido: %d" % [exploit_type, str(selected_neighbor), hacker_state.get("noise", 0)])
+	# Slice 3.8 v2: los exploits también pueden ser la acción requerida del
+	# tutorial (action_required="input") → avisar para confirmar con Enter.
+	_notify_tutorial_input()
 	_check_hacker_consequences()
 	queue_redraw()
 

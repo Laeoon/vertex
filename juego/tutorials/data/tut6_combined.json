@@ -51,7 +51,8 @@
       "highlight_nodes": ["Exterior"],
       "highlight_edges": [],
       "pause_game": false,
-      "action_required": "input",
+      "action_required": "move",
+      "hint": "Muévete hacia la Oficina con [Click] o [Tab] + [Enter]. Tienes 10 puntos de movimiento.",
       "auto_advance_after": null
     },
     {
