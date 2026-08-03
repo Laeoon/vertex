@@ -14,7 +14,7 @@
   "steps": [
     {
       "id": "intro",
-      "text": "NIVEL AVANZADO.\nCombinamos: WAYPOINTS + DETECCIÓN + PERSEGUIDORES + LÍMITE DE TURNOS.\nDebes pasar por DMZ antes de llegar a Servidor.\nTienes 8 TURNOS máximo.",
+      "text": "NIVEL AVANZADO.\nCombinamos: WAYPOINTS + DETECCIÓN + PERSEGUIDORES + LÍMITE DE TURNOS.\nDebes pasar por DMZ antes de llegar a Servidor.\nTienes 8 TURNOS máximo.\n\nMODELO DE DEFENSA EN PROFUNDIDAD:\nEn ciberseguridad real, ninguna defensa única es\nsuficiente. Se usa el modelo de \"defense in depth\":\n\nComo un castillo medieval:\n- Foso = Perímetro (firewall, bloquear accesos)\n- Muralla = Detección (IDS, cámaras de seguridad)\n- Guardias = Monitoreo (SIEM, análisis de logs)\n- Soldados = Respuesta (equipo de incidentes)\n\nEn Vertex, cada tutorial cubre una capa:\nTut1 = Reconocimiento (estudiar el castillo)\nTut2 = Perímetro (cruzar el foso)\nTut3 = Detección + Respuesta (evadir guardias)\nTut4 = Ataque completo (todas las capas)\n\nLas empresas reales usan esta estrategia porque\nsi una capa falla, las otras aún protegen.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -50,7 +50,7 @@
     },
     {
       "id": "detection",
-      "text": "DETECCIÓN: Algunos nodos tienen CÁMARAS.\nFirewall (12%), Router (10%), DMZ (15%), IDS (18%).\nSi entras a un nodo con detección,\n hay PROBABILIDAD de ser detectado.\nSi te detectan, aparece un PERSEGUIDOR.",
+      "text": "DETECCIÓN: Algunos nodos tienen CÁMARAS.\nFirewall (12%), Router (10%), DMZ (15%), IDS (18%).\nSi entras a un nodo con detección,\n hay PROBABILIDAD de ser detectado.\nSi te detectan, aparece un PERSEGUIDOR.\n\nEN REDES REALES:\nUn IDS (Intrusion Detection System) monitorea\nel tráfico de red buscando patrones sospechosos.\nCuando detecta algo anómalo, genera una ALERTA.\n\nLas empresas grandes usan un SIEM (Security\nInformation and Event Management) para:\n- Correlacionar alertas de múltiples fuentes\n- Detectar patrones de ataque complejos\n- Generar respuestas automáticas\n\nHerramientas reales:\n- Splunk: SIEM empresarial líder\n- ELK Stack (Elasticsearch, Logstash, Kibana):\n  alternativa open-source muy usada\n- QRadar: SIEM de IBM\n\nEn Vertex, los porcentajes de detección simulan\nla probabilidad de que un IDS te descubra.\nCada nodo vigilado es un riesgo calculado.",
       "anchor_type": "node",
       "anchor_id": "Firewall",
       "position": "right",
@@ -62,7 +62,7 @@
     },
     {
       "id": "pursuers",
-      "text": "PERSEGUIDORES:\n- Aparecen en un nodo seguro (spawn)\n- Tienen DELAY: no se mueven inmediatamente\n- Avanzan 1 paso por turno hacia ti\n- Si te alcanzan, PIERDES\n- MÁXIMO 4 perseguidores simultáneos\n\nEl delay te da ventana para escapar.",
+      "text": "PERSEGUIDORES:\n- Aparecen en un nodo seguro (spawn)\n- Tienen DELAY: no se mueven inmediatamente\n- Avanzan 1 paso por turno hacia ti\n- Si te alcanzan, PIERDES\n- MÁXIMO 4 perseguidores simultáneos\n\nEl delay te da ventana para escapar.\n\nEN REDES REALES:\nLos perseguidores representan al \"Incident\nResponse Team\" (CSIRT) — el equipo que responde\na incidentes de seguridad. Cuando un IDS detecta\nuna intrusión:\n\n1. Se activa el equipo de respuesta\n2. Analizan tu \"huella\" (forensic analysis):\n   logs, tráfico, comandos ejecutados\n3. Te rastrean hacia atrás para encontrarte\n4. Contienen el incidente (te \"alcanzan\")\n\nPor eso los atacantes reales usan técnicas de\n\"anti-forensics\": borrar logs, cifrar comunicaciones,\ny usar proxies para ocultar su rastro.\n\nEn Vertex, el delay de los perseguidores simula\nel tiempo que tarda un equipo humano en reaccionar.\n¡Aprovéchalo para escapar!",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
