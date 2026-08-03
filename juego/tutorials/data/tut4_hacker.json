@@ -62,7 +62,7 @@
     {
       "id": "exploit_explain",
       "title": "Herramientas de Hacker",
-      "text": "HERRAMIENTAS DE HACKER:\n\n[1] BYPASS - Salta nodos protegidos\n    Costo: +15 ruido\n[2] ESCALATE - Accede a áreas restringidas\n    Costo: +25 ruido\n[3] PERSIST - Mantén acceso 3 turnos\n    Costo: +10 ruido\n\nCada exploit genera RUIDO.\nSi ruido > 60: aparecen perseguidores.\n\nEn el mundo real: Metasploit automatiza\nexploits, privilege escalation usa漏洞 en\nsudo/SUID, y APTs mantienen persistencia\npor meses. Más info en GLOSARIO [G].",
+      "text": "HERRAMIENTAS DE HACKER:\n\n[1] BYPASS - Salta nodos protegidos\n    Costo: +15 ruido\n[2] ESCALATE - Accede a áreas restringidas\n    Costo: +25 ruido\n[3] PERSIST - Mantén acceso 3 turnos\n    Costo: +10 ruido\n\nCada exploit genera RUIDO.\nSi ruido > 60: aparecen perseguidores.\n\nEn el mundo real: Metasploit automatiza\nexploits, privilege escalation explota\nvulnerabilidades en sudo/SUID, y APTs\nmantienen persistencia por meses. Más info\nen GLOSARIO [G].",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
