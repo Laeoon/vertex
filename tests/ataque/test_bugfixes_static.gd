@@ -52,6 +52,12 @@ func _run_tests() -> void:
 			and src_juego.find("pass", src_juego.find("func mostrar_ruta")) != -1),
 		"1.3: el stub silencioso original (pass) fue reemplazado")
 
+	# ── Dia 3.7: Fix waypoint vacio en _ganar() ──
+	_afirmar(src_juego.find("waypoints.size() > 0 and current_waypoint_idx") != -1,
+		"D3.7: _ganar() verifica waypoints.size() > 0 antes de comparar indices")
+	_afirmar(src_juego.find("current_waypoint_idx = -1 if waypoints.is_empty() else 0") != -1,
+		"D3.7: current_waypoint_idx se inicializa en -1 cuando waypoints esta vacio")
+
 	_finalizar()
 
 

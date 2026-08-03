@@ -582,7 +582,8 @@ func _reveal_optimal_route() -> void:
 
 
 func _ganar() -> void:
-	if current_waypoint_idx < waypoints.size():
+	# Si hay waypoints definidos y no se han visitado todos, perder
+	if waypoints.size() > 0 and current_waypoint_idx < waypoints.size():
 		_perder("Debes pasar por %s primero" % str(waypoints[current_waypoint_idx]))
 		return
 
@@ -879,7 +880,8 @@ func _draw() -> void:
 		if defender_mode:
 			r.draw_defender_game_over(vp_size, game_won, mensaje_estado, stars, _game_over_time)
 		else:
-			r.draw_game_over(vp_size, game_won, mensaje_estado, stars, _game_over_time)
+			var es_tutorial: bool = tutorial_player != null and is_instance_valid(tutorial_player)
+			r.draw_game_over(vp_size, game_won, mensaje_estado, stars, _game_over_time, es_tutorial)
 
 	if mensaje_tutorial != "" and not game_over:
 		r.draw_tutorial_text(mensaje_tutorial)
