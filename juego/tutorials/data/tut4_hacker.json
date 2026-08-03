@@ -35,7 +35,7 @@
     {
       "id": "scan_explain",
       "title": "Escaneo [X]",
-      "text": "ESCANEAR [X]: Analiza un nodo vecino.\nRevela su TIPO, RIESGO y si tiene debilidades.\nAumenta el RUIDO (barra derecha).",
+      "text": "ESCANEO DE RED [X] — RECONOCIMIENTO.\n\nEl escaneo es la primera fase de cualquier ataque.\nPresiona [X] para analizar un nodo vecino (debes\nseleccionarlo primero con [Tab] o clic).\n\nQUÉ REVELA EL ESCANEO:\n- TIPO de nodo: servidor, router, base de datos\n- RIESGO de detección: probabilidad de ser descubierto\n- DEBILIDADES: vulnerabilidades que puedes explotar\n- INFORMACIÓN para planificar tu ruta\n\nCOSTO: +5 ruido por escaneo. El ruido aumenta tu\nvisibilidad ante los sistemas de defensa.\n\nANALOGÍA DEL MUNDO REAL:\nEn seguridad ofensiva, el escaneo se hace con\nherramientas como:\n- nmap: escanea puertos, servicios y sistemas operativos\n- Nessus: escáner de vulnerabilidades automatizado\n- Nikto: escáner de servidores web\n- enum4linux: enumeración de sistemas Windows/Linux\n\nLos pentesters pasan horas en la fase de\nreconocimiento antes de lanzar un solo ataque.\n\"Know your target\" es la regla #1.\n\nEn Vertex, la información del escaneo te ayuda\na decidir qué ruta tomar y qué exploits usar.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",

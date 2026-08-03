@@ -18,7 +18,7 @@
     {
       "id": "intro_combined",
       "title": "Bienvenida",
-      "text": "NIVEL EXPERTO:\nOperaciones combinadas requieren versatilidad.\nDebes INFILTRARTE hasta la Oficina,\ny luego seguir hasta el Centro de Datos.",
+      "text": "NIVEL EXPERTO — TODAS LAS MECÁNICAS COMBINADAS.\n\nEn este tutorial aplicarás todo lo aprendido:\n- Navegación en grafos con costos\n- Waypoints obligatorios (Oficina)\n- IA que bloquea tus rutas\n- Perseguidores que te rastrean\n- Límite de turnos y presupuesto de movimiento\n\nANALOGÍA DEL MUNDO REAL:\nUn Red Team profesional enfrenta todos estos\ndesafíos simultáneamente en un pentesting real.\nImagina que estás infiltrando una empresa Fortune 500:\n- Debes pasar por zonas específicas (waypoints =\n  datos requeridos por el cliente del pentest)\n- El SOC (Security Operations Center) monitorea\n- Los firewalls y WAF bloquean tus intentos\n- El equipo de respuesta te persigue si te detectan\n- Tienes tiempo limitado antes de que refuercen\n\nLas operaciones combinadas son el estándar en\nciberseguridad ofensiva. ¡Demuestra que dominas\ntodas las capas! Debes infiltrarte hasta la Oficina\ny luego seguir hasta el Centro de Datos.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -31,7 +31,7 @@
     {
       "id": "phase_attack",
       "title": "Fase 1: Infiltración",
-      "text": "Waypoint: OFICINA.\nPasa por la Oficina obligatoriamente.\nLuego continua hacia el Centro de Datos.\nLa IA bloquea rutas. Gestiona tu presupuesto.",
+      "text": "FASE 1: INFILTRACIÓN INICIAL.\n\nTu primer objetivo es llegar a la OFICINA.\nEs un waypoint obligatorio — NO puedes llegar\nal Centro de Datos sin pasar por aquí.\n\nESTRATEGIA DE INFILTRACIÓN:\n- Analiza el grafo con [P] para ver rutas posibles\n- La IA bloquea 1 arista por turno: anticípate\n- Gestiona tu presupuesto de 10 puntos de movimiento\n- Elige la ruta de menor costo hacia Oficina\n\nEN REDES REALES:\nLa fase de infiltración inicial es crítica. Un atacante\ndebe establecer un \"foothold\" (punto de apoyo) en la red\nantes de avanzar. Técnicas comunes incluyen:\n- Phishing para obtener credenciales iniciales\n- Explotación de servicios expuestos (RDP, SSH, web)\n- Compromiso de dispositivos IoT con seguridad débil\n\nLa Oficina es tu foothold: una vez allí,\npuedes planificar el resto de la operación.\n\nLa IA bloquea rutas. Gestiona tu presupuesto.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "bottom",
@@ -44,7 +44,7 @@
     {
       "id": "try_attack",
       "title": "¡A la Oficina!",
-      "text": "Muévete hacia la Oficina.\nTienes 10 puntos de movimiento.\nLa IA bloquea 1 arista por turno.",
+      "text": "¡MANOS A LA OBRA!\n\nMuévete hacia la Oficina usando [Click] o [Tab].\nTienes 10 puntos de movimiento como presupuesto.\nLa IA bloquea 1 arista por turno — observa qué ruta\nte está cerrando y recalcula si es necesario.\n\nCONSEJOS:\n- Usa [P] para ver la ruta óptima de Dijkstra\n- Si la IA bloquea tu ruta, busca alternativas\n- No gastes todo el presupuesto en rodeos\n- Recuerda: tu objetivo FINAL es el Centro de Datos\n\nEn operaciones reales, el \"Operational Security\"\n(OPSEC) dicta que cada movimiento debe ser\neficiente. Cada paso extra aumenta el riesgo\nde detección. Minimiza tu huella.\n\n¡Adelante! La Oficina te espera.",
       "anchor_type": "node",
       "anchor_id": "Exterior",
       "position": "bottom",
@@ -57,7 +57,7 @@
     {
       "id": "phase_defense",
       "title": "Fase 2: Rumbo al Centro de Datos",
-      "text": "¡BIEN! Llegaste a la Oficina.\nRumbo al Centro de Datos.\nCuidado con los perseguidores en el camino.\nPlanifica bien tu ruta final.",
+      "text": "FASE 2: RUMBO AL CENTRO DE DATOS.\n\n¡Excelente! Estableciste tu foothold en la Oficina.\nAhora viene la fase más crítica: llegar al objetivo\nfinal — el Centro de Datos.\n\nLO QUE DEBES SABER:\n- Los perseguidores están ACTIVOS en esta fase\n- Si fuiste detectado antes, te estarán rastreando\n- La IA sigue bloqueando 1 arista por turno\n- Tu presupuesto restante es LIMITADO\n\nANALOGÍA DEL MUNDO REAL:\nEn un pentesting real, después del acceso inicial\nviene la \"lateral movement\" y \"privilege escalation\":\n- Te mueves lateralmente entre sistemas\n- Escalas privilegios para acceder a datos sensibles\n- Evitas los sistemas de monitoreo (SIEM, IDS)\n- Mantienes la persistencia para no perder acceso\n\nEl Centro de Datos es tu \"crown jewel\" — el objetivo\nde alto valor. En una empresa real podría ser:\n- Base de datos de clientes (PII)\n- Servidor de propiedad intelectual\n- Sistema financiero o de nóminas\n\nCuidado con los perseguidores en el camino.\n¡Planifica bien tu ruta final y buen viaje!",
       "anchor_type": "node",
       "anchor_id": "CentroDatos",
       "position": "top",
