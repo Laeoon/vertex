@@ -57,32 +57,32 @@
       "action_required": "input",
       "auto_advance_after": null
     },
-    {
-      "id": "enemy_moves",
-      "title": "El Enemigo se Mueve",
-      "text": "El atacante usa DIJKSTRA para buscar la ruta más corta.\nSi bloqueas su camino, RECALCULA.\nNunca se detiene — siempre avanza.\nTu objetivo: que NO llegue en 18 turnos.",
-      "anchor_type": "screen",
-      "anchor_id": "",
-      "position": "center",
-      "highlight_nodes": [],
-      "highlight_edges": [],
-      "pause_game": true,
-      "action_required": null,
-      "auto_advance_after": null
-    },
-    {
-      "id": "strategy",
-      "title": "Estrategia",
-      "text": "ESTRATEGIA:\n- Bloquea CERCA del origen = rutas largas\n- Bloquea CERCA del destino = protección directa\n- Observa la línea NARANJA = ruta actual del atacante\n- Bloquea AHÍ para máximo impacto",
-      "anchor_type": "screen",
-      "anchor_id": "",
-      "position": "center",
-      "highlight_nodes": [],
-      "highlight_edges": [],
-      "pause_game": true,
-      "action_required": null,
-      "auto_advance_after": null
-    },
+	{
+		"id": "enemy_moves",
+		"title": "El Enemigo se Mueve",
+		"text": "EL ATACANTE USA DIJKSTRA — NO ES TONTO.\n\nCada turno, el atacante recalcula su ruta\nusando el algoritmo de Dijkstra. Siempre\nbusca el camino más corto hacia Database.\n\n¿QUÉ ES DIJKSTRA?\nEs un algoritmo clásico de teoría de grafos\n(creado por Edsger Dijkstra en 1956) que\nencuentra la ruta de menor costo entre dos\nnodos. Se usa en:\n- GPS y navegación (Google Maps, Waze)\n- Enrutamiento de redes (OSPF, IS-IS)\n- Videojuegos (pathfinding de enemigos)\n\nCÓMO REACCIONA A TUS BLOQUEOS:\n- Si bloqueas su ruta actual, recalcula\n- Si todas las rutas están bloqueadas, se detiene\n- Si encuentra una ruta más larga, la toma\n- NUNCA se rinde — siempre avanza si puede\n\nESTRATEGIA DEL ATACANTE:\nEl atacante es persistente pero predecible:\nsiempre elige el camino más corto disponible.\nUsa esto a tu favor: haz que el camino más\ncorto lleve a una trampa, o fuerza rutas\nlargas que consuman sus turnos.\n\nEn 18 turnos debes evitar que llegue a Database.\nCada bloqueo que colocas es tiempo que ganas.\nEl reloj está de tu lado si bloqueas bien.\n\nAhora observa cómo se mueve el enemigo\ny planifica tu próximo bloqueo.",
+		"anchor_type": "screen",
+		"anchor_id": "",
+		"position": "center",
+		"highlight_nodes": [],
+		"highlight_edges": [],
+		"pause_game": true,
+		"action_required": null,
+		"auto_advance_after": null
+	},
+	{
+		"id": "strategy",
+		"title": "Estrategia Defensiva",
+		"text": "ESTRATEGIA DEFENSIVA — PIENSA COMO DEFENSOR.\n\nTienes 3 bloqueos por turno y 18 turnos.\nCada decisión cuenta. Aquí tienes estrategias\nprobadas del mundo real:\n\nESTRATEGIA 1 — DEFENSA EN PROFUNDIDAD:\nBloquea CERCA del objetivo (Database).\nEl atacante se acerca y se encuentra un muro.\n\nVentaja: máxima protección donde importa\nDesventaja: el atacante puede buscar rutas alternativas\n\nESTRATEGIA 2 — DEFENSA PERIMETRAL:\nBloquea CERCA del origen (Internet).\nEl atacante no puede ni empezar a avanzar.\n\nVentaja: detienes el ataque desde el principio\nDesventaja: necesitas bloquear muchas aristas\n\nESTRATEGIA 3 — CUELLO DE BOTELLA:\nIdentifica aristas por donde TODAS las rutas\npasan obligatoriamente y bloquéalas.\nUna sola arista bien puesta puede detener\nmúltiples rutas del atacante.\n\nVentaja: máxima eficiencia con pocos bloqueos\nDesventaja: requiere análisis previo de la red\n\nLA LÍNEA NARANJA muestra la ruta actual del\nenemigo. Si bloqueas AHÍ, lo obligas a\nrecalcular, perdiendo un turno valioso.\n\nCada turno que el atacante pasa recalculando\nes un turno que tú ganas. ¡Juega con el tiempo!",
+		"anchor_type": "screen",
+		"anchor_id": "",
+		"position": "center",
+		"highlight_nodes": [],
+		"highlight_edges": [],
+		"pause_game": true,
+		"action_required": null,
+		"auto_advance_after": null
+	},
     {
       "id": "win_condition",
       "title": "Condiciones de Victoria",
