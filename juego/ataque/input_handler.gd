@@ -95,23 +95,40 @@ func _input(event: InputEvent) -> void:
 				cycle_neighbor.emit(1)
 				return
 			KEY_ENTER, KEY_SPACE:
+				# Slice 3.8 v2: si el tutorial exige OTRA acción (ej. escanear),
+				# bloquear el movimiento accidental (Tab+Enter por camino incorrecto).
+				if _tutorial_blocks("move"):
+					_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+					return
 				if not game_over and selected_neighbor != &"" and Time.get_ticks_msec() >= _turn_locked_until:
 					move_requested.emit(selected_neighbor)
 					return
 			KEY_X:
 				if hacker_mode and not game_over:
+					if _tutorial_blocks("input"):
+						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						return
 					scan_requested.emit()
 					return
 			KEY_1:
 				if hacker_mode and not game_over:
+					if _tutorial_blocks("input"):
+						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						return
 					exploit_used.emit("bypass")
 					return
 			KEY_2:
 				if hacker_mode and not game_over:
+					if _tutorial_blocks("input"):
+						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						return
 					exploit_used.emit("escalate")
 					return
 			KEY_3:
 				if hacker_mode and not game_over:
+					if _tutorial_blocks("input"):
+						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						return
 					exploit_used.emit("persist")
 					return
 
@@ -142,12 +159,19 @@ func _input(event: InputEvent) -> void:
 			if firewall_mode and not game_over:
 				var node_id: StringName = _find_node_at_pos_firewall(click_pos)
 				if node_id != &"":
+					# Slice 3.8 v2: bloquear acciones que no son la requerida
+					if _tutorial_blocks("input"):
+						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						return
 					defender_place_firewall.emit(node_id)
 				else:
 					_mensaje_temp("Haz clic en un NODO para colocar firewall, o presiona [F] para cambiar al modo bloqueo de aristas")
 			else:
 				var edge_key: String = _find_edge_at_pos(click_pos)
 				if edge_key != "":
+					if _tutorial_blocks("input"):
+						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						return
 					defender_block_edge.emit(edge_key)
 			return
 
@@ -156,6 +180,10 @@ func _input(event: InputEvent) -> void:
 		if clicked_node == &"" or clicked_node == player_pos:
 			return
 		if _es_vecino_valido(clicked_node):
+			# Slice 3.8 v2: clic = movimiento → respetar la acción requerida
+			if _tutorial_blocks("move"):
+				_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+				return
 			move_requested.emit(clicked_node)
 		else:
 			# Ruta indirecta: encontrar primer paso
@@ -237,3 +265,13 @@ func _mensaje_temp(texto: String) -> void:
 	game.set("mensaje_estado", texto)
 	if game.has_method("queue_redraw"):
 		game.queue_redraw()
+
+
+func _tutorial_blocks(action_type: String) -> bool:
+	"""Slice 3.8 v2 — True si el tutorial está activo esperando una acción
+	diferente a `action_type`, en cuyo caso esta se bloquea (evita que el
+	jugador haga movimientos/acciones accidentales por el camino incorrecto).
+	Fuera del tutorial o en pasos informativos devuelve false (no bloquea)."""
+	if tutorial_player == null or not is_instance_valid(tutorial_player) or not tutorial_player.is_active:
+		return false
+	return not tutorial_player.can_perform_action(action_type)
