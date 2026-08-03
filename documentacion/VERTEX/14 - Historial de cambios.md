@@ -9,6 +9,42 @@ tags:
 
 # Historial de Cambios
 
+## Slice Día 1 — Preparación de Tutoriales para Alfa 0.1.0 (2026-08-02)
+
+### Localización de textos del tutorial player
+
+- **Modificado**: `core/locale/es.json`, `en.json`, `pt.json` — Añadidas claves
+  `tutorial.next`, `tutorial.skip`, `tutorial.step`, `tutorial.of`,
+  `tutorial.hint_action` con namespace `tutorial.*` para separar los textos
+  del sistema de tutoriales de las claves genéricas existentes.
+- **Modificado**: `juego/tutorials/tutorial_player.gd` — Todas las llamadas
+  a `t()` actualizadas para usar las claves con prefijo (`t("tutorial.next")`
+  en vez de `t("next")`, etc.).
+- **Commits**:
+  - Primer commit del slice.
+
+### Correcciones tipográficas en tutoriales JSON
+
+- **Corregido**: `juego/tutorials/data/tut4_hacker.json`:
+  - `infiltracion` → `infiltración` (acento faltante)
+  - `Cuanto mas` → `Cuanto más` (acentos en "más")
+  - `CRITICO` → `CRÍTICO` (acento faltante)
+  - `muevete` → `muévete` (acentos faltantes)
+  - `Bien!` → `¡Bien!` (signo de exclamación inicial)
+  - `Continua` → `Continúa` (acento faltante)
+  - `ruta optima` → `ruta óptima` (acento faltante)
+- **Corregido**: `juego/tutorials/data/tut6_combined.json`:
+  - `Muevete` → `Muévete` (acentos faltantes)
+  - `BIEN!` → `¡BIEN!` (signo de exclamación inicial)
+- **Commits**:
+  - Segundo commit del slice.
+
+### Verificación
+
+- Tests del sistema de tutoriales: 15/15 pasan.
+- Tests principales (`run_all.gd`): pasan sin errores.
+- Sin errores de script al iniciar el juego.
+
 ## Fase 0 — Auditoría y Estabilización (SDD, 2026-07-23, en curso)
 
 Cambio SDD `fase-0-auditoria` — 10 slices encadenados (stacked-to-main) para

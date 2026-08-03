@@ -20,7 +20,7 @@
   "steps": [
     {
       "id": "intro_hacker",
-      "text": "MODO HACKER activado.\nTienes acceso a herramientas de infiltracion.\nObjetivo: llegar al Core pasando por WebServer y AdminPanel.",
+      "text": "MODO HACKER activado.\nTienes acceso a herramientas de infiltración.\nObjetivo: llegar al Core pasando por WebServer y AdminPanel.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -68,7 +68,7 @@
     },
     {
       "id": "noise_explain",
-      "text": "RUIDO: Cuanto mas ruido generas, mas riesgo.\nNIVEL BAJO (<30): Seguro.\nNIVEL ALTO (30-60): Pueden aparecer perseguidores.\nCRITICO (60+): Seguridad reforzada.\nEl ruido DECAE 3pt por turno.",
+      "text": "RUIDO: Cuanto más ruido generas, más riesgo.\nNIVEL BAJO (<30): Seguro.\nNIVEL ALTO (30-60): Pueden aparecer perseguidores.\nCRÍTICO (60+): Seguridad reforzada.\nEl ruido DECAE 3pt por turno.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "left",
@@ -80,7 +80,7 @@
     },
     {
       "id": "try_move",
-      "text": "Ahora prueba: muevete hacia WebServer.\nPlanifica tu ruta: necesitas pasar por WebServer y AdminPanel para llegar a Core.",
+      "text": "Ahora prueba: muévete hacia WebServer.\nPlanifica tu ruta: necesitas pasar por WebServer y AdminPanel para llegar a Core.",
       "anchor_type": "node",
       "anchor_id": "WebServer",
       "position": "bottom",
@@ -92,7 +92,7 @@
     },
     {
       "id": "after_first_move_hacker",
-      "text": "Bien! Llegaste a WebServer.\nContinua hacia AdminPanel y luego a Core.\nUsa [P] para ver la ruta optima.\nGestiona tu ruido y exploits con cuidado.",
+      "text": "¡Bien! Llegaste a WebServer.\nContinúa hacia AdminPanel y luego a Core.\nUsa [P] para ver la ruta óptima.\nGestiona tu ruido y exploits con cuidado.",
       "anchor_type": "node",
       "anchor_id": "Core",
       "position": "top",

@@ -40,7 +40,7 @@
     },
     {
       "id": "try_attack",
-      "text": "Muevete hacia la Oficina.\nTienes 10 puntos de movimiento.\nLa IA bloquea 1 arista por turno.",
+      "text": "Muévete hacia la Oficina.\nTienes 10 puntos de movimiento.\nLa IA bloquea 1 arista por turno.",
       "anchor_type": "node",
       "anchor_id": "Exterior",
       "position": "bottom",
@@ -52,7 +52,7 @@
     },
     {
       "id": "phase_defense",
-      "text": "BIEN! Llegaste a la Oficina.\nRumbo al Centro de Datos.\nCuidado con los perseguidores en el camino.\nPlanifica bien tu ruta final.",
+      "text": "¡BIEN! Llegaste a la Oficina.\nRumbo al Centro de Datos.\nCuidado con los perseguidores en el camino.\nPlanifica bien tu ruta final.",
       "anchor_type": "node",
       "anchor_id": "CentroDatos",
       "position": "top",
