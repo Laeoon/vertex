@@ -20,7 +20,7 @@
   "steps": [
     {
       "id": "intro_hacker",
-      "text": "MODO HACKER activado.\nTienes acceso a herramientas de infiltración.\nObjetivo: llegar al Core pasando por WebServer y AdminPanel.",
+      "text": "MODO HACKER activado.\nTienes acceso a herramientas de infiltración.\nObjetivo: llegar al Core pasando por WebServer y AdminPanel.\n\nFASES DE UN ATAQUE REAL — CYBER KILL CHAIN:\nEn ciberseguridad ofensiva, un ataque sigue fases\nbien definidas. Lockheed Martin las describió\ncomo la \"Cyber Kill Chain\" (7 fases):\n\nComo un ladrón que planea un robo:\n1) Reconocimiento = Estudiar la casa, buscar entradas\n2) Armas = Preparar herramientas para entrar\n3) Entrega = Llegar al punto de entrada\n4) Explotación = Forzar la entrada (cerradura, ventana)\n5) Instalación = Dejar una puerta abierta para volver\n6) Comando y Control = Comunicarse con cómplices\n7) Acciones = Lograr el objetivo (robar, destruir)\n\nEn Vertex, mapeamos estas fases a mecánicas:\n- Reconocimiento = Scan (tecla [X])\n- Explotación/Evasión = Bypass (tecla [1])\n- Escalada de privilegios = Escalate (tecla [2])\n- Persistencia = Persist (tecla [3])\n\nNOTA ÉTICA: La Cyber Kill Chain se usa tanto para\natacar como para DEFENDER. Los equipos de seguridad\nla usan para anticipar y bloquear cada fase.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -56,7 +56,7 @@
     },
     {
       "id": "exploit_explain",
-      "text": "EXPLOITS — HERRAMIENTAS DE HACKER:\n\n[1] BYPASS (Infiltración): Salta un nodo protegido.\nÚsalo cuando un nodo tiene defensa alta.\nCosto: +15 ruido.\n\n[2] ESCALATE (Elevación): Accede a áreas restringidas.\nÚsalo para llegar a nodos con privilegios.\nCosto: +25 ruido.\n\n[3] PERSIST (Mantenimiento): Conserva acceso 3 turnos.\nÚsalo para explorar sin perder posición.\nCosto: +10 ruido.\n\nRECUERDA: Cada exploit genera RUIDO.\nSi el ruido supera 60, aparecen perseguidores.",
+      "text": "EXPLOITS — HERRAMIENTAS DE HACKER:\n\n[1] BYPASS (Infiltración): Salta un nodo protegido.\nÚsalo cuando un nodo tiene defensa alta.\nCosto: +15 ruido.\n\nEn redes reales: evadir firewalls y controles de\nacceso usando túneles cifrados (VPN, SSH tunneling)\no proxies que ocultan tu origen. Herramientas como\nMetasploit automatizan la explotación de\nvulnerabilidades para atravesar defensas.\n\n[2] ESCALATE (Elevación): Accede a áreas restringidas.\nÚsalo para llegar a nodos con privilegios.\nCosto: +25 ruido.\n\nEn redes reales: \"privilege escalation\" — pasar\nde usuario normal a administrador explotando\nvulnerabilidades del sistema operativo o\nconfiguraciones incorrectas (sudo mal configurado,\npermisos SUID, servicios con privilegios).\n\n[3] PERSIST (Mantenimiento): Conserva acceso 3 turnos.\nÚsalo para explorar sin perder posición.\nCosto: +10 ruido.\n\nEn redes reales: \"persistence\" — mantener acceso\na largo plazo con backdoors, rootkits, o tareas\nprogramadas. Los atacantes avanzados (APT) pueden\npermanecer meses sin ser detectados.\n\nRECUERDA: Cada exploit genera RUIDO.\nSi el ruido supera 60, aparecen perseguidores.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -92,7 +92,7 @@
     },
     {
       "id": "after_first_move_hacker",
-      "text": "¡Bien! Llegaste a WebServer.\nContinúa hacia AdminPanel y luego a Core.\nUsa [P] para ver la ruta óptima.\nGestiona tu ruido y exploits con cuidado.",
+      "text": "¡Bien! Llegaste a WebServer.\nContinúa hacia AdminPanel y luego a Core.\nUsa [P] para ver la ruta óptima.\nGestiona tu ruido y exploits con cuidado.\n\nNOTA ÉTICA — MUY IMPORTANTE:\nLas técnicas que aprendes aquí son poderosas.\nEn el mundo real, usarlas sin autorización\nes ILEGAL y puede tener consecuencias graves.\n\nSolo debes usar estas técnicas en:\n1) Tus propios sistemas (práctica personal)\n2) Auditorías autorizadas (pentesting con contrato)\n3) Entornos de práctica controlados (como este juego)\n\nLas empresas contratan \"ethical hackers\" y equipos\nde \"red team\" para encontrar vulnerabilidades\nANTES que los atacantes reales. Es una profesión\nlegítima, bien pagada y en alta demanda.\n\nSi te interesa este camino, busca certificaciones\ncomo CEH (Certified Ethical Hacker) u OSCP\n(Offensive Security Certified Professional).",
       "anchor_type": "node",
       "anchor_id": "Core",
       "position": "top",
