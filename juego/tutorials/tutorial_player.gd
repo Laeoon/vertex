@@ -37,6 +37,16 @@ var _locale: Node = null
 var _btn_rect: Rect2 = Rect2()
 var _btn_hovered: bool = false
 
+# Task 3.2: Navigation
+var _show_step_index: bool = false
+
+# Task 3.3: Hints
+var _hint_used: bool = false
+var _attempts: int = 0
+var _hint_shown: bool = false
+var _hint_stuck_timer: float = 0.0
+var _hint_auto_after: float = 10.0
+
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -111,11 +121,53 @@ func advance() -> void:
 	if not is_active:
 		return
 	if _waiting_for_action and not _action_fulfilled:
+		_attempts += 1
+		if _attempts >= 3 and not _hint_shown and get_hint() != "":
+			_hint_shown = true
 		return
 	if current_step_index >= steps.size() - 1:
 		_finish_tutorial()
 		return
 	_advance_to_step(current_step_index + 1)
+
+
+func previous() -> void:
+	if not is_active or current_step_index <= 0:
+		return
+	_advance_to_step(current_step_index - 1)
+
+
+func go_to_step(idx: int) -> void:
+	if not is_active or idx < 0 or idx >= steps.size():
+		return
+	_advance_to_step(idx)
+
+
+func get_steps_summary() -> Array:
+	var summary: Array = []
+	for i in range(steps.size()):
+		var step: Dictionary = steps[i]
+		summary.append({
+			"index": i,
+			"id": step.get("id", ""),
+			"title": step.get("title", step.get("id", "Paso " + str(i + 1)))
+		})
+	return summary
+
+
+func get_hint() -> String:
+	if current_step_index < 0 or current_step_index >= steps.size():
+		return ""
+	var step: Dictionary = steps[current_step_index]
+	return step.get("hint", "")
+
+
+func show_hint() -> void:
+	if _hint_shown:
+		return
+	_hint_shown = true
+	_hint_used = true
+	GameLogger.info("TutorialPlayer", "Hint mostrado en paso %d" % (current_step_index + 1))
 
 
 func notify_action(action_type: String) -> void:
@@ -168,6 +220,11 @@ func _advance_to_step(idx: int) -> void:
 	_waiting_for_action = false
 	_auto_advance_timer = 0.0
 	_auto_advance_target = 0.0
+	_show_step_index = false
+	_hint_used = false
+	_attempts = 0
+	_hint_shown = false
+	_hint_stuck_timer = 0.0
 
 	var step: Dictionary = steps[idx]
 
@@ -219,6 +276,15 @@ func _process(delta: float) -> void:
 		if _auto_advance_timer >= _auto_advance_target:
 			advance()
 
+	# Auto-reveal hint after being stuck
+	if _waiting_for_action and not _hint_shown:
+		var step_hint: String = get_hint()
+		if step_hint != "":
+			_hint_stuck_timer += delta
+			if _hint_stuck_timer >= _hint_auto_after:
+				_hint_shown = true
+				_hint_used = true
+
 	queue_redraw()
 
 
@@ -231,14 +297,26 @@ func _input(event: InputEvent) -> void:
 			_on_next_pressed()
 			get_viewport().set_input_as_handled()
 
-	if _waiting_for_action:
-		return
-
 	if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
 		var k: InputEventKey = event as InputEventKey
 		match k.keycode:
+			KEY_LEFT, KEY_BACKSPACE:
+				previous()
+				get_viewport().set_input_as_handled()
+			KEY_ESCAPE:
+				skip()
+				get_viewport().set_input_as_handled()
+			KEY_I:
+				_show_step_index = not _show_step_index
+				get_viewport().set_input_as_handled()
+			KEY_H:
+				if _waiting_for_action:
+					show_hint()
+					get_viewport().set_input_as_handled()
 			KEY_ENTER, KEY_SPACE:
-				_on_next_pressed()
+				if not _waiting_for_action:
+					_on_next_pressed()
+					get_viewport().set_input_as_handled()
 
 
 func _on_next_pressed() -> void:
@@ -271,6 +349,10 @@ func _draw() -> void:
 	_draw_next_button()
 	_draw_step_indicator()
 	_draw_skip_hint()
+	if _hint_shown:
+		_draw_hint_panel()
+	if _show_step_index:
+		_draw_step_index_overlay()
 
 
 func _draw_floating_panel(text: String, position: String) -> void:
@@ -364,6 +446,13 @@ func _draw_step_indicator() -> void:
 	var start_x: float = (vp_size.x - total_w) / 2.0
 	var y: float = _panel_rect.position.y + _panel_rect.size.y + 55.0
 
+	# Draw step title above the dots
+	var current_step: Dictionary = steps[current_step_index]
+	var step_title: String = current_step.get("title", current_step.get("id", ""))
+	if step_title != "":
+		var title_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(step_title, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, y - 22.0)
+		draw_string(font, title_pos, step_title, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(_accent_color.r, _accent_color.g, _accent_color.b, _panel_alpha))
+
 	for i in range(total):
 		var cx: float = start_x + i * (dot_r * 2.0 + gap) + dot_r
 		var color: Color
@@ -375,12 +464,85 @@ func _draw_step_indicator() -> void:
 			color = Color(0.3, 0.3, 0.3, _panel_alpha * 0.4)
 		draw_circle(Vector2(cx, y), dot_r, color)
 
-	var step_label: String = "%s %d %s %d" % [t("tutorial.step"), current_step_index + 1, t("tutorial.of"), steps.size()]
-	draw_string(font, Vector2((vp_size.x - 60) / 2.0, y + 18.0), step_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, _panel_alpha * 0.7))
+	var step_label: String = "%s %d %s %d: %s" % [t("tutorial.step"), current_step_index + 1, t("tutorial.of"), steps.size(), step_title]
+	var label_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(step_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, y + 18.0)
+	draw_string(font, label_pos, step_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, _panel_alpha * 0.7))
+
+	# Draw tutorial objective if present
+	var objective: String = tutorial_data.get("objective", "")
+	if objective != "":
+		var obj_pos: Vector2 = Vector2((vp_size.x - font.get_string_size(objective, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, y + 34.0)
+		draw_string(font, obj_pos, objective, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.5, 0.5, 0.7, _panel_alpha * 0.6))
 
 
 func _draw_skip_hint() -> void:
 	var vp_size: Vector2 = get_viewport_rect().size
-	var text: String = "[ESC] %s" % t("tutorial.skip")
+	var text: String = "[←] %s  [Enter] %s  [ESC] %s  [I] %s" % [t("tutorial.previous"), t("tutorial.next"), t("tutorial.skip"), t("tutorial.index")]
 	var alpha: float = _panel_alpha * 0.5
-	draw_string(font, Vector2(vp_size.x - 220.0, vp_size.y - 15.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, alpha))
+	var text_width: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
+	draw_string(font, Vector2((vp_size.x - text_width) / 2.0, vp_size.y - 15.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, alpha))
+
+
+func _draw_hint_panel() -> void:
+	var step_hint: String = get_hint()
+	if step_hint == "":
+		return
+	var vp_size: Vector2 = get_viewport_rect().size
+	var panel_w: float = min(440.0, vp_size.x - 80.0)
+	var line_h: float = 16.0
+	var margin: float = 12.0
+	var hint_lines: PackedStringArray = step_hint.split("\n")
+	var panel_h: float = hint_lines.size() * line_h + 32.0
+
+	var panel_pos: Vector2 = Vector2(
+		(vp_size.x - panel_w) / 2.0,
+		_panel_rect.position.y + _panel_rect.size.y + 110.0
+	)
+
+	var bg: Color = Color(0.08, 0.08, 0.18, _panel_alpha * 0.9)
+	var border: Color = Color(1.0, 0.84, 0.0, _panel_alpha * 0.8)
+	draw_rect(Rect2(panel_pos, Vector2(panel_w, panel_h)), bg)
+	draw_rect(Rect2(panel_pos, Vector2(panel_w, panel_h)), border, false, 1.5)
+
+	var label: String = "💡 %s" % t("tutorial.hint_button")
+	draw_string(font, Vector2(panel_pos.x + margin, panel_pos.y + line_h), label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(1.0, 0.84, 0.0, _panel_alpha))
+
+	for i in range(hint_lines.size()):
+		draw_string(font, Vector2(panel_pos.x + margin, panel_pos.y + line_h * 2.0 + line_h * i), hint_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.9, 0.9, 0.9, _panel_alpha))
+
+
+func _draw_step_index_overlay() -> void:
+	var vp_size: Vector2 = get_viewport_rect().size
+	var overlay_w: float = min(360.0, vp_size.x - 60.0)
+	var line_h: float = 22.0
+	var margin: float = 16.0
+	var summary: Array = get_steps_summary()
+	var overlay_h: float = summary.size() * line_h + 48.0
+
+	var overlay_pos: Vector2 = Vector2(
+		(vp_size.x - overlay_w) / 2.0,
+		(vp_size.y - overlay_h) / 2.0
+	)
+
+	var bg: Color = Color(0.05, 0.05, 0.12, 0.95)
+	var border: Color = Color(_accent_color.r, _accent_color.g, _accent_color.b, 0.9)
+	draw_rect(Rect2(overlay_pos, Vector2(overlay_w, overlay_h)), bg)
+	draw_rect(Rect2(overlay_pos, Vector2(overlay_w, overlay_h)), border, false, 2.0)
+
+	var title: String = "📋 %s" % t("tutorial.index")
+	draw_string(font, Vector2(overlay_pos.x + margin, overlay_pos.y + 16.0), title, HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, Color(_accent_color.r, _accent_color.g, _accent_color.b, _panel_alpha))
+
+	for i in range(summary.size()):
+		var item: Dictionary = summary[i]
+		var is_current: bool = (i == current_step_index)
+		var color: Color
+		if is_current:
+			color = Color(_accent_color.r, _accent_color.g, _accent_color.b, _panel_alpha)
+		else:
+			color = Color(0.6, 0.6, 0.6, _panel_alpha * 0.8)
+		var prefix: String = "→ " if is_current else "  "
+		var step_text: String = "%s%d. %s" % [prefix, i + 1, item.get("title", "")]
+		draw_string(font, Vector2(overlay_pos.x + margin, overlay_pos.y + 38.0 + i * line_h), step_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, color)
+
+	var close_hint: String = "[I] %s" % t("tutorial.index")
+	draw_string(font, Vector2(overlay_pos.x + (overlay_w - font.get_string_size(close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, overlay_pos.y + overlay_h - 10.0), close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.5, 0.5, 0.5, _panel_alpha * 0.7))
