@@ -21,7 +21,7 @@
     {
       "id": "intro_defensa",
       "title": "Bienvenida",
-      "text": "MODO DEFENSOR — PROTEGE LA RED.\n\nBienvenido al lado azul de la ciberseguridad.\nTu objetivo: PROTEGER la red corporativa.\nUn atacante avanza desde Internet hacia Database.\nDebes bloquear sus rutas para detenerlo.\n\n¿QUÉ ES UN DEFENSOR DE RED?\nEn el mundo real, los defensores trabajan en un\nSOC (Security Operations Center) monitoreando\nla red 24/7. Sus herramientas incluyen:\n- SIEM: correlaciona millones de eventos/segundo\n- IDS/IPS: detecta y bloquea intrusiones\n- Firewalls: controlan el tráfico por reglas\n- EDR: monitorea endpoints en busca de anomalías\n\nTu rol en Vertex es el de un administrador de\nfirewall: decides qué conexiones bloquear para\nfrustrar el avance del atacante.\n\nEl atacante es inteligente — recalcula su ruta\nsi bloqueas su camino. ¡Anticípate a sus movimientos!\nBloquea rutas estratégicamente para detenerlo.",
+      "text": "MODO DEFENSOR — PROTEGE LA RED.\n\nBienvenido al lado azul de la ciberseguridad.\nUn atacante avanza desde Internet hacia Database.\nDebes bloquear sus rutas para detenerlo.\n\nEn el mundo real, los defensores trabajan en\nun SOC (Security Operations Center) usando:\n- SIEM: correlaciona eventos de seguridad\n- IDS/IPS: detecta y bloquea intrusiones\n- Firewalls: controlan tráfico por reglas\n\nTu rol: administrador de firewall. Bloquea\nconexiones para frustrar al atacante.\nEl atacante recalcula su ruta si bloqueas\nsu camino. ¡Anticípate!",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -34,7 +34,7 @@
     {
       "id": "how_to_block",
       "title": "Cómo Bloquear",
-      "text": "CÓMO BLOQUEAR — TU ARSENAL DEFENSIVO.\n\nHaz clic SOBRE UNA ARISTA (línea entre nodos)\npara bloquearla. La arista se marca en ROJO\ncon una X indicando que está bloqueada.\n\nCAPACIDAD DE BLOQUEO:\n- Puedes colocar hasta 3 bloqueos por turno\n- Cada bloqueo dura 5 turnos, luego expira\n- Las aristas bloqueadas son intransitables\n  para el atacante durante ese período\n\nANALOGÍA DEL MUNDO REAL:\nEn redes corporativas, esto equivale a:\n- Cerrar puertos en el firewall (bloqueas una arista)\n- Deshabilitar una VLAN (aíslas un segmento)\n- Revocar credenciales de acceso (cierras una ruta)\n- Aplicar una regla de ACL (Access Control List)\n\nLos administradores de red usan estas técnicas\ndiariamente para mantener la seguridad.\nTú ahora tienes ese poder en Vertex.\n\nCada turno puedes colocar hasta 3 bloqueos.\nLos bloqueos duran 5 turnos.",
+      "text": "CÓMO BLOQUEAR — TU ARSENAL DEFENSIVO.\n\nHaz clic SOBRE UNA ARISTA (línea entre nodos)\npara bloquearla. Se marca en ROJO con X.\n\nCAPACIDAD DE BLOQUEO:\n- Hasta 3 bloqueos por turno\n- Cada bloqueo dura 5 turnos, luego expira\n- Las aristas bloqueadas son intransitables\n\nEn el mundo real equivale a:\n- Cerrar puertos en el firewall\n- Deshabilitar una VLAN\n- Revocar credenciales de acceso\n- Aplicar reglas ACL\n\nCada turno puedes colocar hasta 3 bloqueos.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -47,7 +47,7 @@
     {
       "id": "try_block",
       "title": "¡Bloquea!",
-      "text": "¡BLOQUEA AL ATACANTE!\n\nIntenta bloquear una de las aristas que salen\nde Internet hacia la red interna.\n\nCÓMO HACERLO:\n1. Haz clic SOBRE LA LÍNEA (arista) que quieras bloquear\n2. Verás que se marca en ROJO con una X\n3. Presiona [Enter] para confirmar y resolver el turno\n\nESTRATEGIA INICIAL:\nEl atacante tiene 3 rutas desde Internet:\n- Internet → FirewallPer\n- Internet → Proxy\n- Internet → IDS\n\nBloquea la que creas que tomará primero.\nRecuerda: el atacante usa Dijkstra para encontrar\nla ruta más corta. Bloquea su camino más directo\ny oblígalo a tomar rutas más largas.\n\nEn defensa real, esto se llama \"network segmentation\"\ny \"access control\": aíslas segmentos críticos y\ncontrolas qué conexiones están permitidas.\n\n¡Prueba ahora!",
+      "text": "¡BLOQUEA AL ATACANTE!\n\nCÓMO HACERLO:\n1. Haz clic SOBRE LA LÍNEA (arista)\n2. Se marcará en ROJO con X\n3. Presiona [Enter] para confirmar\n\nESTRATEGIA INICIAL:\nEl atacante tiene 3 rutas desde Internet:\n- Internet → FirewallPer\n- Internet → Proxy\n- Internet → IDS\n\nBloquea la que creas que tomará primero.\nEl atacante usa Dijkstra para la ruta más\ncorta. Oblígalo a tomar caminos más largos.\n¡Prueba ahora!",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "bottom",
@@ -60,7 +60,7 @@
 	{
 		"id": "enemy_moves",
 		"title": "El Enemigo se Mueve",
-		"text": "EL ATACANTE USA DIJKSTRA — NO ES TONTO.\n\nCada turno, el atacante recalcula su ruta\nusando el algoritmo de Dijkstra. Siempre\nbusca el camino más corto hacia Database.\n\n¿QUÉ ES DIJKSTRA?\nEs un algoritmo clásico de teoría de grafos\n(creado por Edsger Dijkstra en 1956) que\nencuentra la ruta de menor costo entre dos\nnodos. Se usa en:\n- GPS y navegación (Google Maps, Waze)\n- Enrutamiento de redes (OSPF, IS-IS)\n- Videojuegos (pathfinding de enemigos)\n\nCÓMO REACCIONA A TUS BLOQUEOS:\n- Si bloqueas su ruta actual, recalcula\n- Si todas las rutas están bloqueadas, se detiene\n- Si encuentra una ruta más larga, la toma\n- NUNCA se rinde — siempre avanza si puede\n\nESTRATEGIA DEL ATACANTE:\nEl atacante es persistente pero predecible:\nsiempre elige el camino más corto disponible.\nUsa esto a tu favor: haz que el camino más\ncorto lleve a una trampa, o fuerza rutas\nlargas que consuman sus turnos.\n\nEn 18 turnos debes evitar que llegue a Database.\nCada bloqueo que colocas es tiempo que ganas.\nEl reloj está de tu lado si bloqueas bien.\n\nAhora observa cómo se mueve el enemigo\ny planifica tu próximo bloqueo.",
+      "text": "EL ATACANTE USA DIJKSTRA.\n\nCada turno, el atacante recalcula su ruta\nbuscando el camino más corto hacia Database.\n\nDijkstra (1956) es el algoritmo de ruta más\ncorta. Se usa en GPS, OSPF, y pathfinding.\n\nCÓMO REACCIONA A TUS BLOQUEOS:\n- Si bloqueas su ruta, recalcula\n- Si no hay ruta, se detiene (¡ganas!)\n- Siempre avanza si puede\n\nESTRATEGIA: El atacante es predecible —\nsiempre elige el camino más corto. Úsalo\na tu favor para forzar rutas largas.\nEn 18 turnos debes evitar que llegue.",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -73,7 +73,7 @@
 	{
 		"id": "strategy",
 		"title": "Estrategia Defensiva",
-		"text": "ESTRATEGIA DEFENSIVA — PIENSA COMO DEFENSOR.\n\nTienes 3 bloqueos por turno y 18 turnos.\nCada decisión cuenta. Aquí tienes estrategias\nprobadas del mundo real:\n\nESTRATEGIA 1 — DEFENSA EN PROFUNDIDAD:\nBloquea CERCA del objetivo (Database).\nEl atacante se acerca y se encuentra un muro.\n\nVentaja: máxima protección donde importa\nDesventaja: el atacante puede buscar rutas alternativas\n\nESTRATEGIA 2 — DEFENSA PERIMETRAL:\nBloquea CERCA del origen (Internet).\nEl atacante no puede ni empezar a avanzar.\n\nVentaja: detienes el ataque desde el principio\nDesventaja: necesitas bloquear muchas aristas\n\nESTRATEGIA 3 — CUELLO DE BOTELLA:\nIdentifica aristas por donde TODAS las rutas\npasan obligatoriamente y bloquéalas.\nUna sola arista bien puesta puede detener\nmúltiples rutas del atacante.\n\nVentaja: máxima eficiencia con pocos bloqueos\nDesventaja: requiere análisis previo de la red\n\nLA LÍNEA NARANJA muestra la ruta actual del\nenemigo. Si bloqueas AHÍ, lo obligas a\nrecalcular, perdiendo un turno valioso.\n\nCada turno que el atacante pasa recalculando\nes un turno que tú ganas. ¡Juega con el tiempo!",
+      "text": "ESTRATEGIA DEFENSIVA — PIENSA COMO DEFENSOR.\n\nTienes 3 bloqueos por turno, 18 turnos.\n\nESTRATEGIA 1 — DEFENSA EN PROFUNDIDAD:\nBloquea CERCA del objetivo. Máxima protección\ndonde importa.\n\nESTRATEGIA 2 — DEFENSA PERIMETRAL:\nBloquea CERCA del origen. Detienes el ataque\ndesde el principio, pero necesitas más bloqueos.\n\nESTRATEGIA 3 — CUELLO DE BOTELLA:\nIdentifica aristas por donde TODAS las rutas\npasan. Una arista bien puesta detiene múltiples\ncaminos. Máxima eficiencia.\n\nLa línea NARANJA muestra la ruta del enemigo.\nBloquéala para forzarlo a recalcular.",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -86,7 +86,7 @@
     {
       "id": "win_condition",
       "title": "Condiciones de Victoria",
-      "text": "CONDICIONES DE VICTORIA Y DERROTA.\n\nGANAS si el atacante NO llega a Database\nen 18 turnos. El reloj está de tu lado —\ncada turno que pasa sin que el enemigo\navance, te acerca a la victoria.\n\nPIERDES si el atacante alcanza Database.\nDatabase es tu activo más valioso:\ncontiene datos críticos que debes proteger\ncon todas tus capacidades defensivas.\n\nESTRATEGIA FINAL:\n- Mantén bloqueos activos en las rutas clave\n- Anticipa la ruta del atacante con Dijkstra\n- Renueva bloqueos ANTES de que expiren\n- Si el atacante cambia de ruta, adapta tus defensas\n\nEn el mundo real, los analistas de seguridad\njuegan este mismo juego cada día:\nmonitorear, anticipar, bloquear y adaptarse.\nLa defensa es un proceso continuo, no un evento único.\n\n¡Planifica, anticipa y protege!",
+      "text": "CONDICIONES DE VICTORIA Y DERROTA.\n\nGANAS si el atacante NO llega a Database\nen 18 turnos. El reloj está de tu lado.\n\nPIERDES si el atacante alcanza Database.\n\nESTRATEGIA FINAL:\n- Mantén bloqueos en rutas clave\n- Anticipa la ruta con Dijkstra\n- Renueva bloqueos ANTES de que expiren\n- Si el atacante cambia, adapta tus defensas\n\nEn el mundo real, los analistas de seguridad\njuegan esto cada día: monitorear, anticipar,\nbloquear y adaptarse.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",

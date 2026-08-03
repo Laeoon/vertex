@@ -16,7 +16,7 @@
     {
       "id": "intro",
       "title": "Bienvenida",
-      "text": "Ahora la IA está ACTIVA.\nElla analiza tu ruta con DIJKSTRA y BLOQUEA\nla arista más cercana a tu destino.\nDebes encontrar rutas alternativas.\n\n¿QUÉ ES UN FIREWALL?\nUn firewall es como un guardia de seguridad en\nla entrada de un edificio: decide quién entra y\npor dónde. En redes reales existen:\n- Firewalls de hardware: dispositivos físicos como\n  Cisco ASA, Fortinet, Palo Alto\n- Firewalls de software: programas como iptables\n  (Linux), Windows Defender Firewall\nEn Vertex, la IA hace el papel del firewall:\nbloquea rutas según tu comportamiento.\n\nEn una red corporativa real, un atacante enfrenta\nmúltiples capas de defensa. El firewall es solo\nla primera barrera. Aprender a esquivarlo es\nel primer paso del reconocimiento ofensivo.",
+      "text": "Ahora la IA está ACTIVA.\nElla analiza tu ruta con DIJKSTRA y BLOQUEA\nla arista más cercana a tu destino.\nDebes encontrar rutas alternativas.\n\n¿QUÉ ES UN FIREWALL?\nUn firewall decide quién entra y por dónde.\nEn Vertex, la IA hace el papel del firewall:\nbloquea rutas según tu comportamiento.\nEn una red corporativa real, un atacante\nenfrenta múltiples capas de defensa.\nAprender a esquivarlas es el primer paso\ndel reconocimiento ofensivo.\nMás detalles en GLOSARIO [G].",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -29,7 +29,7 @@
     {
       "id": "ai_block_explain",
       "title": "¿Cómo Piensa la IA?",
-      "text": "¿CÓMO PIENSA LA IA?\n1. Calcula tu ruta óptima actual\n2. Identifica la arista clave cerca del destino\n3. La BLOQUEA (marca X roja)\n4. Tú debes RECALCULAR tu ruta\n\nEs un sistema reactivo de defensa perimetral.\n\nEN EL MUNDO REAL:\nUn IPS (Intrusion Prevention System) hace\nexactamente esto: detecta actividad sospechosa\ny bloquea conexiones automáticamente.\nHerramientas reales como:\n- Snort: IPS open-source más usado del mundo\n- Suricata: IPS/IDS de alto rendimiento\n- fail2ban: bloquea IPs tras intentos fallidos\n\nLa IA de Vertex simula este comportamiento:\nte observa, predice tu ruta, y te bloquea\nproactivamente. ¡Como un IPS real!",
+      "text": "¿CÓMO PIENSA LA IA?\n1. Calcula tu ruta óptima actual\n2. Identifica la arista clave cerca del destino\n3. La BLOQUEA (marca X roja)\n4. Tú debes RECALCULAR tu ruta\n\nEs un sistema reactivo de defensa perimetral.\nEn el mundo real, un IPS (Intrusion Prevention\nSystem) hace esto: detecta actividad sospechosa\ny bloquea conexiones automáticamente.\nHerramientas: Snort, Suricata, fail2ban.\nLa IA de Vertex simula este comportamiento.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -55,7 +55,7 @@
     {
       "id": "find_alt",
       "title": "Rutas Alternativas",
-      "text": "Analiza el grafo:\n- Puerta_A → Target cuesta 3\n- Puerta_B → Target cuesta 5\nAunque Puerta_B es más caro, SIGUE SIENDO VÁLIDO.\nA veces la ruta larga es la ÚNICA disponible.\n\nEN REDES REALES:\nEsto se llama \"route redundancy\" — tener múltiples\ncaminos para llegar a un destino. Los protocolos\nde red implementan esto para alta disponibilidad:\n- HSRP (Hot Standby Router Protocol): Cisco\n- VRRP (Virtual Router Redundancy Protocol): estándar\n- BGP Multipath: múltiples rutas simultáneas\n\nCuando un enlace falla o es bloqueado, el tráfico\ntoma automáticamente una ruta alternativa.\n¡Igual que tú ahora con Puerta_B!",
+      "text": "Analiza el grafo:\n- Puerta_A → Target cuesta 3\n- Puerta_B → Target cuesta 5\nPuerta_B es más caro pero SIGUE SIENDO VÁLIDO.\nA veces la ruta larga es la ÚNICA disponible.\n\nEn redes reales, esto se llama \"route redundancy\":\nmúltiples caminos para llegar a un destino.\nProtocolos como HSRP y VRRP implementan esto.\nCuando un enlace falla, el tráfico toma\nautomáticamente una alternativa.",
       "anchor_type": "node",
       "anchor_id": "Inicio",
       "position": "bottom",
