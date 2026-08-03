@@ -129,7 +129,7 @@
       "highlight_edges": [],
       "pause_game": true,
       "action_required": null,
-      "auto_advance_after": 3.0
+      "auto_advance_after": 12.0
     }
   ]
 }

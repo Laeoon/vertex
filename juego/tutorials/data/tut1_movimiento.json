@@ -103,7 +103,7 @@
       "highlight_edges": [],
       "pause_game": true,
       "action_required": null,
-      "auto_advance_after": 4.0
+      "auto_advance_after": 8.0
     },
     {
       "id": "next_steps",
@@ -116,7 +116,7 @@
       "highlight_edges": [],
       "pause_game": true,
       "action_required": null,
-      "auto_advance_after": 3.0
+      "auto_advance_after": 8.0
     }
   ]
 }
