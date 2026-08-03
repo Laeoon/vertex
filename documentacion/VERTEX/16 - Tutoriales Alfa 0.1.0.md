@@ -45,6 +45,63 @@ La información detallada del mundo real (herramientas, protocolos, analogías e
 - Modo ataque muestra "VICTORIA" con estadísticas.
 - Modo defensa muestra "VICTORIA DEFENSIVA" con su propio panel.
 
+## Slice Día 3.8 v2 — Fix Tutorial UX (2026-08-02)
+
+### Problemas Reportados
+
+1. `tut_desc` no se mostraba para tutoriales 4, 5, 6 en el menú de mundos.
+2. La ventana del tutorial tapaba la vista del tablero durante las acciones.
+3. Las acciones (ej. escanear en modo hacker) no completaban el requerimiento.
+4. Tab + Enter accidental llevaba al jugador por el camino incorrecto (perdía).
+5. Faltaban guías visuales ("railes") de qué acción hacer.
+
+### Nuevo Patrón: Explicación (ventana) vs. Acción (recordatorio)
+
+**Flujo:** explicación → [Enter] → recordatorio pequeño → acción en el juego → [Enter] → siguiente explicación...
+
+| Tipo de paso | Elemento | Posición | Contenido |
+|--------------|----------|----------|-----------|
+| Informativo (sin `action_required`) | Panel grande | Centro | Título, texto completo, objetivo, botón Siguiente |
+| Acción (`action_required` no vacío) | Recordatorio compacto | Arriba (top) | "⚠ ACCIÓN: <nombre>", cómo hacerla, "[Enter] cuando completes la acción" |
+
+- El recordatorio NO tapa el área de juego (barra superior compacta).
+- La ventana de explicación NO se hace más pequeña: se reserva solo para pasos informativos.
+- `[Enter]` CONFIRMA: en pasos de acción solo avanza si la acción ya se cumplió;
+  si no, el evento pasa al juego (para que mover o resolver del defensor funcionen).
+- Borde ámbar pulsante mientras se espera la acción → borde verde al cumplirla (Rail 4).
+
+### Cambios por Archivo
+
+- `core/locale/{es,en,pt}.json` — Añadidas `tut4_desc`–`tut7_desc` (faltaban → el selector mostraba la clave literal).
+- `escenas/main_menu/tutorials_menu.gd` — tut7 ahora usa `loc("tut7_desc")`.
+- `juego/tutorials/tutorial_player.gd` —
+  - `notify_action()` ya NO auto-avanza: marca la acción cumplida y espera [Enter].
+  - `can_perform_action(tipo)` — bloquea acciones distintas a la requerida.
+  - `_draw_action_reminder()` — recordatorio superior para pasos de acción.
+  - `_input` [Enter/Espacio]: avanza si la acción se cumplió; si no, no consume el evento.
+  - Auto-advance por tiempo solo en pasos informativos.
+- `juego/ataque/juego_ataque.gd` — Notificaciones al tutorial: escaneo
+  (`_scan_selected_node`), exploits (`_use_hacker_exploit`), bloqueo de arista y
+  firewall del defensor (solo cuando la acción se aplicó de verdad).
+- `juego/ataque/input_handler.gd` — Bloqueo de acciones incorrectas durante el
+  tutorial con mensaje "completa la acción indicada" (mover, escanear, exploits,
+  clics de defensor).
+- `juego/ataque/game_renderer.gd` — Railes visuales: highlight más grande y
+  brillante con anillo pulsante (Rail 1) y flecha desde el jugador al objetivo
+  en pasos de acción (Rail 3).
+- `juego/tutorials/data/tut6_combined.json` — `try_attack` ahora es
+  `action_required: "move"` (la acción es moverse a la Oficina) + hint añadido.
+- `juego/tutorials/test_tutorial_system.gd` — Tests actualizados al nuevo flujo
+  (16 tests: incluye `can_perform_action`).
+
+### Verificación del Slice
+
+- ✅ Tutorial system test: 16/16 passed
+- ✅ Main test suite (run_all.gd): 7/7 passed
+- ✅ Smoke test de escena (tut1 + tut4_hacker): sin errores de runtime
+- ✅ 0 errores de script (importación en editor)
+- ✅ 10 JSONs válidos
+
 ## Slice Día 3.6 — Correcciones de Bugs y QoL (2026-08-02)
 
 ### Bugs Corregidos
@@ -160,7 +217,7 @@ La información detallada del mundo real (herramientas, protocolos, analogías e
 | Tecla | Acción |
 |-------|--------|
 | ← / Backspace | Volver al paso anterior |
-| Enter / Espacio | Avanzar al siguiente paso |
+| Enter / Espacio | Avanzar al siguiente paso (en pasos de acción: confirmar acción completada) |
 | ESC | Saltar tutorial |
 | I | Mostrar / ocultar índice de pasos |
 | H | Mostrar pista (en pasos con acción requerida) |
@@ -208,7 +265,7 @@ El glosario es accesible en cualquier momento con la tecla [G]. Incluye:
 
 ## Verificación del Release
 
-- ✅ Tutorial system test: 15/15 passed
+- ✅ Tutorial system test: 16/16 passed
 - ✅ Main test suite (run_all.gd): 7/7 passed
 - ✅ Zero script errors on startup
 - ✅ All JSONs valid (8 archivos: 7 tutoriales + glosario)

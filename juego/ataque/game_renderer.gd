@@ -40,6 +40,10 @@ func draw_circle(pos: Vector2, radius: float, color: Color, filled: bool = true,
 	_canvas.draw_circle(pos, radius, color, filled, width, antialiased)
 
 
+func draw_polygon(points: PackedVector2Array, color: Color) -> void:
+	_canvas.draw_colored_polygon(points, color)
+
+
 func draw_string(pos: Vector2, text: String, alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1, font_size_override: int = -1, color: Color = Color.WHITE) -> void:
 	var fs: int = font_size_override if font_size_override > 0 else font_size
 	_canvas.draw_string(font, pos, text, alignment, width, fs, color)
@@ -732,7 +736,11 @@ func draw_node_info_panel(
 		py += line_h
 
 
-func draw_tutorial_highlights(tutorial_player, node_positions: Dictionary, node_radius: float) -> void:
+func draw_tutorial_highlights(tutorial_player, node_positions: Dictionary, node_radius: float, player_pos: StringName = &"") -> void:
+	## Railes visuales del tutorial (Slice 3.8 v2):
+	##   Rail 1 — nodos destacados más grandes, brillantes y con anillo pulsante.
+	##   Rail 3 — flecha desde la posición del jugador al nodo objetivo cuando el
+	##            paso actual pide una acción (move/input).
 	if tutorial_player == null or not tutorial_player.is_active:
 		return
 	var idx: int = tutorial_player.current_step_index
@@ -740,17 +748,52 @@ func draw_tutorial_highlights(tutorial_player, node_positions: Dictionary, node_
 		return
 	var step: Dictionary = tutorial_player.steps[idx]
 
+	var is_action_step: bool = false
+	var ar = step.get("action_required", "")
+	if ar != null and str(ar) != "":
+		is_action_step = true
+
 	var highlight_nodes: Array = step.get("highlight_nodes", [])
 	for nid in highlight_nodes:
 		if not node_positions.has(nid):
 			continue
 		var pos: Vector2 = node_positions[nid] as Vector2
-		var r: float = node_radius + 10.0
-		var pulse: float = 0.5 + sin(Time.get_ticks_msec() * 0.005) * 0.3
-		var color: Color = Color(0.0, 0.9, 1.0, pulse)
-		draw_circle(pos, r, Color(color.r, color.g, color.b, 0.15))
+		var r: float = node_radius + (16.0 if is_action_step else 10.0)
+		var t: float = Time.get_ticks_msec() * 0.005
+		var pulse: float = 0.5 + sin(t) * 0.3
+		var color: Color
+		if is_action_step:
+			# Verde brillante: nodo sobre el que hay que actuar ahora
+			color = Color(0.3, 1.0, 0.6, 0.55 + pulse * 0.45)
+		else:
+			color = Color(0.0, 0.9, 1.0, pulse)
+		draw_circle(pos, r, Color(color.r, color.g, color.b, 0.18))
 		draw_circle(pos, r, color, false, 3.0)
-		draw_circle(pos, r + 4.0, Color(color.r, color.g, color.b, pulse * 0.5), false, 2.0)
+		# Anillo exterior pulsante
+		var ring_r: float = r + 4.0 + sin(t * 1.4) * 3.0
+		draw_circle(pos, ring_r, Color(color.r, color.g, color.b, pulse * 0.5), false, 2.0)
+
+	# Rail 3: flecha hacia el objetivo — desde la posición del jugador al
+	# primer nodo destacado que no sea el propio jugador (en pasos de acción).
+	if is_action_step and player_pos != &"" and not highlight_nodes.is_empty():
+		var target_nid: String = ""
+		for nid in highlight_nodes:
+			if str(nid) != str(player_pos):
+				target_nid = str(nid)
+				break
+		var player_key: String = str(player_pos)
+		if target_nid != "" and node_positions.has(target_nid) and node_positions.has(player_key):
+			var from_pos: Vector2 = node_positions[player_key] as Vector2
+			var to_pos: Vector2 = node_positions[target_nid] as Vector2
+			if from_pos != to_pos:
+				var t2: float = Time.get_ticks_msec() * 0.004
+				var alpha: float = 0.55 + sin(t2) * 0.35
+				var dir: Vector2 = (to_pos - from_pos).normalized()
+				var tip: Vector2 = to_pos - dir * (node_radius + 20.0)
+				var base: Vector2 = tip - dir * 26.0
+				var perp: Vector2 = Vector2(-dir.y, dir.x) * 9.0
+				draw_line(from_pos, tip, Color(0.3, 1.0, 0.6, alpha), 3.0, true)
+				draw_polygon(PackedVector2Array([tip, base + perp, base - perp]), Color(0.3, 1.0, 0.6, alpha))
 
 	var highlight_edges: Array = step.get("highlight_edges", [])
 	for edge_key in highlight_edges:
