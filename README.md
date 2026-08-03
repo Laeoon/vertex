@@ -4,6 +4,36 @@
 
 Juego educativo que enseña conceptos de ciberseguridad y teoría de grafos mediante mecánicas de estrategia. El jugador debe navegar redes, evitar detección, y completar objetivos usando algoritmos como Dijkstra (pathfinding) y Edmonds-Karp (max-flow/min-cut).
 
+## Descarga Rápida
+
+Si solo querés una copia del proyecto (sin historial de Git):
+
+```bash
+# Última versión estable (main branch)
+curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz
+tar -xzf vertex.tar.gz && cd vertex-main
+
+# Versión específica (ej: alfa 0.1.0 - reemplazar con el tag real)
+curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.1.0-alpha.tar.gz
+tar -xzf vertex.tar.gz
+```
+
+**Alternativas:**
+
+```bash
+# Con wget (si no tenés curl)
+wget https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz
+
+# Clonar con historial completo (recomendado para desarrollo)
+git clone https://github.com/Laeoon/vertex.git
+cd vertex
+
+# Solo una versión específica de forma shallow (más rápido, menos espacio)
+git clone --depth 1 https://github.com/Laeoon/vertex.git
+```
+
+Después de descargar, abrí `project.godot` con Godot 4.7+ y presioná F5.
+
 ## Stack
 
 - **Motor**: Godot 4.7 (GDScript)
