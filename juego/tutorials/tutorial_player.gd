@@ -226,6 +226,10 @@ func toggle_glossary() -> void:
 
 
 func notify_action(action_type: String) -> void:
+	## Marca la acción del paso actual como cumplida cuando el juego reporta
+	## que el jugador la ejecutó (mover, escanear, explotar, bloquear...).
+	## NO avanza automáticamente: el avance se confirma con [Enter] para dar
+	## control al jugador y evitar saltos accidentales (Slice 3.8 v2).
 	if not is_active or not _waiting_for_action:
 		return
 	var step: Dictionary = steps[current_step_index]
@@ -234,8 +238,6 @@ func notify_action(action_type: String) -> void:
 		required = ""
 	if required == "" or required == action_type:
 		_action_fulfilled = true
-		if step.get("auto_advance_after", null) == null:
-			advance()
 
 
 func notify_moved() -> void:
@@ -244,6 +246,37 @@ func notify_moved() -> void:
 
 func notify_input() -> void:
 	notify_action("input")
+
+
+func can_perform_action(action_type: String) -> bool:
+	## Devuelve si la acción `action_type` está permitida ahora mismo.
+	## Durante un paso de acción (action_required != "") SOLO se permite la
+	## acción requerida; cualquier otra se bloquea (evita Tab+Enter / X /
+	## exploits accidentales que desvían al jugador por el camino incorrecto).
+	## Fuera del tutorial, de pasos informativos o sin acción pendiente,
+	## siempre devuelve true.
+	if not is_active or current_step_index < 0 or current_step_index >= steps.size():
+		return true
+	if not _waiting_for_action:
+		return true
+	var required = steps[current_step_index].get("action_required", "")
+	if required == null:
+		required = ""
+	if required == "":
+		return true
+	return required == action_type
+
+
+func step_requires_action() -> bool:
+	## True si el paso actual pide una acción (action_required no vacío).
+	if not is_active or current_step_index < 0 or current_step_index >= steps.size():
+		return false
+	return _step_requires_action(steps[current_step_index])
+
+
+func _step_requires_action(step: Dictionary) -> bool:
+	var ar = step.get("action_required", "")
+	return ar != null and str(ar) != ""
 
 
 func get_highlight_nodes() -> Array:
@@ -327,7 +360,9 @@ func _process(delta: float) -> void:
 	if is_active:
 		_panel_alpha = move_toward(_panel_alpha, _target_alpha, delta * 5.0)
 
-		if _auto_advance_target > 0.0:
+		if _auto_advance_target > 0.0 and not _waiting_for_action:
+			# El auto-avance por tiempo solo aplica a pasos informativos; un
+			# paso de acción NUNCA avanza solo (requiere la acción + [Enter]).
 			_auto_advance_timer += delta
 			if _auto_advance_timer >= _auto_advance_target:
 				advance()
@@ -392,7 +427,15 @@ func _input(event: InputEvent) -> void:
 					_show_help_overlay = not _show_help_overlay
 				get_viewport().set_input_as_handled()
 			KEY_ENTER, KEY_SPACE:
-				if not _waiting_for_action:
+				# Slice 3.8 v2 — [Enter] confirma. En pasos de acción solo avanza
+				# si la acción YA se cumplió; si no, el evento se deja pasar sin
+				# consumir para que el juego pueda procesarlo (mover, resolver
+				# turno del defensor, etc.) y el jugador complete la acción.
+				if _waiting_for_action:
+					if _action_fulfilled:
+						_on_next_pressed()
+						get_viewport().set_input_as_handled()
+				else:
 					_on_next_pressed()
 					get_viewport().set_input_as_handled()
 
@@ -405,13 +448,15 @@ func _update_tooltip_buttons() -> void:
 	_tooltip_buttons.clear()
 	var vp_size: Vector2 = get_viewport_rect().size
 
-	# Next button
-	var btn_rect: Rect2 = _get_next_button_rect()
-	_tooltip_buttons.append({
-		"rect": btn_rect,
-		"text": "Avanzar al siguiente paso",
-		"en": "Advance to the next step"
-	})
+	# Next button (solo en pasos informativos; en pasos de acción el avance
+	# se confirma con [Enter] desde el recordatorio superior)
+	if not _waiting_for_action:
+		var btn_rect: Rect2 = _get_next_button_rect()
+		_tooltip_buttons.append({
+			"rect": btn_rect,
+			"text": "Avanzar al siguiente paso",
+			"en": "Advance to the next step"
+		})
 
 	# Previous (←) area
 	var prev_rect: Rect2 = Rect2(Vector2(15.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
@@ -495,10 +540,19 @@ func _draw() -> void:
 		var step: Dictionary = steps[current_step_index]
 		var text: String = step.get("text", "")
 		var position: String = step.get("position", "center")
+		var requires_action: bool = _step_requires_action(step)
 
-		_draw_floating_panel(text, position)
-		_draw_next_button()
-		_draw_step_indicator()
+		# Slice 3.8 v2 — dos modos de render:
+		#   - Paso informativo → panel grande centrado (explicación).
+		#   - Paso de acción   → recordatorio compacto ARRIBA, sin tapar la
+		#     vista del tablero; la acción se juega en el juego y se confirma
+		#     con [Enter].
+		if requires_action:
+			_draw_action_reminder(step)
+		else:
+			_draw_floating_panel(text, position)
+			_draw_next_button()
+			_draw_step_indicator()
 		_draw_controls_bar()
 		if _hint_shown:
 			_draw_hint_panel()
@@ -567,6 +621,91 @@ func _draw_floating_panel(text: String, position: String) -> void:
 			lcolor = Color(_warning_color.r, _warning_color.g, _warning_color.b, text_alpha)
 		draw_string(font, Vector2(text_x, text_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lcolor)
 		text_y += line_h
+
+
+func _get_action_short_name(action_type: String) -> String:
+	## Nombre corto y legible de una acción requerida (Rail 2 del Slice 3.8 v2).
+	match action_type:
+		"move":
+			return "MOVERSE"
+		"scan":
+			return "ESCANEAR"
+		"input":
+			return "ACCIÓN"
+		_:
+			return action_type.to_upper()
+
+
+func _get_action_key_hint(action_type: String) -> String:
+	## Pista de tecla/gesto para una acción requerida (Rail 2 del Slice 3.8 v2).
+	match action_type:
+		"move":
+			return "Haz clic en un nodo o usa [Tab] + [Enter]"
+		"scan":
+			return "Presiona [X] para escanear"
+		_:
+			return ""
+
+
+func _draw_action_reminder(step: Dictionary) -> void:
+	## Recordatorio compacto (Slice 3.8 v2) para pasos que piden una acción.
+	## Se dibuja en la parte SUPERIOR de la pantalla para NO tapar el tablero:
+	## muestra el nombre de la acción, cómo hacerla y la confirmación con
+	## [Enter]. No sustituye al juego: el jugador ejecuta la acción en el
+	## tablero y luego presiona [Enter] para avanzar.
+	var vp_size: Vector2 = get_viewport_rect().size
+	var action_type: String = str(step.get("action_required", ""))
+	var short_name: String = _get_action_short_name(action_type)
+	var title: String = step.get("title", "")
+
+	var rem_w: float = min(580.0, vp_size.x - 24.0)
+	var line_h: float = 18.0
+	var margin: float = 14.0
+
+	# Línea de detalle: hint del paso → pista de tecla → primera línea del texto.
+	var detail: String = step.get("hint", "")
+	if detail == "":
+		detail = _get_action_key_hint(action_type)
+	if detail == "":
+		for l in String(step.get("text", "")).split("\n"):
+			if l.strip_edges() != "":
+				detail = l.strip_edges()
+				break
+
+	var header: String = "⚠ %s: %s" % [short_name, title]
+	var confirm_label: String = "Presiona [Enter] cuando completes la acción"
+	if _action_fulfilled:
+		confirm_label = "✅ ¡Acción completada! Presiona [Enter] para continuar"
+
+	var detail_lines: Array[String] = []
+	if detail != "":
+		detail_lines = _wrap_text(detail, rem_w - margin * 2.0, small_font_size)
+
+	var rem_h: float = line_h * (2 + detail_lines.size()) + 18.0
+	var rem_pos: Vector2 = Vector2((vp_size.x - rem_w) / 2.0, 10.0)
+	_panel_rect = Rect2(rem_pos, Vector2(rem_w, rem_h))
+
+	var alpha: float = _panel_alpha
+	var bg: Color = Color(_panel_color.r, _panel_color.g, _panel_color.b, alpha * 0.95)
+	var border: Color
+	if _action_fulfilled:
+		border = Color(0.3, 1.0, 0.5, alpha)  # verde: acción cumplida (Rail 4)
+	else:
+		var pulse: float = 0.7 + sin(Time.get_ticks_msec() * 0.006) * 0.3
+		border = Color(1.0, 0.84, 0.0, alpha * pulse)  # ámbar pulsante
+
+	draw_rect(_panel_rect, bg)
+	draw_rect(_panel_rect, border, false, 2.0)
+
+	var text_x: float = rem_pos.x + margin
+	var y: float = rem_pos.y + 14.0
+	draw_string(font, Vector2(text_x, y), header, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(_accent_color.r, _accent_color.g, _accent_color.b, alpha))
+	y += line_h
+	for dl in detail_lines:
+		draw_string(font, Vector2(text_x, y), dl, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.92, 0.92, 0.92, alpha))
+		y += line_h
+	var confirm_color: Color = Color(0.4, 1.0, 0.6, alpha) if _action_fulfilled else Color(0.7, 0.7, 0.7, alpha * 0.9)
+	draw_string(font, Vector2(text_x, y), confirm_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, confirm_color)
 
 
 func _draw_next_button() -> void:
@@ -671,7 +810,7 @@ func _draw_controls_bar() -> void:
 
 	var controls_text: String
 	if _waiting_for_action:
-		controls_text = "[" + t("tutorial.hint_action") + "]  [←] %s  [I] Índice  [G] Glosario  [H] Pista  [ESC] Saltar" % t("tutorial.previous")
+		controls_text = "[Enter] confirmar al completar  [←] %s  [I] Índice  [G] Glosario  [H] Pista  [ESC] Saltar" % t("tutorial.previous")
 	else:
 		controls_text = "[Enter/Espacio] %s  [←] %s  [I] Índice  [G] Glosario  [H] Ayuda  [ESC] Saltar" % [t("tutorial.next"), t("tutorial.previous")]
 
@@ -693,7 +832,7 @@ func _draw_hint_panel() -> void:
 
 	var panel_pos: Vector2 = Vector2(
 		(vp_size.x - panel_w) / 2.0,
-		_panel_rect.position.y + _panel_rect.size.y + 110.0
+		_panel_rect.position.y + _panel_rect.size.y + (12.0 if _waiting_for_action else 110.0)
 	)
 
 	var bg: Color = Color(0.08, 0.08, 0.18, _panel_alpha * 0.9)

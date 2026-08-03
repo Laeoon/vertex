@@ -82,7 +82,8 @@ func _run_tests() -> void:
 	# Advance through step 2 (move_basics, no action_required) to step 3
 	tp.advance()
 
-	# TEST 8: Action required blocks advance at step 3
+	# TEST 8: Action required blocks advance at step 3 + can_perform_action
+	# restringe a la acción requerida (Slice 3.8 v2)
 	tp.advance()
 	if tp.current_step_index == 3 and tp._waiting_for_action:
 		print("PASS: action_required bloquea advance")
@@ -91,24 +92,33 @@ func _run_tests() -> void:
 		print("FAIL: no bloqueo (step=%d wait=%s)" % [tp.current_step_index, tp._waiting_for_action])
 		failed += 1
 
-	# TEST 9: notify_action fulfills and auto-advances to step 4
+	# TEST 9: can_perform_action permite SOLO la acción requerida
+	if tp.can_perform_action("move") and not tp.can_perform_action("input") and not tp.can_perform_action("scan"):
+		print("PASS: can_perform_action restringe a la acción requerida")
+		passed += 1
+	else:
+		print("FAIL: can_perform_action (move=%s input=%s scan=%s)" % [tp.can_perform_action("move"), tp.can_perform_action("input"), tp.can_perform_action("scan")])
+		failed += 1
+
+	# TEST 10: notify_action cumple SIN avanzar (espera confirmación con Enter)
 	tp.notify_action("move")
-	if tp.current_step_index == 4:
-		print("PASS: notify_action() cumple y avanza a paso 4")
+	if tp._action_fulfilled and tp.current_step_index == 3:
+		print("PASS: notify_action() cumple y espera confirmación [Enter]")
 		passed += 1
 	else:
-		print("FAIL: notify_action() (step=%d)" % tp.current_step_index)
+		print("FAIL: notify_action() (step=%d fulfilled=%s)" % [tp.current_step_index, tp._action_fulfilled])
 		failed += 1
 
-	# TEST 10: Already advanced to step 4, no need to call advance()
+	# TEST 11: advance() tras la acción cumplida avanza a paso 4
+	tp.advance()
 	if tp.current_step_index == 4:
-		print("PASS: ya en paso 4 (auto-advance)")
+		print("PASS: advance() avanza tras acción cumplida")
 		passed += 1
 	else:
-		print("FAIL: no auto-advanco (step=%d)" % tp.current_step_index)
+		print("FAIL: advance() tras acción (step=%d)" % tp.current_step_index)
 		failed += 1
 
-	# TEST 11: Highlight nodes on step with highlights (step 4: after_first_move)
+	# TEST 12: Highlight nodes on step with highlights (step 4: after_first_move)
 	var highlights: Array = tp.get_highlight_nodes()
 	if highlights.size() == 2 and highlights[0] == "Relay" and highlights[1] == "Target":
 		print("PASS: get_highlight_nodes() correcto")
@@ -117,7 +127,7 @@ func _run_tests() -> void:
 		print("FAIL: highlights: %s (step=%d)" % [str(highlights), tp.current_step_index])
 		failed += 1
 
-	# TEST 12: Skip
+	# TEST 13: Skip
 	tp.skip()
 	if not tp.is_active and tp.current_step_index == -1:
 		print("PASS: skip() desactiva")
@@ -126,7 +136,7 @@ func _run_tests() -> void:
 		print("FAIL: skip() (active=%s step=%d)" % [tp.is_active, tp.current_step_index])
 		failed += 1
 
-	# TEST 13: Load tut2
+	# TEST 14: Load tut2
 	var loaded2: bool = tp.load_tutorial("res://juego/tutorials/data/tut2_perimetro.json")
 	if loaded2 and tp.steps.size() == 7:
 		print("PASS: tut2 carga (7 pasos)")
@@ -135,7 +145,7 @@ func _run_tests() -> void:
 		print("FAIL: tut2 no cargo")
 		failed += 1
 
-	# TEST 14: Load tut3
+	# TEST 15: Load tut3
 	var loaded3: bool = tp.load_tutorial("res://juego/tutorials/data/tut3_avanzado.json")
 	if loaded3 and tp.steps.size() == 9:
 		print("PASS: tut3 carga (9 pasos)")
@@ -144,7 +154,7 @@ func _run_tests() -> void:
 		print("FAIL: tut3 no cargo")
 		failed += 1
 
-	# TEST 15: is_game_paused on active tutorial
+	# TEST 16: is_game_paused on active tutorial
 	tp.start()
 	if tp.is_game_paused():
 		print("PASS: is_game_paused() en tut3")
