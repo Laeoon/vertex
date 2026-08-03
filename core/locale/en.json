@@ -8,6 +8,12 @@
   "hint_next": "Click Next to continue",
   "hint_action": "Perform the indicated action to advance",
 
+  "tutorial.next": "Next",
+  "tutorial.skip": "Skip",
+  "tutorial.step": "Step",
+  "tutorial.of": "of",
+  "tutorial.hint_action": "Perform the action",
+
   "menu.title": "VERTEX",
   "menu.subtitle": "Cybersecurity Simulator",
   "menu.play": "Play",

@@ -341,9 +341,9 @@ func _draw_next_button() -> void:
 
 	var label: String
 	if not can_advance:
-		label = t("hint_action")
+		label = t("tutorial.hint_action")
 	else:
-		label = t("next")
+		label = t("tutorial.next")
 	var text_size: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 	var text_pos: Vector2 = Vector2(
 		_btn_rect.position.x + (_btn_rect.size.x - text_size.x) / 2.0,
@@ -375,12 +375,12 @@ func _draw_step_indicator() -> void:
 			color = Color(0.3, 0.3, 0.3, _panel_alpha * 0.4)
 		draw_circle(Vector2(cx, y), dot_r, color)
 
-	var step_label: String = "%s %d %s %d" % [t("step"), current_step_index + 1, t("of"), steps.size()]
+	var step_label: String = "%s %d %s %d" % [t("tutorial.step"), current_step_index + 1, t("tutorial.of"), steps.size()]
 	draw_string(font, Vector2((vp_size.x - 60) / 2.0, y + 18.0), step_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, _panel_alpha * 0.7))
 
 
 func _draw_skip_hint() -> void:
 	var vp_size: Vector2 = get_viewport_rect().size
-	var text: String = "[ESC] %s" % t("skip")
+	var text: String = "[ESC] %s" % t("tutorial.skip")
 	var alpha: float = _panel_alpha * 0.5
 	draw_string(font, Vector2(vp_size.x - 220.0, vp_size.y - 15.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, alpha))
