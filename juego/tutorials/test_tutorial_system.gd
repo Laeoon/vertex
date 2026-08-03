@@ -19,8 +19,8 @@ func _run_tests() -> void:
 
 	# TEST 1: JSON loads
 	var loaded: bool = tp.load_tutorial("res://juego/tutorials/data/tut1_movimiento.json")
-	if loaded and tp.steps.size() == 5:
-		print("PASS: tutorial JSON carga (5 pasos)")
+	if loaded and tp.steps.size() == 8:
+		print("PASS: tutorial JSON carga (8 pasos)")
 		passed += 1
 	else:
 		print("FAIL: tutorial JSON no cargo (loaded=%s steps=%d)" % [loaded, tp.steps.size()])
@@ -61,16 +61,16 @@ func _run_tests() -> void:
 		print("FAIL: is_game_paused()=false en paso 1")
 		failed += 1
 
-	# TEST 6: Step 2 has action_required="move"
-	var step2: Dictionary = tp.steps[2]
-	if step2.get("action_required", "") == "move":
-		print("PASS: paso 2 tiene action_required=move")
+	# TEST 6: Step 3 has action_required="move"
+	var step3: Dictionary = tp.steps[3]
+	if step3.get("action_required", "") == "move":
+		print("PASS: paso 3 tiene action_required=move")
 		passed += 1
 	else:
-		print("FAIL: paso 2 action_required=%s" % step2.get("action_required"))
+		print("FAIL: paso 3 action_required=%s" % step3.get("action_required"))
 		failed += 1
 
-	# TEST 7: Advance to step 2 (no blocking since step 1 has no action)
+	# TEST 7: Advance to step 2 (step 1 has no action_required)
 	tp.advance()
 	if tp.current_step_index == 2:
 		print("PASS: advance() → paso 2")
@@ -79,35 +79,38 @@ func _run_tests() -> void:
 		print("FAIL: advance() a paso 2 fallo (step=%d)" % tp.current_step_index)
 		failed += 1
 
-	# TEST 8: Action required blocks advance
+	# Advance through step 2 (move_basics, no action_required) to step 3
 	tp.advance()
-	if tp.current_step_index == 2 and tp._waiting_for_action:
+
+	# TEST 8: Action required blocks advance at step 3
+	tp.advance()
+	if tp.current_step_index == 3 and tp._waiting_for_action:
 		print("PASS: action_required bloquea advance")
 		passed += 1
 	else:
 		print("FAIL: no bloqueo (step=%d wait=%s)" % [tp.current_step_index, tp._waiting_for_action])
 		failed += 1
 
-	# TEST 9: notify_action fulfills and auto-advances
+	# TEST 9: notify_action fulfills and auto-advances to step 4
 	tp.notify_action("move")
-	if tp.current_step_index == 3:
-		print("PASS: notify_action() cumple y avanza a paso 3")
+	if tp.current_step_index == 4:
+		print("PASS: notify_action() cumple y avanza a paso 4")
 		passed += 1
 	else:
 		print("FAIL: notify_action() (step=%d)" % tp.current_step_index)
 		failed += 1
 
-	# TEST 10: Already advanced, no need to call advance()
-	if tp.current_step_index == 3:
-		print("PASS: ya en paso 3 (auto-advance)")
+	# TEST 10: Already advanced to step 4, no need to call advance()
+	if tp.current_step_index == 4:
+		print("PASS: ya en paso 4 (auto-advance)")
 		passed += 1
 	else:
 		print("FAIL: no auto-advanco (step=%d)" % tp.current_step_index)
 		failed += 1
 
-	# TEST 11: Highlight nodes on step with highlights
+	# TEST 11: Highlight nodes on step with highlights (step 4: after_first_move)
 	var highlights: Array = tp.get_highlight_nodes()
-	if highlights.size() == 1 and highlights[0] == "Target":
+	if highlights.size() == 2 and highlights[0] == "Relay" and highlights[1] == "Target":
 		print("PASS: get_highlight_nodes() correcto")
 		passed += 1
 	else:
@@ -125,8 +128,8 @@ func _run_tests() -> void:
 
 	# TEST 13: Load tut2
 	var loaded2: bool = tp.load_tutorial("res://juego/tutorials/data/tut2_perimetro.json")
-	if loaded2 and tp.steps.size() == 5:
-		print("PASS: tut2 carga")
+	if loaded2 and tp.steps.size() == 7:
+		print("PASS: tut2 carga (7 pasos)")
 		passed += 1
 	else:
 		print("FAIL: tut2 no cargo")
@@ -134,8 +137,8 @@ func _run_tests() -> void:
 
 	# TEST 14: Load tut3
 	var loaded3: bool = tp.load_tutorial("res://juego/tutorials/data/tut3_avanzado.json")
-	if loaded3 and tp.steps.size() == 6:
-		print("PASS: tut3 carga (6 pasos)")
+	if loaded3 and tp.steps.size() == 9:
+		print("PASS: tut3 carga (9 pasos)")
 		passed += 1
 	else:
 		print("FAIL: tut3 no cargo")
