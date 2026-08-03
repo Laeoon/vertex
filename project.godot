@@ -26,7 +26,11 @@ AudioManager="*res://core/autoloads/audio_manager.gd"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/size/mode="exclusive_fullscreen"
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [physics]
 
