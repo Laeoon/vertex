@@ -11,9 +11,11 @@
   "max_ai_blocks": 0,
   "max_turns": 0,
   "titulo_nivel": "Tutorial 1: Reconocimiento",
+  "objective": "Aprender navegación básica en grafos y los conceptos de redes reales.",
   "steps": [
     {
       "id": "intro",
+      "title": "Bienvenida",
       "text": "Bienvenido a Vertex.\nEres un intruso en una red de computadoras.\nTu objetivo: llegar al nodo rojo (Target).\n\n¿QUÉ ES UNA RED PARA UN ATACANTE?\nImagina un edificio de oficinas:\n- Cada habitación = un nodo (servidor, router, base de datos)\n- Cada puerta = una arista (conexión entre sistemas)\n- Cada llave = el costo de atravesar esa puerta\nEn redes reales, los nodos pueden ser servidores web,\nfirewalls, bases de datos o estaciones de trabajo.\nCada uno tiene un rol específico que define su valor\ncomo objetivo.\n\nCada nodo es un activo de red. Cada arista es una conexión.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -26,6 +28,7 @@
     },
     {
       "id": "graph_concept",
+      "title": "La Red como Grafo",
       "text": "LA RED COMO GRAFO:\nLos nodos se conectan por ARISTAS dirigidas.\nCada arista tiene un COSTO de tránsito (número).\nMenor costo = mejor ruta.\nTu objetivo es minimizar el costo total acumulado.\n\nANALOGÍA DEL MUNDO REAL:\nImagina que cada arista es un cable de red con\ndiferente latencia (tiempo de respuesta).\nEn redes reales, el \"costo\" puede representar:\n- Latencia: milisegundos para llegar al destino\n- Ancho de banda: capacidad del enlace (Mbps)\n- Probabilidad de detección: qué tan vigilado está\n  ese segmento de red\nLos protocolos de enrutamiento como OSPF y BGP\ntambién calculan rutas de menor costo,\n¡exactamente como harás tú en este tutorial!",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -38,6 +41,7 @@
     },
     {
       "id": "move_basics",
+      "title": "Cómo Navegar",
       "text": "CÓMO NAVEGAR:\n[Click] en un nodo VECINO (verde) para moverte.\n[Tab] cicla entre vecinos.\n[Enter] confirma el movimiento.\nEl costo se acumula en tu presupuesto.\n\nEN REDES REALES:\nUn atacante se mueve entre sistemas comprometidos.\nPara \"ver los vecinos\" usa herramientas como:\n- nmap: escanea puertos y servicios en una red\n- traceroute: muestra la ruta entre dos sistemas\n- netstat: revela conexiones activas en un sistema\nEn Vertex, el grafo visible simula ese reconocimiento\nque un atacante haría antes de moverse.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -50,6 +54,7 @@
     },
     {
       "id": "try_move",
+      "title": "Tu Primer Movimiento",
       "text": "Ahora intenta: haz clic en el nodo Relay (verde)\no usa [Tab] + [Enter] para moverte.\nObserva cómo cambia tu posición en el HUD.\n\nEn una red real, esto sería equivalente a un atacante\nmoviéndose entre sistemas comprometidos:\nprimero comprometes un equipo, luego usas sus\ncredenciales o conexiones para saltar al siguiente.\nEsta técnica se llama \"lateral movement\"\ny es una de las fases más críticas de un ataque.\n\n¡Prueba ahora! Muévete hacia Relay.",
       "anchor_type": "node",
       "anchor_id": "Inicio",
@@ -58,10 +63,12 @@
       "highlight_edges": ["Inicio→Relay"],
       "pause_game": true,
       "action_required": "move",
+      "hint": "Haz clic en el nodo verde (Relay) que está conectado a tu posición actual.",
       "auto_advance_after": null
     },
     {
       "id": "after_first_move",
+      "title": "Después del Movimiento",
       "text": "¡Bien! Te moviste a Relay.\nObserva el HUD: muestra tu POSICIÓN actual,\n el COSTE acumulado y la META.\nAhora sigue hacia el Target (rojo).",
       "anchor_type": "node",
       "anchor_id": "Target",
@@ -74,6 +81,7 @@
     },
     {
       "id": "optimal_route_hint",
+      "title": "Ruta Óptima",
       "text": "TRUCO: Presiona [P] para ver la RUTA ÓPTIMA\ncalculada por el algoritmo de Dijkstra.\nTe muestra el camino de menor costo.\nActívalo y desactívalo con [P].",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -86,6 +94,7 @@
     },
     {
       "id": "reach_target",
+      "title": "¡Objetivo Alcanzado!",
       "text": "¡Excelente! Llegaste al Target.\n\nEl SISTEMA DE ESTRELLAS:\n3★ = ruta casi óptima\n2★ = buena ruta\n1★ = completado\n\nCada nivel tiene un costo de referencia.\n¡Minimiza tu costo para maximizar estrellas!",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -98,6 +107,7 @@
     },
     {
       "id": "next_steps",
+      "title": "Próximos Pasos",
       "text": "Conceptos clave:\n- Grafo dirigido = las aristas tienen dirección\n- Costo de tránsito = recurso por moverte\n- Ruta óptima = minimizar costo acumulado\n\nSiguiente tutorial: PERÍMETRO e IA.",
       "anchor_type": "screen",
       "anchor_id": "",

@@ -12,10 +12,12 @@
   "max_turns": 12,
   "max_movement_points": 10,
   "titulo_nivel": "Tutorial 6: Nivel Experto",
+  "objective": "Síntesis de todas las mecánicas: waypoints, IA, presupuesto y perseguidores combinados.",
   "defender_mode": false,
   "steps": [
     {
       "id": "intro_combined",
+      "title": "Bienvenida",
       "text": "NIVEL EXPERTO:\nOperaciones combinadas requieren versatilidad.\nDebes INFILTRARTE hasta la Oficina,\ny luego seguir hasta el Centro de Datos.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -28,6 +30,7 @@
     },
     {
       "id": "phase_attack",
+      "title": "Fase 1: Infiltración",
       "text": "Waypoint: OFICINA.\nPasa por la Oficina obligatoriamente.\nLuego continua hacia el Centro de Datos.\nLa IA bloquea rutas. Gestiona tu presupuesto.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -40,6 +43,7 @@
     },
     {
       "id": "try_attack",
+      "title": "¡A la Oficina!",
       "text": "Muévete hacia la Oficina.\nTienes 10 puntos de movimiento.\nLa IA bloquea 1 arista por turno.",
       "anchor_type": "node",
       "anchor_id": "Exterior",
@@ -52,6 +56,7 @@
     },
     {
       "id": "phase_defense",
+      "title": "Fase 2: Rumbo al Centro de Datos",
       "text": "¡BIEN! Llegaste a la Oficina.\nRumbo al Centro de Datos.\nCuidado con los perseguidores en el camino.\nPlanifica bien tu ruta final.",
       "anchor_type": "node",
       "anchor_id": "CentroDatos",

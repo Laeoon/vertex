@@ -11,6 +11,7 @@
   "max_ai_blocks": 0,
   "max_turns": 15,
   "titulo_nivel": "Tutorial 5: Estrategias Avanzadas de Defensa",
+  "objective": "Dominar firewall de nodo, corte mínimo, timing de bloqueos y gestión de recursos.",
   "defender_mode": true,
   "defender_blocks_per_turn": 3,
   "defender_block_duration": 5,
@@ -19,6 +20,7 @@
   "steps": [
     {
       "id": "intro_avanzado",
+      "title": "Bienvenida",
       "text": "ESTRATEGIAS AVANZADAS DE DEFENSA.\nYa sabes bloquear aristas. Ahora aprenderás\ntécnicas más profundas para proteger la red.\n\nTemas: Firewall de Nodo, Corte Mínimo,\nTiming de Bloqueos y Gestión de Recursos.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -31,6 +33,7 @@
     },
     {
       "id": "node_firewall",
+      "title": "Firewall de Nodo [F]",
       "text": "FIREWALL DE NODO [F]:\nPresiona [F] para activar el modo firewall.\nLuego haz clic en un NODO para colocar\nun firewall permanente en ese nodo.\n\nCosto: 3 bloqueos.\nEl firewall impide que el atacante PASE\npor ese nodo para siempre.\n\nÚtil para proteger nodos estratégicos.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -43,6 +46,7 @@
     },
     {
       "id": "min_cut",
+      "title": "Corte Mínimo (Min-Cut)",
       "text": "CORTE MÍNIMO (MIN-CUT):\nConcepto clave de la defensa de redes.\n\nEl corte mínimo es el conjunto más pequeño\nde aristas que, al bloquearlas, separa\ncompletamente al atacante de su objetivo.\n\nIDENTIFICAR EL CORTE MÍNIMO:\nBusca los \"cuellos de botella\" — aristas\nque, si bloqueas, dejan al atacante sin\nrutas eficientes hacia el destino.\n\nEn niveles avanzados, el juego puede\nmostrar el análisis de corte mínimo.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -55,6 +59,7 @@
     },
     {
       "id": "block_timing",
+      "title": "Timing de Bloqueos",
       "text": "TIMING DE BLOQUEOS:\nLos bloqueos DURAN 5 TURNOS y EXPIRAN.\n\nEstrategias de renovación:\n- Renueva ANTES de que expire: mantenimiento\n- Alterna entre aristas para cubrir más rutas\n- No bloquees demasiado temprano —\n  el atacante podría cambiar de ruta\n- Guarda bloqueos para cuando el atacante\n  esté cerca del destino (mayor presión)",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -67,6 +72,7 @@
     },
     {
       "id": "resource_mgmt",
+      "title": "Gestión de Recursos",
       "text": "GESTIÓN DE RECURSOS:\nTienes 3 BLOQUEOS por turno — limitados.\n\nCada bloqueo es una decisión estratégica:\n- Bloquear 3 aristas diferentes = cobertura amplia\n- Bloquear la misma arista = renovación (mantener)\n- Usar firewall de nodo = 3 bloqueos (inversión)\n\nPREGÚNTATE CADA TURNO:\n¿Cuál es la ruta más probable del atacante?\n¿Dónde causa más daño un bloqueo?\n¿Vale la pena usar firewall ahora?",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -79,6 +85,7 @@
     },
     {
       "id": "try_advanced",
+      "title": "¡Practica!",
       "text": "PRACTICA:\nIntenta bloquear aristas y colocar firewalls.\nPresiona [F] para alternar entre modo\nbloqueo de aristas y modo firewall de nodo.\n\nTu objetivo: que el atacante no llegue\nal DataCenter en 15 turnos.\n\nUsa todo lo aprendido.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -91,6 +98,7 @@
     },
     {
       "id": "win_condition",
+      "title": "Condiciones de Victoria",
       "text": "CONDICIONES DE VICTORIA:\n\nGANAS si el atacante NO llega al DataCenter\nen 15 turnos.\nPIERDES si alcanza su objetivo.\n\nPUNTUACIÓN:\n- 3★: Defensa óptima (uso eficiente de recursos)\n- 2★: Defensa adecuada\n- 1★: Sobreviviste por poco\n\n¡Aplica estrategias avanzadas y protege la red!",
       "anchor_type": "screen",
       "anchor_id": "",

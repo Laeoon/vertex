@@ -9,10 +9,13 @@
   "hint_action": "Perform the indicated action to advance",
 
   "tutorial.next": "Next",
+  "tutorial.previous": "Previous",
   "tutorial.skip": "Skip",
+  "tutorial.index": "Index",
   "tutorial.step": "Step",
   "tutorial.of": "of",
   "tutorial.hint_action": "Perform the action",
+  "tutorial.hint_button": "Hint",
 
   "menu.title": "VERTEX",
   "menu.subtitle": "Cybersecurity Simulator",

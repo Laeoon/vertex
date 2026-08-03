@@ -11,9 +11,11 @@
   "max_ai_blocks": 2,
   "max_turns": 8,
   "titulo_nivel": "Tutorial 3: Waypoints, Detección y Perseguidores",
+  "objective": "Dominar waypoints, detección probabilística y perseguidores con defensa en profundidad.",
   "steps": [
     {
       "id": "intro",
+      "title": "Bienvenida",
       "text": "NIVEL AVANZADO.\nCombinamos: WAYPOINTS + DETECCIÓN + PERSEGUIDORES + LÍMITE DE TURNOS.\nDebes pasar por DMZ antes de llegar a Servidor.\nTienes 8 TURNOS máximo.\n\nMODELO DE DEFENSA EN PROFUNDIDAD:\nEn ciberseguridad real, ninguna defensa única es\nsuficiente. Se usa el modelo de \"defense in depth\":\n\nComo un castillo medieval:\n- Foso = Perímetro (firewall, bloquear accesos)\n- Muralla = Detección (IDS, cámaras de seguridad)\n- Guardias = Monitoreo (SIEM, análisis de logs)\n- Soldados = Respuesta (equipo de incidentes)\n\nEn Vertex, cada tutorial cubre una capa:\nTut1 = Reconocimiento (estudiar el castillo)\nTut2 = Perímetro (cruzar el foso)\nTut3 = Detección + Respuesta (evadir guardias)\nTut4 = Ataque completo (todas las capas)\n\nLas empresas reales usan esta estrategia porque\nsi una capa falla, las otras aún protegen.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -26,6 +28,7 @@
     },
     {
       "id": "waypoints_explain",
+      "title": "¿Qué son los Waypoints?",
       "text": "¿QUÉ SON LOS WAYPOINTS?\nSon nodos que DEBES VISITAR en orden.\nSi llegas al target sin pasar por DMZ, PIERDES.\nLos waypoints se marcan con ◇ (actual) y ○ (pendiente).\nSon como \"checkpoints\" obligatorios en la ruta.",
       "anchor_type": "node",
       "anchor_id": "DMZ",
@@ -38,6 +41,7 @@
     },
     {
       "id": "path_strategy",
+      "title": "Planificación de Ruta",
       "text": "RUTAS DISPONIBLES:\n- Inicio → Firewall → DMZ (costo alto, 4)\n- Inicio → Router → DMZ (costo bajo, 2)\n- Luego DMZ → Servidor (2 opciones)\n\nPlanifica: ¿qué camino usas para CADA segmento?",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -50,6 +54,7 @@
     },
     {
       "id": "detection",
+      "title": "Detección en Nodos",
       "text": "DETECCIÓN: Algunos nodos tienen CÁMARAS.\nFirewall (12%), Router (10%), DMZ (15%), IDS (18%).\nSi entras a un nodo con detección,\n hay PROBABILIDAD de ser detectado.\nSi te detectan, aparece un PERSEGUIDOR.\n\nEN REDES REALES:\nUn IDS (Intrusion Detection System) monitorea\nel tráfico de red buscando patrones sospechosos.\nCuando detecta algo anómalo, genera una ALERTA.\n\nLas empresas grandes usan un SIEM (Security\nInformation and Event Management) para:\n- Correlacionar alertas de múltiples fuentes\n- Detectar patrones de ataque complejos\n- Generar respuestas automáticas\n\nHerramientas reales:\n- Splunk: SIEM empresarial líder\n- ELK Stack (Elasticsearch, Logstash, Kibana):\n  alternativa open-source muy usada\n- QRadar: SIEM de IBM\n\nEn Vertex, los porcentajes de detección simulan\nla probabilidad de que un IDS te descubra.\nCada nodo vigilado es un riesgo calculado.",
       "anchor_type": "node",
       "anchor_id": "Firewall",
@@ -62,6 +67,7 @@
     },
     {
       "id": "pursuers",
+      "title": "Perseguidores",
       "text": "PERSEGUIDORES:\n- Aparecen en un nodo seguro (spawn)\n- Tienen DELAY: no se mueven inmediatamente\n- Avanzan 1 paso por turno hacia ti\n- Si te alcanzan, PIERDES\n- MÁXIMO 4 perseguidores simultáneos\n\nEl delay te da ventana para escapar.\n\nEN REDES REALES:\nLos perseguidores representan al \"Incident\nResponse Team\" (CSIRT) — el equipo que responde\na incidentes de seguridad. Cuando un IDS detecta\nuna intrusión:\n\n1. Se activa el equipo de respuesta\n2. Analizan tu \"huella\" (forensic analysis):\n   logs, tráfico, comandos ejecutados\n3. Te rastrean hacia atrás para encontrarte\n4. Contienen el incidente (te \"alcanzan\")\n\nPor eso los atacantes reales usan técnicas de\n\"anti-forensics\": borrar logs, cifrar comunicaciones,\ny usar proxies para ocultar su rastro.\n\nEn Vertex, el delay de los perseguidores simula\nel tiempo que tarda un equipo humano en reaccionar.\n¡Aprovéchalo para escapar!",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -74,6 +80,7 @@
     },
     {
       "id": "risk_management",
+      "title": "Gestión de Riesgo",
       "text": "GESTIÓN DE RIESGO:\n- Rutas con alta detección = más cortas pero peligrosas\n- Rutas seguras = más largas pero sin riesgo\n- Los perseguidores comparten tu ruta\n  (también siguen el camino más corto)\n- Puedes \"enganchar\" perseguidores para que\n  tomen caminos largos mientras tú aceleras",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -86,6 +93,7 @@
     },
     {
       "id": "timer",
+      "title": "Límite de Turnos",
       "text": "LÍMITE DE TURNOS: 8.\nCada movimiento = 1 turno.\nLa IA también bloquea después de cada turno.\n\nPresupuesto estimado:\nInicio → DMZ: 2-4 turnos (según ruta)\nDMZ → Servidor: 2-5 turnos\nIA bloquea: 1-2 turnos extra\n\n¡Planifica con cuidado!",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -98,6 +106,7 @@
     },
     {
       "id": "try_it",
+      "title": "¡Inténtalo!",
       "text": "Intenta llegar a DMZ primero.\nLuego a Servidor.\nMonitorea el HUD: turnos restantes, alertas,\ny posición de perseguidores.\n¡Buena suerte!",
       "anchor_type": "node",
       "anchor_id": "Inicio",
@@ -106,10 +115,12 @@
       "highlight_edges": [],
       "pause_game": false,
       "action_required": "move",
+      "hint": "Pasa por DMZ primero, luego ve a Servidor. Usa [P] para ver la ruta óptima.",
       "auto_advance_after": null
     },
     {
       "id": "debrief",
+      "title": "Resumen",
       "text": "Completaste el tutorial avanzado.\n\nSÍNTESIS DE MECÁNICAS:\n1. GRAFO: navegación con costos\n2. IA: bloquea tu ruta óptima\n3. WAYPOINTS: forzan ruta específica\n4. DETECCIÓN: riesgo probabilístico\n5. PERSEGUIDORES: amenaza dinámica\n6. TIEMPO: presión por turnos\n\nEstos conceptos son la base de todos los niveles.",
       "anchor_type": "screen",
       "anchor_id": "",

@@ -10,6 +10,7 @@
   "ai_bloquea_al_inicio": false,
   "max_turns": 18,
   "titulo_nivel": "Tutorial: Introducción a Defensa",
+  "objective": "Aprender a bloquear aristas para detener al atacante en modo defensor.",
   "defender_mode": true,
   "defender_blocks_per_turn": 3,
   "defender_block_duration": 5,
@@ -19,6 +20,7 @@
   "steps": [
     {
       "id": "intro_defensa",
+      "title": "Bienvenida",
       "text": "MODO DEFENSOR.\nTu objetivo: PROTEGER la red.\nUn atacante avanza desde Internet hacia Database.\nBloquea rutas para detenerlo.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -31,6 +33,7 @@
     },
     {
       "id": "how_to_block",
+      "title": "Cómo Bloquear",
       "text": "CÓMO BLOQUEAR:\nHaz clic SOBRE UNA ARISTA (línea) para bloquearla.\nLa arista se marca en ROJO con X.\nCada turno puedes colocar hasta 3 bloqueos.\nLos bloqueos duran 5 turnos.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -43,6 +46,7 @@
     },
     {
       "id": "try_block",
+      "title": "¡Bloquea!",
       "text": "Intenta bloquear una arista del atacante.\nHaz clic en una línea que conecte nodos.\nLuego presiona [Enter] para resolver el turno.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -55,6 +59,7 @@
     },
     {
       "id": "enemy_moves",
+      "title": "El Enemigo se Mueve",
       "text": "El atacante usa DIJKSTRA para buscar la ruta más corta.\nSi bloqueas su camino, RECALCULA.\nNunca se detiene — siempre avanza.\nTu objetivo: que NO llegue en 18 turnos.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -67,6 +72,7 @@
     },
     {
       "id": "strategy",
+      "title": "Estrategia",
       "text": "ESTRATEGIA:\n- Bloquea CERCA del origen = rutas largas\n- Bloquea CERCA del destino = protección directa\n- Observa la línea NARANJA = ruta actual del atacante\n- Bloquea AHÍ para máximo impacto",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -79,6 +85,7 @@
     },
     {
       "id": "win_condition",
+      "title": "Condiciones de Victoria",
       "text": "CONDICIONES:\nGANAS si el atacante NO llega en 18 turnos.\nPIERDES si alcanza Database.\n\n¡Planifica, anticipa y protege!",
       "anchor_type": "screen",
       "anchor_id": "",

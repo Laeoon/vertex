@@ -9,10 +9,13 @@
   "hint_action": "Realize a ação indicada para avançar",
 
   "tutorial.next": "Próximo",
+  "tutorial.previous": "Anterior",
   "tutorial.skip": "Pular",
+  "tutorial.index": "Índice",
   "tutorial.step": "Passo",
   "tutorial.of": "de",
   "tutorial.hint_action": "Realize a ação",
+  "tutorial.hint_button": "Dica",
 
   "menu.title": "VERTEX",
   "menu.subtitle": "Simulador de Cibersegurança",

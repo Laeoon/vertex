@@ -11,9 +11,11 @@
   "max_ai_blocks": 1,
   "max_turns": 0,
   "titulo_nivel": "Tutorial 2: Perímetro e IA",
+  "objective": "Entender cómo la IA adaptativa bloquea rutas y cómo encontrar caminos alternativos.",
   "steps": [
     {
       "id": "intro",
+      "title": "Bienvenida",
       "text": "Ahora la IA está ACTIVA.\nElla analiza tu ruta con DIJKSTRA y BLOQUEA\nla arista más cercana a tu destino.\nDebes encontrar rutas alternativas.\n\n¿QUÉ ES UN FIREWALL?\nUn firewall es como un guardia de seguridad en\nla entrada de un edificio: decide quién entra y\npor dónde. En redes reales existen:\n- Firewalls de hardware: dispositivos físicos como\n  Cisco ASA, Fortinet, Palo Alto\n- Firewalls de software: programas como iptables\n  (Linux), Windows Defender Firewall\nEn Vertex, la IA hace el papel del firewall:\nbloquea rutas según tu comportamiento.\n\nEn una red corporativa real, un atacante enfrenta\nmúltiples capas de defensa. El firewall es solo\nla primera barrera. Aprender a esquivarlo es\nel primer paso del reconocimiento ofensivo.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -26,6 +28,7 @@
     },
     {
       "id": "ai_block_explain",
+      "title": "¿Cómo Piensa la IA?",
       "text": "¿CÓMO PIENSA LA IA?\n1. Calcula tu ruta óptima actual\n2. Identifica la arista clave cerca del destino\n3. La BLOQUEA (marca X roja)\n4. Tú debes RECALCULAR tu ruta\n\nEs un sistema reactivo de defensa perimetral.\n\nEN EL MUNDO REAL:\nUn IPS (Intrusion Prevention System) hace\nexactamente esto: detecta actividad sospechosa\ny bloquea conexiones automáticamente.\nHerramientas reales como:\n- Snort: IPS open-source más usado del mundo\n- Suricata: IPS/IDS de alto rendimiento\n- fail2ban: bloquea IPs tras intentos fallidos\n\nLa IA de Vertex simula este comportamiento:\nte observa, predice tu ruta, y te bloquea\nproactivamente. ¡Como un IPS real!",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -38,6 +41,7 @@
     },
     {
       "id": "ai_already_blocked",
+      "title": "Bloqueo Inicial",
       "text": "La IA ya bloqueó la Puerta_A al inicio.\nLa arista está marcada en ROJO con una X.\nEl bloqueo dura 3 TURNOS.\nTienes una ruta alternativa por Puerta_B.",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -50,6 +54,7 @@
     },
     {
       "id": "find_alt",
+      "title": "Rutas Alternativas",
       "text": "Analiza el grafo:\n- Puerta_A → Target cuesta 3\n- Puerta_B → Target cuesta 5\nAunque Puerta_B es más caro, SIGUE SIENDO VÁLIDO.\nA veces la ruta larga es la ÚNICA disponible.\n\nEN REDES REALES:\nEsto se llama \"route redundancy\" — tener múltiples\ncaminos para llegar a un destino. Los protocolos\nde red implementan esto para alta disponibilidad:\n- HSRP (Hot Standby Router Protocol): Cisco\n- VRRP (Virtual Router Redundancy Protocol): estándar\n- BGP Multipath: múltiples rutas simultáneas\n\nCuando un enlace falla o es bloqueado, el tráfico\ntoma automáticamente una ruta alternativa.\n¡Igual que tú ahora con Puerta_B!",
       "anchor_type": "node",
       "anchor_id": "Inicio",
@@ -62,6 +67,7 @@
     },
     {
       "id": "try_move",
+      "title": "Tu Movimiento",
       "text": "Usa [Click] en Puerta_B o [Tab] para seleccionarlo.\nLuego [Enter] para moverte.\nLa IA reaccionará tras tu movimiento.",
       "anchor_type": "node",
       "anchor_id": "Target",
@@ -70,10 +76,12 @@
       "highlight_edges": [],
       "pause_game": true,
       "action_required": "move",
+      "hint": "Selecciona Puerta_B con [Tab] o haciendo clic, luego [Enter] para moverte.",
       "auto_advance_after": null
     },
     {
       "id": "after_ai_turn",
+      "title": "Después del Turno IA",
       "text": "La IA bloqueó otra arista.\nObserva el patrón: siempre bloquea la arista\nMÁS CERCANA a tu destino en tu ruta actual.\n\nESTRATEGIA:\n- Toma rutas largas al inicio para \"gastar\"\n  los bloqueos de la IA en aristas irrelevantes\n- Acelera al final cuando la IA se queda sin recursos",
       "anchor_type": "screen",
       "anchor_id": "",
@@ -86,6 +94,7 @@
     },
     {
       "id": "conclusion",
+      "title": "Conclusión",
       "text": "La IA tiene recursos LIMITADOS (max_ai_blocks).\nSi la IA se queda sin bloqueos, tienes vía libre.\nUsa [P] para ver tu ruta óptima actualizada.\n\nConcepto: CORTE MÍNIMO (Min-Cut).\nLa IA busca aristas cuyo bloqueo te afecte más.\nEso es teoría de grafos en acción.",
       "anchor_type": "screen",
       "anchor_id": "",
