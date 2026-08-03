@@ -1,8 +1,7 @@
 ---
 title: "VERTEX — Simulador de Ciberseguridad"
-created: "2026-06-26"
 status: "active"
-version: "2.0.0"
+version: "0.1.0-alpha"
 tags:
   - project
   - godot
@@ -33,42 +32,38 @@ Enseñar conceptos de ciberseguridad y teoría de grafos de forma abstracta y se
 ## Estructura del proyecto
 
 ```
-nuevo-proyecto-de-juego/
-├── core/                    # Código de producción
-│   ├── network/             # .tres + runtime del grafo
-│   ├── agents/              # Dijkstra, Edmonds-Karp
-│   ├── fsm/                 # Máquina de estados
-│   ├── autoloads/           # Event Bus, SceneParams
-│   └── integration/         # Wrappers reactivos
-├── juego/                   # Lógica de juego
-│   ├── ataque/              # Escena principal + renderer
-│   ├── system/              # GameManager, LevelRegistry, mecánicas
-│   ├── heist/               # Niveles Heist (.tres + .json)
-│   ├── hacker/              # Niveles Hacker (.tres + .json)
-│   ├── cyber/               # Niveles Cybersecurity (.tres + .json)
-│   ├── tutorials/           # Sistema de tutoriales
-│   └── nivel1/              # Grafo base Heist N1
-├── escenas/                 # Menú principal
-├── docs/                    # Documentación del código
-└── archive/                 # Sandboxes históricos (A-F)
+core/                    # Motor de teoría de grafos
+│   ├── network/         # .tres + runtime del grafo
+│   ├── agents/          # Dijkstra, Edmonds-Karp, MinHeap
+│   ├── fsm/             # Máquinas de estado
+│   ├── autoloads/       # GameLogger, Events, SceneParams, SceneTransition, AudioManager
+│   ├── locale/          # Internacionalización (ES/EN/PT)
+│   └── integration/     # Wrappers reactivos
+juego/                   # Lógica de gameplay
+│   ├── ataque/          # Modo ataque (gameplay principal)
+│   ├── system/          # GameManager, LevelRegistry, mecánicas
+│   ├── heist/           # Niveles Heist (.tres + .json)
+│   ├── hacker/          # Niveles Hacker (.tres + .json)
+│   ├── cyber/           # Niveles Cybersecurity (.tres + .json)
+│   ├── defense/         # Nivel Defensa Perimetral
+│   ├── tutorials/       # Sistema de tutoriales
+│   └── utils/           # Utilidades compartidas (ProgressUtil, LocUtil)
+escenas/                 # Menús (main_menu, selector de mundos)
+tests/                   # Tests automatizados (core, ataque, tutorials)
+documentacion/           # Documentación del proyecto
 ```
 
-## Rutas importantes
+## Modos de juego
 
-| Recurso | Ruta |
-|---------|------|
-| Proyecto Godot | `/home/leonardo/nuevo-proyecto-de-juego/` |
-| Backup histórico | `/home/leonardo/Documentos/nuevo-proyecto-de-juego/` |
-| Obsidian Vault | `/home/leonardo/Documentos/Obsidian Vault/` |
-| Paper WJARR | `/home/leonardo/Descargas/WJARR-2022-0467.pdf` |
-| Documento tesis | `/home/leonardo/Documentos/Indormacion_mimo/` |
+| Modo | Mecánica central | Algoritmo |
+|------|------------------|-----------|
+| Heist | Infiltración con presupuesto y waypoints | Dijkstra |
+| Hacker | Movimiento lateral con ruido y exploits | Dijkstra |
+| Cybersecurity | Defensa con bloqueos y corte mínimo | Edmonds-Karp |
 
-## Notas para agentes
+## Tutoriales
 
-- **No tocar** el `.docx` de la tesis — solo contribuir en `.md` del proyecto
-- **Ziva** se usa para tareas de editor (visual, grafos, builds)
-- **MiMo Code** se usa para análisis, arquitectura, documentación
-- Tokens de MiMo Code ilimitados; tokens de Ziva limitados ($3/mes)
+Sistema integrado de tutoriales guiados con progreso, glosario, tooltips y recordatorios de acción. Cubren los cuatro modos y un nivel experto combinado. Ver [[16 - Tutoriales Alfa 0.1.0]].
 
 ## Enlaces
 

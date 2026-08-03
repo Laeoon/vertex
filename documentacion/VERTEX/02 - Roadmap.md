@@ -1,7 +1,7 @@
 ---
 title: "Roadmap del Proyecto"
 created: "2026-06-26"
-updated: "2026-07-10"
+updated: "2026-08-03"
 tags:
   - roadmap
   - planning
@@ -9,39 +9,38 @@ tags:
 
 # Roadmap del Proyecto
 
-## Corto plazo (próximas sesiones)
+## Entregado (alpha 0.1.0)
 
-| # | Tarea | Prioridad | Dependencias | Estado |
-|---|-------|-----------|--------------|--------|
-| 1 | Transiciones fade entre escenas | Media | Ninguna | Pendiente |
-| 2 | Sonidos y feedback audiovisual | Baja | Transiciones | Pendiente |
-| 3 | Balanced tuning y playtesting | Alta | Todos los niveles | Pendiente |
-| 4 | Exportar ejecutable Windows | Media | Plantillas Godot | Pendiente |
-| 5 | Stats extendidas (tiempo, racha, intentos) | Baja | Perfil | Pendiente |
+| # | Entregable | Notas |
+|---|-----------|-------|
+| ✅ | Menú principal con Opciones, Perfil y Database | Audio, gráficos, idioma |
+| ✅ | Feedback visual (flashes, animaciones) | — |
+| ✅ | Sistema de tutoriales completo | 7 tutoriales guiados, glosario, tooltips |
+| ✅ | Modos Heist, Hacker, Defensa y Ataque | Mecánicas funcionales |
+| ✅ | Tests automatizados de core y gameplay | Suite completa |
+| ✅ | Ejecutable Windows publicado | GitHub Releases |
 
-## Completado en alpha 0.1.0
+## Próximas sesiones
 
-| # | Tarea | Fecha |
-|---|-------|-------|
-| ✅ | Menú Opciones (audio, gráficos, idioma) | 2026-07-10 |
-| ✅ | Menú Perfil (nombre, stats, progreso) | 2026-07-10 |
-| ✅ | Menú Database (misiones, conceptos, lore) | 2026-07-10 |
-| ✅ | Feedback visual (flashes, animaciones) | 2026-07-10 |
-| ✅ | Corrección de tutoriales | 2026-07-10 |
-| ✅ | Reescritura documental | 2026-07-10 |
+| # | Tarea | Prioridad | Dependencias |
+|---|-------|-----------|--------------|
+| 1 | Transiciones fade entre escenas | Media | Ninguna |
+| 2 | Sonidos y feedback audiovisual | Baja | Transiciones |
+| 3 | Balanced tuning y playtesting | Alta | Todos los niveles |
+| 4 | Stats extendidas (tiempo, racha, intentos) | Baja | Perfil |
 
-## Medio plazo (futuro cercano)
+## Futuro cercano
 
-| # | Tarea | Prioridad | Dependencias | Estado |
-|---|-------|-----------|--------------|--------|
-| 5 | Más niveles por mundo (N2, N3) | Media | Balance actual | Pendiente — Cybersecurity ya tiene N2 (defense_n1) |
-| 6 | Integrar señales Event Bus en tutoriales | Baja | Event Bus | Pendiente |
-| 7 | Optimización de rendimiento | Baja | Playtesting | Pendiente |
+| # | Tarea | Prioridad | Dependencias |
+|---|-------|-----------|--------------|
+| 5 | Más niveles por mundo (N2, N3) | Media | Balance actual |
+| 6 | Integrar señales Event Bus en tutoriales | Baja | Event Bus |
+| 7 | Optimización de rendimiento | Baja | Playtesting |
 
-## Largo plazo (ideas futuras)
+## Ideas futuras
 
-| # | Tarea | Notas |
-|---|-------|-------|
+| # | Idea | Notas |
+|---|------|-------|
 | 8 | Multiplayer educativo | Red local, 2 jugadores |
 | 9 | Niveles generados proceduralmente | Basados en parámetros de dificultad |
 | 10 | Modo sandbox libre | Sin objetivos, exploración pura |
