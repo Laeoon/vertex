@@ -15,6 +15,44 @@ tags:
 
 Tutoriales expandidos con contexto pedagógico para universitarios con conocimientos básicos en redes. El sistema de tutoriales cubre 6 niveles progresivos desde navegación básica hasta operaciones combinadas, con mejoras de UX completas.
 
+## Slice Día 3.6 — Correcciones de Bugs y QoL (2026-08-02)
+
+### Bugs Corregidos
+
+#### Bug 1: Tutorial se cerraba abruptamente al completar
+- **Causa raíz:** Al alcanzar el target en un nivel tutorial, `_ganar()` mostraba la pantalla de victoria normal sin manejar el estado del tutorial activo.
+- **Solución:** Se agregó el método `complete_tutorial()` a `tutorial_player.gd` que marca el último paso como alcanzado y muestra el mensaje de tutorial completado. `juego_ataque.gd` ahora llama a este método antes de `_ganar()` en niveles con tutorial activo. El mensaje de victoria muestra "TUTORIAL COMPLETADO" con instrucciones para volver al menú [Q].
+
+#### Bug 2: Controles poco intuitivos
+- **Causa raíz:** Los atajos de teclado estaban documentados en texto pequeño semi-transparente sin fondo visible.
+- **Solución:** Nueva barra de controles siempre visible con fondo oscuro semi-transparente en la parte inferior. Muestra contextualmente los atajos según el modo (esperando acción vs. navegación). Overlay de ayuda completa accesible con [H] que lista todos los controles con explicaciones.
+
+#### Bug 3: Reinicio no mostraba el tutorial de nuevo
+- **Causa raíz:** `reset_state()` no reiniciaba el `tutorial_player`, que quedaba en estado `is_active = false` después de completarse.
+- **Solución:** `reset_state()` ahora recarga y reinicia el tutorial si `tutorial_path` está configurado, restaurando todos los pasos desde el principio.
+
+### Mejoras de Contenido
+
+#### tut4_hacker.json (7 pasos)
+- Paso 3 (134→950 chars): Contexto nmap, Nikto, enum4linux; pasos prácticos detallados
+- Paso 5 (187→1296 chars): Sistema de ruido con 4 niveles de alerta, costos, analogía con logs
+- Paso 6 (120→899 chars): Lateral movement, analogía del edificio, plan de ruta
+
+#### tut4_defensa.json (6 pasos)
+- Paso 4 (165→1098 chars): Dijkstra explicado (historia 1956, GPS, OSPF, reacciones del atacante)
+- Paso 5 (190→1091 chars): 3 estrategias defensivas reales con pros/contras cada una
+
+#### tut5_defense.json (7 pasos)
+- Todos los pasos expandidos a 870-1324 chars cada uno
+- Paso 1-7: Contexto real de firewalls, min-cut, timing, SOC, herramientas profesionales (Splunk, Palo Alto, CrowdStrike, Wireshark)
+
+### QoL Implementadas
+
+- **Barra de progreso visual:** Barra de progreso + porcentaje numérico debajo de los indicadores de paso
+- **Overlay de ayuda [H]:** Muestra todos los controles del tutorial con explicaciones detalladas
+- **Tecla [H] contextual:** Pista durante acciones, ayuda de controles durante navegación
+- **Tooltips mejorados:** Agregado tooltip para Glosario [G], tooltips contextuales corregidos
+
 ## Tutoriales Disponibles
 
 ### 1. Navegación y Conceptos Básicos (tut1_movimiento)
@@ -149,6 +187,12 @@ El glosario es accesible en cualquier momento con la tecla [G]. Incluye:
 - ✅ Glosario funcional con 12 términos [G]
 - ✅ Tooltips contextuales en botones
 - ✅ Tiempos de auto-advance basados en longitud del texto
+- ✅ Barra de progreso visual con porcentaje
+- ✅ Overlay de ayuda de controles [H]
+- ✅ Controles siempre visibles con barra inferior
+- ✅ Reinicio de tutorial al resetear nivel
+- ✅ Tutorial se completa correctamente al alcanzar el objetivo
+- ✅ Todas las descripciones expandidas (>300 chars por paso en tut4-6)
 
 ## Pendiente para Post-Alfa
 
