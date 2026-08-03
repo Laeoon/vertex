@@ -15,6 +15,36 @@ tags:
 
 Tutoriales expandidos con contexto pedagógico para universitarios con conocimientos básicos en redes. El sistema de tutoriales cubre 6 niveles progresivos desde navegación básica hasta operaciones combinadas, con mejoras de UX completas.
 
+## Slice Día 3.7 — Correcciones y Reducción de Textos (2026-08-02)
+
+### Bug Corregido
+
+#### Waypoint vacío causaba derrota al ganar
+- **Causa raíz:** `_ganar()` no verificaba `waypoints.size() > 0` antes de comparar índices.
+- **Solución:** Tutoriales con `waypoints: []` ahora permiten ganar correctamente.
+
+### Reducción de Textos
+
+Los pasos de los tutoriales fueron reducidos ~50% para mejorar legibilidad:
+
+| Tutorial | Antes (promedio) | Después (promedio) |
+|----------|-----------------|-------------------|
+| tut1_movimiento | ~356 chars | ~260 chars |
+| tut2_perimetro | ~397 chars | ~296 chars |
+| tut3_avanzado | ~435 chars | ~305 chars |
+| tut4_hacker | ~1017 chars | ~456 chars |
+| tut4_defensa | ~891 chars | ~478 chars |
+| tut5_defense | ~1131 chars | ~559 chars |
+| tut6_combined | ~841 chars | ~533 chars |
+
+La información detallada del mundo real (herramientas, protocolos, analogías extensas) permanece disponible en el GLOSARIO [G].
+
+### Separación de Pantallas de Victoria
+
+- Tutoriales ahora muestran "TUTORIAL COMPLETADO" en vez de "VICTORIA".
+- Modo ataque muestra "VICTORIA" con estadísticas.
+- Modo defensa muestra "VICTORIA DEFENSIVA" con su propio panel.
+
 ## Slice Día 3.6 — Correcciones de Bugs y QoL (2026-08-02)
 
 ### Bugs Corregidos

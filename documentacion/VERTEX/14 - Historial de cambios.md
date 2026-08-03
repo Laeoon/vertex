@@ -9,6 +9,35 @@ tags:
 
 # Historial de Cambios
 
+## Slice Día 3.7 — Correcciones Finales para Alfa 0.1.0 (2026-08-02)
+
+### Bug crítico: Tutorial se salía al completar con waypoints vacíos
+
+- **Causa raíz:** `_ganar()` en `juego_ataque.gd` comparaba `current_waypoint_idx < waypoints.size()` sin verificar `waypoints.size() > 0`. Con `waypoints: []`, `current_waypoint_idx = -1` y `-1 < 0 = true`, causando `_perder()` al ganar en tutoriales sin waypoints.
+- **Solución:** Agregada verificación `waypoints.size() > 0 and` en `_ganar()`.
+- **Modificado:** `juego/ataque/juego_ataque.gd` — `_ganar()` ahora usa `waypoints.size() > 0 and current_waypoint_idx < waypoints.size()`.
+- **Modificado:** `tests/ataque/test_bugfixes_static.gd` — 2 nuevas aserciones de guarda en fuente.
+
+### Reducción de textos de tutoriales (~50% de reducción)
+
+- **Modificado:** `juego/tutorials/data/tut1_movimiento.json` — Pasos 1-4 reducidos (572→352, 649→447, 515→321, 448→284 chars).
+- **Modificado:** `juego/tutorials/data/tut2_perimetro.json` — Pasos 1, 2, 4 reducidos (735→468, 633→425, 610→383 chars).
+- **Modificado:** `juego/tutorials/data/tut3_avanzado.json` — Pasos 1, 4, 5 reducidos (814→432, 862→463, 879→488 chars).
+- **Modificado:** `juego/tutorials/data/tut4_hacker.json` — 7 pasos reducidos (promedio 1100→450 chars).
+- **Modificado:** `juego/tutorials/data/tut4_defensa.json` — 6 pasos reducidos (promedio 890→480 chars).
+- **Modificado:** `juego/tutorials/data/tut5_defense.json` — 7 pasos reducidos (promedio 1130→560 chars).
+- **Modificado:** `juego/tutorials/data/tut6_combined.json` — 4 pasos reducidos (promedio 840→530 chars).
+
+### Separación de condiciones de victoria
+
+- **Modificado:** `juego/ataque/game_renderer.gd` — `draw_game_over()` muestra "TUTORIAL COMPLETADO" (no "VICTORIA") para tutoriales.
+- **Modificado:** `juego/ataque/juego_ataque.gd` — `_draw()` pasa flag de tutorial al renderer.
+- **Modificado:** `juego/tutorials/tutorial_player.gd` — `complete_tutorial()` ya no emite señal duplicada.
+
+### Verificación
+
+- Tests principales: 7/7 pasan. Tutoriales: 15/15 pasan. JSONs: 7/7 válidos. Sin errores.
+
 ## Slice Día 3 — Mejoras UX, Testing y Documentación para Alfa 0.1.0 (2026-08-02)
 
 ### Indicador de progreso mejorado
