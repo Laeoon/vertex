@@ -271,6 +271,12 @@ func reset_state() -> void:
 			HackerMechanicsClass.grant_exploits(hacker_state, exploit_type, starting_exploits[exploit_type])
 		scan_results.clear()
 
+	# Reiniciar tutorial si existe
+	if tutorial_player != null and is_instance_valid(tutorial_player):
+		if tutorial_path != "" and tutorial_player.load_tutorial(tutorial_path):
+			tutorial_player.start()
+			GameLogger.info("JuegoAtaque", "Tutorial reiniciado en reset_state")
+
 	if defender_mode:
 		enemy_pos = enemy_start_node if enemy_start_node != &"" else target_node
 		defender_blocks_placed = 0
@@ -579,6 +585,13 @@ func _ganar() -> void:
 	if current_waypoint_idx < waypoints.size():
 		_perder("Debes pasar por %s primero" % str(waypoints[current_waypoint_idx]))
 		return
+
+	# Si hay tutorial activo, completarlo antes de marcar victoria
+	var is_tutorial_level: bool = tutorial_player != null and is_instance_valid(tutorial_player) and tutorial_player.is_active
+	if is_tutorial_level:
+		tutorial_player.complete_tutorial()
+		GameLogger.info("JuegoAtaque", "Tutorial completado al alcanzar el objetivo")
+
 	game_over = true
 	_game_over_time = Time.get_ticks_msec() / 1000.0
 	game_won = true
@@ -589,7 +602,11 @@ func _ganar() -> void:
 	var star_str: String = ""
 	for i in range(3):
 		star_str += "★" if i < stars else "☆"
-	mensaje_estado = "GANASTE! Llegaste a %s en %d turnos  %s" % [target, turn, star_str]
+
+	if is_tutorial_level:
+		mensaje_estado = "TUTORIAL COMPLETADO! Llegaste a %s en %d turnos  %s\nPresiona [Q] para volver al menú" % [target, turn, star_str]
+	else:
+		mensaje_estado = "GANASTE! Llegaste a %s en %d turnos  %s" % [target, turn, star_str]
 	GameLogger.info("JuegoAtaque", "VICTORIA en turno %d | estrellas: %d | coste: %.1f" % [turn, stars, player_total_cost])
 	queue_redraw()
 
