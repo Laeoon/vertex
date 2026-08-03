@@ -52,3 +52,6 @@ openspec/
 
 # Personal addon (not tracked in this repo)
 addons/ziva_agent/
+
+# Builds de exportación (.exe etc.)
+builds/
