@@ -1,13 +1,78 @@
 ---
 title: "Historial de Cambios"
 created: "2026-06-26"
-updated: "2026-07-10"
+updated: "2026-08-02"
 tags:
   - changelog
   - history
 ---
 
 # Historial de Cambios
+
+## Slice Día 3 — Mejoras UX, Testing y Documentación para Alfa 0.1.0 (2026-08-02)
+
+### Indicador de progreso mejorado
+
+- **Modificado**: `juego/tutorials/tutorial_player.gd` — `_draw_step_indicator()`:
+  - Muestra el título del paso actual sobre los puntos indicadores
+  - Muestra el objetivo general del tutorial debajo del contador de pasos
+  - Formato: "Paso 3 de 8: Título del paso"
+- **Modificado**: `juego/tutorials/data/*.json` (7 archivos) — Añadidos campos
+  `title` en cada paso y `objective` en la raíz de cada tutorial.
+- **Commits**: Primer commit del slice.
+
+### Navegación mejorada
+
+- **Modificado**: `juego/tutorials/tutorial_player.gd`:
+  - `previous()`: Volver al paso anterior (← o Backspace).
+  - `go_to_step(idx)`: Saltar a un paso específico.
+  - `get_steps_summary()`: Resumen de todos los pasos del tutorial.
+  - `_input()` actualizado: LEFT/BACKSPACE → previous, ESC → skip, I → índice.
+  - `_draw_skip_hint()`: Barra de controles `[←] Anterior [Enter] Siguiente [ESC] Saltar [I] Índice`.
+  - `_draw_step_index_overlay()`: Overlay oscuro listando todos los pasos.
+- **Modificado**: `core/locale/{es,en,pt}.json` — Nuevas claves:
+  `tutorial.previous`, `tutorial.index`, `tutorial.hint_button`.
+- **Commits**: Segundo commit del slice.
+
+### Sistema de hints contextuales
+
+- **Modificado**: `juego/tutorials/tutorial_player.gd`:
+  - `get_hint()`: Retorna la pista del paso actual.
+  - `show_hint()`: Revela manualmente la pista con [H].
+  - Auto-reveal: A los 10 segundos o 3 intentos fallidos bloqueado en un paso.
+  - `_draw_hint_panel()`: Panel amarillo mostrando la pista.
+  - Variables de tracking: `_hint_used`, `_attempts`, `_hint_shown`,
+    `_hint_stuck_timer`.
+- **Modificado**: `juego/tutorials/data/tut1_movimiento.json`,
+  `tut2_perimetro.json`, `tut3_avanzado.json`, `tut4_hacker.json` —
+  Añadidos campos `hint` en pasos con `action_required`.
+- **Commits**: Incluido en los commits anteriores.
+
+### Verificación
+
+- Tests del sistema de tutoriales: 15/15 pasan.
+- Tests principales (`run_all.gd`): 7/7 pasan (84+ aserciones).
+- Sin errores de script al iniciar el juego.
+- Sin TODOs ni FIXMEs pendientes en tutoriales.
+
+## Slice Día 2 — Tutoriales expandidos con contexto pedagógico (2026-08-02)
+
+### Expansión de contenido pedagógico
+
+- **Modificado**: `juego/tutorials/data/tut1_movimiento.json` — 8 pasos con
+  analogías del mundo real (OSPF, BGP, nmap, traceroute).
+- **Modificado**: `juego/tutorials/data/tut2_perimetro.json` — 7 pasos con
+  contexto de firewalls reales (Cisco ASA, Snort, Suricata), route redundancy
+  (HSRP, VRRP).
+- **Modificado**: `juego/tutorials/data/tut3_avanzado.json` — 9 pasos con
+  modelo de defense in depth (castillo medieval), IDS/SIEM reales
+  (Splunk, ELK, QRadar), CSIRT.
+- **Modificado**: `juego/tutorials/data/tut4_hacker.json` — 7 pasos con
+  Cyber Kill Chain (Lockheed Martin), Metasploit, privilege escalation,
+  nota ética sobre uso legal.
+- **Modificado**: `juego/tutorials/test_tutorial_system.gd` — Actualizados
+  step counts para reflejar las expansiones.
+- **Commits**: 5 commits — Expandir tut1-4 + actualizar tests.
 
 ## Slice Día 1 — Preparación de Tutoriales para Alfa 0.1.0 (2026-08-02)
 
