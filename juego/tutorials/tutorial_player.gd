@@ -47,6 +47,18 @@ var _hint_shown: bool = false
 var _hint_stuck_timer: float = 0.0
 var _hint_auto_after: float = 10.0
 
+# Glossary
+var _show_glossary: bool = false
+var _glossary_data: Dictionary = {}
+var _glossary_scroll: float = 0.0
+
+# Tooltips
+var _tooltip_text: String = ""
+var _tooltip_target: String = ""
+var _tooltip_timer: float = 0.0
+var _tooltip_delay: float = 0.5
+var _tooltip_buttons: Array[Dictionary] = []
+
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -66,11 +78,25 @@ func _ready() -> void:
 		_locale.name = "Locale"
 		get_tree().root.add_child(_locale)
 
+	_load_glossary()
+
 
 func t(key: String) -> String:
 	if _locale != null and _locale.has_method("loc"):
 		return _locale.loc(key)
 	return key
+
+
+func _load_glossary() -> void:
+	var file: FileAccess = FileAccess.open("res://juego/tutorials/glossary.json", FileAccess.READ)
+	if file == null:
+		push_warning("TutorialPlayer: no se pudo cargar glossary.json")
+		return
+	var json_text: String = file.get_as_text()
+	var parsed = JSON.parse_string(json_text)
+	if parsed != null and parsed is Dictionary:
+		_glossary_data = parsed
+		GameLogger.info("TutorialPlayer", "Glosario cargado: %d términos" % parsed.get("terms", {}).size())
 
 
 func load_tutorial(path: String) -> bool:
@@ -170,6 +196,13 @@ func show_hint() -> void:
 	GameLogger.info("TutorialPlayer", "Hint mostrado en paso %d" % (current_step_index + 1))
 
 
+func toggle_glossary() -> void:
+	_show_glossary = not _show_glossary
+	_glossary_scroll = 0.0
+	if _show_glossary:
+		GameLogger.info("TutorialPlayer", "Glosario abierto")
+
+
 func notify_action(action_type: String) -> void:
 	if not is_active or not _waiting_for_action:
 		return
@@ -262,28 +295,44 @@ func _finish_tutorial() -> void:
 
 
 func _process(delta: float) -> void:
-	if not is_active:
+	if not is_active and not _show_glossary:
 		return
 
 	var vp: Vector2 = get_viewport_rect().size
 	size = vp
 	position = Vector2.ZERO
 
-	_panel_alpha = move_toward(_panel_alpha, _target_alpha, delta * 5.0)
+	if is_active:
+		_panel_alpha = move_toward(_panel_alpha, _target_alpha, delta * 5.0)
 
-	if _auto_advance_target > 0.0:
-		_auto_advance_timer += delta
-		if _auto_advance_timer >= _auto_advance_target:
-			advance()
+		if _auto_advance_target > 0.0:
+			_auto_advance_timer += delta
+			if _auto_advance_timer >= _auto_advance_target:
+				advance()
 
-	# Auto-reveal hint after being stuck
-	if _waiting_for_action and not _hint_shown:
-		var step_hint: String = get_hint()
-		if step_hint != "":
-			_hint_stuck_timer += delta
-			if _hint_stuck_timer >= _hint_auto_after:
-				_hint_shown = true
-				_hint_used = true
+		# Auto-reveal hint after being stuck
+		if _waiting_for_action and not _hint_shown:
+			var step_hint: String = get_hint()
+			if step_hint != "":
+				_hint_stuck_timer += delta
+				if _hint_stuck_timer >= _hint_auto_after:
+					_hint_shown = true
+					_hint_used = true
+
+		# Tooltip detection
+		_update_tooltip_buttons()
+		_check_tooltip_hover(delta)
+
+	# Glossary scroll with mouse wheel
+	if _show_glossary:
+		var terms_count: int = _glossary_data.get("terms", {}).size()
+		if terms_count > 0:
+			var max_scroll: float = max(0.0, float(terms_count) * 40.0 - vp.y * 0.6)
+			if Input.is_action_just_pressed("ui_down") or Input.is_action_just_pressed("ui_page_down"):
+				_glossary_scroll += 40.0
+			if Input.is_action_just_pressed("ui_up") or Input.is_action_just_pressed("ui_page_up"):
+				_glossary_scroll -= 40.0
+			_glossary_scroll = clamp(_glossary_scroll, 0.0, max_scroll)
 
 	queue_redraw()
 
@@ -308,6 +357,11 @@ func _input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 			KEY_I:
 				_show_step_index = not _show_step_index
+				_tooltip_text = ""
+				get_viewport().set_input_as_handled()
+			KEY_G:
+				toggle_glossary()
+				_tooltip_text = ""
 				get_viewport().set_input_as_handled()
 			KEY_H:
 				if _waiting_for_action:
@@ -323,6 +377,74 @@ func _on_next_pressed() -> void:
 	advance()
 
 
+func _update_tooltip_buttons() -> void:
+	_tooltip_buttons.clear()
+	var vp_size: Vector2 = get_viewport_rect().size
+
+	# Next button
+	var btn_rect: Rect2 = _get_next_button_rect()
+	_tooltip_buttons.append({
+		"rect": btn_rect,
+		"text": "Avanzar al siguiente paso",
+		"en": "Advance to the next step"
+	})
+
+	# Previous (←) area
+	var prev_rect: Rect2 = Rect2(Vector2(15.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
+	_tooltip_buttons.append({
+		"rect": prev_rect,
+		"text": "Volver al paso anterior",
+		"en": "Go back to the previous step"
+	})
+
+	# Skip (ESC) area
+	var skip_rect: Rect2 = Rect2(Vector2(100.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
+	_tooltip_buttons.append({
+		"rect": skip_rect,
+		"text": "Saltar este tutorial",
+		"en": "Skip this tutorial"
+	})
+
+	# Index (I) area
+	var idx_rect: Rect2 = Rect2(Vector2(190.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
+	_tooltip_buttons.append({
+		"rect": idx_rect,
+		"text": "Ver todos los pasos",
+		"en": "View all steps"
+	})
+
+	# Hint (H) area
+	var hint_rect: Rect2 = Rect2(Vector2(280.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
+	_tooltip_buttons.append({
+		"rect": hint_rect,
+		"text": "Mostrar pista",
+		"en": "Show hint"
+	})
+
+
+func _check_tooltip_hover(delta: float) -> void:
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+	var found: String = ""
+	for btn in _tooltip_buttons:
+		var r: Rect2 = btn["rect"]
+		if r.has_point(mouse_pos):
+			found = btn["text"]
+			break
+
+	if found != _tooltip_target:
+		_tooltip_target = found
+		_tooltip_timer = 0.0
+		_tooltip_text = ""
+
+	if _tooltip_target != "":
+		_tooltip_timer += delta
+		if _tooltip_timer >= _tooltip_delay:
+			_tooltip_text = _tooltip_target
+	else:
+		_tooltip_text = ""
+		_tooltip_target = ""
+
+
 func _get_next_button_rect() -> Rect2:
 	var vp_size: Vector2 = get_viewport_rect().size
 	var btn_w: float = 130.0
@@ -336,23 +458,26 @@ func _get_next_button_rect() -> Rect2:
 
 
 func _draw() -> void:
-	if not is_active or current_step_index < 0 or current_step_index >= steps.size():
-		return
-	if _panel_alpha < 0.01:
-		return
+	if is_active and current_step_index >= 0 and current_step_index < steps.size() and _panel_alpha >= 0.01:
+		var step: Dictionary = steps[current_step_index]
+		var text: String = step.get("text", "")
+		var position: String = step.get("position", "center")
 
-	var step: Dictionary = steps[current_step_index]
-	var text: String = step.get("text", "")
-	var position: String = step.get("position", "center")
+		_draw_floating_panel(text, position)
+		_draw_next_button()
+		_draw_step_indicator()
+		_draw_skip_hint()
+		if _hint_shown:
+			_draw_hint_panel()
+		if _show_step_index:
+			_draw_step_index_overlay()
 
-	_draw_floating_panel(text, position)
-	_draw_next_button()
-	_draw_step_indicator()
-	_draw_skip_hint()
-	if _hint_shown:
-		_draw_hint_panel()
-	if _show_step_index:
-		_draw_step_index_overlay()
+		# Draw tooltip
+		if _tooltip_text != "":
+			_draw_tooltip(_tooltip_text)
+
+	if _show_glossary:
+		_draw_glossary_overlay()
 
 
 func _draw_floating_panel(text: String, position: String) -> void:
@@ -477,7 +602,7 @@ func _draw_step_indicator() -> void:
 
 func _draw_skip_hint() -> void:
 	var vp_size: Vector2 = get_viewport_rect().size
-	var text: String = "[←] %s  [Enter] %s  [ESC] %s  [I] %s" % [t("tutorial.previous"), t("tutorial.next"), t("tutorial.skip"), t("tutorial.index")]
+	var text: String = "[←] %s  [Enter] %s  [ESC] %s  [I] %s  [G] Glosario" % [t("tutorial.previous"), t("tutorial.next"), t("tutorial.skip"), t("tutorial.index")]
 	var alpha: float = _panel_alpha * 0.5
 	var text_width: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
 	draw_string(font, Vector2((vp_size.x - text_width) / 2.0, vp_size.y - 15.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.6, alpha))
@@ -546,3 +671,111 @@ func _draw_step_index_overlay() -> void:
 
 	var close_hint: String = "[I] %s" % t("tutorial.index")
 	draw_string(font, Vector2(overlay_pos.x + (overlay_w - font.get_string_size(close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x) / 2.0, overlay_pos.y + overlay_h - 10.0), close_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.5, 0.5, 0.5, _panel_alpha * 0.7))
+
+
+func _draw_tooltip(tip_text: String) -> void:
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+	var tip_w: float = font.get_string_size(tip_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x + 20.0
+	var tip_h: float = 24.0
+	var tip_pos: Vector2 = mouse_pos + Vector2(12, -tip_h - 8)
+
+	# Keep tooltip on screen
+	var vp_size: Vector2 = get_viewport_rect().size
+	if tip_pos.x + tip_w > vp_size.x:
+		tip_pos.x = vp_size.x - tip_w - 4.0
+	if tip_pos.y < 0:
+		tip_pos.y = mouse_pos.y + 16.0
+	if tip_pos.x < 0:
+		tip_pos.x = 4.0
+
+	draw_rect(Rect2(tip_pos, Vector2(tip_w, tip_h)), Color(0.1, 0.1, 0.1, 0.85))
+	draw_rect(Rect2(tip_pos, Vector2(tip_w, tip_h)), Color(_accent_color.r, _accent_color.g, _accent_color.b, 0.7), false, 1.0)
+	draw_string(font, Vector2(tip_pos.x + 8.0, tip_pos.y + 16.0), tip_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color.WHITE)
+
+
+func _draw_glossary_overlay() -> void:
+	var vp_size: Vector2 = get_viewport_rect().size
+	var overlay_w: float = min(520.0, vp_size.x - 40.0)
+	var overlay_h: float = min(420.0, vp_size.y - 40.0)
+	var margin: float = 16.0
+	var line_h: float = 22.0
+
+	var overlay_pos: Vector2 = Vector2(
+		(vp_size.x - overlay_w) / 2.0,
+		(vp_size.y - overlay_h) / 2.0
+	)
+
+	# Background
+	var bg: Color = Color(0.05, 0.05, 0.12, 0.95)
+	var border: Color = Color(_accent_color.r, _accent_color.g, _accent_color.b, 0.9)
+	draw_rect(Rect2(overlay_pos, Vector2(overlay_w, overlay_h)), bg)
+	draw_rect(Rect2(overlay_pos, Vector2(overlay_w, overlay_h)), border, false, 2.0)
+
+	# Title
+	var title: String = "📖 %s" % _glossary_data.get("title", "Glosario")
+	draw_string(font, Vector2(overlay_pos.x + margin, overlay_pos.y + margin + 4.0), title, HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, Color(_accent_color.r, _accent_color.g, _accent_color.b, 1.0))
+
+	# Terms
+	var terms: Dictionary = _glossary_data.get("terms", {})
+	if terms.is_empty():
+		var empty_text: String = "No hay términos definidos."
+		draw_string(font, Vector2(overlay_pos.x + margin, overlay_pos.y + 50.0), empty_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.7, 0.7, 0.7, 1.0))
+	else:
+		var sorted_keys: Array = []
+		for k in terms.keys():
+			sorted_keys.append(k)
+		sorted_keys.sort()
+
+		var term_y: float = overlay_pos.y + 50.0 - _glossary_scroll
+		var clip_top: float = overlay_pos.y + 42.0
+		var clip_bottom: float = overlay_pos.y + overlay_h - 30.0
+
+		for term_key in sorted_keys:
+			var term: Dictionary = terms[term_key]
+			var definition: String = term.get("definition", "")
+			var term_name: String = String(term_key).capitalize()
+			var prefix: String = "▪ %s: " % term_name
+			var full_text: String = prefix + definition
+
+			# Wrap text to fit
+			var max_text_w: float = overlay_w - margin * 2.0
+			var wrapped_lines: Array[String] = _wrap_text(full_text, max_text_w, small_font_size)
+
+			if term_y + line_h > clip_top and term_y < clip_bottom:
+				draw_string(font, Vector2(overlay_pos.x + margin, term_y), wrapped_lines[0], HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(_accent_color.r, _accent_color.g, _accent_color.b, 0.95))
+
+			term_y += line_h
+			for i in range(1, wrapped_lines.size()):
+				if term_y + line_h > clip_top and term_y < clip_bottom:
+					draw_string(font, Vector2(overlay_pos.x + margin + 12.0, term_y), wrapped_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.8, 0.8, 0.8, 0.9))
+				term_y += line_h
+
+			term_y += 4.0  # Extra gap between terms
+
+	# Close hint
+	var close_text: String = "[G] Cerrar glosario  [↑↓] Desplazar"
+	var close_w: float = font.get_string_size(close_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
+	draw_string(font, Vector2(overlay_pos.x + (overlay_w - close_w) / 2.0, overlay_pos.y + overlay_h - 10.0), close_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.5, 0.5, 0.5, 0.8))
+
+
+func _wrap_text(text: String, max_width: float, fsize: int) -> Array[String]:
+	var words: PackedStringArray = text.split(" ")
+	var lines: Array[String] = []
+	var current_line: String = ""
+
+	for word in words:
+		var test_line: String = current_line + (" " if current_line != "" else "") + word
+		var test_w: float = font.get_string_size(test_line, HORIZONTAL_ALIGNMENT_LEFT, -1, fsize).x
+		if test_w > max_width and current_line != "":
+			lines.append(current_line)
+			current_line = word
+		else:
+			current_line = test_line
+
+	if current_line != "":
+		lines.append(current_line)
+
+	if lines.is_empty():
+		lines.append(text)
+
+	return lines

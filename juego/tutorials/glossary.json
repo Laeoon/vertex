@@ -1,0 +1,65 @@
+{
+  "title": "Glosario de Términos",
+  "terms": {
+    "grafo": {
+      "definition": "Estructura matemática de nodos conectados por aristas. Los grafos modelan relaciones entre objetos.",
+      "example": "Una red de computadoras es un grafo donde los nodos son servidores y las aristas son cables o conexiones inalámbricas.",
+      "real_world": "OSPF y BGP usan grafos para calcular rutas óptimas en Internet. Las redes sociales también son grafos (personas=nodos, amistades=aristas)."
+    },
+    "dijkstra": {
+      "definition": "Algoritmo que encuentra la ruta más corta entre dos nodos en un grafo con pesos positivos.",
+      "example": "En el juego, presiona [P] para ver la ruta óptima calculada con Dijkstra. Te muestra el camino de menor costo acumulado.",
+      "real_world": "OSPF (Open Shortest Path First) usa una variante de Dijkstra para enrutar paquetes en redes empresariales. Google Maps también usa variantes para calcular rutas."
+    },
+    "firewall": {
+      "definition": "Sistema que controla el tráfico de red entrante y saliente basándose en reglas de seguridad predefinidas.",
+      "example": "En el juego, la IA hace el rol de un firewall bloqueando aristas para impedir tu avance.",
+      "real_world": "iptables/nftables (Linux), Windows Defender Firewall, Cisco ASA, Palo Alto Networks, Fortinet FortiGate."
+    },
+    "min_cut": {
+      "definition": "Conjunto mínimo de aristas que, al ser bloqueadas, desconectan completamente dos nodos del grafo.",
+      "example": "La IA busca el corte mínimo para bloquearte usando la menor cantidad de recursos. Identifica los cuellos de botella de la red.",
+      "real_world": "Usado en análisis de vulnerabilidades de redes, planificación de defensa y diseño de infraestructura crítica. El teorema de Ford-Fulkerson es su base matemática."
+    },
+    "waypoint": {
+      "definition": "Punto intermedio obligatorio en una ruta. Debes visitarlo antes de llegar al destino final.",
+      "example": "En el juego, los waypoints se marcan con ◇ (actual) y ○ (pendiente). Debes pasar por ellos en orden para completar el nivel.",
+      "real_world": "En navegación GPS y aviación, los waypoints son puntos de referencia obligatorios. En logística, son centros de distribución que debes visitar en una ruta."
+    },
+    "deteccion": {
+      "definition": "Proceso de identificar actividad sospechosa o maliciosa en una red mediante monitoreo continuo.",
+      "example": "En el juego, los nodos con cámaras o sensores tienen un porcentaje de probabilidad de detectarte al entrar. Si te detectan, aparecen perseguidores.",
+      "real_world": "IDS/IPS (Snort, Suricata), SIEM (Splunk, ELK Stack), EDR (CrowdStrike, SentinelOne). La detección es la segunda capa de defensa en profundidad."
+    },
+    "perseguidor": {
+      "definition": "Entidad que te rastrea y persigue después de ser detectado por los sistemas de seguridad de la red.",
+      "example": "En el juego, los perseguidores aparecen con delay cuando te detectan. Avanzan 1 paso por turno hacia ti. Si te alcanzan, pierdes el nivel.",
+      "real_world": "Equipo CSIRT (Computer Security Incident Response Team) que responde a incidentes. Hacen forensic analysis para rastrear al atacante y contener el incidente."
+    },
+    "exploit": {
+      "definition": "Técnica o herramienta que aprovecha una vulnerabilidad en un sistema para obtener acceso no autorizado.",
+      "example": "En modo hacker, tienes acceso a exploits como bypass [1] (infiltración), escalate [2] (elevación de privilegios) y persist [3] (mantenimiento de acceso).",
+      "real_world": "Metasploit Framework es la herramienta de exploits más conocida. El catálogo CVE (Common Vulnerabilities and Exposures) lista vulnerabilidades conocidas con sus exploits asociados."
+    },
+    "ruido": {
+      "definition": "Cantidad de actividad sospechosa o anómala que generas en la red, medida por los sistemas de monitoreo.",
+      "example": "Cada exploit y escaneo aumenta tu nivel de ruido. Si supera 60, aparecen perseguidores. El ruido decae 3 puntos por turno si no generas más actividad.",
+      "real_world": "En seguridad real, el 'ruido' son los logs, alertas y eventos que generas en los sistemas de monitoreo. Los atacantes avanzados usan técnicas 'low and slow' para generar poco ruido."
+    },
+    "kill_chain": {
+      "definition": "Modelo que describe las fases secuenciales de un ataque cibernético, desde el reconocimiento hasta el objetivo final.",
+      "example": "En Vertex: Reconocimiento (scan) → Infiltración (bypass) → Escalada (escalate) → Mantenimiento (persist). Cada fase tiene mecánicas específicas en el juego.",
+      "real_world": "Lockheed Martin Cyber Kill Chain® define 7 fases: Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command & Control, Actions on Objectives. Es el framework más usado en ciberseguridad defensiva."
+    },
+    "ids": {
+      "definition": "Sistema de Detección de Intrusiones que monitorea el tráfico de red en busca de actividad maliciosa.",
+      "example": "En el juego, los nodos con IDS tienen altos porcentajes de detección. Pasar por ellos es arriesgado pero a veces inevitable.",
+      "real_world": "Snort (open-source, el más popular), Suricata (alto rendimiento), Zeek (análisis de protocolos). Un IDS detecta; un IPS (Intrusion Prevention System) además bloquea."
+    },
+    "siem": {
+      "definition": "Sistema de Gestión de Eventos e Información de Seguridad que centraliza y correlaciona alertas de múltiples fuentes.",
+      "example": "Aunque no es una mecánica directa del juego, el SIEM representa lo que ocurre 'detrás de escena' cuando generas ruido y alertas en la red.",
+      "real_world": "Splunk (líder empresarial), ELK Stack (Elasticsearch, Logstash, Kibana — open-source), IBM QRadar, Microsoft Sentinel. Un SOC usa el SIEM como su herramienta principal."
+    }
+  }
+}
