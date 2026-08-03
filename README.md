@@ -4,35 +4,46 @@
 
 Juego educativo que enseña conceptos de ciberseguridad y teoría de grafos mediante mecánicas de estrategia. El jugador debe navegar redes, evitar detección, y completar objetivos usando algoritmos como Dijkstra (pathfinding) y Edmonds-Karp (max-flow/min-cut).
 
-## Descarga Rápida
+## 📥 Descargar el juego (Windows)
 
-Si solo querés una copia del proyecto (sin historial de Git):
+El juego compilado para Windows 10/11 (x64). No requiere instalar nada, es un solo archivo autocontenido.
+
+**Última versión:** [VERtex Alfa 0.1.0](https://github.com/Laeoon/vertex/releases/latest)
 
 ```bash
-# Última versión estable (main branch)
+# Descargar el .exe directamente (v0.1.0-alpha)
+curl -L -o VERtex-alpha-0.1.0.exe https://github.com/Laeoon/vertex/releases/download/v0.1.0-alpha/VERtex-alpha-0.1.0.exe
+
+# Con wget
+wget https://github.com/Laeoon/vertex/releases/download/v0.1.0-alpha/VERtex-alpha-0.1.0.exe
+```
+
+**Requisitos:** Windows 10/11 x64, GPU con DirectX 12, ~300 MB de espacio. Al ejecutarlo se abre en pantalla completa.
+
+## 🧰 Descargar el código fuente
+
+Si querés el código (para desarrollo o para abrirlo en el editor de Godot):
+
+```bash
+# Código de la versión estándar (main) sin historial de Git
 curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz
 tar -xzf vertex.tar.gz && cd vertex-main
 
-# Versión específica (ej: alfa 0.1.0 - reemplazar con el tag real)
+# Código de una versión con tag (ej: alfa 0.1.0)
 curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.1.0-alpha.tar.gz
 tar -xzf vertex.tar.gz
-```
 
-**Alternativas:**
-
-```bash
-# Con wget (si no tenés curl)
+# Con wget
 wget https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz
 
 # Clonar con historial completo (recomendado para desarrollo)
 git clone https://github.com/Laeoon/vertex.git
-cd vertex
 
-# Solo una versión específica de forma shallow (más rápido, menos espacio)
+# Clon "shallow" (solo última versión, más rápido y ligero)
 git clone --depth 1 https://github.com/Laeoon/vertex.git
 ```
 
-Después de descargar, abrí `project.godot` con Godot 4.7+ y presioná F5.
+Después de descargar el código, abrí `project.godot` con **Godot 4.7+** y presioná F5.
 
 ## Stack
 
