@@ -161,7 +161,7 @@ func complete_tutorial() -> void:
 	# Esperar un momento breve para que el jugador vea que completó
 	await get_tree().create_timer(0.5).timeout
 	_finish_tutorial()
-	tutorial_completed.emit(tid)
+	# _finish_tutorial() ya emite tutorial_completed y oculta el panel
 	GameLogger.info("TutorialPlayer", "Tutorial completado desde juego: %s" % tid)
 
 

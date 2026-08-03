@@ -640,7 +640,8 @@ func draw_game_over(
 	game_won: bool,
 	mensaje_estado: String,
 	star_count: int,
-	_game_over_time: float = -1.0
+	_game_over_time: float = -1.0,
+	is_tutorial: bool = false
 ) -> void:
 	var center: Vector2 = vp_size / 2.0
 
@@ -648,8 +649,17 @@ func draw_game_over(
 	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), Color(0.04, 0.04, 0.1, 0.95 * fade_alpha))
 	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), Color(0.0, 1.0, 0.83, 0.6), false, 2.0)
 
-	var texto: String = "VICTORIA" if game_won else "DERROTA"
-	var color: Color = Color(0.0, 1.0, 0.5) if game_won else Color(1.0, 0.2, 0.2)
+	var texto: String
+	var color: Color
+	if not game_won:
+		texto = "DERROTA"
+		color = Color(1.0, 0.2, 0.2)
+	elif is_tutorial:
+		texto = "TUTORIAL COMPLETADO"
+		color = Color(0.0, 1.0, 0.83)
+	else:
+		texto = "VICTORIA"
+		color = Color(0.0, 1.0, 0.5)
 	draw_string(center + Vector2(-50, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, color)
 	draw_string(center + Vector2(-140, 12), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color.WHITE)
 
