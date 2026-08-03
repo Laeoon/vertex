@@ -47,6 +47,10 @@
   "tut1_desc": "Learn to navigate the graph with clicks",
   "tut2_desc": "Choose the route while the AI blocks edges",
   "tut3_desc": "Waypoints + adaptive AI",
+  "tut4_desc": "Exploits, scanning and lateral movement in hacker mode",
+  "tut5_desc": "Block edges, place node firewalls and apply min-cut analysis",
+  "tut6_desc": "Expert level combining attack and defense in a single network",
+  "tut7_desc": "Learn to protect critical nodes by blocking enemy routes",
 
   "options.audio": "Audio",
   "options.audio_desc": "General volume, music and effects",

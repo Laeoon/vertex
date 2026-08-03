@@ -28,7 +28,7 @@ func _ready() -> void:
 		{"label": "Tutorial 6: Operaciones Combinadas", "key": &"tutorial6",
 			"desc": loc("tut6_desc")},
 		{"label": "Tutorial 7: Fundamentos de Defensa", "key": &"tutorial7",
-			"desc": "Aprende a proteger nodos críticos bloqueando rutas enemigas"},
+			"desc": loc("tut7_desc")},
 	]
 
 	progress = ProgressUtil.cargar_progreso()

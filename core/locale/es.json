@@ -47,6 +47,10 @@
   "tut1_desc": "Aprende a navegar el grafo con clicks",
   "tut2_desc": "Elige la ruta mientras la IA bloquea aristas",
   "tut3_desc": "Waypoints + IA adaptativa",
+  "tut4_desc": "Exploits, escaneo y movimiento lateral en modo hacker",
+  "tut5_desc": "Bloquea aristas, coloca firewalls de nodo y aplica análisis de corte mínimo",
+  "tut6_desc": "Nivel experto que combina ataque y defensa en una sola red",
+  "tut7_desc": "Aprende a proteger nodos críticos bloqueando rutas enemigas",
 
   "options.audio": "Audio",
   "options.audio_desc": "Volumen general, música y efectos",

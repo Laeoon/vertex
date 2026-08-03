@@ -47,6 +47,10 @@
   "tut1_desc": "Aprenda a navegar no grafo com cliques",
   "tut2_desc": "Escolha a rota enquanto a IA bloqueia arestas",
   "tut3_desc": "Waypoints + IA adaptativa",
+  "tut4_desc": "Exploits, varredura e movimento lateral no modo hacker",
+  "tut5_desc": "Bloqueie arestas, coloque firewalls de nó e aplique análise de corte mínimo",
+  "tut6_desc": "Nível especialista que combina ataque e defesa em uma única rede",
+  "tut7_desc": "Aprenda a proteger nós críticos bloqueando rotas inimigas",
 
   "options.audio": "Áudio",
   "options.audio_desc": "Volume geral, música e efeitos",
