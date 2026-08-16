@@ -34,6 +34,11 @@ tags:
 - Cobertura de tests agregada: `tests/system/` (HackerMechanics, LevelManager, LevelRegistry), `tests/core/` (Events, GameLogger, LocaleManager, AudioManager estático), validación data-driven de los 7 niveles y smoke tests de modos (hacker, defense, cyber). Suite: 14 → 25 pruebas, 0 fallidas.
 - Hallazgo nuevo: en modo defensor `juego_ataque.gd:290-291` sobreescribe `start_node`/`player_pos` a `DEFENSOR` — el `start_node` de `defense_n1.json` ("Internet") y `cyber_n1.json` ("Defensor") se ignora (dato muerto; los tests afirman el comportamiento real).
 
+### Saldado (2026-08-16, slice 3)
+
+- Hallazgo del slice 2 (sentinel `&"DEFENSOR"`) **resuelto por el fix defensor "Enmienda A"**: `reset_state()` usa el `start_node` real, `_on_move_requested` es no-op en modo defensor y la IA no bloquea al inicio. Congelado por `tests/ataque/_test_defender_flow_equivalence.{gd,tscn}`.
+- `GameRenderer.draw_frame()` (orquestación del frame por datos, sin callables) validado en runtime en los 3 modos (atacante/hacker/defensor, incluidas overlay [P] y pantallas win/lose) con escena temporal de 10 aserciones. Deuda restante: equivalence test permanente del renderer → slice 4 (doc 17).
+
 ## Decisiones de diseño registradas
 
 | Decisión | Razón |

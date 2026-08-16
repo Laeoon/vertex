@@ -20,7 +20,8 @@ VERTEX usa una arquitectura **Data-Driven** con separación estricta entre datos
 │  Menú principal, selector de niveles, HUD           │
 ├─────────────────────────────────────────────────────┤
 │                    LÓGICA DE JUEGO                   │
-│  juego_ataque.gd (orquestador)                      │
+│  juego_ataque.gd (orquestador delgado)              │
+│  game_state / game_logic / hacker_logic (slice 3)   │
 │  hacker_mechanics.gd                                │
 │  LevelManager / LevelRegistry                       │
 ├─────────────────────────────────────────────────────┤
@@ -86,8 +87,53 @@ Ver: [[09 - Defensa#Event Bus]]
 Ver: [[04 - Mecánicas#Algoritmos]]
 
 ### Lógica de juego
-- **juego_ataque.gd**: Orquestador principal (~1300 líneas → 1002 tras
-  Fase 0 Slice 4; objetivo ≤700 al cerrar Slices 5-6)
+- **juego_ataque.gd**: Orquestador delgado (P5, 377 líneas; fue ~1300 → 1002
+  en Fase 0). Conserva el ESTADO mutable (lo leen el renderer, los servicios
+  y los tests vía duck-typing) y el wiring de señales; el comportamiento
+  vive en los módulos GameState/GameLogic/HackerLogic y los servicios de
+  Fase 0 (AIBlocker, PursuitSystem, ProgressService, DefenderBrain).
+- **GameState** (`juego/ataque/game_state.gd`, slice 3): RefCounted con ref
+  `_game` (patrón setup(game)). Estado y ciclo de vida: `cargar_params()`
+  (lectura de SceneParams), `load_graph()` (carga/validación del grafo,
+  pobla `node_positions`/`_node_cache`), `reset_state()`, `target_actual()`,
+  `find_node_resource()`, ciclo de bloqueos (`is_blocked`/`block_edge`/
+  `unblock_edge`/`limpiar_bloqueos_expirados`), hit-testing del input
+  (`edge_en_posicion`/`nodo_en_posicion`/`nodo_en_posicion_firewall`),
+  `blocked_edge_keys()` (snapshot {edge_key: true} para el renderer) y
+  `frame_data()` (diccionario de datos puros que consume
+  `GameRenderer.draw_frame`).
+  Equivalencia: `tests/ataque/_test_game_state_equivalence.{gd,tscn}`.
+- **GameLogic** (`juego/ataque/game_logic.gd`, slice 3): RefCounted con ref
+  `_game`. Lógica central del turno: `mover_jugador()` (turno completo con
+  waypoints/presupuesto/IA/ruido), `ganar()`/`perder()`, `vecinos_jugador()`,
+  selección de vecino (`auto_select_vecino`/`cycle_neighbor`),
+  `reveal_optimal_route()` (toggle [P]) y el cierre de partida del defensor
+  (`defender_won`/`defender_lost`/`defender_block_edge`/`defender_place_firewall`,
+  con notificación al tutorial sólo si la acción se aplicó de verdad).
+  Equivalencias: `_test_game_logic_equivalence` y
+  `_test_defender_flow_equivalence` — esta última congela el **fix defensor
+  ("Enmienda A", slice 3)**: en modo defensor no hay jugador que se mueva
+  (`_on_move_requested` es no-op), `reset_state()` usa el `start_node` real
+  (adiós sentinel `&"DEFENSOR"`) y saltea el bloqueo inicial de la IA.
+- **HackerLogic** (`juego/ataque/hacker_logic.gd`, slice 3): RefCounted con
+  ref `_game`. Escaneo (`scan_selected_node`), exploits con refund unificado
+  (`use_hacker_exploit`) y consecuencias del ruido
+  (`check_hacker_consequences`); incluye sus SFX (mismo criterio que el
+  "move" de GameLogic). Equivalencia: `_test_hacker_logic_equivalence`.
+- **Sistema de tutoriales (slice 3)**: `tutorial_player.gd` quedó como
+  orquestador delgado (P5, 212 líneas: estado + señales + wiring). Módulos:
+  - **TutorialLogic** (`juego/tutorials/tutorial_logic.gd`): ciclo de vida —
+    carga JSON, pasos, avance/skip/completado, gating de acciones
+    (`can_perform_action`/`notify_*`), hints, `ensure_locale()` y
+    `process_timers()` (auto-avance y hint por estancamiento).
+  - **Glossary** (`juego/tutorials/glossary.gd`): estado del glosario [G] —
+    carga de glossary.json, toggle, scroll (Input y programático) y
+    `draw_pack()` (datos para el overlay).
+  - **TutorialRender** (`juego/tutorials/tutorial_render.gd`): layout y
+    dibujado puros; recibe canvas + estado (`_draw_*` no leen vars del nodo).
+  - **TutorialInput** (`juego/tutorials/tutorial_input.gd`): teclado →
+    señales semánticas + estado de tooltips/hover (estilo InputHandler).
+  Equivalencias: `tests/tutorials/_test_{tutorial_logic,glossary,tutorial_render}_equivalence`.
 - **GameRenderer**: Rendering separado de lógica
 - **hacker_mechanics.gd**: Sistema de ruido y exploits
 - **DefenderBrain** (`juego/ataque/defender_brain.gd`): RefCounted con
@@ -192,7 +238,13 @@ Ver: [[04 - Mecánicas#Algoritmos]]
   - `get_manager(node)` (static) — devuelve LocaleManager o null.
 
 ### Presentación
-- **GameRenderer**: HUD en 3 zonas, grid de fondo, hints opcionales
+- **GameRenderer**: HUD en 3 zonas, grid de fondo, hints opcionales.
+  Desde P5, `draw_frame(d: Dictionary)` orquesta el frame completo con un
+  diccionario de datos puro armado por `GameState.frame_data()` — sin
+  callables ni lectura de estado del nodo juego: `blocked_keys`
+  (snapshot de aristas bloqueadas) e `in_path` derivado de `current_path`
+  reemplazaron a `is_blocked_func`/`is_in_path_func`, y el `node_cache`
+  {id: NodeResource} reemplazó a `find_node_res_func`.
 - **Menú principal**: Cyberpunk (scan lines, glow)
 - **Selector de niveles**: Mapa de nodos estilo subway
 

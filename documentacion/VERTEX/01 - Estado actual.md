@@ -1,7 +1,7 @@
 ---
 title: "Estado Actual del Proyecto"
 created: "2026-06-26"
-updated: "2026-08-03"
+updated: "2026-08-16"
 status: "active"
 tags:
   - status
@@ -49,9 +49,10 @@ Cada tutorial incluye glosario [G], tooltips, barra de progreso y recordatorios 
 
 ## Calidad
 
-- **Tests automatizados:** suite en `tests/` ejecutada por `tests/runner/run_all.gd` — core (Dijkstra, Edmonds-Karp, MinHeap, SceneParams), ataque y tutoriales. Cobertura parcial: no toda la lógica de juego tiene tests.
+- **Tests automatizados:** suite en `tests/` ejecutada por `tests/runner/run_all.gd` — core (Dijkstra, Edmonds-Karp, MinHeap, SceneParams), ataque y tutoriales. Además, tests de equivalencia (golden, scene-based) congelan los módulos extraídos: `_test_{game_state,game_logic,hacker_logic,defender_flow,tutorial_logic,glossary,tutorial_render}_equivalence`. Cobertura parcial: no toda la lógica de juego tiene tests.
 - **Logging:** GameLogger estructurado en lugar de `print()`.
-- **Refactorización:** lógica de gameplay extraída a servicios dedicados (AIBlocker, PursuitSystem, ProgressService) y utilidades compartidas (ProgressUtil, LocUtil).
+- **Refactorización (slice 3, P5):** orquestadores delgados — `juego_ataque.gd` (377 líneas) y `tutorial_player.gd` (212 líneas) conservan sólo estado + wiring + handlers. La lógica vive en módulos: ataque (GameState, GameLogic, HackerLogic + servicios Fase 0 AIBlocker/PursuitSystem/ProgressService/DefenderBrain) y tutoriales (TutorialLogic, Glossary, TutorialRender, TutorialInput). El renderer dibuja por datos puros (`GameRenderer.draw_frame` + `GameState.frame_data`, sin callables).
+- **Fix defensor ("Enmienda A"):** en modo defensor el start_node es real (sin sentinel `&"DEFENSOR"`), la IA no bloquea al inicio y el "jugador" no se mueve — congelado por `_test_defender_flow_equivalence`.
 
 ## Entrega
 

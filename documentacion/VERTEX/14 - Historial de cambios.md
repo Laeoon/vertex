@@ -1,13 +1,47 @@
 ---
 title: "Historial de Cambios"
 created: "2026-06-26"
-updated: "2026-08-02"
+updated: "2026-08-16"
 tags:
   - changelog
   - history
 ---
 
 # Historial de Cambios
+
+## Slice 3 — Descomposición en módulos + fix defensor (2026-08-16)
+
+### Orquestadores delgados
+
+- **Nuevo** `juego/ataque/game_state.gd` — estado y ciclo de vida: `cargar_params()` (SceneParams), `load_graph()`, `reset_state()`, `target_actual()`, `find_node_resource()`, ciclo de bloqueos, hit-testing del input, `blocked_edge_keys()` y `frame_data()` (datos puros del frame).
+- **Nuevo** `juego/ataque/game_logic.gd` — turnos: `mover_jugador()`, `ganar()`/`perder()`, `vecinos_jugador()`, selección de vecino, `reveal_optimal_route()` ([P]) y cierre del defensor (`defender_won/lost/block_edge/place_firewall`).
+- **Nuevo** `juego/ataque/hacker_logic.gd` — scans/exploits (refund unificado) y consecuencias del ruido; SFX scan/exploit movidos al módulo.
+- **Nuevos** `juego/tutorials/tutorial_logic.gd` (ciclo de vida, `process_timers`, `ensure_locale`), `glossary.gd` (estado del glosario + `draw_pack`), `tutorial_render.gd` (layout y `_draw_*` puros), `tutorial_input.gd` (teclado→señales + tooltips).
+- **Modificado** `juego/ataque/juego_ataque.gd` — 704 → **371 líneas**: estado + wiring + handlers delgados; delegates conservados por duck-typing/tests.
+- **Modificado** `juego/tutorials/tutorial_player.gd` — 340 → **212 líneas**: orquestador.
+
+### Renderer por datos (sin callables)
+
+- **Modificado** `juego/ataque/game_renderer.gd` — nuevo `draw_frame(d)`: orquesta el frame con el diccionario de `GameState.frame_data()`. `draw_edges` pierde `is_blocked_func`/`is_in_path_func` (usa `blocked_keys` + deriva in_path de `current_path`); `draw_node_info_panel` usa `node_cache` en vez de `find_node_res_func`. Validado en runtime (atacante/hacker/defensor) con escena temporal.
+
+### Fix defensor ("Enmienda A")
+
+- **Modificado** `game_state.gd` `reset_state()` — usa el `start_node` real de SceneParams (eliminado el sentinel `&"DEFENSOR"`; dato muerto de los JSON) y saltea `_ai_blocker.initial_block()` en modo defensor.
+- **Modificado** `juego_ataque.gd` `_on_move_requested()` — no-op en modo defensor (no hay jugador que se mueva).
+- **Modificado** `test_defense_sanity.gd` / `test_cyber_sanity.gd` — esperan `player_pos == start_node` real.
+
+### mostrar_ruta() a no-op documentado
+
+- **Modificado** `juego_ataque.gd` — eliminado el push_warning del slice 1 (ruido de consola por partida); queda `pass` documentado. `test_bugfixes_static.gd` actualizado al contrato nuevo.
+
+### Tests de equivalencia (golden, scene-based, prefijo `_`)
+
+- **Nuevos** en `tests/ataque/`: `_test_game_state_` (14), `_test_game_logic_` (19), `_test_hacker_logic_` (18), `_test_defender_flow_` (7 — congela el fix defensor).
+- **Nuevos** en `tests/tutorials/`: `_test_tutorial_logic_` (17), `_test_glossary_` (14), `_test_tutorial_render_` (34).
+
+### Verificación
+
+- `run_all.gd`: 25/25. Equivalences: 7/7 (123 aserciones). Cero `print()` en código de juego. Ver [[17 - Handoff a orquestador]].
 
 ## Slice Día 3.7 — Correcciones Finales para Alfa 0.1.0 (2026-08-02)
 
