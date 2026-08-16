@@ -49,7 +49,7 @@ Cada tutorial incluye glosario [G], tooltips, barra de progreso y recordatorios 
 
 ## Calidad
 
-- **Tests automatizados:** suite completa en `tests/` — core (Dijkstra, Edmonds-Karp, MinHeap, SceneParams), ataque y tutoriales.
+- **Tests automatizados:** suite en `tests/` ejecutada por `tests/runner/run_all.gd` — core (Dijkstra, Edmonds-Karp, MinHeap, SceneParams), ataque y tutoriales. Cobertura parcial: no toda la lógica de juego tiene tests.
 - **Logging:** GameLogger estructurado en lugar de `print()`.
 - **Refactorización:** lógica de gameplay extraída a servicios dedicados (AIBlocker, PursuitSystem, ProgressService) y utilidades compartidas (ProgressUtil, LocUtil).
 
