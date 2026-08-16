@@ -11,8 +11,10 @@ extends Node
 ## Verifica:
 ##   - 1.2: el archivo `juego/ataque/ia_defensora.gd` ya no existe en disco, y
 ##         el texto fuente de `juego_ataque.gd` ya no declara `const IADefensora`.
-##   - 1.3: `mostrar_ruta()` ya no es un `pass` silencioso: el fuente contiene
-##         la advertencia deliberada (push_warning + _ruta_warning_emitido).
+##   - 1.3: `mostrar_ruta()` es un no-op documentado. Originalmente (slice 1)
+##         se reemplazó el `pass` silencioso por un push_warning deliberado;
+##         en P5/tarea 2 se eliminó el warning (ruido de consola por partida)
+##         y quedó un no-op documentado sin flag ni push_warning.
 ##
 ## La verificación comportamental completa de 1.3 (conmutación del flag) y la
 ## prueba de integración de 1.4 sobre el `_draw()` real se hacen con escenas
@@ -38,25 +40,31 @@ func _run_tests() -> void:
 	_afirmar(src_juego.find('preload("res://juego/ataque/ia_defensora.gd")') == -1,
 		"1.2: juego_ataque.gd no preload la ruta ia_defensora.gd")
 
-	# ── Tarea 1.3: mostrar_ruta() ya no es un pass silencioso ──
-	# El cuerpo nuevo referencia el flag y emite push_warning (advertencia
-	# deliberada). Buscamos los marcadores característicos de la nueva
-	# implementación.
-	_afirmar(src_juego.find("_ruta_warning_emitido") != -1,
-		"1.3: el fuente declara el flag _ruta_warning_emitido")
-	_afirmar(src_juego.find("mostrar_ruta(): la visualización automática") != -1,
-		"1.3: mostrar_ruta() emite un push_warning deliberado (no es un pass)")
-	# Además, el cuerpo viejo ("# Solo calcular si se pide explícitamente con P"
-	# seguido de `pass`) ya no debe aparecer.
-	_afirmar(not (src_juego.find("# Solo calcular si se pide explícitamente con P") != -1
-			and src_juego.find("pass", src_juego.find("func mostrar_ruta")) != -1),
-		"1.3: el stub silencioso original (pass) fue reemplazado")
+	# ── Tarea 1.3 (actualizada por P5/tarea 2): mostrar_ruta() = no-op
+	# documentado sin push_warning ──
+	var inicio: int = src_juego.find("func mostrar_ruta")
+	_afirmar(inicio != -1, "1.3: existe func mostrar_ruta()")
+	var cuerpo: String = ""
+	if inicio != -1:
+		var fin: int = src_juego.find("\nfunc ", inicio + 1)
+		cuerpo = src_juego.substr(inicio, (fin if fin != -1 else src_juego.length()) - inicio)
+	_afirmar(cuerpo.to_lower().find("no-op deliberado") != -1,
+		"1.3: mostrar_ruta() documenta el no-op deliberado (pass visible)")
+	_afirmar(cuerpo.find("push_warning") == -1,
+		"1.3: mostrar_ruta() ya no emite push_warning (P5/tarea 2)")
+	_afirmar(src_juego.find("_ruta_warning_emitido") == -1,
+		"1.3: el flag _ruta_warning_emitido fue eliminado junto al warning")
 
 	# ── Dia 3.7: Fix waypoint vacio en _ganar() ──
-	_afirmar(src_juego.find("waypoints.size() > 0 and current_waypoint_idx") != -1,
-		"D3.7: _ganar() verifica waypoints.size() > 0 antes de comparar indices")
-	_afirmar(src_juego.find("current_waypoint_idx = -1 if waypoints.is_empty() else 0") != -1,
-		"D3.7: current_waypoint_idx se inicializa en -1 cuando waypoints esta vacio")
+	# Slice 3/etapa 3: _ganar() migró a juego/ataque/game_logic.gd.
+	var src_logic: String = FileAccess.get_file_as_string("res://juego/ataque/game_logic.gd")
+	_afirmar(src_logic.find("_game.waypoints.size() > 0 and _game.current_waypoint_idx") != -1,
+		"D3.7: _ganar() verifica waypoints.size() > 0 antes de comparar indices (game_logic.gd)")
+	# Slice 3/etapa 1: reset_state() migró a juego/ataque/game_state.gd —
+	# el marcador D3.7 se busca ahora en el fuente del módulo.
+	var src_state: String = FileAccess.get_file_as_string("res://juego/ataque/game_state.gd")
+	_afirmar(src_state.find("current_waypoint_idx = -1 if _game.waypoints.is_empty() else 0") != -1,
+		"D3.7: current_waypoint_idx se inicializa en -1 cuando waypoints esta vacio (game_state.gd)")
 
 	_finalizar()
 

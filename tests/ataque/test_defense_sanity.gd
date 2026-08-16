@@ -61,10 +61,10 @@ func _run_tests() -> void:
 		print("PASS: enemigo inicia en Internet rumbo a DataCenter")
 		passed += 1
 
-	# En modo defensor el start_node del JSON se ignora: el juego coloca al
-	# jugador en el nodo virtual DEFENSOR (juego_ataque.gd:290).
-	if inst.player_pos != &"DEFENSOR":
-		print("FAIL: player_pos != DEFENSOR: %s" % inst.player_pos)
+	# Fix defensor (Enmienda A): player_pos respeta el start_node real del
+	# JSON (Internet); el sentinel &"DEFENSOR" fue eliminado de reset_state().
+	if inst.player_pos != &"Internet":
+		print("FAIL: player_pos != Internet (start_node real): %s" % inst.player_pos)
 		failed += 1
 	elif inst.turn != 0:
 		print("FAIL: turn inicial != 0: %d" % inst.turn)
@@ -73,7 +73,7 @@ func _run_tests() -> void:
 		print("FAIL: arranca en game_over")
 		failed += 1
 	else:
-		print("PASS: estado inicial: defensor en nodo virtual DEFENSOR, turn 0, juego activo")
+		print("PASS: estado inicial: defensor en Internet (start_node real), turn 0, juego activo")
 		passed += 1
 
 	_quit()

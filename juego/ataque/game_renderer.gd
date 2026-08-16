@@ -54,6 +54,42 @@ func draw_error(vp_size: Vector2, mensaje_estado: String) -> void:
 	draw_string(Vector2(30, 106), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.RED)
 
 
+## Orquestación del frame completo (P5): juego_ataque._draw() sólo hace los
+## guards (brain válido, runtime/graph cargados) y delega acá con un
+## diccionario de datos puro armado por GameState.frame_data() — sin
+## callables ni lectura de estado del nodo juego.
+func draw_frame(d: Dictionary) -> void:
+	if d.defender_mode:
+		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode)
+	else:
+		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
+	if d.hacker_mode:
+		draw_hacker_hud(d.vp_size, d.hacker_state, d.scan_results)
+	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge)
+	if d.defender_mode:
+		draw_nodes(d.graph, d.node_positions, d.brain_enemy_pos, d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time)
+		if d.brain_enemy_path.size() >= 2:
+			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
+	else:
+		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time)
+	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
+	if d.show_optimal_overlay:
+		draw_optimal_overlay(d.optimal_overlay_path, d.node_positions, d.node_radius)
+	if d.tutorial_player != null and d.tutorial_player.is_active:
+		# Flecha guía del tutorial: en modo defensor no hay jugador.
+		draw_tutorial_highlights(d.tutorial_player, d.node_positions, d.node_radius, d.tutorial_arrow_pos)
+	if d.game_over:
+		if d.defender_mode:
+			draw_defender_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time)
+		else:
+			draw_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time, d.es_tutorial)
+	if d.mensaje_tutorial != "" and not d.game_over:
+		draw_tutorial_text(d.mensaje_tutorial)
+	if d.selected_neighbor != &"" and not d.game_over:
+		draw_node_info_panel(d.vp_size, d.selected_neighbor, d.player_pos, d.graph, d.node_cache)
+	draw_status_bar(d.vp_size, d.mensaje_estado, d.selected_neighbor, d.game_over, d.game_won, d.defender_mode)
+
+
 func draw_background_grid(vp_size: Vector2) -> void:
 	var spacing: float = 50.0
 	var grid_color: Color = Color(0.12, 0.14, 0.2, 0.3)
@@ -363,11 +399,10 @@ func draw_edges(
 	graph: NetworkGraphResource,
 	node_positions: Dictionary,
 	blocked_edges: Dictionary,
+	blocked_keys: Dictionary,
 	current_path: Array,
 	node_radius: float,
 	game_over: bool,
-	is_blocked_func: Callable,
-	is_in_path_func: Callable,
 	hovered_edge: String = "",
 	enemy_path: Array = [],
 	current_turn: int = 0,
@@ -383,8 +418,16 @@ func draw_edges(
 			continue
 
 		var edge_key: String = "%s→%s" % [e.from_id, e.to_id]
-		var is_blocked: bool = is_blocked_func.call(edge_key)
-		var in_path: bool = is_in_path_func.call(e.from_id, e.to_id)
+		# P5/tarea 3: datos en lugar de callables — is_blocked_func se reemplaza
+		# por el snapshot blocked_keys ({edge_key: true}, mismo criterio que
+		# GameState.is_blocked) e is_in_path_func se deriva de current_path.
+		var is_blocked: bool = blocked_keys.has(edge_key)
+		var in_path: bool = false
+		if current_path.size() >= 2:
+			for i in current_path.size() - 1:
+				if current_path[i] == e.from_id and current_path[i + 1] == e.to_id:
+					in_path = true
+					break
 
 		# TAREA 2: Verificar si la arista está en la ruta del atacante
 		var in_enemy_path: bool = false
@@ -681,9 +724,11 @@ func draw_node_info_panel(
 	selected_neighbor: StringName,
 	player_pos: StringName,
 	graph: NetworkGraphResource,
-	find_node_res_func: Callable
+	node_cache: Dictionary
 ) -> void:
-	var node_res = find_node_res_func.call(selected_neighbor)
+	# P5/tarea 3: datos en lugar de callable — el cache {id: NodeResource}
+	# poblado en GameState.load_graph() reemplaza a find_node_res_func.
+	var node_res = node_cache.get(selected_neighbor)
 	if node_res == null:
 		return
 

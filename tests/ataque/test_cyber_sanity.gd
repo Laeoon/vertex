@@ -60,10 +60,11 @@ func _run_tests() -> void:
 		print("PASS: budget defensor cyber: 3 bloqueos/turno, duración 5")
 		passed += 1
 
-	# En modo defensor el start_node del JSON ("Defensor") se ignora: el
-	# juego coloca al jugador en el nodo virtual DEFENSOR (juego_ataque.gd:290).
-	if inst.player_pos != &"DEFENSOR":
-		print("FAIL: player_pos != DEFENSOR: %s" % inst.player_pos)
+	# Fix defensor (Enmienda A): player_pos respeta el start_node real del
+	# JSON ("Defensor", nodo existente en cyber_n1.tres); el sentinel
+	# &"DEFENSOR" fue eliminado de reset_state().
+	if inst.player_pos != &"Defensor":
+		print("FAIL: player_pos != Defensor (start_node real): %s" % inst.player_pos)
 		failed += 1
 	elif inst.enemy_start_node != &"Internet" or inst.enemy_target_node != &"Database":
 		print("FAIL: enemigo mal configurado: %s → %s" % [inst.enemy_start_node, inst.enemy_target_node])

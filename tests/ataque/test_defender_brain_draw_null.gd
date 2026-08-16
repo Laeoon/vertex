@@ -54,9 +54,9 @@ func _run_tests() -> void:
 	_juego._draw()
 	_afirmar(true, "modo defensor + brain null: _draw() retorna sin crash (guard temprano)")
 
-	# Caso 2: idempotencia — una segunda llamada tampoco cae (el flag de la
-	# advertencia de tarea 1.3 es de mostrar_ruta, no de _draw; _draw no guarda
-	# estado, así que repetir es seguro).
+	# Caso 2: idempotencia — una segunda llamada tampoco cae (ni _draw ni
+	# mostrar_ruta — no-op puro desde P5 — guardan estado, así que repetir
+	# es seguro).
 	_juego._draw()
 	_afirmar(true, "modo defensor + brain null: segunda llamada a _draw() también estable")
 

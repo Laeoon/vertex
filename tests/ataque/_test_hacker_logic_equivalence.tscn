@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/ataque/_test_hacker_logic_equivalence.gd" id="1"]
+
+[node name="TestHackerLogicEquivalence" type="Node"]
+script = ExtResource("1")
