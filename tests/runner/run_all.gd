@@ -100,15 +100,28 @@ func _descubrir_pruebas(ruta: String, acumulado: Array[String]) -> void:
 	dir.list_dir_end()
 
 
-## Ejecuta una prueba aislada en su propio Godot headless (vía el lanzador
-## `_run_one.gd`) y registra el resultado interpretando el código de salida.
+## Ejecuta una prueba aislada en su propio Godot headless y registra el
+## resultado interpretando el código de salida.
+##
+## Hay dos modos:
+##   - Script puro (por defecto): vía el lanzador `_run_one.gd`.
+##   - Scene-based: si existe un `.tscn` con el mismo basename junto al
+##     script, se ejecuta `godot --headless <tscn>` directamente. Con `--script`
+##     Godot NO registra los autoloads del proyecto, y estas pruebas dependen
+##     de ellos (SceneParams, etc.); correrlas como escena en modo proyecto sí
+##     los carga.
 func _ejecutar_prueba(ruta: String) -> void:
 	var bin_godot := _binario_godot()
-	var argumentos_base: PackedStringArray = [
-		"--headless",
-		"--script", RUTA_LANZADOR,
-		OPCION_RUTA, ruta,
-	]
+	var argumentos_base: PackedStringArray
+	var ruta_escena := ruta.get_basename() + ".tscn"
+	if FileAccess.file_exists(ruta_escena):
+		argumentos_base = PackedStringArray(["--headless", ruta_escena])
+	else:
+		argumentos_base = PackedStringArray([
+			"--headless",
+			"--script", RUTA_LANZADOR,
+			OPCION_RUTA, ruta,
+		])
 	print("RUNNER: ejecutando %s" % ruta)
 
 	var salida := []

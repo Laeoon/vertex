@@ -39,7 +39,7 @@ extends Node
 ## cuyo script raíz (`juego_ataque.gd`) referencia autoloads (SceneParams,
 ## AudioManager, Events). En Godot 4.7, `--script` NO registra autoloads
 ## (slice-0 hallazgo #6), por lo que `run_all.gd` no puede ejecutarla — se
-## excluye con `_` (Slice 0 convención idéntica a `juego/ataque/test_*.gd`)
+## excluye con `_` (Slice 0 convención idéntica a `tests/ataque/test_*.gd`)
 ## y se corre vía escena:
 ##     godot --headless res://tests/ataque/_test_ai_blocker_equivalence.tscn
 ## Única desviación del path indicado por el task (tests/ataque/, nombre

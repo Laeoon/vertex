@@ -14,9 +14,9 @@ extends Node
 ##   slice-0 apply-progress, hallazgo #6), por lo que el runner no puede
 ##   compilar/preload `juego_ataque.gd`. Al ejecutar una escena `.tscn` como
 ##   escena principal, SÍ se registran los autoloads y el script compila.
-##   Convención idéntica a `juego/ataque/test_block_duration.{gd,tscn}`.
+##   Convención idéntica a `tests/ataque/test_block_duration.{gd,tscn}`.
 ##
-## Invocación:  godot --headless res://juego/ataque/test_defender_brain_draw_null.tscn
+## Invocación:  godot --headless res://tests/ataque/test_defender_brain_draw_null.tscn
 ##
 ## Nota sobre el caso "freed no null": con RefCounted no se puede forzar un
 ## `free()` determinista para simular un objeto liberado-pero-no-null; el

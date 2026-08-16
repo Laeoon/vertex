@@ -16,7 +16,7 @@ extends Node
 ##
 ## La verificación comportamental completa de 1.3 (conmutación del flag) y la
 ## prueba de integración de 1.4 sobre el `_draw()` real se hacen con escenas
-## (autoloads registrados): ver `juego/ataque/test_defender_brain_draw_null.tscn`.
+## (autoloads registrados): ver `tests/ataque/test_defender_brain_draw_null.tscn`.
 
 var passed: int = 0
 var failed: int = 0
