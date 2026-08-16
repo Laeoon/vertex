@@ -167,6 +167,7 @@ func _ready() -> void:
 # game_state.gd — InputHandler y tests los consumen vía has_method/refs.
 func reset_state() -> void: _game_state.reset_state()
 func _target_actual() -> StringName: return _game_state.target_actual()
+func mostrar_ruta() -> void: _game_state.mostrar_ruta()
 func _find_node_resource(nid: StringName): return _game_state.find_node_resource(nid)
 func _is_blocked(edge_key: String) -> bool: return _game_state.is_blocked(edge_key)
 func _block_edge(edge_key: String, from_n: StringName, to_n: StringName) -> void: _game_state.block_edge(edge_key, from_n, to_n)
@@ -187,13 +188,6 @@ func _cycle_neighbor(dir: int) -> void: _game_logic.cycle_neighbor(dir)
 func _scan_selected_node() -> void: _hacker_logic.scan_selected_node()
 func _use_hacker_exploit(exploit_type: String) -> void: _hacker_logic.use_hacker_exploit(exploit_type)
 func _check_hacker_consequences() -> void: _hacker_logic.check_hacker_consequences()
-
-
-func mostrar_ruta() -> void:
-	# No-op deliberado: la visualización automática de ruta no está cableada al
-	# renderer; el jugador puede pedir la ruta óptima con [P]. El render real
-	# de ruta no es parte de este cambio (P5/tarea 2).
-	pass
 
 
 # ─── MODO DEFENSOR ─────────────────────────────────────────────────

@@ -9,6 +9,23 @@ tags:
 
 # Historial de Cambios
 
+## Slice 4 — Ruta del jugador + equivalence del renderer (2026-08-16)
+
+### mostrar_ruta() implementado (fin del no-op)
+
+- **Modificado** `juego/ataque/game_state.gd` — nuevo `mostrar_ruta()`: puebla `current_path` con la ruta óptima `player_pos → target_actual()` vía DefensivePathfinder **respetando bloqueos del runtime** (el hint [P] sigue usando el grafo limpio). `showing_path=true` al poblar. No-op en modo defensor y con guards runtime/graph null. El render es gratis: `draw_edges` ya resalta aristas `in_path` derivadas de `current_path`.
+- **Modificado** `juego/ataque/juego_ataque.gd` — `mostrar_ruta()` pasa de no-op documentado a delegate del módulo.
+- **Modificado** `tests/ataque/test_bugfixes_static.gd` — contrato 1.3 actualizado (stub → warning → no-op → implementación delegada).
+
+### Tests nuevos (scene-based, prefijo `_`)
+
+- **Nuevo** `tests/ataque/_test_mostrar_ruta.{gd,tscn}` (8): ruta poblada tras reset, recálculo evitando bloqueos, partida desde la posición tras mover, vacía en defensor.
+- **Nuevo** `tests/ataque/_test_game_renderer_equivalence.{gd,tscn}` (9): golden data-level de `GameState.frame_data()` (atacante + defensor + delta con bloqueo) y smoke de `draw_frame` vía `notification(NOTIFICATION_DRAW)` (técnica para headless). Salda la deuda "renderer sin equivalence permanente" del slice 3.
+
+### Verificación
+
+- `run_all.gd`: 25/25. Scene-based: 9/9 (game_state 14, game_logic 19, hacker 18, defender_flow 7, mostrar_ruta 8, game_renderer 9, tutorial_logic 17, glossary 14, tutorial_render 34).
+
 ## Slice 3 — Descomposición en módulos + fix defensor (2026-08-16)
 
 ### Orquestadores delgados

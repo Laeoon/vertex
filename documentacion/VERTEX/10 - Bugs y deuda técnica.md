@@ -39,6 +39,11 @@ tags:
 - Hallazgo del slice 2 (sentinel `&"DEFENSOR"`) **resuelto por el fix defensor "Enmienda A"**: `reset_state()` usa el `start_node` real, `_on_move_requested` es no-op en modo defensor y la IA no bloquea al inicio. Congelado por `tests/ataque/_test_defender_flow_equivalence.{gd,tscn}`.
 - `GameRenderer.draw_frame()` (orquestación del frame por datos, sin callables) validado en runtime en los 3 modos (atacante/hacker/defensor, incluidas overlay [P] y pantallas win/lose) con escena temporal de 10 aserciones. Deuda restante: equivalence test permanente del renderer → slice 4 (doc 17).
 
+### Saldado (2026-08-16, slice 4)
+
+- Deuda "renderer sin equivalence permanente" (slice 3) **resuelta**: `tests/ataque/_test_game_renderer_equivalence.{gd,tscn}` — golden de `GameState.frame_data()` en atacante/defensor + smoke de `draw_frame` vía `notification(NOTIFICATION_DRAW)`.
+- `mostrar_ruta()` ya no es no-op: puebla `current_path` con la ruta óptima respetando bloqueos (cubierto por `_test_mostrar_ruta.{gd,tscn}`).
+
 ## Decisiones de diseño registradas
 
 | Decisión | Razón |

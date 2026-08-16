@@ -11,10 +11,11 @@ extends Node
 ## Verifica:
 ##   - 1.2: el archivo `juego/ataque/ia_defensora.gd` ya no existe en disco, y
 ##         el texto fuente de `juego_ataque.gd` ya no declara `const IADefensora`.
-##   - 1.3: `mostrar_ruta()` es un no-op documentado. Originalmente (slice 1)
-##         se reemplazó el `pass` silencioso por un push_warning deliberado;
-##         en P5/tarea 2 se eliminó el warning (ruido de consola por partida)
-##         y quedó un no-op documentado sin flag ni push_warning.
+##   - 1.3: `mostrar_ruta()` está implementado (slice 4): el orquestador
+##         delega en GameState.mostrar_ruta(), que puebla `current_path` con
+##         la ruta óptima respetando bloqueos. Historia: stub silencioso
+##         (origen) → push_warning deliberado (slice 1) → no-op documentado
+##         (P5) → implementación real delegada (slice 4).
 ##
 ## La verificación comportamental completa de 1.3 (conmutación del flag) y la
 ## prueba de integración de 1.4 sobre el `_draw()` real se hacen con escenas
@@ -40,20 +41,27 @@ func _run_tests() -> void:
 	_afirmar(src_juego.find('preload("res://juego/ataque/ia_defensora.gd")') == -1,
 		"1.2: juego_ataque.gd no preload la ruta ia_defensora.gd")
 
-	# ── Tarea 1.3 (actualizada por P5/tarea 2): mostrar_ruta() = no-op
-	# documentado sin push_warning ──
+	# ── Tarea 1.3 (actualizada por slice 4): mostrar_ruta() implementado ──
+	# El orquestador delega en GameState.mostrar_ruta() (puebla current_path,
+	# respeta bloqueos del runtime y es no-op en modo defensor).
 	var inicio: int = src_juego.find("func mostrar_ruta")
 	_afirmar(inicio != -1, "1.3: existe func mostrar_ruta()")
 	var cuerpo: String = ""
 	if inicio != -1:
 		var fin: int = src_juego.find("\nfunc ", inicio + 1)
 		cuerpo = src_juego.substr(inicio, (fin if fin != -1 else src_juego.length()) - inicio)
-	_afirmar(cuerpo.to_lower().find("no-op deliberado") != -1,
-		"1.3: mostrar_ruta() documenta el no-op deliberado (pass visible)")
+	_afirmar(cuerpo.find("_game_state.mostrar_ruta()") != -1,
+		"1.3: mostrar_ruta() delega en GameState (slice 4)")
 	_afirmar(cuerpo.find("push_warning") == -1,
-		"1.3: mostrar_ruta() ya no emite push_warning (P5/tarea 2)")
+		"1.3: mostrar_ruta() sin push_warning")
 	_afirmar(src_juego.find("_ruta_warning_emitido") == -1,
-		"1.3: el flag _ruta_warning_emitido fue eliminado junto al warning")
+		"1.3: el flag _ruta_warning_emitido sigue eliminado")
+	var src_state_impl: String = FileAccess.get_file_as_string("res://juego/ataque/game_state.gd")
+	var ini_impl: int = src_state_impl.find("func mostrar_ruta")
+	_afirmar(ini_impl != -1
+		and src_state_impl.find("current_path", ini_impl) != -1
+		and src_state_impl.find("find_path_with_cost", ini_impl) != -1,
+		"1.3: GameState.mostrar_ruta() puebla current_path vía pathfinder")
 
 	# ── Dia 3.7: Fix waypoint vacio en _ganar() ──
 	# Slice 3/etapa 3: _ganar() migró a juego/ataque/game_logic.gd.

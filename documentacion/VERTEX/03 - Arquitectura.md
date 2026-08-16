@@ -99,10 +99,13 @@ Ver: [[04 - Mecánicas#Algoritmos]]
   `find_node_resource()`, ciclo de bloqueos (`is_blocked`/`block_edge`/
   `unblock_edge`/`limpiar_bloqueos_expirados`), hit-testing del input
   (`edge_en_posicion`/`nodo_en_posicion`/`nodo_en_posicion_firewall`),
+  `mostrar_ruta()` (slice 4: puebla `current_path` con la ruta óptima actual
+  respetando bloqueos — el resaltado de aristas `in_path` sale gratis en
+  `draw_edges`; no-op en modo defensor),
   `blocked_edge_keys()` (snapshot {edge_key: true} para el renderer) y
   `frame_data()` (diccionario de datos puros que consume
-  `GameRenderer.draw_frame`).
-  Equivalencia: `tests/ataque/_test_game_state_equivalence.{gd,tscn}`.
+  `GameRenderer.draw_frame`). Equivalencias: `_test_game_state_equivalence`
+  y `_test_game_renderer_equivalence` (golden de frame_data/draw_frame).
 - **GameLogic** (`juego/ataque/game_logic.gd`, slice 3): RefCounted con ref
   `_game`. Lógica central del turno: `mover_jugador()` (turno completo con
   waypoints/presupuesto/IA/ruido), `ganar()`/`perder()`, `vecinos_jugador()`,

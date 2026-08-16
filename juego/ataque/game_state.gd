@@ -17,6 +17,7 @@ extends RefCounted
 const NetworkRuntimeClass = preload("res://core/network/network_runtime.gd")
 const HackerMechanicsClass = preload("res://juego/system/hacker_mechanics.gd")
 const NetworkGraphResource = preload("res://core/network/network_graph_resource.gd")
+const DefensivePathfinderClass = preload("res://core/agents/defensive_pathfinder.gd")
 
 var _game: Node
 
@@ -295,6 +296,26 @@ func target_actual() -> StringName:
 	if _game.current_waypoint_idx >= 0 and _game.current_waypoint_idx < _game.waypoints.size():
 		return _game.waypoints[_game.current_waypoint_idx]
 	return _game.target_node
+
+
+## Ruta actual del jugador (slice 4): puebla current_path con la ruta óptima
+## desde player_pos hasta el objetivo actual, RESPETANDO bloqueos del
+## runtime (a diferencia del hint [P], que usa el grafo limpio). El resaltado
+## sale gratis: draw_edges deriva in_path de current_path. En modo defensor no
+## hay jugador → no-op. Reemplaza el no-op documentado del slice 3/P5.
+func mostrar_ruta() -> void:
+	_game.showing_path = false
+	if _game.defender_mode or _game.runtime == null or _game.graph == null:
+		_game.current_path.clear()
+		return
+	var result: Dictionary = DefensivePathfinderClass.find_path_with_cost(
+		_game.graph, _game.player_pos, target_actual(), _game.runtime)
+	if result["reachable"]:
+		_game.current_path = result["path"]
+		_game.showing_path = true
+	else:
+		_game.current_path.clear()
+	_game.queue_redraw()
 
 
 func find_node_resource(nid: StringName):
