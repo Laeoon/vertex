@@ -9,6 +9,50 @@ tags:
 
 # Historial de Cambios
 
+## Slice 6 — Navegación post-partida (2026-08-16)
+
+### Objetivo (aprobado por el usuario)
+
+Al terminar un nivel, poder ir al siguiente nivel, al selector de niveles o al
+menú, sin pasar por el menú principal. Teclas en game over: **[N]** siguiente
+nivel (sólo tras victoria y si existe en el mismo mundo; último del mundo →
+selector), **[L]** selector de niveles del mundo actual, **[Q]** menú (como
+hoy), **[R]** reiniciar (como hoy). Guardas: N y L activos SÓLO con game over
+(evitar salidas accidentales mid-partida); con level_key desconocido
+(tutoriales) → sólo R/Q como hoy.
+
+### Cambios
+
+- **Nuevo** `level_registry.gd: find_level(level_id)` — reverse lookup
+  `{world, idx, config}` iterando WORLDS; `{}` si no está registrado.
+- **Modificado** `level_manager.gd` — `launch_next(level_id) -> bool`
+  (idx+1 en el mismo mundo; false si último/desconocido) y
+  `goto_level_select(world_id)` (SceneParams.titulo_nivel = world_id + fade a
+  `level_select_screen.tscn`, mismo transporte que el menú principal).
+- **Modificado** `input_handler.gd` — señales `next_level_requested` /
+  `level_select_requested`; teclas N y L con guard `game_over` (N además exige
+  victoria — añadido `game_won` al sync de estado).
+- **Modificado** `juego_ataque.gd` — conexión de señales + handlers delgados
+  que delegan en LevelManager; fallback de N al selector si no hay siguiente.
+- **Modificado** `game_state.gd: frame_data()` — clave `has_next_level`
+  (bool; victoria + nivel siguiente vía registry con cache del reverse lookup).
+- **Modificado** `game_renderer.gd` — hints del game over (atacante y
+  defensor) vía `_draw_game_over_hints`: victoria → `[R] [N] [L] [Q]`, derrota
+  → sin [N]. Status bar in-game sin cambios.
+
+### Tests nuevos (scene-based, prefijo `_`)
+
+- **Nuevo** `tests/ataque/_test_level_nav.{gd,tscn}` (13): `find_level`
+  (heist/cyber/desconocido/vacío), decisión de último-del-mundo,
+  `frame_data().has_next_level` (sin terminar/victoria N1/victoria N3) y
+  guards de señales N/L (mid-partida, derrota, victoria).
+
+### Verificación
+
+- `run_all.gd`: 25/25. Scene-based: 14/14 (incl. level_nav 13). Código
+  commiteado local `feat(slice-6)` — sin push (indicación del usuario: los
+  commits locales son la línea hasta nueva governanza).
+
 ## Slice 5 — Balance Heist N1-N3: self-play + par por nivel (2026-08-16)
 
 ### Criterios (aprobados por el usuario)

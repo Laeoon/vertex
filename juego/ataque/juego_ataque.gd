@@ -18,6 +18,8 @@ const ProgressServiceClass = preload("res://juego/ataque/progress_service.gd")
 const GameStateClass = preload("res://juego/ataque/game_state.gd")
 const HackerLogicClass = preload("res://juego/ataque/hacker_logic.gd")
 const GameLogicClass = preload("res://juego/ataque/game_logic.gd")
+const LevelManagerClass = preload("res://juego/system/level_manager.gd")
+const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -223,6 +225,8 @@ func _connect_input_signals() -> void:
 	_input_handler.exploit_used.connect(_on_exploit_used)
 	_input_handler.reset_requested.connect(_on_reset_requested)
 	_input_handler.return_to_menu_requested.connect(_on_return_to_menu)
+	_input_handler.next_level_requested.connect(_on_next_level)
+	_input_handler.level_select_requested.connect(_on_level_select)
 	_input_handler.quit_requested.connect(_on_quit)
 	_input_handler.toggle_optimal_route.connect(_on_toggle_optimal_route)
 	_input_handler.cycle_neighbor.connect(_on_cycle_neighbor)
@@ -257,6 +261,22 @@ func _on_defender_block_edge(edge_key: String) -> void: _game_logic.defender_blo
 func _on_defender_place_firewall(node_id: StringName) -> void: _game_logic.defender_place_firewall(node_id)
 func _on_return_to_menu() -> void: SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
 func _on_quit() -> void: get_tree().quit()
+
+
+# ─── Navegación post-partida (slice 6; lógica en LevelManager) ────
+
+func _on_next_level() -> void:
+	# Siguiente nivel del mismo mundo; si es el último (o el nivel no está
+	# registrado, p.ej. tutoriales), cae al selector de ese mundo.
+	if not LevelManagerClass.launch_next(level_key):
+		_on_level_select()
+
+
+func _on_level_select() -> void:
+	# Mundo del nivel actual; si no está registrado (tutoriales), heist como
+	# fallback razonable del selector.
+	var world: String = LevelRegistryClass.find_level(level_key).get("world", "heist")
+	LevelManagerClass.goto_level_select(world)
 
 
 func _on_reset_requested() -> void:

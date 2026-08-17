@@ -4,8 +4,8 @@ class_name InputHandler extends Node
 ##
 ## Señales emitidas:
 ##   move_requested, scan_requested, exploit_used, reset_requested,
-##   return_to_menu, quit, toggle_optimal_route, cycle_neighbor,
-##   defender_resolve_turn, defender_toggle_firewall,
+##   return_to_menu, next_level, level_select, quit, toggle_optimal_route,
+##   cycle_neighbor, defender_resolve_turn, defender_toggle_firewall,
 ##   defender_block_edge, defender_place_firewall,
 ##   defender_hover_edge, tutorial_skipped, node_targeted
 
@@ -15,6 +15,8 @@ signal scan_requested()
 signal exploit_used(exploit_type: String)
 signal reset_requested()
 signal return_to_menu_requested()
+signal next_level_requested()
+signal level_select_requested()
 signal quit_requested()
 signal toggle_optimal_route()
 signal cycle_neighbor(dir: int)
@@ -33,6 +35,7 @@ var game: Node:
 var tutorial_player = null
 
 var game_over: bool = false
+var game_won: bool = false
 var defender_mode: bool = false
 var hacker_mode: bool = false
 var firewall_mode: bool = false
@@ -47,6 +50,7 @@ func sync_state() -> void:
 	if game == null:
 		return
 	game_over = game.game_over if "game_over" in game else false
+	game_won = game.game_won if "game_won" in game else false
 	defender_mode = game.defender_mode if "defender_mode" in game else false
 	hacker_mode = game.hacker_mode if "hacker_mode" in game else false
 	firewall_mode = game.firewall_mode if "firewall_mode" in game else false
@@ -81,6 +85,17 @@ func _input(event: InputEvent) -> void:
 				return
 			KEY_R:
 				reset_requested.emit()
+				return
+			KEY_N:
+				# Slice 6: siguiente nivel — sólo con la partida ganada (evita
+				# saltarse niveles por accidente o tras una derrota).
+				if game_over and game_won:
+					next_level_requested.emit()
+				return
+			KEY_L:
+				# Slice 6: selector de niveles — sólo al terminar la partida.
+				if game_over:
+					level_select_requested.emit()
 				return
 			KEY_P:
 				toggle_optimal_route.emit()

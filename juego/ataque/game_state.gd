@@ -18,6 +18,7 @@ const NetworkRuntimeClass = preload("res://core/network/network_runtime.gd")
 const HackerMechanicsClass = preload("res://juego/system/hacker_mechanics.gd")
 const NetworkGraphResource = preload("res://core/network/network_graph_resource.gd")
 const DefensivePathfinderClass = preload("res://core/agents/defensive_pathfinder.gd")
+const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 
 var _game: Node
 
@@ -208,6 +209,9 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"tutorial_arrow_pos": (&"" if def else _game.player_pos),
 		"es_tutorial": (tp != null and is_instance_valid(tp)),
 		"stars": stars,
+		# Slice 6: hay nivel siguiente en el mismo mundo (para el hint [N];
+		# sólo tras victoria y con level_key registrado).
+		"has_next_level": (_game.game_won and _hay_siguiente_nivel()),
 		"brain_blocks_placed": (b.defender_blocks_placed if def else 0),
 		"brain_blocks_per_turn": (b.defender_blocks_per_turn if def else 0),
 		"brain_enemy_pos": (b.enemy_pos if def else &""),
@@ -218,6 +222,19 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"brain_hovered_edge": (b.hovered_edge if def else ""),
 		"brain_enemy_path": (b.enemy_path if def else []),
 	}
+
+
+## True si existe un nivel siguiente al actual en su mismo mundo (slice 6).
+## Cachea el reverse lookup (frame_data corre por frame).
+var _next_level_cache: Dictionary = {}
+
+
+func _hay_siguiente_nivel() -> bool:
+	if not _next_level_cache.has("ok"):
+		var ubic: Dictionary = LevelRegistryClass.find_level(_game.level_key)
+		var levels: Array = LevelRegistryClass.get_levels(ubic.get("world", "")) if not ubic.is_empty() else []
+		_next_level_cache["ok"] = (not ubic.is_empty() and ubic["idx"] + 1 < levels.size())
+	return _next_level_cache["ok"]
 
 
 ## Puerto del viejo juego_ataque.reset_state() (pre-slice-3).

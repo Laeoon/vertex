@@ -80,9 +80,9 @@ func draw_frame(d: Dictionary) -> void:
 		draw_tutorial_highlights(d.tutorial_player, d.node_positions, d.node_radius, d.tutorial_arrow_pos)
 	if d.game_over:
 		if d.defender_mode:
-			draw_defender_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time)
+			draw_defender_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time, d.has_next_level)
 		else:
-			draw_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time, d.es_tutorial)
+			draw_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time, d.es_tutorial, d.has_next_level)
 	if d.mensaje_tutorial != "" and not d.game_over:
 		draw_tutorial_text(d.mensaje_tutorial)
 	if d.selected_neighbor != &"" and not d.game_over:
@@ -688,7 +688,8 @@ func draw_game_over(
 	mensaje_estado: String,
 	star_count: int,
 	_game_over_time: float = -1.0,
-	is_tutorial: bool = false
+	is_tutorial: bool = false,
+	has_next_level: bool = false
 ) -> void:
 	var center: Vector2 = vp_size / 2.0
 
@@ -716,7 +717,18 @@ func draw_game_over(
 			star_text += "★" if i < star_count else "☆"
 		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color.YELLOW)
 
-	draw_string(center + Vector2(-130, 65), "[R] Reiniciar   [Q] Menu", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.7))
+	_draw_game_over_hints(center, game_won, has_next_level)
+
+
+## Línea de controles post-partida (slice 6): [N] siguiente sólo tras
+## victoria con nivel siguiente disponible; [L] selector y [Q] menú siempre.
+func _draw_game_over_hints(center: Vector2, game_won: bool, has_next_level: bool) -> void:
+	var hint: String = "[R] Reiniciar"
+	if game_won and has_next_level:
+		hint += "   [N] Siguiente"
+	hint += "   [L] Niveles   [Q] Menú"
+	var w: float = font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
+	draw_string(center + Vector2(-w / 2.0, 65), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.7))
 
 
 func draw_node_info_panel(
@@ -901,7 +913,8 @@ func draw_defender_game_over(
 	game_won: bool,
 	mensaje_estado: String,
 	star_count: int,
-	_game_over_time: float = -1.0
+	_game_over_time: float = -1.0,
+	has_next_level: bool = false
 ) -> void:
 	var center: Vector2 = vp_size / 2.0
 
@@ -925,4 +938,4 @@ func draw_defender_game_over(
 			star_text += "★" if i < star_count else "☆"
 		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color.YELLOW)
 
-	draw_string(center + Vector2(-130, 65), "[R] Reiniciar   [Q] Menu", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.7))
+	_draw_game_over_hints(center, game_won, has_next_level)

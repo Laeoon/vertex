@@ -10,17 +10,19 @@ tags:
 
 # Handoff a Orquestador
 
-> Nota del agente obrero (P1–P5 del slice 3 + slices 4 y 5) para el agente
-> orquestador cuando retome el proyecto. Estado al cierre del slice 5.
+> Nota del agente obrero (P1–P5 del slice 3 + slices 4, 5 y 6) para el agente
+> orquestador cuando retome el proyecto. Estado al cierre del slice 6
+> (actualizado por el orquestador: slice 6 verificado y commiteado local).
 
 ## Estado del repo
 
-- **Slices 3, 4 y 5 completos y commiteados localmente (SIN push a GitHub,
+- **Slices 3, 4, 5 y 6 completos y commiteados localmente (SIN push a GitHub,
   indicación del usuario 2026-08-16: commits locales, no push).**
-- Commits: `refactor(slice-3)` + `docs(slice-3)`, `feat(slice-4)` y el
-  commit del slice 5 (balance Heist + par por nivel). Si falta alguno, ver
-  `git log --oneline` / `git status`.
-- Rama `main`. Sin push. `.zcode/` ignorado.
+- Commits: `refactor(slice-3)` + `docs(slice-3)`, `feat(slice-4)`, el commit
+  del slice 5 (balance Heist + par por nivel) y `feat(slice-6)` (navegación
+  post-partida). Si falta alguno, ver `git log --oneline` / `git status`.
+- Rama `main`. Sin push. `.zcode/` ignorado. El orquestador auditó la suite y
+  los scene-based al cierre: 25/25 + 14/14 (incl. `_test_level_nav` 13).
 
 ## Qué se hizo (resumen ejecutivo)
 
@@ -53,20 +55,32 @@ tags:
    (1 error = pérdida). El harness encontró y dejó corregidos 2 bugs
    (ruta stale al cortar la IA, mensaje confuso en sumideros). Detalle y
    números en [[14 - Historial de cambios]] y [[06 - Level Design]].
+7. **Navegación post-partida (slice 6)**: teclas en game over — [N] siguiente
+   nivel (sólo victoria + existe en el mundo; último → selector), [L]
+   selector del mundo (mismo transporte que el menú: `titulo_nivel` + fade),
+   [Q]/[R] como hoy. Guards: N y L sólo con `game_over`. `LevelRegistry.
+   find_level()` (reverse lookup), `LevelManager.launch_next()` /
+   `goto_level_select()`, señales `next_level_requested` /
+   `level_select_requested`, `has_next_level` en `frame_data()`, hints
+   dinámicos en `game_renderer.gd`. Cubierto por `_test_level_nav` (13).
 
 ## Cómo verificar (todo en verde al cierre)
 
 ```
 godot --headless --script res://tests/runner/run_all.gd   # 25/25
-godot --headless res://tests/ataque/_test_game_state_equivalence.tscn        # 14
-godot --headless res://tests/ataque/_test_game_logic_equivalence.tscn        # 19
-godot --headless res://tests/ataque/_test_hacker_logic_equivalence.tscn      # 18
-godot --headless res://tests/ataque/_test_defender_flow_equivalence.tscn     # 7
-godot --headless res://tests/ataque/_test_mostrar_ruta.tscn                  # 8
-godot --headless res://tests/ataque/_test_game_renderer_equivalence.tscn     # 9
-godot --headless res://tests/ataque/_test_par_estrellas.tscn                # 9
+godot --headless res://tests/ataque/_test_ai_blocker_equivalence.tscn    # 19
+godot --headless res://tests/ataque/_test_game_state_equivalence.tscn    # 14
+godot --headless res://tests/ataque/_test_game_logic_equivalence.tscn    # 19
+godot --headless res://tests/ataque/_test_hacker_logic_equivalence.tscn  # 18
+godot --headless res://tests/ataque/_test_pursuit_system_equivalence.tscn # 10
+godot --headless res://tests/ataque/_test_defender_flow_equivalence.tscn # 7
+godot --headless res://tests/ataque/_test_mostrar_ruta.tscn              # 8
+godot --headless res://tests/ataque/_test_game_renderer_equivalence.tscn # 9
+godot --headless res://tests/ataque/_test_par_estrellas.tscn             # 9
+godot --headless res://tests/ataque/_test_progress_service_equivalence.tscn # 14
+godot --headless res://tests/ataque/_test_level_nav.tscn                 # 13
 godot --headless res://tests/tutorials/_test_tutorial_logic_equivalence.tscn # 17
-godot --headless res://tests/tutorials/_test_glossary_equivalence.tscn       # 14
+godot --headless res://tests/tutorials/_test_glossary_equivalence.tscn   # 14
 godot --headless res://tests/tutorials/_test_tutorial_render_equivalence.tscn # 34
 
 # Harness de balance (slice 5; N corridas por política, default 100):
@@ -117,6 +131,11 @@ godot --headless res://tests/balance/_balance_harness.tscn -- 50
 
 ## Próximos pasos recomendados (prioridad)
 
+0. **Auditoría pendiente del orquestador (registro para el orquestador
+   maestro)**: los slices 1-6 están commiteados localmente pero los cambios
+   de P1-P5 (slices 3-5) no pasaron por una auditoría independiente del
+   harness ni por revisión de commits. Ver [[18 - Overview y auditoría
+   pendiente]] para el inventario completo de qué se verificó y qué falta.
 1. **Balance del resto de mundos** (hacker n1-n2, cyber n1, defense n1) con
    el mismo harness — extender la lista de niveles de
    `tests/balance/_balance_harness.gd` y agregar sus par. Ojo: los modos
@@ -130,5 +149,6 @@ godot --headless res://tests/balance/_balance_harness.tscn -- 50
 ## Enlaces
 
 - [[03 - Arquitectura]] — estructura de módulos actualizada
-- [[14 - Historial de cambios]] — entradas slice 3 y slice 4
+- [[14 - Historial de cambios]] — entradas slice 3 a slice 6
 - [[10 - Bugs y deuda técnica]] — saldados de los slices 3 y 4
+- [[18 - Overview y auditoría pendiente]] — inventario para el orquestador maestro

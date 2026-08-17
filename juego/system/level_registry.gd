@@ -76,6 +76,18 @@ static func get_level_config(world_id: String, level_idx: int) -> Dictionary:
 	return levels[level_idx]
 
 
+## Reverse lookup id → ubicación (slice 6): devuelve {world, idx, config}
+## del nivel cuyo JSON declara `id`, o {} si no está registrado.
+static func find_level(level_id: String) -> Dictionary:
+	for world_id in WORLDS:
+		var levels: Array = get_levels(world_id)
+		for idx in levels.size():
+			var config: Dictionary = levels[idx]
+			if config.get("path", "").get_file().trim_suffix(".json") == level_id:
+				return {"world": world_id, "idx": idx, "config": config}
+	return {}
+
+
 static func load_level_data(json_path: String) -> Dictionary:
 	var file: FileAccess = FileAccess.open(json_path, FileAccess.READ)
 	if file == null:

@@ -37,6 +37,23 @@ static func launch_tutorial(tutorial_json_path: String) -> bool:
 	return true
 
 
+## Navegación post-partida (slice 6): lanza el nivel SIGUIENTE al dado en su
+## mismo mundo. Devuelve false si es el último del mundo o el id no está
+## registrado (el llamador puede abrir el selector como fallback).
+static func launch_next(level_id: String) -> bool:
+	var ubic: Dictionary = _Registry.find_level(level_id)
+	if ubic.is_empty():
+		return false
+	return launch_level(ubic["world"], ubic["idx"] + 1)
+
+
+## Vuelve al selector de niveles del mundo dado (mismo transporte que el menú
+## principal: world_id viaja por SceneParams.titulo_nivel).
+static func goto_level_select(world_id: String) -> void:
+	SceneParams.titulo_nivel = world_id
+	SceneTransition.fade_to_scene("res://juego/system/level_select_screen.tscn")
+
+
 static func _apply_to_scene_params(data: Dictionary) -> void:
 	SceneParams.graph_path = data.get("graph_path", "")
 	SceneParams.start_node = data.get("start_node", "")
