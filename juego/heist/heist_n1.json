@@ -4,7 +4,10 @@
   "graph_path": "res://juego/nivel1/nivel1_red.tres",
   "start_node": "Inicio",
   "target_node": "Boveda",
-  "waypoints": ["Seguridad", "Cajas"],
+  "waypoints": [
+    "Seguridad",
+    "Cajas"
+  ],
   "ai_enabled": true,
   "ai_block_per_turn": 1,
   "ai_bloquea_al_inicio": false,
@@ -13,5 +16,7 @@
   "max_movement_points": 12,
   "titulo_nivel": "Heist — Infiltración en la Bóveda",
   "difficulty": 1,
-  "description": "Infiltra la red bancaria y llega a la bóveda de datos."
+  "description": "Infiltra la red bancaria y llega a la bóveda de datos.",
+  "par_turnos": 6,
+  "par_coste": 9.0
 }

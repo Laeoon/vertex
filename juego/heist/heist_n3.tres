@@ -190,6 +190,10 @@ resource_name = "Monitoreo"
 script = ExtResource("2_mdbpd")
 id = &"Monitoreo"
 position = Vector2(300, 300)
+metadata = {
+"detection_chance": 0.1,
+"label": "Monitoreo activo"
+}
 
 [sub_resource type="Resource" id="Resource_vnudb"]
 resource_name = "Oficinas"
@@ -214,18 +218,30 @@ resource_name = "DataCenter"
 script = ExtResource("2_mdbpd")
 id = &"DataCenter"
 position = Vector2(450, 350)
+metadata = {
+"detection_chance": 0.1,
+"label": "Centro de datos"
+}
 
 [sub_resource type="Resource" id="Resource_j3bpo"]
 resource_name = "Servidores"
 script = ExtResource("2_mdbpd")
 id = &"Servidores"
 position = Vector2(550, 280)
+metadata = {
+"detection_chance": 0.12,
+"label": "Sala de servidores"
+}
 
 [sub_resource type="Resource" id="Resource_7qfb7"]
 resource_name = "CriptoVault"
 script = ExtResource("2_mdbpd")
 id = &"CriptoVault"
 position = Vector2(650, 180)
+metadata = {
+"detection_chance": 0.1,
+"label": "Bóveda cripto"
+}
 
 [sub_resource type="Resource" id="Resource_066sy"]
 resource_name = "RedPrivada"

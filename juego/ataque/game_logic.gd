@@ -85,6 +85,12 @@ func mover_jugador(destino: StringName) -> void:
 	if _game.ai_enabled:
 		_game._ai_blocker.take_turn()
 
+	# Refrescar SIEMPRE la ruta tras el turno (slice 5): si la IA cortó la
+	# ruta al waypoint, take_turn() retorna temprano sin actualizar
+	# current_path — la ruta dibujada quedaba stale y guiaba al jugador (y al
+	# bot) hacia sumideros. mostrar_ruta() limpia la ruta si quedó inalcanzable.
+	_game.mostrar_ruta()
+
 	if _game.hacker_mode and not _game.game_over:
 		# Si hay persists activos, el ruido no decae (mantienes acceso audible)
 		if _game.hacker_state.get("active_persists", {}).is_empty():
@@ -104,6 +110,15 @@ func mover_jugador(destino: StringName) -> void:
 
 		var vecinos: Array = vecinos_jugador()
 		if vecinos.is_empty() and _game.player_pos != _game._target_actual() and not _game.game_over:
+			# Fix sumidero (slice 5): llegar al target FINAL con waypoints
+			# pendientes moría con "¡Sin salida!" (el target no tiene aristas
+			# salientes) — el mensaje de diseño es el de _ganar(): avisar el
+			# waypoint pendiente en lugar de un "sin salida" confuso.
+			if _game.waypoints.size() > 0 and _game.current_waypoint_idx >= 0 \
+					and _game.current_waypoint_idx < _game.waypoints.size() \
+					and _game.player_pos == _game.target_node:
+				perder("Debes pasar por %s primero" % str(_game.waypoints[_game.current_waypoint_idx]))
+				return
 			perder("¡Sin salida! No hay caminos accesibles desde %s" % str(_game.player_pos))
 			return
 

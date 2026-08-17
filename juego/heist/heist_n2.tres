@@ -313,8 +313,24 @@ transit_cost = 3.0
 mitigation_capacity = 1.0
 protocol = &"INTERNAL"
 
+[sub_resource type="Resource" id="Edge_Almacen_Perimetro"]
+script = ExtResource("3_edge")
+from_id = &"Almacen"
+to_id = &"Perimetro"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_CCTV_Lobby"]
+script = ExtResource("3_edge")
+from_id = &"CCTV"
+to_id = &"Lobby"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
 [resource]
 script = ExtResource("1_graph")
 nodes = Array[Resource]([SubResource("Node_Inicio"), SubResource("Node_Perimetro"), SubResource("Node_Lobby"), SubResource("Node_Oficina"), SubResource("Node_ServerRoom"), SubResource("Node_Boveda"), SubResource("Node_Almacen"), SubResource("Node_Cajas"), SubResource("Node_SegExt"), SubResource("Node_CCTV"), SubResource("Node_Pasillo"), SubResource("Node_Acceso")])
-edges = Array[Resource]([SubResource("Edge_Inicio_Perimetro"), SubResource("Edge_Inicio_SegExt"), SubResource("Edge_Perimetro_Lobby"), SubResource("Edge_Perimetro_Almacen"), SubResource("Edge_Lobby_Oficina"), SubResource("Edge_Lobby_CCTV"), SubResource("Edge_Oficina_ServerRoom"), SubResource("Edge_Oficina_Pasillo"), SubResource("Edge_ServerRoom_Boveda"), SubResource("Edge_Almacen_Cajas"), SubResource("Edge_Almacen_Pasillo"), SubResource("Edge_Cajas_Acceso"), SubResource("Edge_Cajas_Pasillo"), SubResource("Edge_Acceso_Boveda"), SubResource("Edge_Pasillo_ServerRoom"), SubResource("Edge_Pasillo_Boveda"), SubResource("Edge_SegExt_CCTV"), SubResource("Edge_CCTV_Cajas"), SubResource("Edge_CCTV_Oficina"), SubResource("Edge_CCTV_Acceso")])
+edges = Array[Resource]([SubResource("Edge_Inicio_Perimetro"), SubResource("Edge_Inicio_SegExt"), SubResource("Edge_Perimetro_Lobby"), SubResource("Edge_Perimetro_Almacen"), SubResource("Edge_Lobby_Oficina"), SubResource("Edge_Lobby_CCTV"), SubResource("Edge_Oficina_ServerRoom"), SubResource("Edge_Oficina_Pasillo"), SubResource("Edge_ServerRoom_Boveda"), SubResource("Edge_Almacen_Cajas"), SubResource("Edge_Almacen_Pasillo"), SubResource("Edge_Cajas_Acceso"), SubResource("Edge_Cajas_Pasillo"), SubResource("Edge_Acceso_Boveda"), SubResource("Edge_Pasillo_ServerRoom"), SubResource("Edge_Pasillo_Boveda"), SubResource("Edge_SegExt_CCTV"), SubResource("Edge_CCTV_Cajas"), SubResource("Edge_CCTV_Oficina"), SubResource("Edge_CCTV_Acceso"), SubResource("Edge_Almacen_Perimetro"), SubResource("Edge_CCTV_Lobby")])
 directed = true

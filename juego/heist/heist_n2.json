@@ -4,14 +4,21 @@
   "graph_path": "res://juego/heist/heist_n2.tres",
   "start_node": "Inicio",
   "target_node": "Boveda",
-  "waypoints": ["Lobby", "CCTV", "Cajas"],
+  "waypoints": [
+    "Lobby",
+    "CCTV",
+    "Cajas"
+  ],
   "ai_enabled": true,
   "ai_block_per_turn": 2,
   "ai_bloquea_al_inicio": false,
-  "max_ai_blocks": 5,
-  "max_turns": 22,
-  "max_movement_points": 25,
+  "max_ai_blocks": 4,
+  "max_turns": 24,
+  "max_movement_points": 28,
   "titulo_nivel": "Heist — La Ruta del Oro",
   "difficulty": 2,
-  "description": "Infiltración profunda: atraviesa Lobby, evita CCTV, accede a Cajas Fuertes y alcanza la Bóveda. Múltiples rutas, cada decisión cuenta."
+  "description": "Infiltración profunda: atraviesa Lobby, evita CCTV, accede a Cajas Fuertes y alcanza la Bóveda. Múltiples rutas, cada decisión cuenta.",
+  "block_duration": 2,
+  "par_turnos": 7,
+  "par_coste": 11.0
 }

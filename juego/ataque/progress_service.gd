@@ -23,8 +23,10 @@ class_name ProgressService extends RefCounted
 ##     `_draw` para mostrar estrellas en game over).
 
 const DefensivePathfinder = preload("res://core/agents/defensive_pathfinder.gd")
+const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 
 var _game: Node  # referencia a juego_ataque.gd
+var _par_cache: Dictionary = {}  # level_id -> {par_turnos, par_coste} (lazy)
 
 
 func setup(game: Node) -> void:
@@ -37,12 +39,28 @@ func setup(game: Node) -> void:
 func calculate_stars() -> int:
 	"""Calcula las estrellas ganadas (portado de `_calcular_estrellas`).
 
-	Dos modos de cálculo:
-	  1. Si `max_movement_points > 0`: ratio de puntos restantes.
-	  2. Sino: ratio de coste real vs óptimo (STAR_THRESHOLDS) y ratio de
+	Tres modos de cálculo:
+	  1. Si el nivel define par (par_turnos/par_coste en su JSON, slice 5):
+	     estilo golf — jugar EN el par es 3★; coste ≤1.5×par o turnos
+	     ≤1.25×par es 2★; más allá, 1★. El presupuesto deja de definir
+	     estrellas (queda como restricción de supervivencia).
+	  2. Si `max_movement_points > 0`: ratio de puntos restantes (legacy).
+	  3. Sino: ratio de coste real vs óptimo (STAR_THRESHOLDS) y ratio de
 	     turnos vs max_turns. Devuelve el mínimo de ambas categorías."""
 	if _game == null:
 		return 1
+
+	var par: Dictionary = _par_del_nivel()
+	if not par.is_empty():
+		var cost_stars: int = 1
+		if par["par_coste"] > 0:
+			var cost_ratio: float = _game.player_total_cost / par["par_coste"]
+			cost_stars = 3 if cost_ratio <= _game.STAR_THRESHOLDS[0] else (2 if cost_ratio <= _game.STAR_THRESHOLDS[1] else 1)
+		var turn_stars: int = 3
+		if par["par_turnos"] > 0:
+			var turn_ratio: float = float(_game.turn) / float(par["par_turnos"])
+			turn_stars = 3 if turn_ratio <= 1.0 else (2 if turn_ratio <= 1.25 else 1)
+		return mini(cost_stars, turn_stars)
 
 	if _game.max_movement_points > 0:
 		var ratio: float = float(_game.movement_points) / float(_game.max_movement_points)
@@ -148,6 +166,22 @@ static func load_all() -> Dictionary:
 
 
 # ─── Helpers internos ───────────────────────────────────────────────
+
+## Par del nivel actual (slice 5): {par_turnos, par_coste} leído del JSON del
+## nivel vía LevelRegistry (cacheado — calculate_stars corre por frame).
+## Vacío si el nivel no define par (fallback a la lógica legacy).
+func _par_del_nivel() -> Dictionary:
+	if _par_cache.is_empty():
+		for world_id in LevelRegistryClass.WORLDS:
+			for cfg in LevelRegistryClass.WORLDS[world_id]["levels"]:
+				var data: Dictionary = LevelRegistryClass.load_level_data(cfg["path"])
+				if data.has("par_turnos") and data.has("par_coste"):
+					_par_cache[data.get("id", "")] = {
+						"par_turnos": int(data["par_turnos"]),
+						"par_coste": float(data["par_coste"]),
+					}
+	return _par_cache.get(_level_key(), {})
+
 
 func _level_key() -> String:
 	"""Devuelve la clave del nivel actual (portado de `_level_key`).

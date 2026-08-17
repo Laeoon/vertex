@@ -10,16 +10,16 @@ tags:
 
 # Handoff a Orquestador
 
-> Nota del agente obrero (sesiones P1–P5 del slice 3 + slice 4) para el agente
-> orquestador cuando retome el proyecto. Estado al cierre del slice 4.
+> Nota del agente obrero (P1–P5 del slice 3 + slices 4 y 5) para el agente
+> orquestador cuando retome el proyecto. Estado al cierre del slice 5.
 
 ## Estado del repo
 
-- **Slice 3 y slice 4 completos y commiteados localmente (SIN push a GitHub,
+- **Slices 3, 4 y 5 completos y commiteados localmente (SIN push a GitHub,
   indicación del usuario 2026-08-16: commits locales, no push).**
-- Commits: `refactor(slice-3)` + `docs(slice-3)` (código/tests y docs del
-  slice 3) y `feat(slice-4)` + docs (mostrar_ruta real + equivalence del
-  renderer). Si falta alguno, ver `git status` / `git log --oneline`.
+- Commits: `refactor(slice-3)` + `docs(slice-3)`, `feat(slice-4)` y el
+  commit del slice 5 (balance Heist + par por nivel). Si falta alguno, ver
+  `git log --oneline` / `git status`.
 - Rama `main`. Sin push. `.zcode/` ignorado.
 
 ## Qué se hizo (resumen ejecutivo)
@@ -45,6 +45,14 @@ tags:
    `_test_game_renderer_equivalence` — golden de `frame_data()` +
    smoke de `draw_frame` vía `notification(NOTIFICATION_DRAW)` (en headless
    `_draw` no se dispara solo; esa es la vía legal para testearlo).
+6. **Balance Heist N1-N3 con self-play (slice 5)**: harness
+   `tests/balance/_balance_harness.tscn` (greedy/greedy_err/random, seeds
+   fijas, backup-restore de user://) + par por nivel (estilo golf) en
+   ProgressService vía LevelRegistry (cacheado). Curva final: N1 perdona
+   (random 50%), N2 castiga eficiencia (1 error = 2★), N3 exige limpieza
+   (1 error = pérdida). El harness encontró y dejó corregidos 2 bugs
+   (ruta stale al cortar la IA, mensaje confuso en sumideros). Detalle y
+   números en [[14 - Historial de cambios]] y [[06 - Level Design]].
 
 ## Cómo verificar (todo en verde al cierre)
 
@@ -56,9 +64,13 @@ godot --headless res://tests/ataque/_test_hacker_logic_equivalence.tscn      # 1
 godot --headless res://tests/ataque/_test_defender_flow_equivalence.tscn     # 7
 godot --headless res://tests/ataque/_test_mostrar_ruta.tscn                  # 8
 godot --headless res://tests/ataque/_test_game_renderer_equivalence.tscn     # 9
+godot --headless res://tests/ataque/_test_par_estrellas.tscn                # 9
 godot --headless res://tests/tutorials/_test_tutorial_logic_equivalence.tscn # 17
 godot --headless res://tests/tutorials/_test_glossary_equivalence.tscn       # 14
 godot --headless res://tests/tutorials/_test_tutorial_render_equivalence.tscn # 34
+
+# Harness de balance (slice 5; N corridas por política, default 100):
+godot --headless res://tests/balance/_balance_harness.tscn -- 50
 ```
 
 ## Contrato congelado (NO romper sin actualizar los equivalence tests)
@@ -105,9 +117,10 @@ godot --headless res://tests/tutorials/_test_tutorial_render_equivalence.tscn # 
 
 ## Próximos pasos recomendados (prioridad)
 
-1. **Balance y playtesting** — prioridad ALTA del roadmap (doc 02), depende
-   de niveles jugables (ya los hay: 7). Requiere criterio de diseño del
-   orquestador/usuario (dificultad objetivo por nivel).
+1. **Balance del resto de mundos** (hacker n1-n2, cyber n1, defense n1) con
+   el mismo harness — extender la lista de niveles de
+   `tests/balance/_balance_harness.gd` y agregar sus par. Ojo: los modos
+   hacker/defensor necesitan políticas propias (exploits / bloqueos).
 2. Transiciones fade / feedback audiovisual (roadmap, media/baja).
 3. i18n del contenido pedagógico de tutoriales + glosario (doc 16).
 4. D1/D2 del doc 10 (cosméticos/no verificables).

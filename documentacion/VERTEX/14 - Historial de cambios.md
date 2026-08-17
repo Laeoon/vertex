@@ -9,6 +9,37 @@ tags:
 
 # Historial de Cambios
 
+## Slice 5 — Balance Heist N1-N3: self-play + par por nivel (2026-08-16)
+
+### Criterios (aprobados por el usuario)
+
+Curva accesible: N1 se gana al 1er intento, N2 al 2º, N3 en 2-3 intentos. Validación por self-play automatizado. Par por nivel (autoriza editar datos de niveles).
+
+### Harness de self-play — `tests/balance/_balance_harness.{gd,tscn}`
+
+Tres políticas × N corridas (seed determinista; backup/restore de `user://progress.cfg`+`stats.cfg` para no pisar progreso real): **greedy** (sigue la ruta recomendada — jugador guiado), **greedy_err** (un error en la primera elección real — jugador nuevo con pistas), **random** (perdido). Reporta win-rate/turnos/coste/estrellas/presupuesto y motivo de derrota.
+
+### Bugs encontrados por el harness y corregidos
+
+1. **Ruta stale**: `AIBlocker.take_turn()` retornaba temprano sin refrescar `current_path` cuando cortaba la ruta al waypoint — la ruta dibujada seguía apuntando a la vieja y guiaba a sumideros. Fix: `mostrar_ruta()` corre tras CADA turno desde `GameLogic.mover_jugador()`.
+2. **Sumidero confuso**: llegar al target final con waypoints pendientes moría con "¡Sin salida!" (el target no tiene salidas); ahora usa el mensaje de diseño "Debes pasar por X primero" (`game_logic.gd`).
+
+### Cambios de balance (todos medidos con el harness, mismas semillas)
+
+- **heist_n2** (grafo + JSON): aristas de retorno `Almacen→Perimetro` y `CCTV→Lobby` (los lados del grafo eran trampas unidireccionales: un error temprano = muerte sin recuperación); `block_duration` 2, `max_ai_blocks` 4, presupuesto 25→28, `max_turns` 22→24.
+- **heist_n3** (grafo + JSON): detección 0.10-0.12 en Monitoreo/DataCenter/Servidores/CriptoVault + `pursuer_speed` 2 / `pursuer_delay` 1 (varianza: capturas al greedy 9%; sin detección el nivel era binario). Se probó una arista de retorno en `Direccion` y se revirtió: cambia la agresividad de la IA vía `would_isolate`; las trampas topológicas SON la dificultad de N3.
+- **Números finales** (100 runs/política): N1 greedy 100% / err 100% / random 50% (3★/3★) · N2 100% / 100% (coste 14 vs 11 → 2★) / 8% · N3 91% (9 capturas) / 0% (un error = pérdida → 2-3 intentos) / 1%.
+
+### Par por nivel (estrellas estilo golf)
+
+- `heist_n1/n2/n3.json`: `par_turnos` 6/7/8, `par_coste` 9/11/19 (turnos/coste del greedy).
+- `ProgressService.calculate_stars()`: nivel con par → en par = 3★; coste ≤1.5×par o turnos ≤1.25×par = 2★; más allá 1★. El presupuesto deja de definir estrellas (sólo supervivencia). Lookup cacheado vía LevelRegistry (sin tocar `core/`); niveles sin par → lógica legacy intacta.
+- **Tests**: `_test_par_estrellas` (9: par/mejor/degradación/presupuesto/fallback) y `test_levels_data` extendido (par obligatorio en heist, opcional y par-completo en el resto).
+
+### Verificación
+
+- `run_all.gd`: 25/25. Scene-based: 13/13 (equivalences + mostrar_ruta + renderer + par). Harness reproducible con `-- N`.
+
 ## Slice 4 — Ruta del jugador + equivalence del renderer (2026-08-16)
 
 ### mostrar_ruta() implementado (fin del no-op)

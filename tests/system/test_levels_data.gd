@@ -116,6 +116,16 @@ func _validar_nivel(ruta: String) -> void:
 			elif graph != null and graph.get_node_by_id(StringName(str(valor))) == null:
 				problemas.append("%s '%s' no existe en el grafo" % [clave, valor])
 
+	# Par por nivel (slice 5): obligatorio en heist (balanceado con self-play),
+	# opcional en el resto (aún usan la lógica legacy de estrellas).
+	if data.get("world") == "heist":
+		for clave in ["par_turnos", "par_coste"]:
+			var par: Variant = data.get(clave)
+			if not (par is float or par is int) or float(par) <= 0:
+				problemas.append("heist sin %s válido (>0)" % clave)
+	elif data.has("par_turnos") != data.has("par_coste"):
+		problemas.append("par incompleto: par_turnos y par_coste van juntos")
+
 	if problemas.is_empty():
 		print("PASS: %s válido (grafo: %d nodos, %d aristas)" % [nombre, graph.nodes.size(), graph.edges.size()])
 		passed += 1

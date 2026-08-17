@@ -38,6 +38,26 @@ Inicio → RPA(1)    ↗              → Cajas(3) ↗
 
 **Budget:** 12 puntos | **Óptimo:** ~9 pts | **Margen:** ~33%
 
+## Balance Heist: par y metas (slice 5)
+
+Medido con el harness de self-play (`tests/balance/_balance_harness.tscn`,
+100 corridas/política, semillas fijas). Políticas: greedy (jugador guiado),
+greedy_err (un error en la primera elección real), random (perdido).
+Criterio aprobado: **curva accesible** — N1 al 1er intento, N2 al 2º, N3 en 2-3.
+
+| Nivel | par_turnos | par_coste | greedy | greedy_err | random | Estrellas (en par / con 1 error) |
+|-------|-----------|-----------|--------|-----------|--------|----------------------------------|
+| heist_n1 | 6 | 9.0 | 100% (5t/9c) | 100% | 50% | 3★ / 3★ |
+| heist_n2 | 7 | 11.0 | 100% (6t/11c) | 100% (14c → 2★) | 8% | 3★ / 2★ |
+| heist_n3 | 8 | 19.0 | 91% (9 capturas) | 0% (error = pérdida) | 1% | 3★ / — |
+
+Reglas de par (estilo golf): en par = 3★; coste ≤1.5×par o turnos ≤1.25×par = 2★; más allá 1★. El presupuesto es sólo supervivencia, ya no define estrellas.
+
+Notas de diseño N2/N3 (slice 5):
+- N2 ganó aristas de retorno `Almacen→Perimetro` y `CCTV→Lobby`: los lados del grafo eran trampas unidireccionales (un error = muerte sin recuperación).
+- N3: la detección (0.10-0.12 en Monitoreo/DataCenter/Servidores/CriptoVault) con perseguidores rápidos (speed 2, delay 1) aporta la varianza; sus trampas topológicas (Direccion/Cafeteria) SON la dificultad — exigen intentos limpios.
+- Al evaluar grafos nuevos: cada arista agregada cambia la agresividad de la IA bloqueadora (`would_isolate` ve más rutas) — probar con el harness, no a ojo.
+
 ## Grafo Hacker N1
 
 **Archivo:** `juego/hacker/hacker_n1.tres`

@@ -118,7 +118,9 @@ func take_turn() -> void:
 	else:
 		_game.mensaje_estado = "IA no pudo bloquear mas aristas"
 
-	_game.mostrar_ruta()
+	# Nota (slice 5): mostrar_ruta() se invoca ahora desde
+	# GameLogic.mover_jugador() tras CADA turno (antes sólo acá, y los
+	# early-returns dejaban la ruta stale cuando la IA cortaba el camino).
 
 	var result2: Dictionary = DefensivePathfinder.find_path_with_cost(_game.graph, _game.player_pos, target, _game.runtime)
 	if not result2["reachable"] or result2["path"].is_empty():

@@ -26,7 +26,7 @@ tags:
 |---|-------|-----------|--------------|
 | 1 | Transiciones fade entre escenas | Media | Ninguna |
 | 2 | Sonidos y feedback audiovisual | Baja | Transiciones |
-| 3 | Balanced tuning y playtesting | Alta | Todos los niveles |
+| 3 | Balanced tuning y playtesting — **Heist N1-N3 hecho (slice 5: self-play + par por nivel, ver [[14 - Historial de cambios]])**; falta hacker/cyber/defense | Alta | Todos los niveles |
 | 4 | Stats extendidas (tiempo, racha, intentos) | Baja | Perfil |
 
 ## Futuro cercano
