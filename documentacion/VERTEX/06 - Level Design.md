@@ -51,7 +51,7 @@ Criterio aprobado: **curva accesible** — N1 al 1er intento, N2 al 2º, N3 en 2
 | heist_n2 | 7 | 11.0 | 100% (6t/11c) | 100% (14c → 2★) | 8% | 3★ / 2★ |
 | heist_n3 | 8 | 19.0 | 91% (9 capturas) | 0% (error = pérdida) | 1% | 3★ / — |
 
-Reglas de par (estilo golf): en par = 3★; coste ≤1.5×par o turnos ≤1.25×par = 2★; más allá 1★. El presupuesto es sólo supervivencia, ya no define estrellas.
+Reglas de par (estilo golf): en par = 3★; coste ≤1.5×par Y turnos ≤1.25×par = 2★ (el código toma mini(cost_stars, turn_stars); aclarado por auditoría 2026-08-21); más allá 1★. El presupuesto es sólo supervivencia, ya no define estrellas.
 
 Notas de diseño N2/N3 (slice 5):
 - N2 ganó aristas de retorno `Almacen→Perimetro` y `CCTV→Lobby`: los lados del grafo eran trampas unidireccionales (un error = muerte sin recuperación).

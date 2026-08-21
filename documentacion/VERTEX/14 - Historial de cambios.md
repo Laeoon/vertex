@@ -77,7 +77,7 @@ Tres políticas × N corridas (seed determinista; backup/restore de `user://prog
 ### Par por nivel (estrellas estilo golf)
 
 - `heist_n1/n2/n3.json`: `par_turnos` 6/7/8, `par_coste` 9/11/19 (turnos/coste del greedy).
-- `ProgressService.calculate_stars()`: nivel con par → en par = 3★; coste ≤1.5×par o turnos ≤1.25×par = 2★; más allá 1★. El presupuesto deja de definir estrellas (sólo supervivencia). Lookup cacheado vía LevelRegistry (sin tocar `core/`); niveles sin par → lógica legacy intacta.
+- `ProgressService.calculate_stars()`: nivel con par → en par = 3★; coste ≤1.5×par Y turnos ≤1.25×par = 2★ (semántica min(); el "o" original era impreciso — corregido por auditoría 2026-08-21); más allá 1★. El presupuesto deja de definir estrellas (sólo supervivencia). Lookup cacheado vía LevelRegistry (sin tocar `core/`); niveles sin par → lógica legacy intacta.
 - **Tests**: `_test_par_estrellas` (9: par/mejor/degradación/presupuesto/fallback) y `test_levels_data` extendido (par obligatorio en heist, opcional y par-completo en el resto).
 
 ### Verificación

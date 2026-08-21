@@ -131,11 +131,10 @@ godot --headless res://tests/balance/_balance_harness.tscn -- 50
 
 ## Próximos pasos recomendados (prioridad)
 
-0. **Auditoría pendiente del orquestador (registro para el orquestador
-   maestro)**: los slices 1-6 están commiteados localmente pero los cambios
-   de P1-P5 (slices 3-5) no pasaron por una auditoría independiente del
-   harness ni por revisión de commits. Ver [[18 - Overview y auditoría
-   pendiente]] para el inventario completo de qué se verificó y qué falta.
+0. **Auditoría P1-P5: REALIZADA el 2026-08-21 — PASS con hallazgos menores**
+   (detalle en [[18 - Overview y auditoría pendiente]], sección 3). Quedan
+   abiertas sólo las dudas de diseño listadas en Dudas y la limpieza menor
+   registrada en el doc 18.
 1. **Balance del resto de mundos** (hacker n1-n2, cyber n1, defense n1) con
    el mismo harness — extender la lista de niveles de
    `tests/balance/_balance_harness.gd` y agregar sus par. Ojo: los modos
