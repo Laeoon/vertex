@@ -1,5 +1,7 @@
 class_name GameRenderer extends RefCounted
 
+const BrandClass = preload("res://juego/ui/brand.gd")
+
 ## Capa de rendering separada de la lógica de juego.
 ## Recibe un CanvasItem (Node2D) como target de dibujo y todo el estado
 ## como parámetros. No tiene estado propio.
@@ -122,11 +124,11 @@ func draw_hud(
 	var bar_h: float = 52.0
 
 	# ZONA 1: Barra superior con fondo
-	draw_rect(Rect2(0, 0, vp_size.x, bar_h), Color(0.04, 0.04, 0.08, 0.95))
-	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), Color(0.0, 1.0, 0.83, 0.5))
+	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
+	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), BrandClass.accent_dim(0.5))
 
 	# Título del nivel (izquierda)
-	draw_string(Vector2(16, 22), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, Color(0.0, 1.0, 0.83))
+	draw_string(Vector2(16, 22), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.ACCENT)
 
 	# Indicadores principales (centro)
 	var center_x: float = vp_size.x / 2.0
@@ -135,14 +137,14 @@ func draw_hud(
 	# Turno
 	var turn_text: String = "TURNO %d" % turn
 	var turn_w: float = font.get_string_size(turn_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
-	draw_string(Vector2(center_x - turn_w / 2.0 - 120, ind_y), "TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+	draw_string(Vector2(center_x - turn_w / 2.0 - 120, ind_y), "TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 	draw_string(Vector2(center_x - turn_w / 2.0 - 120 + font.get_string_size("TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x, ind_y), "%d" % turn, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, Color.WHITE)
 
 	# Puntos de movimiento con barra visual
 	if max_movement_points > 0:
 		var pts_label_x: float = center_x - 60
-		var pts_color: Color = Color(0.0, 1.0, 0.5) if movement_points > max_movement_points * 0.3 else Color(1.0, 0.6, 0.0) if movement_points > max_movement_points * 0.1 else Color(1.0, 0.2, 0.2)
-		draw_string(Vector2(pts_label_x, ind_y), "PUNTOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+		var pts_color: Color = Color(0.0, 1.0, 0.5) if movement_points > max_movement_points * 0.3 else BrandClass.WARNING if movement_points > max_movement_points * 0.1 else BrandClass.DANGER
+		draw_string(Vector2(pts_label_x, ind_y), "PUNTOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 		# Barra de progreso
 		var bar_x: float = pts_label_x + 50
@@ -161,7 +163,7 @@ func draw_hud(
 	# Meta (derecha, después de puntos)
 	var meta_text: String = "META: %s" % str(target)
 	var meta_x: float = vp_size.x - 200.0
-	draw_string(Vector2(meta_x, ind_y), meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 0.3, 0.3))
+	draw_string(Vector2(meta_x, ind_y), meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.DANGER)
 
 	# Indicadores secundarios (debajo)
 	var sec_y: float = 42.0
@@ -169,25 +171,25 @@ func draw_hud(
 
 	# Posición
 	var pos_text: String = "POS: %s" % str(player_pos)
-	draw_string(Vector2(sec_x, sec_y), pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+	draw_string(Vector2(sec_x, sec_y), pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 	sec_x += font.get_string_size(pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x + 20.0
 
 	# Coste
 	var cost_text: String = "COSTE: %.1f" % player_total_cost
-	draw_string(Vector2(sec_x, sec_y), cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+	draw_string(Vector2(sec_x, sec_y), cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 	sec_x += font.get_string_size(cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x + 20.0
 
 	# Turnos restantes
 	if max_turns > 0:
 		var rem_text: String = "RESTANTE: %d" % (max_turns - turn)
-		var rem_color: Color = Color(0.0, 1.0, 0.5) if (max_turns - turn) > max_turns * 0.3 else Color(1.0, 0.6, 0.0)
+		var rem_color: Color = Color(0.0, 1.0, 0.5) if (max_turns - turn) > max_turns * 0.3 else BrandClass.WARNING
 		draw_string(Vector2(sec_x, sec_y), rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, rem_color)
 		sec_x += font.get_string_size(rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x + 20.0
 
 	# Waypoints
 	if waypoints.size() > 0:
 		var wp_text: String = "WP: %d/%d" % [current_waypoint_idx + 1, waypoints.size()]
-		draw_string(Vector2(sec_x, sec_y), wp_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+		draw_string(Vector2(sec_x, sec_y), wp_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 	# Indicador de amenaza (derecha)
 	var alert_x: float = vp_size.x - 16.0
@@ -197,12 +199,12 @@ func draw_hud(
 		alert_x -= pw + 8.0
 		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(0.8, 0.05, 0.02, 0.4))
 		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(1.0, 0.2, 0.1, 0.7), false, 1.0)
-		draw_string(Vector2(alert_x, ind_y), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.3, 0.2))
+		draw_string(Vector2(alert_x, ind_y), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.DANGER)
 	elif alerted_nodes.size() > 0:
 		var a_text: String = "ALERTAS: %d" % alerted_nodes.size()
 		var aw: float = font.get_string_size(a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
 		alert_x -= aw + 8.0
-		draw_string(Vector2(alert_x, ind_y), a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.7, 0.0))
+		draw_string(Vector2(alert_x, ind_y), a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WARNING)
 
 
 func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: Dictionary) -> void:
@@ -220,7 +222,7 @@ func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: D
 	draw_rect(Rect2(panel_x - 8, panel_y - 12, panel_w + 16, 130), Color(0.0, 0.8, 0.5, 0.4), false, 1.0)
 
 	# Título del panel
-	draw_string(Vector2(panel_x, panel_y), "HACKER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(0.0, 1.0, 0.5))
+	draw_string(Vector2(panel_x, panel_y), "HACKER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.SUCCESS)
 	draw_rect(Rect2(panel_x, panel_y + 4, 50, 1.0), Color(0.0, 1.0, 0.5, 0.4))
 
 	# Noise meter
@@ -239,7 +241,7 @@ func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: D
 	else:
 		noise_color = Color(0.0, 1.0, 0.5)
 
-	draw_string(Vector2(panel_x, nm_y), "RUIDO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.5, 0.55, 0.65))
+	draw_string(Vector2(panel_x, nm_y), "RUIDO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 	draw_rect(Rect2(panel_x, nm_y + 6, nm_w, nm_h), Color(0.1, 0.12, 0.18))
 	draw_rect(Rect2(panel_x, nm_y + 6, nm_w * fill_ratio, nm_h), noise_color)
 	draw_rect(Rect2(panel_x, nm_y + 6, nm_w, nm_h), Color(0.3, 0.35, 0.45), false, 1.0)
@@ -263,7 +265,7 @@ func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: D
 		ei_y += 16.0
 
 	# Scan hint
-	draw_string(Vector2(panel_x, ei_y + 4), "[X] Escanear", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.4, 0.45, 0.55, 0.6))
+	draw_string(Vector2(panel_x, ei_y + 4), "[X] Escanear", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 
 func draw_defender_hud(
@@ -280,11 +282,11 @@ func draw_defender_hud(
 	firewall_mode: bool = false
 ) -> void:
 	var bar_h: float = 52.0
-	draw_rect(Rect2(0, 0, vp_size.x, bar_h), Color(0.04, 0.04, 0.08, 0.95))
+	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
 	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), Color(1.0, 0.5, 0.0, 0.6))
 
 	draw_string(Vector2(16, 22), "🛡️ DEFENSOR — Protege la red", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, Color(1.0, 0.5, 0.0))
-	draw_string(Vector2(16, 42), "TURNO %d  |  FASE: %s" % [turn, "BLOQUEO" if blocks_placed < blocks_per_turn or blocks_per_turn == 0 else "LISTO"], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+	draw_string(Vector2(16, 42), "TURNO %d  |  FASE: %s" % [turn, "BLOQUEO" if blocks_placed < blocks_per_turn or blocks_per_turn == 0 else "LISTO"], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 	var center_x: float = vp_size.x / 2.0
 	var blocks_remaining: int = blocks_per_turn - blocks_placed
@@ -294,18 +296,18 @@ func draw_defender_hud(
 	if blocks_remaining > 0:
 		draw_string(Vector2(center_x - 100, 42), "Restan: %d" % blocks_remaining, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.8, 0.5, 0.2))
 	else:
-		draw_string(Vector2(center_x - 100, 42), "[Enter] para resolver", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.0, 1.0, 0.5))
+		draw_string(Vector2(center_x - 100, 42), "[Enter] para resolver", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.SUCCESS)
 
 	if enemy_pos != &"":
-		var enemy_color: Color = Color(1.0, 0.2, 0.2)
+		var enemy_color: Color = BrandClass.DANGER
 		if enemy_pos == enemy_target:
-			enemy_color = Color(1.0, 0.0, 0.0)
+			enemy_color = BrandClass.ENEMY
 		draw_string(Vector2(center_x + 40, 22), "👾 ATACANTE: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, enemy_color)
 	if enemy_target != &"":
 		draw_string(Vector2(center_x + 40, 42), "🎯 OBJETIVO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.6, 0.2))
 	if max_turns > 0:
 		var turns_left: int = max_turns - turn
-		var turn_color: Color = Color(0.5, 0.8, 1.0) if turns_left > 5 else (Color(1.0, 0.8, 0.0) if turns_left > 2 else Color(1.0, 0.2, 0.2))
+		var turn_color: Color = Color(0.5, 0.8, 1.0) if turns_left > 5 else (Color(1.0, 0.8, 0.0) if turns_left > 2 else BrandClass.DANGER)
 		draw_string(Vector2(vp_size.x - 160, 22), "⏱ %d" % turns_left, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, turn_color)
 
 	# Indicador de modo firewall (en la barra principal)
@@ -321,8 +323,8 @@ func draw_defender_hud(
 
 	# ═══ ZONA 1b: Análisis de corte mínimo (TAREA 1) ═══
 	var analysis_y: float = 56.0
-	draw_rect(Rect2(0, analysis_y, vp_size.x, 22.0), Color(0.04, 0.04, 0.08, 0.8))
-	draw_rect(Rect2(0, analysis_y + 22.0, vp_size.x, 1.0), Color(1.0, 0.85, 0.0, 0.3))
+	draw_rect(Rect2(0, analysis_y, vp_size.x, 22.0), BrandClass.PANEL_SOLID)
+	draw_rect(Rect2(0, analysis_y + 22.0, vp_size.x, 1.0), BrandClass.with_alpha(BrandClass.WARNING, 0.3))
 
 	var has_analysis: bool = not min_cut_analysis.is_empty() and min_cut_analysis.get("cut_edges", []).size() > 0
 	if has_analysis:
@@ -331,7 +333,7 @@ func draw_defender_hud(
 
 		# Texto de cabecera
 		var flow_text: String = "✂ CORTE MÍNIMO — Flujo máx: %.1f" % max_flow
-		draw_string(Vector2(16, analysis_y + 16), flow_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.85, 0.0))
+		draw_string(Vector2(16, analysis_y + 16), flow_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WARNING)
 
 		# Aristas sugeridas (hasta 4) con icono dorado
 		var x_offset: float = vp_size.x - 12.0
@@ -342,8 +344,8 @@ func draw_defender_hud(
 			var tw: float = font.get_string_size(edge_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size).x
 			x_offset -= tw + 10.0
 			draw_rect(Rect2(x_offset - 2, analysis_y + 4, tw + 6, 14), Color(0.85, 0.65, 0.0, 0.12))
-			draw_rect(Rect2(x_offset - 2, analysis_y + 4, tw + 6, 14), Color(1.0, 0.85, 0.0, 0.3), false, 1.0)
-			draw_string(Vector2(x_offset, analysis_y + 16), edge_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(1.0, 0.85, 0.4))
+			draw_rect(Rect2(x_offset - 2, analysis_y + 4, tw + 6, 14), BrandClass.with_alpha(BrandClass.WARNING, 0.3), false, 1.0)
+			draw_string(Vector2(x_offset, analysis_y + 16), edge_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, BrandClass.WARNING)
 		if cut_edges.size() > 4:
 			var extra_text: String = "... (+%d)" % (cut_edges.size() - 4)
 			x_offset -= font.get_string_size(extra_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size).x + 6
@@ -355,7 +357,7 @@ func draw_defender_hud(
 	var active_blocks: int = blocked_edges.size()
 	if active_blocks > 0:
 		var blocks_y: float = analysis_y + 24.0
-		draw_rect(Rect2(0, blocks_y, vp_size.x, 18.0), Color(0.04, 0.04, 0.08, 0.7))
+		draw_rect(Rect2(0, blocks_y, vp_size.x, 18.0), BrandClass.PANEL_SOLID)
 
 		var blocks_text: String = "🔒 Bloqueos activos: %d  |  " % active_blocks
 		var bx: float = 16.0
@@ -378,7 +380,7 @@ func draw_defender_hud(
 			elif remaining >= 2:
 				dur_color = Color(1.0, 0.8, 0.0)
 			else:
-				dur_color = Color(1.0, 0.2, 0.2)
+				dur_color = BrandClass.DANGER
 
 			var label: String = "%s:%dt" % [edge_key, remaining]
 			var lw: float = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size).x
@@ -484,9 +486,9 @@ func draw_edges(
 					if remaining >= 4:
 						dur_color = Color(0.0, 1.0, 0.5)  # verde
 					elif remaining >= 2:
-						dur_color = Color(1.0, 0.85, 0.0)  # amarillo
+						dur_color = BrandClass.WARNING  # amarillo
 					else:
-						dur_color = Color(1.0, 0.2, 0.2)  # rojo
+						dur_color = BrandClass.DANGER  # rojo
 					var dur_label: String = "%dt" % remaining
 					draw_string(mid + Vector2(18, 5), dur_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, dur_color)
 		else:
@@ -498,7 +500,7 @@ func draw_edges(
 			draw_line(tip, base - perp * arrow_w, edge_color, line_width)
 
 			var mid: Vector2 = (from_pos + to_pos) / 2.0
-			var label_bg: Color = Color(0.04, 0.04, 0.08, 0.92)
+			var label_bg: Color = BrandClass.PANEL_SOLID
 			var label_text: String = str(e.protocol)
 			var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
 			var label_pos: Vector2 = mid + Vector2(-text_w / 2.0, -12.0)
@@ -557,7 +559,7 @@ func draw_nodes(
 		if is_player:
 			border_color = Color(0.0, 0.9, 1.0)
 		elif is_target:
-			border_color = Color(1.0, 0.3, 0.3)
+			border_color = BrandClass.DANGER
 		elif es_vecino:
 			border_color = Color(0.3, 1.0, 0.4)
 		draw_circle(pos, radius, border_color, false, 2.5)
@@ -596,7 +598,7 @@ func draw_nodes(
 		if is_player:
 			draw_string(Vector2(pos.x - 8, pos.y + radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
 		elif is_target:
-			draw_string(Vector2(pos.x - 18, pos.y + radius + 16), "TARGET", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(1.0, 0.3, 0.3))
+			draw_string(Vector2(pos.x - 18, pos.y + radius + 16), "TARGET", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, BrandClass.DANGER)
 		elif es_vecino and not game_over:
 			draw_string(Vector2(pos.x - 8, pos.y + radius + 16), "→", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.3, 1.0, 0.4))
 
@@ -609,11 +611,11 @@ func draw_nodes(
 				"vulnerable":
 					scan_color = Color(0.0, 1.0, 0.5)
 				"protected":
-					scan_color = Color(1.0, 0.6, 0.0)
+					scan_color = BrandClass.WARNING
 				"decoy":
-					scan_color = Color(1.0, 0.2, 0.2)
+					scan_color = BrandClass.DANGER
 				_:
-					scan_color = Color(0.5, 0.55, 0.65)
+					scan_color = BrandClass.TEXT_DIM
 			draw_circle(pos, radius + 12.0, scan_color, false, 2.0)
 			draw_string(Vector2(pos.x + radius + 4, pos.y - radius + 2), "✓", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, scan_color)
 
@@ -621,7 +623,7 @@ func draw_nodes(
 		if waypoints.has(nid_str):
 			var wp_idx: int = waypoints.find(nid_str)
 			if wp_idx >= current_waypoint_idx:
-				var wp_color: Color = Color(1.0, 0.85, 0.0) if wp_idx == current_waypoint_idx else Color(0.6, 0.55, 0.3, 0.7)
+				var wp_color: Color = BrandClass.WARNING if wp_idx == current_waypoint_idx else Color(0.6, 0.55, 0.3, 0.7)
 				var wp_symbol: String = "◇" if wp_idx == current_waypoint_idx else "○"
 				draw_circle(pos, radius + 14.0, wp_color, false, 2.0)
 				draw_string(Vector2(pos.x - radius - 14, pos.y + 5), wp_symbol, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, wp_color)
@@ -694,28 +696,30 @@ func draw_game_over(
 	var center: Vector2 = vp_size / 2.0
 
 	var fade_alpha: float = min(1.0, (Time.get_ticks_msec() / 1000.0 - _game_over_time) / 0.5) if _game_over_time > 0 else 1.0
-	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), Color(0.04, 0.04, 0.1, 0.95 * fade_alpha))
-	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), Color(0.0, 1.0, 0.83, 0.6), false, 2.0)
 
 	var texto: String
 	var color: Color
 	if not game_won:
 		texto = "DERROTA"
-		color = Color(1.0, 0.2, 0.2)
+		color = BrandClass.DANGER
 	elif is_tutorial:
 		texto = "TUTORIAL COMPLETADO"
-		color = Color(0.0, 1.0, 0.83)
+		color = BrandClass.ACCENT
 	else:
 		texto = "VICTORIA"
-		color = Color(0.0, 1.0, 0.5)
+		color = BrandClass.SUCCESS
+
+	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95 * fade_alpha))
+	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(color, 0.6), false, 2.0)
+
 	draw_string(center + Vector2(-50, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, color)
-	draw_string(center + Vector2(-140, 12), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color.WHITE)
+	draw_string(center + Vector2(-140, 12), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT)
 
 	if game_won:
 		var star_text: String = ""
 		for i in range(3):
 			star_text += "★" if i < star_count else "☆"
-		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color.YELLOW)
+		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.WARNING)
 
 	_draw_game_over_hints(center, game_won, has_next_level)
 
@@ -728,7 +732,7 @@ func _draw_game_over_hints(center: Vector2, game_won: bool, has_next_level: bool
 		hint += "   [N] Siguiente"
 	hint += "   [L] Niveles   [Q] Menú"
 	var w: float = font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
-	draw_string(center + Vector2(-w / 2.0, 65), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.6, 0.6, 0.7))
+	draw_string(center + Vector2(-w / 2.0, 65), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT_DIM)
 
 
 func draw_node_info_panel(
@@ -757,7 +761,7 @@ func draw_node_info_panel(
 	var py: float = panel_y + 20.0
 	var line_h: float = 18.0
 
-	draw_string(Vector2(px, py), str(selected_neighbor), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, Color(0.0, 1.0, 0.83))
+	draw_string(Vector2(px, py), str(selected_neighbor), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.ACCENT)
 	py += line_h + 4.0
 
 	var meta: Dictionary = node_res.metadata
@@ -767,14 +771,14 @@ func draw_node_info_panel(
 			edge_cost = e.transit_cost
 			break
 
-	draw_string(Vector2(px, py), "Coste: ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+	draw_string(Vector2(px, py), "Coste: ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 	draw_string(Vector2(px + 52, py), "%.1f" % edge_cost, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color.WHITE)
 	py += line_h
 
 	var detect: float = meta.get("detection_chance", 0.0)
 	var det_label: String = "%.0f%%" % (detect * 100.0)
-	var det_color: Color = Color(0.0, 1.0, 0.5) if detect <= 0.0 else (Color(1.0, 0.8, 0.0) if detect < 0.3 else Color(1.0, 0.2, 0.2))
-	draw_string(Vector2(px, py), "Alerta: ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.55, 0.65))
+	var det_color: Color = Color(0.0, 1.0, 0.5) if detect <= 0.0 else (Color(1.0, 0.8, 0.0) if detect < 0.3 else BrandClass.DANGER)
+	draw_string(Vector2(px, py), "Alerta: ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 	draw_string(Vector2(px + 50, py), det_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, det_color)
 	py += line_h
 
@@ -867,10 +871,18 @@ func draw_tutorial_highlights(tutorial_player, node_positions: Dictionary, node_
 
 
 func draw_tutorial_text(mensaje_tutorial: String) -> void:
+	# Placa de fondo (Capa 1): el texto del tutorial pisa el tablero — sin
+	# placa es ilegible sobre aristas/nodos claros.
 	var lines: PackedStringArray = mensaje_tutorial.split("\n")
+	var max_w: float = 0.0
+	for line in lines:
+		max_w = maxf(max_w, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x)
+	var plate_h: float = lines.size() * 16.0 + 10.0
+	draw_rect(Rect2(14, 80 - small_font_size + 2, max_w + 16, plate_h), BrandClass.PANEL)
+	draw_rect(Rect2(14, 80 - small_font_size + 2, max_w + 16, plate_h), BrandClass.accent_dim(0.25), false, 1.0)
 	var py: float = 80.0
 	for line in lines:
-		draw_string(Vector2(20, py), line, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color.YELLOW)
+		draw_string(Vector2(20, py), line, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.WARNING)
 		py += 16
 
 
@@ -884,8 +896,8 @@ func draw_status_bar(
 ) -> void:
 	# ZONA 3: Barra inferior con fondo
 	var bar_h: float = 32.0
-	draw_rect(Rect2(0, vp_size.y - bar_h, vp_size.x, bar_h), Color(0.04, 0.04, 0.08, 0.9))
-	draw_rect(Rect2(0, vp_size.y - bar_h, vp_size.x, bar_h), Color(0.0, 1.0, 0.83, 0.2), false, 1.0)
+	draw_rect(Rect2(0, vp_size.y - bar_h, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
+	draw_rect(Rect2(0, vp_size.y - bar_h, vp_size.x, bar_h), BrandClass.accent_dim(0.2), false, 1.0)
 
 	# Keybinds (izquierda)
 	var kb_text: String
@@ -893,17 +905,17 @@ func draw_status_bar(
 		kb_text = "[Click arista] Bloquear  [F] Firewall  [Enter] Resolver  [R] Reset  [Q] Menu"
 	else:
 		kb_text = "[Click] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [R] Reset  [Q] Menu"
-	draw_string(Vector2(16, vp_size.y - 10), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.4, 0.45, 0.55, 0.7))
+	draw_string(Vector2(16, vp_size.y - 10), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 	# Estado (centro-derecha)
 	if mensaje_estado != "":
-		var color_estado: Color = Color(0.0, 1.0, 0.5) if game_won else (Color(1.0, 0.2, 0.2) if game_over else Color(0.0, 1.0, 0.83))
+		var color_estado: Color = Color(0.0, 1.0, 0.5) if game_won else (BrandClass.DANGER if game_over else BrandClass.ACCENT)
 		var texto_estado: String = mensaje_estado
 		if selected_neighbor != &"" and not game_over:
 			texto_estado += "  → %s" % selected_neighbor
 		var tw: float = font.get_string_size(texto_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
 		var state_x: float = vp_size.x - tw - 20.0
-		draw_rect(Rect2(state_x - 6, vp_size.y - bar_h + 4, tw + 12, bar_h - 8), Color(0.06, 0.06, 0.12, 0.8))
+		draw_rect(Rect2(state_x - 6, vp_size.y - bar_h + 4, tw + 12, bar_h - 8), BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.8))
 		draw_rect(Rect2(state_x - 6, vp_size.y - bar_h + 4, tw + 12, bar_h - 8), color_estado, false, 1.0)
 		draw_string(Vector2(state_x, vp_size.y - 10), texto_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, color_estado)
 
@@ -919,23 +931,23 @@ func draw_defender_game_over(
 	var center: Vector2 = vp_size / 2.0
 
 	var fade_alpha: float = min(1.0, (Time.get_ticks_msec() / 1000.0 - _game_over_time) / 0.5) if _game_over_time > 0 else 1.0
-	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), Color(0.04, 0.04, 0.1, 0.95 * fade_alpha))
+	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95 * fade_alpha))
 	
 	if game_won:
-		draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), Color(0.0, 1.0, 0.5, 0.6), false, 2.0)
+		draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.SUCCESS, 0.6), false, 2.0)
 		var texto: String = "🛡️ VICTORIA DEFENSIVA"
-		draw_string(center + Vector2(-140, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.0, 1.0, 0.5))
+		draw_string(center + Vector2(-140, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, BrandClass.SUCCESS)
 	else:
-		draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), Color(1.0, 0.2, 0.2, 0.6), false, 2.0)
+		draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.DANGER, 0.6), false, 2.0)
 		var texto: String = "💀 DERROTA"
-		draw_string(center + Vector2(-60, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(1.0, 0.2, 0.2))
+		draw_string(center + Vector2(-60, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.DANGER)
 	
-	draw_string(center + Vector2(-140, 12), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color.WHITE)
+	draw_string(center + Vector2(-140, 12), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT)
 
 	if game_won:
 		var star_text: String = ""
 		for i in range(3):
 			star_text += "★" if i < star_count else "☆"
-		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color.YELLOW)
+		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.WARNING)
 
 	_draw_game_over_hints(center, game_won, has_next_level)

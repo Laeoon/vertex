@@ -9,6 +9,39 @@ tags:
 
 # Historial de Cambios
 
+## Capa 0+1 — Branding "Neón Ciberpunk" + legibilidad HUD (2026-08-21)
+
+### Decisión de identidad (elegida por el usuario entre 3 propuestas)
+
+Paleta **Neón Ciberpunk**: extiende la identidad cyberpunk del menú al juego
+(cian `#00E5FF` jugador/ruta, magenta `#FF2E88` enemigo, verde `#39FF88`
+éxito, amarillo `#FFC857` advertencia, rojo `#FF4757` peligro, fondo
+`#0D0E16`, paneles `#161826@88%`, texto `#EAECF5`/`#8A90B8`). Tipografía:
+**JetBrains Mono** (OFL, redistribuible) en `juego/ui/fonts/`.
+
+### Cambios
+
+- **Nuevo** `juego/ui/brand.gd` — tokens de marca como única fuente de
+  verdad (colores semánticos + carga de fuentes). Carga TTF vía
+  `FontFile.load_dynamic_font()` para NO depender del pipeline de import del
+  editor en headless; fallback seguro a `ThemeDB.fallback_font`.
+- **Modificado** `juego_ataque.gd` — usa `Brand.font_regular()` en vez de
+  `ThemeDB.fallback_font`.
+- **Modificado** `game_renderer.gd` — migración a tokens (~60 literales
+  reemplazados por `BrandClass.*`): barras superior/inferior, HUD hacker y
+  defensor, análisis min-cut, chips de estado, game over atacante/defensor
+  (borde del panel ahora sigue el resultado: victoria/derrota), hints,
+  estrellas y textos secundarios. Nueva placa semitransparente con borde
+  tenue detrás del texto de tutorial (pisaba el tablero sin fondo).
+  Mapa semántico documentado en el header de `brand.gd`.
+
+### Verificación
+
+- `run_all.gd`: 25/25. Scene-based afectados verdes: renderer equivalence
+  9/9, level_nav 13/13, tutorial_render 34/34. Cero SCRIPT ERROR en headless
+  (antes del fix de carga de fuentes: 18 errores de font null).
+- Imports de editor generados (`godot --headless --import`) para las TTF.
+
 ## Slice 6 — Navegación post-partida (2026-08-16)
 
 ### Objetivo (aprobado por el usuario)

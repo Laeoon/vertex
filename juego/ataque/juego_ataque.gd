@@ -20,6 +20,7 @@ const HackerLogicClass = preload("res://juego/ataque/hacker_logic.gd")
 const GameLogicClass = preload("res://juego/ataque/game_logic.gd")
 const LevelManagerClass = preload("res://juego/system/level_manager.gd")
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
+const BrandClass = preload("res://juego/ui/brand.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -125,7 +126,8 @@ func _process(_delta: float) -> void:
 
 
 func _ready() -> void:
-	font = ThemeDB.fallback_font
+	# Fuente de identidad (JetBrains Mono, OFL) en vez del fallback de Godot.
+	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
 
 	# game_state/hacker_logic/game_logic ANTES de cargar el grafo: reset_state()
