@@ -38,16 +38,21 @@ func mover_jugador(destino: StringName) -> void:
 		if e != null and e.from_id == _game.player_pos and e.to_id == destino:
 			edge_cost = e.transit_cost
 			break
-	_game.player_total_cost += edge_cost
 
 	if _game.hacker_mode and not _game.game_over:
 		HackerMechanicsClass.add_noise(_game.hacker_state, HackerMechanicsClass.NOISE_MOVE_BASE)
 
 	if _game.max_movement_points > 0:
-		_game.movement_points -= int(edge_cost)
-		if _game.movement_points <= 0 and destino != _game._target_actual():
+		# FIX: el presupuesto se paga ANTES de cruzar — si la arista cuesta más
+		# de lo disponible, no hay cruce (antes el objetivo estaba exento y se
+		# podía ganar con presupuesto negativo).
+		if _game.movement_points < int(edge_cost):
 			perder("¡Sin presupuesto de movimiento!")
 			return
+		_game.movement_points -= int(edge_cost)
+	# FIX: el costo se contabiliza SÓLO si el cruce ocurrió — un movimiento
+	# abortado por presupuesto no infla el total (y con él las estrellas).
+	_game.player_total_cost += edge_cost
 
 	_game.player_pos = destino
 	AudioManager.play_sfx("move")

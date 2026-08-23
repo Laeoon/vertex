@@ -97,13 +97,27 @@ func _run() -> void:
 	snap.append("max_turnos|%s" % _juego.mensaje_estado)
 	_gs(snap, "post_max_turnos")
 
-	# ── S8: derrota por presupuesto de movimiento ──
+	# ── S8: presupuesto de movimiento (contrato actualizado por fix 2026-08-23:
+	# la arista se paga ANTES de cruzar — llegar al objetivo sin poder pagarla
+	# también pierde; cruzar pagando EXACTO es legal). IA off: aislamos la regla
+	# de presupuesto del bloqueo inicial de la IA. ──
 	_juego.max_turns = 0
 	_juego.waypoints = []
+	_juego.ai_enabled = false
 	_juego.max_movement_points = 1
 	_juego.reset_state()
+	# Sin fondos: mp=0 contra arista de costo 1 → derrota aunque el destino
+	# exista (y el objetivo no queda exento: la regla es pagar antes de cruzar).
+	_juego.movement_points = 0
 	_juego._mover_jugador(&"Puerta_B")
-	snap.append("presupuesto|%s|mp=%d" % [_juego.mensaje_estado, _juego.movement_points])
+	snap.append("presupuesto_sin_fondos|%s|mp=%d" % [_juego.mensaje_estado, _juego.movement_points])
+	_gs(snap, "post_presupuesto_sin_fondos")
+	# Pago exacto: partida nueva (el perder anterior cerró la partida), arista
+	# de costo 1 con mp=1 → cruce legal, queda en 0.
+	_juego.reset_state()
+	_juego.movement_points = 1
+	_juego._mover_jugador(&"Puerta_B")
+	snap.append("presupuesto_exacto|%s|mp=%d" % [_juego.mensaje_estado, _juego.movement_points])
 	_gs(snap, "post_presupuesto")
 
 	if CAPTURE:
@@ -130,8 +144,10 @@ func _run() -> void:
 		"post_sin_salida|pos=Puerta_A|turn=1|wpi=0|cost=1.0|mp=0|over=true|won=false|sel=Puerta_B",
 		"max_turnos|PERDISTE: Te detectaron! (1 turnos maximo)",
 		"post_max_turnos|pos=Puerta_B|turn=1|wpi=-1|cost=1.0|mp=0|over=true|won=false|sel=Puerta_B",
-		"presupuesto|PERDISTE: ¡Sin presupuesto de movimiento!|mp=0",
-		"post_presupuesto|pos=Inicio|turn=0|wpi=-1|cost=1.0|mp=0|over=true|won=false|sel=Puerta_B",
+		"presupuesto_sin_fondos|PERDISTE: ¡Sin presupuesto de movimiento!|mp=0",
+		"post_presupuesto_sin_fondos|pos=Inicio|turn=0|wpi=-1|cost=0.0|mp=0|over=true|won=false|sel=Puerta_B",
+		"presupuesto_exacto||mp=0",
+		"post_presupuesto|pos=Puerta_B|turn=1|wpi=-1|cost=1.0|mp=0|over=false|won=false|sel=Puerta_B",
 	]
 
 	if snap.size() != golden.size():
