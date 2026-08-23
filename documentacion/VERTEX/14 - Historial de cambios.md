@@ -9,6 +9,39 @@ tags:
 
 # Historial de Cambios
 
+## Feedback N4 — regla de presupuesto + identidad de nodos (2026-08-23)
+
+### Reportado por el usuario jugando Blackout
+
+1. **BUG de presupuesto**: llegar al objetivo sin poder pagar la última
+   arista ganaba con saldo negativo (2 de presupuesto contra salida de 4 →
+   victoria con −2).
+2. **Nodos anónimos**: círculos idénticos sin identidad de ubicación.
+
+### Cambios
+
+- **FIX `game_logic.gd`** — la arista se paga ANTES de cruzar: fondos
+  insuficientes = derrota aunque el destino sea el objetivo; pagar EXACTO es
+  legal; un cruce abortado ya no contabiliza costo (no infla estrellas).
+  Golden `game_logic_equivalence` actualizado al nuevo contrato (S8
+  rediseñado: pérdida por sin-fondos + pago exacto, IA aislada del escenario).
+- **N4**: presupuesto 18→20 para absorber la regla estricta; harness
+  re-verificado — curva intacta (greedy 91% 3★, err 67% 2★) y el greedy ya
+  no termina con saldo negativo.
+- **Identidad visual de nodos (`game_renderer.gd`)**: forma geométrica según
+  `NodeType` del grafo — INTERNET doble anillo · FIREWALL triángulo ·
+  ROUTER círculo · SERVER hexágono · WORKSTATION cuadrado · DATABASE rombo.
+  Label prefiere `display_name` del recurso; helper `_poligono()` nuevo.
+  Los grafos viejos (todo SERVER) quedan hexágonos uniformes hasta
+  regenerar tipos.
+- **Aristas legibles** (commit previo): pares bidireccionales curvados +
+  flechas triangulares sólidas + etiquetas sobre el apex del arco.
+
+### Verificación
+
+game_logic eq **21/21** (golden actualizado intencionalmente) · renderer eq
+9/9 · run_all 25/25 · harness N4 100 corridas re-medido.
+
 ## E2 — heist_n4 "Blackout en el Data Center" (2026-08-23)
 
 ### El test del pipeline de autoría

@@ -552,6 +552,15 @@ func draw_edges(
 			draw_string(label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.85, 0.88, 0.95, 0.95))
 
 
+## Polígono regular centrado en `centro` (identidad visual de nodos, E2).
+static func _poligono(centro: Vector2, radio: float, lados: int, rot: float = 0.0) -> PackedVector2Array:
+	var pts: PackedVector2Array = PackedVector2Array()
+	for i in lados:
+		var a := rot + TAU * i / lados - PI / 2.0
+		pts.append(centro + Vector2(cos(a), sin(a)) * radio)
+	return pts
+
+
 func draw_nodes(
 	graph: NetworkGraphResource,
 	node_positions: Dictionary,
@@ -570,6 +579,14 @@ func draw_nodes(
 	enemy_pos: StringName = &"",
 	_enemy_move_flash_time: float = -1.0
 ) -> void:
+	# Identidad por tipo (E2): forma geométrica según NodeType.
+	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
+	# SERVER=hexágono · WORKSTATION=cuadrado · DATABASE=rombo.
+	var nodos_res: Dictionary = {}
+	for n in graph.nodes:
+		if n != null:
+			nodos_res[n.id] = n
+
 	for nid in node_positions.keys():
 		var nid_str: StringName = nid as StringName
 		var pos: Vector2 = node_positions[nid] as Vector2
@@ -596,7 +613,22 @@ func draw_nodes(
 			radius += 3.0
 
 		draw_circle(pos + Vector2(2, 3), radius, Color(0, 0, 0, 0.4))
-		draw_circle(pos, radius, node_color)
+
+		var node_res = nodos_res.get(nid_str, null)
+		var tipo: int = int(node_res.node_type) if node_res != null else 3
+		match tipo:
+			0:
+				draw_circle(pos, radius, node_color)
+			1:
+				draw_polygon(_poligono(pos, radius + 2.0, 3), node_color)
+			3:
+				draw_polygon(_poligono(pos, radius, 6), node_color)
+			4:
+				draw_polygon(_poligono(pos, radius, 4, PI / 4.0), node_color)
+			5:
+				draw_polygon(_poligono(pos, radius, 4), node_color)
+			_:
+				draw_circle(pos, radius, node_color)
 
 		var border_color: Color = Color(0.3, 0.32, 0.4)
 		if is_player:
@@ -605,7 +637,17 @@ func draw_nodes(
 			border_color = BrandClass.DANGER
 		elif es_vecino:
 			border_color = Color(0.3, 1.0, 0.4)
-		draw_circle(pos, radius, border_color, false, 2.5)
+
+		if tipo == 0:
+			# INTERNET: doble anillo (puerta al exterior).
+			draw_circle(pos, radius, border_color, false, 2.5)
+			draw_circle(pos, radius - 5.0, BrandClass.accent_dim(0.4), false, 1.5)
+		elif tipo == 3 or tipo == 2:
+			draw_circle(pos, radius, border_color, false, 2.5)
+		else:
+			var borde := _poligono(pos, radius + (2.0 if tipo == 1 else 0.0), 3 if tipo == 1 else 4, PI / 4.0 if tipo == 4 else 0.0)
+			borde.append(borde[0])
+			draw_polyline(borde, border_color, 2.5)
 
 		if nid_str in alerted_nodes:
 			var pulse: float = 0.5 + sin(Time.get_ticks_msec() * 0.008) * 0.3
@@ -631,6 +673,8 @@ func draw_nodes(
 
 		var label_bg_color: Color = Color(0.03, 0.03, 0.07, 0.9)
 		var label_text: String = str(nid_str)
+		if node_res != null and String(node_res.display_name) != "":
+			label_text = node_res.display_name
 		var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 		var label_x: float = pos.x - text_w / 2.0
 		var label_y: float = pos.y - radius - 8.0
