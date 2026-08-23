@@ -11,18 +11,21 @@ tags:
 # Handoff a Orquestador
 
 > Nota del agente obrero (P1–P5 del slice 3 + slices 4, 5 y 6) para el agente
-> orquestador cuando retome el proyecto. Estado al cierre del slice 6
-> (actualizado por el orquestador: slice 6 verificado y commiteado local).
+> orquestador cuando retome el proyecto. Estado al 2026-08-23: además de los
+> slices, el orquestador commiteó auditoría P1-P5 (PASS) y la capa visual
+> completa (ver punto 8).
 
 ## Estado del repo
 
-- **Slices 3, 4, 5 y 6 completos y commiteados localmente (SIN push a GitHub,
-  indicación del usuario 2026-08-16: commits locales, no push).**
-- Commits: `refactor(slice-3)` + `docs(slice-3)`, `feat(slice-4)`, el commit
-  del slice 5 (balance Heist + par por nivel) y `feat(slice-6)` (navegación
-  post-partida). Si falta alguno, ver `git log --oneline` / `git status`.
-- Rama `main`. Sin push. `.zcode/` ignorado. El orquestador auditó la suite y
-  los scene-based al cierre: 25/25 + 14/14 (incl. `_test_level_nav` 13).
+- **Slices 3-6 + auditoría P1-P5 + capas visuales 0+1/2/2b commiteados
+  localmente (SIN push a GitHub — commits locales hasta nueva governanza).**
+- Commits recientes: `feat(slice-6)` navegación, `docs(overview)` doc 18,
+  `docs(auditoria)` P1-P5 PASS, `feat(branding)` capa 0+1,
+  `feat(ux)` botones game over, `feat(ux)` pantalla completa fin de partida.
+  Ver `git log --oneline` / `git status` para el estado exacto.
+- Rama `main`. Sin push (tag local `respaldo-pre-capa2` como ancla).
+  Última verificación completa del orquestador (2026-08-23): run_all 25/25 +
+  game_over_ui 26/26 + renderer 9/9 + level_nav 13/13 + defensor 7/7.
 
 ## Qué se hizo (resumen ejecutivo)
 
@@ -63,6 +66,14 @@ tags:
    `goto_level_select()`, señales `next_level_requested` /
    `level_select_requested`, `has_next_level` en `frame_data()`, hints
    dinámicos en `game_renderer.gd`. Cubierto por `_test_level_nav` (13).
+8. **Capa visual (2026-08-21/23, orquestador + obrero)**: paleta "Neón
+   Ciberpunk" + JetBrains Mono vía `juego/ui/brand.gd` (tokens únicos);
+   placas HUD; game over con **pantalla completa** — botones reales
+   ([R]/[N]/[L]/[Q], foco navegable) + fondos procedurales por resultado
+   (lluvia de glifos victoria / viñeta de captura derrota) y fade de
+   entrada; el renderer ya NO dibuja el game over (vive en
+   `GameOverOverlay`). Detalle en [[14 - Historial de cambios]] capas 0+1,
+   2 y 2b. Cubierto por `_test_game_over_ui` (26).
 
 ## Cómo verificar (todo en verde al cierre)
 
