@@ -46,6 +46,10 @@ func draw_polygon(points: PackedVector2Array, color: Color) -> void:
 	_canvas.draw_colored_polygon(points, color)
 
 
+func draw_polyline(points: PackedVector2Array, color: Color, width: float = -1.0) -> void:
+	_canvas.draw_polyline(points, color, width)
+
+
 func draw_string(pos: Vector2, text: String, alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1, font_size_override: int = -1, color: Color = Color.WHITE) -> void:
 	var fs: int = font_size_override if font_size_override > 0 else font_size
 	_canvas.draw_string(font, pos, text, alignment, width, fs, color)
@@ -408,6 +412,14 @@ func draw_edges(
 	_unblock_flash_time: float = -1.0,
 	_unblock_flash_edge: String = ""
 ) -> void:
+	# Pre-pasada: set de claves para detectar pares bidireccionales (A→B + B→A)
+	# y curvarlos aparte — dibujados rectos se superponen exactamente y las
+	# etiquetas de protocolo se apilan en el mismo punto medio.
+	var claves: Dictionary = {}
+	for e2 in graph.edges:
+		if e2 != null:
+			claves["%s→%s" % [e2.from_id, e2.to_id]] = true
+
 	for e in graph.edges:
 		if e == null:
 			continue
@@ -467,13 +479,32 @@ func draw_edges(
 			line_width = 1.5
 
 		var tip: Vector2 = to_pos - dir * node_radius
-		draw_line(from_pos + dir * node_radius, tip, edge_color, line_width)
+		var inicio: Vector2 = from_pos + dir * node_radius
+		var centro: Vector2 = (from_pos + to_pos) / 2.0
+		var perp: Vector2 = dir.rotated(PI / 2.0)
+
+		# Par bidireccional → arco cuadrático; el lado es determinístico por
+		# comparación de ids (cada dirección dobla para lados opuestos).
+		var bend: float = 0.0
+		if claves.has("%s→%s" % [e.to_id, e.from_id]):
+			bend = 15.0 * (1.0 if String(e.from_id) < String(e.to_id) else -1.0)
+
+		var puntos: PackedVector2Array = PackedVector2Array()
+		if absf(bend) < 0.5:
+			puntos.append(inicio)
+			puntos.append(tip)
+		else:
+			var ctrl: Vector2 = centro + perp * bend * 2.0
+			for s in range(15):
+				var t := s / 14.0
+				puntos.append(inicio.lerp(ctrl, t).lerp(ctrl.lerp(tip, t), t))
+
+		draw_polyline(puntos, edge_color, line_width)
 
 		if is_blocked:
-			var mid: Vector2 = (from_pos + to_pos) / 2.0
-			draw_circle(mid, 14.0, Color(0.15, 0.05, 0.05, 0.8))
-			draw_circle(mid, 14.0, Color(1.0, 0.2, 0.2, 0.9), false, 2.0)
-			draw_string(mid + Vector2(-5, 5), "X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 0.3, 0.3, 1.0))
+			draw_circle(centro, 14.0, Color(0.15, 0.05, 0.05, 0.8))
+			draw_circle(centro, 14.0, Color(1.0, 0.2, 0.2, 0.9), false, 2.0)
+			draw_string(centro + Vector2(-5, 5), "X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 0.3, 0.3, 1.0))
 			# TAREA 3: Mostrar duración restante del bloqueo
 			var block_data: Dictionary = blocked_edges.get(edge_key, {})
 			if block_data.has("expires_at"):
@@ -487,20 +518,35 @@ func draw_edges(
 					else:
 						dur_color = BrandClass.DANGER  # rojo
 					var dur_label: String = "%dt" % remaining
-					draw_string(mid + Vector2(18, 5), dur_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, dur_color)
+					draw_string(centro + Vector2(18, 5), dur_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, dur_color)
 		else:
-			var arrow_len: float = 10.0
-			var arrow_w: float = 5.0
-			var base: Vector2 = tip - dir * arrow_len
-			var perp: Vector2 = dir.rotated(PI / 2.0)
-			draw_line(tip, base + perp * arrow_w, edge_color, line_width)
-			draw_line(tip, base - perp * arrow_w, edge_color, line_width)
+			# Punta de flecha sólida (triángulo) — la dirección se lee de un vistazo.
+			var tangente: Vector2 = (
+				(puntos[puntos.size() - 1] - puntos[puntos.size() - 2]).normalized()
+				if puntos.size() >= 2
+				else dir
+			)
+			var perp_t: Vector2 = tangente.rotated(PI / 2.0)
+			var base_f: Vector2 = tip - tangente * 13.0
+			draw_polygon(
+				PackedVector2Array([
+					tip,
+					base_f + perp_t * 6.0,
+					base_f - perp_t * 6.0,
+				]),
+				edge_color
+			)
 
-			var mid: Vector2 = (from_pos + to_pos) / 2.0
+			var apex: Vector2 = (
+				inicio.lerp(centro + perp * bend * 2.0, 0.5).lerp(
+					(centro + perp * bend * 2.0).lerp(tip, 0.5), 0.5)
+				if absf(bend) >= 0.5
+				else centro
+			)
 			var label_bg: Color = BrandClass.PANEL_SOLID
 			var label_text: String = str(e.protocol)
 			var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
-			var label_pos: Vector2 = mid + Vector2(-text_w / 2.0, -12.0)
+			var label_pos: Vector2 = apex + Vector2(-text_w / 2.0, -12.0)
 			draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), label_bg)
 			draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), Color(edge_color.r, edge_color.g, edge_color.b, 0.5), false, 1.0)
 			draw_string(label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.85, 0.88, 0.95, 0.95))
