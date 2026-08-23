@@ -11,6 +11,12 @@ const GRIS_OSCURO: Color = Color(0.3, 0.33, 0.4)
 const BLANCO: Color = Color.WHITE
 const AMARILLO: Color = Color(1.0, 0.85, 0.0)
 
+const BrandClass = preload("res://juego/ui/brand.gd")
+const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
+
+const SECTION_X := 70.0
+const SECTION_W_OFFSET := 140.0
+
 var player_name: String = "Jugador"
 var _editing_name: bool = false
 var _cursor_pos: int = 0
@@ -174,16 +180,39 @@ func _load_stats() -> void:
 		var total: int = stats["total_wins"] + stats["total_losses"]
 		stats["win_rate"] = float(stats["total_wins"]) / float(total) * 100.0 if total > 0 else 0.0
 
-		# Per-level detail
-		var level_keys: PackedStringArray = stats_cfg.get_section_keys("levels")
-		for lk in level_keys:
-			var parts: PackedStringArray = lk.rsplit("_", true, 1)
-			if parts.size() == 2:
-				stats["levels_detail"].append({
-					"id": parts[0],
-					"stat": parts[1],
-					"value": stats_cfg.get_value("levels", lk, 0)
-				})
+	# Desglose por nivel del mundo heist (una fila por nivel registrado).
+	# build_level_rows es una función pura testeable: recibe los ConfigFile ya
+	# cargados para que los tests puedan inyectar datos en memoria.
+	stats["levels_detail"] = build_level_rows("heist", progress_cfg, stats_cfg)
+
+
+## Construye las filas de "PROGRESO POR NIVEL" para un mundo.
+##
+## Función pura: itera `LevelRegistry.WORLDS[world_id]["levels"]` y, para cada
+## nivel, lee estrellas/mejor_coste de `progress_cfg` (sección "estrellas") y
+## victorias/derrotas de `stats_cfg` (sección "levels", claves `<key>_wins` /
+## `<key>_losses`). Sin datos → fila con "—". No lee disco directo; recibe los
+## ConfigFile ya cargados para que los tests inyecten datos en memoria.
+static func build_level_rows(world_id: String, progress_cfg: ConfigFile, stats_cfg: ConfigFile) -> Array:
+	var rows: Array = []
+	var levels: Array = LevelRegistryClass.WORLDS.get(world_id, {}).get("levels", [])
+	for cfg in levels:
+		var path: String = cfg.get("path", "")
+		var key: String = path.get_file().trim_suffix(".json")
+		var stars: int = progress_cfg.get_value("estrellas", key, 0) if progress_cfg != null else 0
+		var best_cost: float = progress_cfg.get_value("estrellas", key + "_mejor_coste", 0.0) if progress_cfg != null else 0.0
+		var wins: int = stats_cfg.get_value("levels", key + "_wins", 0) if stats_cfg != null else 0
+		var losses: int = stats_cfg.get_value("levels", key + "_losses", 0) if stats_cfg != null else 0
+		rows.append({
+			"key": key,
+			"title": cfg.get("title", key),
+			"stars": stars,
+			"best_cost": best_cost,
+			"wins": wins,
+			"losses": losses,
+			"attempts": wins + losses,
+		})
+	return rows
 
 
 func loc(key: String) -> String:
@@ -252,6 +281,32 @@ func _draw() -> void:
 		var label: String = "%s: %s" % [wid.capitalize(), stars_text]
 		draw_string(font, Vector2(100, by), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, AMARILLO if wp.stars > 0 else GRIS)
 		by += 28
+
+	# Per-level detail (mundo heist): estrellas, mejor coste e intentos.
+	by += 24
+	draw_string(font, Vector2(80, by), "PROGRESO POR NIVEL", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, CYAN)
+	by += 26
+
+	var col_stars_x: float = 400.0
+	var col_cost_x: float = 490.0
+	var col_attempts_x: float = 610.0
+	draw_string(font, Vector2(100, by), "NIVEL", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, GRIS_OSCURO)
+	draw_string(font, Vector2(col_stars_x, by), "★", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, GRIS_OSCURO)
+	draw_string(font, Vector2(col_cost_x, by), "MEJOR", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, GRIS_OSCURO)
+	draw_string(font, Vector2(col_attempts_x, by), "V/D (INTENTOS)", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, GRIS_OSCURO)
+	by += 22
+
+	for row in stats.levels_detail:
+		var has_data: bool = row.attempts > 0 or row.stars > 0
+		var row_color: Color = BLANCO if has_data else GRIS_OSCURO
+		var stars_row: Color = AMARILLO if row.stars > 0 else GRIS_OSCURO
+		draw_string(font, Vector2(100, by), String(row.title).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, row_color)
+		draw_string(font, Vector2(col_stars_x, by), _stars_to_text(row.stars), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, stars_row)
+		var coste_txt: String = "%.1f" % row.best_cost if row.best_cost > 0.0 else "—"
+		draw_string(font, Vector2(col_cost_x, by), coste_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, row_color)
+		var attempts_txt: String = "%d/%d (%d)" % [row.wins, row.losses, row.attempts] if row.attempts > 0 else "—"
+		draw_string(font, Vector2(col_attempts_x, by), attempts_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, row_color)
+		by += 22
 
 	by += 20
 	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.35, 0.38, 0.45))

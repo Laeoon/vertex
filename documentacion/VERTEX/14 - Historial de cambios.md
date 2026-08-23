@@ -9,6 +9,33 @@ tags:
 
 # Historial de Cambios
 
+## Stats visibles en Perfil — cierre del DoD heist-100% (2026-08-23)
+
+### Objetivo
+
+Que el "rejugá para 3★" tenga sentido: el Perfil ahora muestra el progreso
+por nivel del mundo heist (estrellas, mejor coste, victorias/derrotas e
+intentos). Los datos YA se colectaban (`progress.cfg` + `stats.cfg`) — este
+slice es puro surfacing.
+
+### Cambios
+
+- **Modificado** `escenas/menu/profile.gd` (empezado por el obrero, cerrado
+  por el orquestador): nueva función PURA `build_level_rows(world_id,
+  progress_cfg, stats_cfg)` — una fila por nivel registrado en
+  `LevelRegistry.WORLDS`, leyendo estrellas/mejor_coste de `progress.cfg` y
+  `<key>_wins/_losses` de `stats.cfg`; cfgs null tolerados (primer arranque).
+  Nueva sección "PROGRESO POR NIVEL" dibujada por código (sin tocar .tscn):
+  columnas NIVEL / ★ / MEJOR / V-D (INTENTOS); niveles sin datos → "—".
+- **Selector**: verificado — ya mostraba estrellas por nivel (sin cambios).
+- **Nuevo** `tests/system/_test_stats_perfil.{gd,tscn}` (7): agregado de
+  intentos (wins+losses), derrotas cuentan como intento, nivel sin datos,
+  mundo inexistente → [] sin error, cfgs null → filas en cero.
+
+### Verificación (orquestador)
+
+stats_perfil 7/7 · run_all 25/25 · level_nav 13/13.
+
 ## Capa 2b — Pantalla completa de fin de partida (2026-08-23)
 
 ### Objetivo
