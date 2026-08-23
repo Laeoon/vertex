@@ -1,0 +1,41 @@
+{
+  "id": "heist_n4",
+  "world": "heist",
+  "graph_path": "res://juego/heist/heist_n4.tres",
+  "start_node": "Entrada",
+  "target_node": "Boveda",
+  "waypoints": [],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 5,
+  "block_duration": 3,
+  "max_turns": 16,
+  "max_movement_points": 18,
+  "titulo_nivel": "Heist — Blackout en el Data Center",
+  "difficulty": 4,
+  "description": "La alarma escala por turno: refuerzos, velocidad y bloqueos crecen mientras avanzás. Cuatro rutas, una bóveda — y el generador no es tan seguro como parece.",
+  "pursuer_delay": 2,
+  "max_pursuers": 4,
+  "pursuer_speed": 1,
+  "par_turnos": 8,
+  "par_coste": 19.0,
+  "eventos": [
+    {
+      "turno": 5,
+      "efecto": "spawn_pursuer"
+    },
+    {
+      "turno": 9,
+      "efecto": "spawn_pursuer"
+    },
+    {
+      "turno": 11,
+      "efecto": "pursuer_speed_up"
+    },
+    {
+      "turno": 13,
+      "efecto": "ai_extra_block"
+    }
+  ]
+}

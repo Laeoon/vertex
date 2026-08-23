@@ -2,7 +2,7 @@ extends Node
 
 ## Validación data-driven de TODOS los niveles del juego.
 ##
-## Recorre los 7 niveles (defense_n1, hacker_n1/n2, heist_n1/n2/n3, cyber_n1)
+## Recorre los 8 niveles (defense_n1, hacker_n1/n2, heist_n1/n2/n3/n4, cyber_n1)
 ## y verifica por cada uno:
 ##   1. El .json parsea a Dictionary.
 ##   2. Tiene las claves mínimas de configuración (id, world, graph_path,
@@ -26,6 +26,7 @@ const NIVELES: Array[String] = [
 	"res://juego/heist/heist_n1.json",
 	"res://juego/heist/heist_n2.json",
 	"res://juego/heist/heist_n3.json",
+	"res://juego/heist/heist_n4.json",
 	"res://juego/cyber/cyber_n1.json",
 ]
 

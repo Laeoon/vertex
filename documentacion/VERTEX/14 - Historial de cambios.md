@@ -9,6 +9,54 @@ tags:
 
 # Historial de Cambios
 
+## E2 — heist_n4 "Blackout en el Data Center" (2026-08-23)
+
+### El test del pipeline de autoría
+
+Primer nivel creado íntegramente con el flujo prometido por el DoD:
+**grafo generado por script** (ResourceSaver + API de recursos, no editar
+`.tres` a mano) → JSON data-driven → registro en LevelRegistry → par medido
+con el harness. Funcionó, y el harness encontró el error de diseño esperado.
+
+### Diseño — identidad: el tiempo conspira
+
+10 nodos / 17 aristas / 4 rutas candidatas a la Bóveda:
+- **Centro** (Monitoreo→DataCenter): corto, 2 nodos con detección.
+- **Este** (Oficinas→Servidores): intermedio.
+- **Oeste** (Archivo→Cripto): largo y barato.
+- **Generador**: bypass sin detección... pero es adyacente al Vestíbulo
+  (hub) — tentadoramente central.
+
+Detección 0.08-0.12 (herencia N3), retornos activos (identidad N2).
+
+### Escalada (E1 en acción)
+
+`eventos`: spawn_pursuer t5 · spawn_pursuer t9 · pursuer_speed_up t11 ·
+ai_extra_block t13. max_turns 16, presupuesto 18, IA 1/turno con 5 bloques.
+
+### Balance (harness, 100 corridas/política)
+
+- **Iteración 1 (roto)**: greedy **0%**, capturado×100. Causa: `security_spawn`
+  estaba en Generador — los refuerzos de alarma aparecían ENCIMA del hub de
+  la ruta; eventos demasiado tempranos (t3/t6); presupuesto corto.
+- **Correcciones**: refuerzos entran por la **Entrada** (detrás del jugador,
+  narrativa coherente); eventos t5/t9/t11/t13; presupuesto 16→18.
+- **Iteración 2 (final)**: greedy **91%** 8 turnos/coste 19 → **par_turnos=8,
+  par_coste=19.0** (convención slice 5: par = rendimiento del greedy).
+  greedy_err **67%** (2★ — un error duele pero se recupera por los retornos),
+  random **13%**. Curva: presión temporal con recuperación, contraste
+  deliberado con la crueldad sin salida de N3.
+
+### Cambios
+
+- **Nuevo** `juego/heist/heist_n4.tres` + `heist_n4.json` (+ `"eventos"`).
+- **Modificado** `level_registry.gd` (N4 en WORLDS.heist),
+  `test_levels_data.gd` (8 niveles), `_balance_harness.gd` (incluye N4).
+
+### Verificación
+
+run_all 25/25 (levels_data valida N4 + par) · alarm_events 14/14.
+
 ## E1 — Escalada de Alarma (2026-08-23)
 
 ### Objetivo (aprobado por el usuario)

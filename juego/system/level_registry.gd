@@ -23,6 +23,11 @@ const WORLDS: Dictionary = {
 				"title": "Escape del Casino Digital",
 				"difficulty": 3,
 			},
+			{
+				"path": "res://juego/heist/heist_n4.json",
+				"title": "Blackout en el Data Center",
+				"difficulty": 4,
+			},
 		]
 	},
 	"hacker": {

@@ -1,0 +1,220 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" format=3]
+
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="1_nraa8"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_k0fcx"]
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="3_jywaj"]
+
+[sub_resource type="Resource" id="Resource_o3v6m"]
+resource_name = "Entrada_to_Vestibulo"
+script = ExtResource("1_nraa8")
+from_id = &"Entrada"
+to_id = &"Vestibulo"
+
+[sub_resource type="Resource" id="Resource_d6vti"]
+resource_name = "Vestibulo_to_Monitoreo"
+script = ExtResource("1_nraa8")
+from_id = &"Vestibulo"
+to_id = &"Monitoreo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_dli7f"]
+resource_name = "Vestibulo_to_Oficinas"
+script = ExtResource("1_nraa8")
+from_id = &"Vestibulo"
+to_id = &"Oficinas"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_x7kl8"]
+resource_name = "Vestibulo_to_Archivo"
+script = ExtResource("1_nraa8")
+from_id = &"Vestibulo"
+to_id = &"Archivo"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_ld0qp"]
+resource_name = "Vestibulo_to_Generador"
+script = ExtResource("1_nraa8")
+from_id = &"Vestibulo"
+to_id = &"Generador"
+
+[sub_resource type="Resource" id="Resource_fab0u"]
+resource_name = "Generador_to_DataCenter"
+script = ExtResource("1_nraa8")
+from_id = &"Generador"
+to_id = &"DataCenter"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_qmkm3"]
+resource_name = "Monitoreo_to_DataCenter"
+script = ExtResource("1_nraa8")
+from_id = &"Monitoreo"
+to_id = &"DataCenter"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_owdss"]
+resource_name = "Oficinas_to_Servidores"
+script = ExtResource("1_nraa8")
+from_id = &"Oficinas"
+to_id = &"Servidores"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_6krsq"]
+resource_name = "Servidores_to_DataCenter"
+script = ExtResource("1_nraa8")
+from_id = &"Servidores"
+to_id = &"DataCenter"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_qwp5e"]
+resource_name = "Archivo_to_Cripto"
+script = ExtResource("1_nraa8")
+from_id = &"Archivo"
+to_id = &"Cripto"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_vmqop"]
+resource_name = "Cripto_to_DataCenter"
+script = ExtResource("1_nraa8")
+from_id = &"Cripto"
+to_id = &"DataCenter"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ekgv7"]
+resource_name = "Oficinas_to_Monitoreo"
+script = ExtResource("1_nraa8")
+from_id = &"Oficinas"
+to_id = &"Monitoreo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_4cl46"]
+resource_name = "Archivo_to_Oficinas"
+script = ExtResource("1_nraa8")
+from_id = &"Archivo"
+to_id = &"Oficinas"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_4n7wf"]
+resource_name = "DataCenter_to_Boveda"
+script = ExtResource("1_nraa8")
+from_id = &"DataCenter"
+to_id = &"Boveda"
+transit_cost = 4.0
+
+[sub_resource type="Resource" id="Resource_xee7w"]
+resource_name = "Monitoreo_to_Vestibulo"
+script = ExtResource("1_nraa8")
+from_id = &"Monitoreo"
+to_id = &"Vestibulo"
+
+[sub_resource type="Resource" id="Resource_jahvh"]
+resource_name = "Archivo_to_Vestibulo"
+script = ExtResource("1_nraa8")
+from_id = &"Archivo"
+to_id = &"Vestibulo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_2khsh"]
+resource_name = "DataCenter_to_Monitoreo"
+script = ExtResource("1_nraa8")
+from_id = &"DataCenter"
+to_id = &"Monitoreo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ct7w4"]
+resource_name = "Entrada"
+script = ExtResource("2_k0fcx")
+id = &"Entrada"
+node_type = 0
+position = Vector2(90, 400)
+metadata = {
+"label": "Entrada principal",
+"security_spawn": true
+}
+
+[sub_resource type="Resource" id="Resource_mjlw5"]
+resource_name = "Vestibulo"
+script = ExtResource("2_k0fcx")
+id = &"Vestibulo"
+node_type = 2
+position = Vector2(240, 400)
+
+[sub_resource type="Resource" id="Resource_ktwss"]
+resource_name = "Generador"
+script = ExtResource("2_k0fcx")
+id = &"Generador"
+node_type = 4
+position = Vector2(240, 630)
+metadata = {
+"label": "Generador de respaldo"
+}
+
+[sub_resource type="Resource" id="Resource_hy8ys"]
+resource_name = "Monitoreo"
+script = ExtResource("2_k0fcx")
+id = &"Monitoreo"
+node_type = 2
+position = Vector2(420, 280)
+metadata = {
+"detection_chance": 0.1,
+"label": "Centro de monitoreo"
+}
+
+[sub_resource type="Resource" id="Resource_g4p1l"]
+resource_name = "Oficinas"
+script = ExtResource("2_k0fcx")
+id = &"Oficinas"
+node_type = 4
+position = Vector2(430, 540)
+
+[sub_resource type="Resource" id="Resource_itdm1"]
+resource_name = "Archivo"
+script = ExtResource("2_k0fcx")
+id = &"Archivo"
+node_type = 4
+position = Vector2(600, 650)
+
+[sub_resource type="Resource" id="Resource_xfw2w"]
+resource_name = "Servidores"
+script = ExtResource("2_k0fcx")
+id = &"Servidores"
+node_type = 1
+position = Vector2(600, 430)
+metadata = {
+"detection_chance": 0.08,
+"label": "Sala de servidores"
+}
+
+[sub_resource type="Resource" id="Resource_3hn67"]
+resource_name = "Cripto"
+script = ExtResource("2_k0fcx")
+id = &"Cripto"
+position = Vector2(760, 650)
+metadata = {
+"detection_chance": 0.08,
+"label": "Sala criptográfica"
+}
+
+[sub_resource type="Resource" id="Resource_4ktv3"]
+resource_name = "DataCenter"
+script = ExtResource("2_k0fcx")
+id = &"DataCenter"
+position = Vector2(790, 290)
+metadata = {
+"detection_chance": 0.12,
+"label": "Data center"
+}
+
+[sub_resource type="Resource" id="Resource_vpyws"]
+resource_name = "Boveda"
+script = ExtResource("2_k0fcx")
+id = &"Boveda"
+position = Vector2(980, 380)
+metadata = {
+"detection_chance": 0.1,
+"label": "Bóveda de datos"
+}
+
+[resource]
+script = ExtResource("3_jywaj")
+nodes = Array[ExtResource("2_k0fcx")]([SubResource("Resource_ct7w4"), SubResource("Resource_mjlw5"), SubResource("Resource_ktwss"), SubResource("Resource_hy8ys"), SubResource("Resource_g4p1l"), SubResource("Resource_itdm1"), SubResource("Resource_xfw2w"), SubResource("Resource_3hn67"), SubResource("Resource_4ktv3"), SubResource("Resource_vpyws")])
+edges = Array[ExtResource("1_nraa8")]([SubResource("Resource_o3v6m"), SubResource("Resource_d6vti"), SubResource("Resource_dli7f"), SubResource("Resource_x7kl8"), SubResource("Resource_ld0qp"), SubResource("Resource_fab0u"), SubResource("Resource_qmkm3"), SubResource("Resource_owdss"), SubResource("Resource_6krsq"), SubResource("Resource_qwp5e"), SubResource("Resource_vmqop"), SubResource("Resource_ekgv7"), SubResource("Resource_4cl46"), SubResource("Resource_4n7wf"), SubResource("Resource_xee7w"), SubResource("Resource_jahvh"), SubResource("Resource_2khsh")])
