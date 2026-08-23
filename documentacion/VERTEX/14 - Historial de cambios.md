@@ -9,6 +9,42 @@ tags:
 
 # Historial de Cambios
 
+## Capa 2b — Pantalla completa de fin de partida (2026-08-23)
+
+### Objetivo
+
+El game over pasa de panel pequeño a **pantalla completa** estilo juego
+serio: tapa el nivel por completo, fade de entrada (~0.45s) y fondo animado
+procedural según resultado. Música: TODO marcado (punto de enganche
+AudioManager en `show_overlay`), implementación indefinida.
+
+### Cambios
+
+- **Evolucionado** `game_over_overlay.gd` (~480 lín): ahora dibuja TODO el
+  contenido (título grande JetBrains Bold 56px, mensaje, estrellas, botones)
+  y el fondo con `_draw`/`_process`:
+  - Victoria → "terminal hacker": lluvia de glifos determinística (semilla
+    fija, 64 columnas, cola que decae) + scanlines sutiles.
+  - Derrota → "capturado": viñeta roja que se cierra (1.2s), franjas de
+    peligro diagonales con pulso, glow lento, título "CAPTURADO".
+  - Títulos: VICTORIA / CAPTURADO / VICTORIA DEFENSIVA / TUTORIAL
+    COMPLETADO (vía `set_tutorial_title()` desde el orquestador).
+- **FIX del obrero (bug real)**: el overlay es hijo de un Node2D → los
+  anchors PRESET_FULL_RECT no lo dimensionan; quedaba en 0×0 y
+  MOUSE_FILTER_STOP no bloqueaba nada. `_layout_content()` ahora fuerza
+  `position=ZERO; size=vp`.
+- **FIX de auditoría**: la lluvia acumulaba con tiempo-desde-show (crece
+  cada frame → aceleración cuadrática); corregido a delta de frame.
+- **Modificado** `game_renderer.gd` — eliminados `draw_game_over` /
+  `draw_defender_game_over` y su rama en `draw_frame`; `frame_data()` intacto.
+- **Extendido** `_test_game_over_ui` (26): cobertura de viewport completa,
+  fade, títulos por caso, flags internos de fondo, matriz y señales.
+
+### Verificación (auditada por el orquestador)
+
+run_all 25/25 · game_over_ui 26/26 · renderer eq 9/9 · level_nav 13/13 ·
+defender_flow 7/7.
+
 ## Capa 2 — Game Over con botones reales (2026-08-21)
 
 ### Objetivo

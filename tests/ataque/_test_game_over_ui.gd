@@ -1,6 +1,8 @@
 extends Node
 
-## Test de la capa 2 — GameOverOverlay (botones reales de mouse + teclado):
+## Test de la capa 2b — GameOverOverlay (pantalla completa de fin de partida).
+##
+## Capa 2 (matriz de botones + señales, sigue verde):
 ##   1. Ciclo de vida en juego real: oculto mid-partida, visible tras ganar()
 ##      y tras perder(), oculto de nuevo tras reset_state().
 ##   2. Matriz de visibilidad de [N]: victoria heist_n1 → 4 botones; victoria
@@ -9,6 +11,16 @@ extends Node
 ##   3. Overlay standalone: presionar cada botón emite SU señal (assert de
 ##      señal, no de transición real); grab_focus al mostrar; hide_overlay()
 ##      oculta y libera el foco.
+##
+## Capa 2b (pantalla completa + fondos procedurales):
+##   4. Overlay cubre el viewport completo tras mostrar (size == vp) y su
+##      mouse_filter bloquea (MOUSE_FILTER_STOP).
+##   5. Fade: modulate.a < 1 inmediatamente tras show_overlay y == 1 tras el
+##      tween (await un frame extra).
+##   6. Título correcto por caso: VICTORIA / CAPTURADO (derrota) /
+##      VICTORIA DEFENSIVA (defensor ganado) / TUTORIAL COMPLETADO.
+##   7. Estado interno del fondo correcto por resultado (flag win/lose, no
+##      píxeles).
 ##
 ## Invocación:
 ##     godot --headless res://tests/ataque/_test_game_over_ui.tscn
@@ -110,6 +122,58 @@ func _run() -> void:
 	solo.hide_overlay()
 	_af(not solo.visible and not solo.retry_button.has_focus(),
 		"hide_overlay(): oculta y libera el foco")
+
+	# ── S4: pantalla completa — cubre el viewport y bloquea el mouse ──
+	# El overlay vive como hijo de un Node2D: PRESET_FULL_RECT no lo dimensiona
+	# solo; _layout_content() fuerza size == vp. Lo probamos en el juego real
+	# (ov ya está en el árbol con un viewport de 1280x720).
+	solo.show_overlay(true, true, false, "msg", 2)
+	var vp_real: Vector2 = solo.get_viewport_rect().size
+	_af(solo.size == vp_real, "overlay size == viewport tras show (pantalla completa)")
+	_af(solo.mouse_filter == Control.MOUSE_FILTER_STOP,
+		"overlay mouse_filter == STOP (bloquea clicks del nivel)")
+
+	# ── S5: fade de entrada (0 → 1 sobre modulate:a) ──
+	solo.hide_overlay()
+	solo.show_overlay(true, true, false, "msg", 2)
+	_af(solo.modulate.a < 1.0, "fade: modulate.a < 1 inmediatamente tras show_overlay")
+	# El tween dura FADE_DURATION (0.45s); esperamos lo suficiente para que termine.
+	await get_tree().create_timer(0.6).timeout
+	_af(is_equal_approx(solo.modulate.a, 1.0), "fade: modulate.a == 1 tras el tween")
+
+	# ── S6: título correcto por caso ──
+	# Victoria (no defensor, no tutorial) → VICTORIA
+	solo.hide_overlay()
+	solo.show_overlay(true, true, false, "v", 3)
+	_af(solo._title_label.text == "VICTORIA", "título victoria: VICTORIA")
+	# Derrota → CAPTURADO
+	solo.hide_overlay()
+	solo.show_overlay(false, false, false, "d", 0)
+	_af(solo._title_label.text == "CAPTURADO", "título derrota: CAPTURADO")
+	# Victoria defensora → VICTORIA DEFENSIVA
+	solo.hide_overlay()
+	solo.show_overlay(true, true, true, "dv", 3)
+	_af(solo._title_label.text == "VICTORIA DEFENSIVA", "título defensor ganado: VICTORIA DEFENSIVA")
+	# Tutorial completado (set_tutorial_title) → TUTORIAL COMPLETADO
+	solo.hide_overlay()
+	solo.show_overlay(true, true, false, "tut", 3)
+	solo.set_tutorial_title()
+	_af(solo._title_label.text == "TUTORIAL COMPLETADO", "título tutorial: TUTORIAL COMPLETADO")
+
+	# ── S7: estado interno del fondo correcto por resultado ──
+	# Victoria → _is_win true, _is_lose false
+	solo.hide_overlay()
+	solo.show_overlay(true, true, false, "w", 2)
+	_af(solo._is_win and not solo._is_lose, "estado fondo victoria: _is_win=true, _is_lose=false")
+	# Derrota → _is_win false, _is_lose true
+	solo.hide_overlay()
+	solo.show_overlay(false, false, false, "l", 0)
+	_af(not solo._is_win and solo._is_lose, "estado fondo derrota: _is_win=false, _is_lose=true")
+	# hide_overlay resetea el estado del fondo
+	solo.hide_overlay()
+	_af(not solo._is_win and not solo._is_lose, "hide_overlay: estado del fondo reseteado")
+
+	solo.queue_free()
 
 	_fin()
 

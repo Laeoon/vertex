@@ -196,12 +196,20 @@ func reset_state() -> void:
 
 ## Muestra el overlay con la matriz de visibilidad del frame actual (frame_data
 ## ya pliega game_won dentro de has_next_level; tutoriales → false).
+## Pasa también mensaje_estado y stars del mismo frame_data() — el renderer ya
+## no dibuja el game over; TODO el contenido vive en el overlay.
 func _show_game_over_overlay() -> void:
 	_overlay_shown_for_game_over = true
 	if _game_over_overlay == null:
 		return
 	var d: Dictionary = _game_state.frame_data(get_viewport_rect().size)
-	_game_over_overlay.show_overlay(d.game_won, d.has_next_level, d.defender_mode)
+	_game_over_overlay.show_overlay(
+		d.game_won, d.has_next_level, d.defender_mode, d.mensaje_estado, d.stars
+	)
+	# Título "TUTORIAL COMPLETADO" sólo en victoria no-defensora de tutorial
+	# (el modo defensor siempre usa "VICTORIA DEFENSIVA").
+	if d.game_won and not d.defender_mode and d.es_tutorial:
+		_game_over_overlay.set_tutorial_title()
 func _target_actual() -> StringName: return _game_state.target_actual()
 func mostrar_ruta() -> void: _game_state.mostrar_ruta()
 func _find_node_resource(nid: StringName): return _game_state.find_node_resource(nid)

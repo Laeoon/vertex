@@ -80,11 +80,8 @@ func draw_frame(d: Dictionary) -> void:
 	if d.tutorial_player != null and d.tutorial_player.is_active:
 		# Flecha guía del tutorial: en modo defensor no hay jugador.
 		draw_tutorial_highlights(d.tutorial_player, d.node_positions, d.node_radius, d.tutorial_arrow_pos)
-	if d.game_over:
-		if d.defender_mode:
-			draw_defender_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time, d.has_next_level)
-		else:
-			draw_game_over(d.vp_size, d.game_won, d.mensaje_estado, d.stars, d.game_over_time, d.es_tutorial, d.has_next_level)
+	# El game over ya no se dibuja acá: lo lleva GameOverOverlay (capa 2b) a
+	# pantalla completa. frame_data() sigue exponiendo los campos para el overlay.
 	if d.mensaje_tutorial != "" and not d.game_over:
 		draw_tutorial_text(d.mensaje_tutorial)
 	if d.selected_neighbor != &"" and not d.game_over:
@@ -684,46 +681,6 @@ func draw_optimal_overlay(
 		draw_circle(pos, node_radius + 10.0, highlight_color, false, 2.0)
 
 
-func draw_game_over(
-	vp_size: Vector2,
-	game_won: bool,
-	mensaje_estado: String,
-	star_count: int,
-	_game_over_time: float = -1.0,
-	is_tutorial: bool = false,
-	_has_next_level: bool = false
-) -> void:
-	var center: Vector2 = vp_size / 2.0
-
-	var fade_alpha: float = min(1.0, (Time.get_ticks_msec() / 1000.0 - _game_over_time) / 0.5) if _game_over_time > 0 else 1.0
-
-	var texto: String
-	var color: Color
-	if not game_won:
-		texto = "DERROTA"
-		color = BrandClass.DANGER
-	elif is_tutorial:
-		texto = "TUTORIAL COMPLETADO"
-		color = BrandClass.ACCENT
-	else:
-		texto = "VICTORIA"
-		color = BrandClass.SUCCESS
-
-	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95 * fade_alpha))
-	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(color, 0.6), false, 2.0)
-
-	draw_string(center + Vector2(-50, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, color)
-	draw_string(center + Vector2(-140, 12), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT)
-
-	if game_won:
-		var star_text: String = ""
-		for i in range(3):
-			star_text += "★" if i < star_count else "☆"
-		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.WARNING)
-	# Controles post-partida (capa 2): los hints de teclas los lleva
-	# GameOverOverlay con botones reales (mouse + teclado).
-
-
 func draw_node_info_panel(
 	vp_size: Vector2,
 	selected_neighbor: StringName,
@@ -908,35 +865,6 @@ func draw_status_bar(
 		draw_rect(Rect2(state_x - 6, vp_size.y - bar_h + 4, tw + 12, bar_h - 8), color_estado, false, 1.0)
 		draw_string(Vector2(state_x, vp_size.y - 10), texto_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, color_estado)
 
-
-func draw_defender_game_over(
-	vp_size: Vector2,
-	game_won: bool,
-	mensaje_estado: String,
-	star_count: int,
-	_game_over_time: float = -1.0,
-	_has_next_level: bool = false
-) -> void:
-	var center: Vector2 = vp_size / 2.0
-
-	var fade_alpha: float = min(1.0, (Time.get_ticks_msec() / 1000.0 - _game_over_time) / 0.5) if _game_over_time > 0 else 1.0
-	draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95 * fade_alpha))
-	
-	if game_won:
-		draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.SUCCESS, 0.6), false, 2.0)
-		var texto: String = "🛡️ VICTORIA DEFENSIVA"
-		draw_string(center + Vector2(-140, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, BrandClass.SUCCESS)
-	else:
-		draw_rect(Rect2(center.x - 180, center.y - 60, 360, 140), BrandClass.with_alpha(BrandClass.DANGER, 0.6), false, 2.0)
-		var texto: String = "💀 DERROTA"
-		draw_string(center + Vector2(-60, -20), texto, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.DANGER)
-	
-	draw_string(center + Vector2(-140, 12), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT)
-
-	if game_won:
-		var star_text: String = ""
-		for i in range(3):
-			star_text += "★" if i < star_count else "☆"
-		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.WARNING)
-	# Controles post-partida (capa 2): los hints de teclas los lleva
-	# GameOverOverlay con botones reales (mouse + teclado).
+## El game over (victoria/derrota) ya no se dibuja acá: lo lleva GameOverOverlay
+## (capa 2b) a pantalla completa. draw_defender_game_over se eliminó al pasar
+## TODO el contenido al overlay. frame_data() sigue exponiendo los campos.
