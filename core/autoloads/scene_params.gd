@@ -158,6 +158,11 @@ var pursuer_speed: int = 1:
 			GameLogger.warn("SceneParams", "pursuer_speed clampeado: %d → %d (rango 1-10)" % [value, clamped])
 		pursuer_speed = clamped
 
+## Escalada de alarma (E1): eventos por turno definidos en el JSON del nivel.
+## Formato: [{"turno": 5, "efecto": "spawn_pursuer"}, ...]. Efectos válidos:
+## spawn_pursuer | pursuer_speed_up | ai_extra_block. Vacío = sin escalada.
+var eventos_alarma: Array = []
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Reset — usa acceso directo para evitar validación innecesaria
@@ -198,3 +203,4 @@ func reset() -> void:
 	pursuer_delay = 2
 	max_pursuers = 4
 	pursuer_speed = 1
+	eventos_alarma = []

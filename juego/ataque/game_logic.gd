@@ -58,6 +58,8 @@ func mover_jugador(destino: StringName) -> void:
 		_game.tutorial_player.notify_moved()
 
 	_game.turn += 1
+	if not _game.game_over:
+		_procesar_eventos_alarma()
 
 	var target_check: StringName = _game._target_actual()
 	if _game.player_pos == target_check:
@@ -269,3 +271,51 @@ func defender_place_firewall(node_id: StringName) -> void:
 	_game._defender_brain.place_firewall(node_id)
 	if _game._defender_brain.defender_blocks_total_used > antes:
 		_game._notify_tutorial_input()
+
+
+# ─── Escalada de alarma (E1) ────────────────────────────────────────
+
+## Dispara los eventos vencidos tras completar un turno. La cola vive en
+## `_game._eventos_pendientes`; cada evento vencido (turno <= actual) se
+## aplica y se consume. Varios eventos pueden caer el mismo turno.
+func _procesar_eventos_alarma() -> void:
+	var i: int = _game._eventos_pendientes.size() - 1
+	while i >= 0:
+		var ev: Dictionary = _game._eventos_pendientes[i]
+		if int(ev.get("turno", -1)) > _game.turn:
+			i -= 1
+			continue
+		_aplicar_efecto_alarma(ev)
+		_game._eventos_pendientes.remove_at(i)
+		i -= 1
+
+
+## Aplica UN efecto de alarma. Efectos v1: spawn_pursuer | pursuer_speed_up |
+## ai_extra_block. Desconocido → warning y se descarta (datos robustos).
+func _aplicar_efecto_alarma(ev: Dictionary) -> void:
+	var efecto: String = str(ev.get("efecto", ""))
+	match efecto:
+		"spawn_pursuer":
+			if _game.pursuers.size() < _game.pursuer_max:
+				var spawn: StringName = _game._pursuit_system.find_spawn_node(
+					_game.player_pos, null)
+				_game._pursuit_system.spawn_pursuer(
+					spawn, _game.pursuer_delay, _game.pursuer_speed)
+				_game.mensaje_estado = "⚠ ALARMA: un nuevo perseguidor entra en la red"
+			else:
+				GameLogger.info("GameLogic", "spawn_pursuer ignorado: cupo lleno (%d/%d)" % [
+					_game.pursuers.size(), _game.pursuer_max])
+				return
+		"pursuer_speed_up":
+			if _game.pursuer_speed < 10:
+				_game.pursuer_speed += 1
+				_game.mensaje_estado = "⚠ ALARMA: los perseguidores aceleran"
+			else:
+				return
+		"ai_extra_block":
+			_game.max_ai_blocks += 1
+			_game.mensaje_estado = "⚠ ALARMA: la IA recibe refuerzos de bloqueo"
+		_:
+			GameLogger.warn("GameLogic", "Evento de alarma desconocido: %s" % efecto)
+			return
+	GameLogger.info("JuegoAtaque", "Alarma turno %d: %s" % [_game.turn, efecto])

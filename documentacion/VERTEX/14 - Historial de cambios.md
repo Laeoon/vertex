@@ -9,6 +9,56 @@ tags:
 
 # Historial de Cambios
 
+## E1 — Escalada de Alarma (2026-08-23)
+
+### Objetivo (aprobado por el usuario)
+
+El tiempo deja de ser sólo presupuesto: eventos por turno definidos en el
+JSON del nivel generan oleaje táctico sin reloj de pared. Primer paso de la
+ruta heist extendida (N4 "Blackout", N5 "Bifurcación", N6 "El Escape").
+
+### Formato de datos (JSON del nivel)
+
+```json
+"eventos": [
+  { "turno": 5,  "efecto": "spawn_pursuer" },
+  { "turno": 9,  "efecto": "pursuer_speed_up" },
+  { "turno": 12, "efecto": "ai_extra_block" }
+]
+```
+
+Efectos v1: `spawn_pursuer` (respeta `pursuer_max`; aparece en nodo
+`security_spawn` si existe), `pursuer_speed_up` (+1 permanente, tope 10),
+`ai_extra_block` (+1 `max_ai_blocks`). Desconocido → warning y descarte.
+Niveles sin `"eventos"` quedan intactos (aditivo puro).
+
+### Cambios
+
+- `scene_params.gd`: nuevo campo `eventos_alarma` + reset.
+- `level_manager.gd`: transporta `"eventos"` del JSON.
+- `juego_ataque.gd`: vars `eventos_alarma` (fuente inmutable) +
+  `_eventos_pendientes` (cola viva).
+- `game_state.gd`: carga en `cargar_params()`; `reset_state()` re-arma la
+  cola y restaura los valores escalables a su base (replay determinista,
+  sin acumulación entre partidas).
+- `game_logic.gd`: `_procesar_eventos_alarma()` tras cada turno +
+  `_aplicar_efecto_alarma()`; HUD anuncia cada evento por mensaje_estado.
+
+### Tests nuevos (scene-based, prefijo `_`)
+
+- **Nuevo** `tests/ataque/_test_alarm_events.{gd,tscn}` (14): disparo por
+  turno, evento lejano dormido, efecto desconocido descartado, HUD,
+  reset con re-arma y restauración de base, re-fuego post-reset.
+- Hallazgo del test: nivel1_red.tres TIENE detección orgánica — primer
+  borrador asumía grafo limpio; cambiado a tut2_red.tres para asserts
+  deterministas (el motor funcionaba bien: los spawns orgánicos conviven
+  con los de alarma).
+
+### Verificación (orquestador)
+
+alarm_events 14/14 · run_all 25/25 · game_logic eq 19/19 · defensor 7/7 ·
+level_nav 13/13 · mostrar_ruta 8/8.
+
 ## Stats visibles en Perfil — cierre del DoD heist-100% (2026-08-23)
 
 ### Objetivo

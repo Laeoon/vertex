@@ -55,6 +55,8 @@ func cargar_params() -> void:
 	_game.pursuer_delay = SceneParams.pursuer_delay
 	_game.pursuer_max = SceneParams.max_pursuers
 	_game.pursuer_speed = SceneParams.pursuer_speed
+	_game.eventos_alarma = SceneParams.eventos_alarma.duplicate(true)
+	_game._eventos_pendientes = _game.eventos_alarma.duplicate(true)
 	_game.level_key = SceneParams.level_key
 	_game._budget_display = float(_game.max_movement_points)
 
@@ -260,6 +262,11 @@ func reset_state() -> void:
 	_game.player_total_cost = 0.0
 	_game.movement_points = _game.max_movement_points
 	_game._turn_locked_until = 0.0
+	# Escalada de alarma (E1): la cola de eventos se re-arma en cada partida
+	# y los valores escalables vuelven a su base del JSON (replay determinista).
+	_game._eventos_pendientes = _game.eventos_alarma.duplicate(true)
+	_game.pursuer_speed = SceneParams.pursuer_speed
+	_game.max_ai_blocks = SceneParams.max_ai_blocks
 
 	if _game.hacker_mode:
 		var starting_exploits: Dictionary = SceneParams.starting_exploits

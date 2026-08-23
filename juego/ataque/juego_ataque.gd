@@ -96,6 +96,12 @@ var firewall_cost: int = 2
 var block_duration: int = 3
 var level_key: String = ""
 
+# Escalada de alarma (E1): eventos por turno cargados del JSON del nivel.
+# eventos_alarma es la fuente inmutable; _eventos_pendientes es la cola viva
+# que se va consumiendo (reset_state la re-arma).
+var eventos_alarma: Array = []
+var _eventos_pendientes: Array = []
+
 # Hacker mode
 var hacker_mode: bool = false
 var hacker_state: Dictionary = {}
