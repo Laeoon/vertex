@@ -9,6 +9,40 @@ tags:
 
 # Historial de Cambios
 
+## Capa 2 — Game Over con botones reales (2026-08-21)
+
+### Objetivo
+
+Reemplazar la línea de hints dibujada por UI real: fila de botones
+(mouse + teclado) bajo el panel de game over — [R] Reintentar, [N]
+Siguiente, [L] Niveles, [Q] Menú. Una sola vía de decisión: los botones y
+las teclas del InputHandler caen en los mismos handlers.
+
+### Cambios
+
+- **Nuevo** `juego/ataque/game_over_overlay.gd` (Control por código, sin
+  .tscn): PanelContainer + HBox con StyleBoxFlat de tokens Brand; borde del
+  panel según resultado (SUCCESS/DANGER); señales propias
+  (`retry/next/select/menu_pressed`); matriz de visibilidad — [N] sólo con
+  victoria Y has_next; grab_focus al mostrar; vecinos de foco explícitos
+  (flechas navegan la fila, Enter activa).
+- **Modificado** `juego_ataque.gd` — overlay instanciado en `_ready`,
+  señales conectadas a handlers existentes; show por detección de transición
+  a `game_over` en `_process()` (cubre ganar/perder/defensor sin tocar los
+  módulos); hide en el delegado `reset_state()`.
+- **Modificado** `game_renderer.gd` — eliminada `_draw_game_over_hints` de
+  ambos game over (panel/título/mensaje/estrellas intactos;
+  `has_next_level` se mantiene en `frame_data()` — lo consume
+  `_test_level_nav`).
+- **Nuevo** `tests/ataque/_test_game_over_ui.{gd,tscn}` (15): ciclo de vida,
+  matriz de visibilidad ([N] en heist_n1 sí / heist_n3 no / derrota no /
+  level_key "" no), foco inicial, señales por botón, hide libera foco.
+
+### Verificación (auditada por el orquestador)
+
+`run_all.gd` 25/25 · game_over_ui 15/15 · renderer equivalence 9/9 ·
+level_nav 13/13 · defender_flow 7/7. Cero `print()` nuevos.
+
 ## Capa 0+1 — Branding "Neón Ciberpunk" + legibilidad HUD (2026-08-21)
 
 ### Decisión de identidad (elegida por el usuario entre 3 propuestas)

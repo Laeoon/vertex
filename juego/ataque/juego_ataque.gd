@@ -21,6 +21,7 @@ const GameLogicClass = preload("res://juego/ataque/game_logic.gd")
 const LevelManagerClass = preload("res://juego/system/level_manager.gd")
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 const BrandClass = preload("res://juego/ui/brand.gd")
+const GameOverOverlayClass = preload("res://juego/ataque/game_over_overlay.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -118,11 +119,19 @@ var _renderer: GameRendererClass
 var _game_state  # GameState
 var _hacker_logic  # HackerLogic
 var _game_logic  # GameLogic
+var _game_over_overlay  # GameOverOverlay (capa 2: botones de mouse)
+
+# Un solo show por transición a game_over (ganar/perder/defensor won/lost
+# confluyen en el flag); el hide vive en reset_state().
+var _overlay_shown_for_game_over: bool = false
 
 
 func _process(_delta: float) -> void:
 	if not game_over:
 		_budget_display = lerp(_budget_display, float(movement_points), 0.15)
+		return
+	if not _overlay_shown_for_game_over:
+		_show_game_over_overlay()
 
 
 func _ready() -> void:
@@ -147,6 +156,15 @@ func _ready() -> void:
 	_input_handler.game = self
 	_connect_input_signals()
 
+	# Capa 2: botones del game over (mouse). Mismos handlers que el teclado
+	# del InputHandler — una sola vía de decisión, dos vías de input.
+	_game_over_overlay = GameOverOverlayClass.new()
+	add_child(_game_over_overlay)
+	_game_over_overlay.retry_pressed.connect(_on_reset_requested)
+	_game_over_overlay.next_pressed.connect(_on_next_level)
+	_game_over_overlay.select_pressed.connect(_on_level_select)
+	_game_over_overlay.menu_pressed.connect(_on_return_to_menu)
+
 	# IA bloqueadora, persecución y progreso ANTES de load_graph: reset_state()
 	# dispara el bloqueo inicial, limpia alertas y persiste resultados.
 	_ai_blocker = AIBlockerClass.new()
@@ -169,7 +187,21 @@ func _ready() -> void:
 # ─── Delegates a módulos (duck-typing de servicios + tests) ────────
 
 # game_state.gd — InputHandler y tests los consumen vía has_method/refs.
-func reset_state() -> void: _game_state.reset_state()
+func reset_state() -> void:
+	_game_state.reset_state()
+	_overlay_shown_for_game_over = false
+	if _game_over_overlay != null:
+		_game_over_overlay.hide_overlay()
+
+
+## Muestra el overlay con la matriz de visibilidad del frame actual (frame_data
+## ya pliega game_won dentro de has_next_level; tutoriales → false).
+func _show_game_over_overlay() -> void:
+	_overlay_shown_for_game_over = true
+	if _game_over_overlay == null:
+		return
+	var d: Dictionary = _game_state.frame_data(get_viewport_rect().size)
+	_game_over_overlay.show_overlay(d.game_won, d.has_next_level, d.defender_mode)
 func _target_actual() -> StringName: return _game_state.target_actual()
 func mostrar_ruta() -> void: _game_state.mostrar_ruta()
 func _find_node_resource(nid: StringName): return _game_state.find_node_resource(nid)

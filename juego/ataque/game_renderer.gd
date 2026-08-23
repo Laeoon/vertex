@@ -691,7 +691,7 @@ func draw_game_over(
 	star_count: int,
 	_game_over_time: float = -1.0,
 	is_tutorial: bool = false,
-	has_next_level: bool = false
+	_has_next_level: bool = false
 ) -> void:
 	var center: Vector2 = vp_size / 2.0
 
@@ -720,19 +720,8 @@ func draw_game_over(
 		for i in range(3):
 			star_text += "★" if i < star_count else "☆"
 		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.WARNING)
-
-	_draw_game_over_hints(center, game_won, has_next_level)
-
-
-## Línea de controles post-partida (slice 6): [N] siguiente sólo tras
-## victoria con nivel siguiente disponible; [L] selector y [Q] menú siempre.
-func _draw_game_over_hints(center: Vector2, game_won: bool, has_next_level: bool) -> void:
-	var hint: String = "[R] Reiniciar"
-	if game_won and has_next_level:
-		hint += "   [N] Siguiente"
-	hint += "   [L] Niveles   [Q] Menú"
-	var w: float = font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
-	draw_string(center + Vector2(-w / 2.0, 65), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT_DIM)
+	# Controles post-partida (capa 2): los hints de teclas los lleva
+	# GameOverOverlay con botones reales (mouse + teclado).
 
 
 func draw_node_info_panel(
@@ -926,7 +915,7 @@ func draw_defender_game_over(
 	mensaje_estado: String,
 	star_count: int,
 	_game_over_time: float = -1.0,
-	has_next_level: bool = false
+	_has_next_level: bool = false
 ) -> void:
 	var center: Vector2 = vp_size / 2.0
 
@@ -949,5 +938,5 @@ func draw_defender_game_over(
 		for i in range(3):
 			star_text += "★" if i < star_count else "☆"
 		draw_string(center + Vector2(-50, 40), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, BrandClass.WARNING)
-
-	_draw_game_over_hints(center, game_won, has_next_level)
+	# Controles post-partida (capa 2): los hints de teclas los lleva
+	# GameOverOverlay con botones reales (mouse + teclado).
