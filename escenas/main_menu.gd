@@ -2,6 +2,8 @@ extends Control
 
 signal start_world(world_id: String)
 
+const BrandClass = preload("res://juego/ui/brand.gd")
+
 enum State { MAIN_MENU, WORLD_SELECT }
 
 var font: Font
@@ -23,7 +25,7 @@ var _pulse: float = 0.0
 
 
 func _ready() -> void:
-	font = ThemeDB.fallback_font
+	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
 
@@ -183,15 +185,15 @@ func _save_lang_setting() -> void:
 
 func _draw() -> void:
 	var vp := get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.03, 0.03, 0.06))
+	draw_rect(Rect2(0, 0, vp.x, vp.y), BrandClass.BG)
 
 	# Scan lines effect
 	var scan_y: float = fmod(Time.get_ticks_msec() * 0.03, vp.y)
-	draw_rect(Rect2(0, scan_y, vp.x, 2.0), Color(0.0, 1.0, 0.83, 0.08))
-	draw_rect(Rect2(0, scan_y - vp.y, vp.x, 2.0), Color(0.0, 1.0, 0.83, 0.08))
+	draw_rect(Rect2(0, scan_y, vp.x, 2.0), BrandClass.with_alpha(BrandClass.ACCENT, 0.08))
+	draw_rect(Rect2(0, scan_y - vp.y, vp.x, 2.0), BrandClass.with_alpha(BrandClass.ACCENT, 0.08))
 
 	# Grid background
-	var grid_color: Color = Color(0.08, 0.1, 0.15, 0.25)
+	var grid_color: Color = BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.25)
 	var spacing: float = 60.0
 	var x: float = 0.0
 	while x < vp.x:
@@ -220,15 +222,15 @@ func _draw() -> void:
 func _draw_main_menu(vp: Vector2, alpha: float) -> void:
 	# Glow effect on title
 	var glow: float = 0.6 + sin(_pulse * 1.5) * 0.4
-	var title_color := Color(0.0, 1.0, 0.83, alpha * glow)
-	draw_string(font, Vector2(62, 62), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, Color(0.0, 0.5, 0.6, alpha * 0.3))
+	var title_color := BrandClass.with_alpha(BrandClass.ACCENT, alpha * glow)
+	draw_string(font, Vector2(62, 62), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, BrandClass.accent_dim(alpha * 0.3))
 	draw_string(font, Vector2(60, 60), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, title_color)
 
-	var subtitle_color := Color(0.4, 0.6, 0.7, alpha)
+	var subtitle_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
 	draw_string(font, Vector2(62, 90), loc("menu.subtitle"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, subtitle_color)
 
 	# Decorative line under title
-	draw_rect(Rect2(60, 100, 200, 2.0), Color(0.0, 1.0, 0.83, alpha * 0.5))
+	draw_rect(Rect2(60, 100, 200, 2.0), BrandClass.accent_dim(alpha * 0.5))
 
 	var by: float = 150.0
 	for i in _main_items.size():
@@ -239,18 +241,18 @@ func _draw_main_menu(vp: Vector2, alpha: float) -> void:
 
 		if is_sel:
 			var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
-			text_color = Color(0.0, 1.0, 0.83, alpha * sel_glow)
+			text_color = BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow)
 			prefix = "▶ "
-			draw_rect(Rect2(50, by - 16, vp.x - 110, 32), Color(0.0, 1.0, 0.83, alpha * 0.08))
-			draw_rect(Rect2(50, by - 16, 3, 32), Color(0.0, 1.0, 0.83, alpha * 0.6))
+			draw_rect(Rect2(50, by - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
+			draw_rect(Rect2(50, by - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.6))
 		else:
-			text_color = Color(0.5, 0.55, 0.65, alpha)
+			text_color = BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
 			prefix = "  "
 
 		draw_string(font, Vector2(68, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
 
 		if item.desc != "":
-			var desc_color := Color(0.3, 0.35, 0.42, alpha * 0.7)
+			var desc_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.7)
 			draw_string(font, Vector2(88, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
 
 		if item.get("action") == "play":
@@ -262,21 +264,21 @@ func _draw_main_menu(vp: Vector2, alpha: float) -> void:
 		by += 48
 
 	by += 10
-	draw_rect(Rect2(60, by - 5, vp.x - 120, 1.0), Color(0.0, 1.0, 0.83, alpha * 0.2))
+	draw_rect(Rect2(60, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
 	by += 10
-	draw_string(font, Vector2(60, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(0.3, 0.6, 0.7, alpha))
+	draw_string(font, Vector2(60, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
 	by += 20
-	draw_string(font, Vector2(60, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.3, 0.35, 0.42, alpha))
+	draw_string(font, Vector2(60, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
 
 
 func _draw_world_select(vp: Vector2, alpha: float) -> void:
-	var title_color := Color(0.0, 1.0, 0.83, alpha)
+	var title_color := BrandClass.with_alpha(BrandClass.ACCENT, alpha)
 	var glow: float = 0.6 + sin(_pulse * 1.5) * 0.4
 
-	draw_string(font, Vector2(62, 62), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, Color(0.0, 0.5, 0.6, alpha * 0.3))
+	draw_string(font, Vector2(62, 62), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, BrandClass.accent_dim(alpha * 0.3))
 	draw_string(font, Vector2(60, 60), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, title_color)
-	draw_string(font, Vector2(60, 86), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.4, 0.6, 0.7, alpha))
-	draw_rect(Rect2(60, 96, 200, 2.0), Color(0.0, 1.0, 0.83, alpha * 0.4))
+	draw_string(font, Vector2(60, 86), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+	draw_rect(Rect2(60, 96, 200, 2.0), BrandClass.accent_dim(alpha * 0.4))
 
 	var by: float = 140.0
 	for i in _world_items.size():
@@ -287,18 +289,18 @@ func _draw_world_select(vp: Vector2, alpha: float) -> void:
 
 		if is_sel:
 			var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
-			text_color = Color(0.0, 1.0, 0.83, alpha * sel_glow)
+			text_color = BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow)
 			prefix = "▶ "
-			draw_rect(Rect2(50, by - 16, vp.x - 110, 32), Color(0.0, 1.0, 0.83, alpha * 0.08))
-			draw_rect(Rect2(50, by - 16, 3, 32), Color(0.0, 1.0, 0.83, alpha * 0.6))
+			draw_rect(Rect2(50, by - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
+			draw_rect(Rect2(50, by - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.6))
 		else:
-			text_color = Color(0.5, 0.55, 0.65, alpha)
+			text_color = BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
 			prefix = "  "
 
 		draw_string(font, Vector2(68, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
 
 		if item.desc != "":
-			var desc_color := Color(0.3, 0.35, 0.42, alpha * 0.7)
+			var desc_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.7)
 			draw_string(font, Vector2(88, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
 
 		var world_id: String = item.id
@@ -307,14 +309,14 @@ func _draw_world_select(vp: Vector2, alpha: float) -> void:
 			var s: String = ""
 			for si in range(3):
 				s += "★" if si < stars else "☆"
-			draw_string(font, Vector2(vp.x - 160, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, Color(1.0, 0.9, 0.3, alpha))
+				draw_string(font, Vector2(vp.x - 160, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, alpha))
 
 		by += 48
 
 	by += 10
-	draw_rect(Rect2(60, by - 5, vp.x - 120, 1.0), Color(0.0, 1.0, 0.83, alpha * 0.2))
+	draw_rect(Rect2(60, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
 	by += 10
-	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.35, 0.38, 0.45, alpha))
+	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
 
 
 func _draw_lang_indicator(vp: Vector2, alpha: float) -> void:
@@ -324,10 +326,10 @@ func _draw_lang_indicator(vp: Vector2, alpha: float) -> void:
 	var box_x: float = vp.x - box_w - 20.0
 	var box_y: float = 20.0
 
-	draw_rect(Rect2(box_x, box_y, box_w, box_h), Color(0.1, 0.12, 0.18, alpha * 0.85))
-	draw_rect(Rect2(box_x, box_y, box_w, box_h), Color(0.0, 1.0, 0.83, alpha * 0.3), false, 1.5)
+	draw_rect(Rect2(box_x, box_y, box_w, box_h), BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.85))
+	draw_rect(Rect2(box_x, box_y, box_w, box_h), BrandClass.accent_dim(alpha * 0.3), false, 1.5)
 
 	var text_w: float = font.get_string_size(lang, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1).x
-	draw_string(font, Vector2(box_x + (box_w - text_w) / 2.0, box_y + 18), lang, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(0.0, 1.0, 0.83, alpha))
+	draw_string(font, Vector2(box_x + (box_w - text_w) / 2.0, box_y + 18), lang, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.ACCENT, alpha))
 
-	draw_string(font, Vector2(box_x - 60, box_y + 18), loc("menu.lang"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.4, 0.45, 0.55, alpha))
+	draw_string(font, Vector2(box_x - 60, box_y + 18), loc("menu.lang"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))

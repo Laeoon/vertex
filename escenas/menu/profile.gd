@@ -5,13 +5,13 @@ var font_size: int = 14
 var big_font_size: int = 28
 var _pulse: float = 0.0
 
-const CYAN: Color = Color(0.0, 1.0, 0.83)
-const GRIS: Color = Color(0.5, 0.55, 0.65)
-const GRIS_OSCURO: Color = Color(0.3, 0.33, 0.4)
-const BLANCO: Color = Color.WHITE
-const AMARILLO: Color = Color(1.0, 0.85, 0.0)
-
 const BrandClass = preload("res://juego/ui/brand.gd")
+
+const CYAN: Color = BrandClass.ACCENT
+const GRIS: Color = BrandClass.TEXT_DIM
+const GRIS_OSCURO: Color = BrandClass.TEXT_DIM
+const BLANCO: Color = BrandClass.TEXT
+const AMARILLO: Color = BrandClass.WARNING
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 
 const SECTION_X := 70.0
@@ -43,7 +43,7 @@ var world_progress: Dictionary = {
 
 
 func _ready() -> void:
-	font = ThemeDB.fallback_font
+	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
 	_load_profile()
@@ -236,7 +236,7 @@ func _stars_to_text(stars: int) -> String:
 
 func _draw() -> void:
 	var vp := get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.06, 0.06, 0.1))
+	draw_rect(Rect2(0, 0, vp.x, vp.y), BrandClass.BG)
 
 	# Title
 	draw_string(font, Vector2(60, 60), loc("menu.profile"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, CYAN)

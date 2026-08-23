@@ -1,5 +1,7 @@
 extends Control
 
+const BrandClass = preload("res://juego/ui/brand.gd")
+
 var font: Font
 var font_size: int = 14
 var big_font_size: int = 28
@@ -10,7 +12,7 @@ var _pulse: float = 0.0
 
 
 func _ready() -> void:
-	font = ThemeDB.fallback_font
+	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
 
@@ -165,10 +167,10 @@ func loc(key: String) -> String:
 
 func _draw() -> void:
 	var vp_size := get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), Color(0.06, 0.06, 0.1))
+	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), BrandClass.BG)
 
-	draw_string(font, Vector2(60, 60), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 8, Color(0.0, 1.0, 0.83))
-	draw_string(font, Vector2(60, 88), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, Color(0.6, 0.7, 0.8))
+	draw_string(font, Vector2(60, 60), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 8, BrandClass.ACCENT)
+	draw_string(font, Vector2(60, 88), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.TEXT_DIM)
 
 	var by: float = 150.0
 	for i in buttons.size():
@@ -179,11 +181,11 @@ func _draw() -> void:
 
 		if is_sel:
 			var glow := 0.7 + sin(_pulse) * 0.3
-			color = Color(0.0, 1.0, 0.83, glow)
+			color = BrandClass.with_alpha(BrandClass.ACCENT, glow)
 			prefix = "> "
-			draw_rect(Rect2(50, by - 16, vp_size.x - 110, 30), Color(0.0, 1.0, 0.83, 0.06))
+			draw_rect(Rect2(50, by - 16, vp_size.x - 110, 30), BrandClass.with_alpha(BrandClass.ACCENT, 0.06))
 		else:
-			color = Color(0.6, 0.65, 0.7)
+			color = BrandClass.TEXT_DIM
 			prefix = "  "
 
 		draw_string(font, Vector2(60, by), prefix + b.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, color)
@@ -196,15 +198,15 @@ func _draw() -> void:
 				var s: String = ""
 				for si in range(3):
 					s += "★" if si < stars else "☆"
-				draw_string(font, Vector2(vp_size.x - 160, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, Color(1.0, 0.9, 0.3))
+				draw_string(font, Vector2(vp_size.x - 160, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.WARNING)
 
 		by += 24
-		draw_string(font, Vector2(78, by), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.35, 0.38, 0.45))
+		draw_string(font, Vector2(78, by), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 		by += 40
 
 	by += 10
-	draw_string(font, Vector2(60, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.3, 0.7, 0.8))
+	draw_string(font, Vector2(60, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
 	by += 22
-	draw_string(font, Vector2(60, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.35, 0.38, 0.45))
+	draw_string(font, Vector2(60, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 	by += 22
-	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.35, 0.38, 0.45))
+	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
