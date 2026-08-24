@@ -1,8 +1,54 @@
-# VERTEX
+<div align="center">
 
-**Simulador de Ciberseguridad Basado en Teoría de Grafos**
+# 🔐 VERTEX
 
-Juego educativo que enseña conceptos de ciberseguridad y teoría de grafos mediante mecánicas de estrategia. El jugador debe navegar redes, evitar detección, y completar objetivos usando algoritmos como Dijkstra (pathfinding) y Edmonds-Karp (max-flow/min-cut).
+### Simulador de Ciberseguridad Basado en Teoría de Grafos
+
+*Estrategia por turnos sobre redes dirigidas: pathfinding, detección probabilística y conceptos reales de teoría de grafos.*
+
+![Godot](https://img.shields.io/badge/Godot-4.7-478CBF?logo=godotengine&logoColor=white)
+![Lenguaje](https://img.shields.io/badge/GDScript-100%25-478CBF)
+![Tests](https://img.shields.io/badge/tests-25%20%2B%2014%20escenas-39FF88)
+![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-0078D6)
+
+[📥 Descargar](#-descargar-el-juego-windows) · [🎮 Características](#-características) · [🕹 Controles](#-controles) · [🛠 Desarrollo](#-para-desarrolladores)
+
+</div>
+
+---
+
+VERTEX es un juego educativo en el que el jugador navega redes de computadoras como intruso: cada nivel es un grafo dirigido con pesos, una IA que analiza sus rutas con Dijkstra y las bloquea, nodos con cámaras de detección probabilística y perseguidores que se desplazan por la red. El objetivo se alcanza aplicando conceptos de teoría de grafos: pathfinding, flujo máximo y corte mínimo.
+
+## 🎮 Características
+
+**Tres modos sobre el mismo motor de redes:**
+
+- **🗡 Heist** — infiltración: alcanzar la bóveda pasando por waypoints mientras la IA bloquea rutas. Campaña con niveles de identidad propia:
+
+  | Nivel | Identidad |
+  |-------|-----------|
+  | N1 · La Entrada | Movimiento básico por el grafo |
+  | N2 · El Laberinto | Bloqueos de IA con aristas de retorno |
+  | N3 · Ojo del Casino | Detección probabilística + perseguidores |
+  | N4 · Blackout | Escalada de alarma por turnos |
+
+- **💻 Hacker** — movimiento lateral en red corporativa: ruido, escaneos y exploits (bypass / escalate / persist).
+- **🛡 Defensa** — modo invertido: el jugador administra la defensa, bloquea aristas y coloca firewalls para impedir que el atacante alcance su objetivo (corte mínimo como mecánica).
+
+**Además:**
+
+- 📚 **7 tutoriales guiados** paso a paso con glosario integrado
+- ⭐ Sistema de par por nivel: cumplir el rendimiento de referencia otorga 3 estrellas
+- 🚨 Eventos por turno definidos por datos (escalada de alarma configurable por JSON)
+- 🔀 Navegación post-partida directa: siguiente nivel, selector o menú
+- 🧪 Suite de tests con golden equivalence y harness de balance por self-play
+
+<!-- TODO: capturas — soltar 2-3 PNG en .github/ y descomentar:
+<p align="center">
+  <img src=".github/screenshot-heist.png" width="45%" />
+  <img src=".github/screenshot-defensa.png" width="45%" />
+</p>
+-->
 
 ## 📥 Descargar el juego (Windows)
 
@@ -20,158 +66,65 @@ wget https://github.com/Laeoon/vertex/releases/download/v0.1.0-alpha/VERtex-alph
 
 **Requisitos:** Windows 10/11 x64, GPU con DirectX 12, ~300 MB de espacio. Al ejecutarlo se abre en pantalla completa.
 
+## 🕹 Controles
+
+| Tecla / Acción | Atacante | Defensa |
+|---|---|---|
+| **Click** en nodo vecino | Moverse | Bloquear arista |
+| **Tab** + **Enter** | Seleccionar y mover | Resolver turno |
+| **P** | Ruta óptima (hint) | — |
+| **F** | — | Firewall de nodo |
+| **X / E** | Escanear / Exploit (hacker) | — |
+| **R** | Reiniciar nivel | Reiniciar nivel |
+| **Q** | Menú principal | Menú principal |
+
+Al terminar una partida: **[R]** reintentar · **[N]** siguiente nivel · **[L]** selector de niveles · **[Q]** menú.
+
 ## 🧰 Descargar el código fuente
 
-Si querés el código (para desarrollo o para abrirlo en el editor de Godot):
-
 ```bash
-# Código de la versión estándar (main) sin historial de Git
-curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz
-tar -xzf vertex.tar.gz && cd vertex-main
-
-# Código de una versión con tag (ej: alfa 0.1.0)
-curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.1.0-alpha.tar.gz
-tar -xzf vertex.tar.gz
-
-# Con wget
-wget https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz
-
 # Clonar con historial completo (recomendado para desarrollo)
 git clone https://github.com/Laeoon/vertex.git
 
-# Clon "shallow" (solo última versión, más rápido y ligero)
+# Clon "shallow" (solo última versión)
 git clone --depth 1 https://github.com/Laeoon/vertex.git
+
+# Sin Git
+curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz && tar -xzf vertex.tar.gz
 ```
 
-Después de descargar el código, abrí `project.godot` con **Godot 4.7+** y presioná F5.
+Abrí `project.godot` con **Godot 4.7+** y presioná F5.
 
-## Stack
+## 🛠 Para desarrolladores
 
-- **Motor**: Godot 4.7 (GDScript)
-- **Física**: Jolt Physics
-- **Renderizado**: Forward Plus
-- **IA**: ZIVA Agent (GDExtension)
+**Stack:** Godot 4.7 · GDScript · renderizado Forward Plus · arquitectura en capas `core/` (algoritmos de grafos, autoloads) → `juego/` (lógica data-driven) → `escenas/` (UI).
 
-## Estructura del Proyecto
+Los niveles son **datos, no código**: un `.json` (params, eventos, par) + un `.tres` (grafo dirigido con costos y metadatos de detección). El balance se valida con un harness de self-play (greedy / greedy_err / random, semillas deterministas).
 
-```
-VERTEX/
-├── core/                    # Motor de teoría de grafos
-│   ├── agents/              # Algoritmos (Dijkstra, Edmonds-Karp, MinHeap)
-│   ├── network/             # Recursos de red (graph, nodes, edges)
-│   ├── fsm/                 # Máquinas de estado (network_node)
-│   ├── integration/         # Wrappers reactivos
-│   ├── autoloads/           # Singletons globales (Events, SceneParams, etc.)
-│   └── locale/              # Internacionalización (ES/EN/PT)
-│
-├── juego/                   # Lógica del juego
-│   ├── ataque/              # Modo ataque (gameplay principal)
-│   ├── defense/             # Modo defensa
-│   ├── hacker/              # Modo hacker
-│   ├── heist/               # Modo heist
-│   ├── system/              # Gestión de niveles
-│   └── tutorials/           # Sistema de tutoriales
-│
-├── escenas/                 # Escenas Godot (.tscn)
-├── addons/                  # Plugins (ziva_agent)
-├── tests/                   # Tests automatizados
-└── documentacion/           # Documentación del proyecto
-```
-
-## Arquitectura
-
-El proyecto sigue una arquitectura en capas con separación clara de responsabilidades:
-
-```
-core/ (motor de grafos)
-  ↓
-juego/ (lógica de gameplay)
-  ↓
-escenas/ (UI y presentación)
-```
-
-**Principios:**
-- `core/` es independiente de `juego/` (cero dependencias hacia arriba)
-- Algoritmos stateless y testeables
-- Event Bus para comunicación entre módulos
-- Datos en recursos `.tres` y `.json` (data-driven design)
-
-## Desarrollo
-
-### Requisitos
-
-- Godot 4.7+
-- Jolt Physics (incluido en Godot 4.7)
-
-### Correr el Proyecto
+### Correr y testear
 
 ```bash
-# Desde el editor de Godot
-# Abrir project.godot y presionar F5
-
-# Headless (para tests)
-godot --headless --script res://tests/runner/run_all.gd
-```
-
-### Tests
-
-El proyecto usa tests ad-hoc en GDScript:
-
-```bash
-# Correr todos los tests
+# Suite completa (25 pruebas)
 godot --headless --script res://tests/runner/run_all.gd
 
-# Correr un test específico
-godot --headless --script res://tests/runner/_run_one.gd --test-path res://tests/core/test_defensive_pathfinder.gd
+# Golden equivalence tests por módulo (congelan comportamiento)
+godot --headless res://tests/ataque/_test_game_logic_equivalence.tscn   # 19 asserts
+godot --headless res://tests/tutorials/_test_tutorial_render_equivalence.tscn  # 34
+
+# Harness de balance self-play (100 corridas por política)
+godot --headless res://tests/balance/_balance_harness.tscn -- 100
 ```
 
-Ver [tests/README.md](tests/README.md) para más detalles.
+Detalle completo de verificación en [`documentacion/VERTEX/17 - Handoff a orquestador.md`](documentacion/VERTEX/17%20-%20Handoff%20a%20orquestador.md).
 
-## Convenciones de Commits
+### Convenciones de commits
 
-Usamos [Conventional Commits](https://www.conventionalcommits.org/) en español técnico:
+[Conventional Commits](https://www.conventionalcommits.org/) en español técnico: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf` — ej: `feat(slice-6): navegación post-partida con guardas N/L`.
 
-```
-<tipo>(<alcance>): <descripción corta>
+### Documentación
 
-[opcional: cuerpo con más detalle]
-```
-
-**Tipos:**
-- `feat`: Nueva funcionalidad
-- `fix`: Corrección de bug
-- `refactor`: Refactorización sin cambiar comportamiento
-- `test`: Añadir o modificar tests
-- `docs`: Documentación
-- `chore`: Tareas de mantenimiento
-- `perf`: Mejoras de performance
-
-**Ejemplos:**
-```
-feat(ataque): añadir modo hacker con mecánicas de ruido
-fix(input-handler): validar graph/runtime antes de pathfinding
-refactor(juego-ataque): extraer lógica de turno IA a AIBlocker
-test(pathfinder): añadir tests para Dijkstra con grafos desconectados
-docs(arquitectura): documentar flujo de datos entre core y juego
-```
-
-**Granularidad:**
-- Un commit por tarea completada (para bisect preciso)
-- Branch por feature/slice
-- PR por cada cambio significativo
-
-## Documentación
-
-La documentación completa está en [`documentacion/`](documentacion/):
-
-- [`documentacion/arquitectura/`](documentacion/arquitectura/) — Diseño del sistema
-- [`documentacion/decisiones/`](documentacion/decisiones/) — ADRs (Architecture Decision Records)
-- [`documentacion/guias/`](documentacion/guias/) — Guías de desarrollo
+La bitácora completa vive en [`documentacion/VERTEX/`](documentacion/VERTEX/): arquitectura ([03](documentacion/VERTEX/03%20-%20Arquitectura.md)), diseño de niveles ([06](documentacion/VERTEX/06%20-%20Level%20Design.md)), historial de cambios ([14](documentacion/VERTEX/14%20-%20Historial%20de%20cambios.md)) y estado del repo ([18 - Overview](documentacion/VERTEX/18%20-%20Overview%20y%20auditor%C3%ADa%20pendiente.md)).
 
 ## Licencia
 
-[TBD - Por definir]
-
-## Contacto
-
-[TBD - Por definir]
+Por definir. El contenido pedagógico es de acceso libre; el código fuente se comparte con fines educativos.
