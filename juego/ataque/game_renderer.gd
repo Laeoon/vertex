@@ -612,23 +612,36 @@ func draw_nodes(
 		elif is_target or es_vecino:
 			radius += 3.0
 
-		draw_circle(pos + Vector2(2, 3), radius, Color(0, 0, 0, 0.4))
-
 		var node_res = nodos_res.get(nid_str, null)
 		var tipo: int = int(node_res.node_type) if node_res != null else 3
+		var forma: PackedVector2Array
+		var es_circulo := false
 		match tipo:
-			0:
-				draw_circle(pos, radius, node_color)
 			1:
-				draw_polygon(_poligono(pos, radius + 2.0, 3), node_color)
+				forma = _poligono(pos, radius + 2.0, 3)
 			3:
-				draw_polygon(_poligono(pos, radius, 6), node_color)
+				forma = _poligono(pos, radius, 6)
 			4:
-				draw_polygon(_poligono(pos, radius, 4, PI / 4.0), node_color)
+				forma = _poligono(pos, radius, 4, PI / 4.0)
 			5:
-				draw_polygon(_poligono(pos, radius, 4), node_color)
+				forma = _poligono(pos, radius, 4)
 			_:
-				draw_circle(pos, radius, node_color)
+				es_circulo = true
+
+		# Sombra con la MISMA silueta de la forma (un círculo genérico asomaba
+		# detrás del triángulo/cuadrado/rombo como aureola redonda).
+		if es_circulo:
+			draw_circle(pos + Vector2(2, 3), radius, Color(0, 0, 0, 0.4))
+		else:
+			var sombra: PackedVector2Array = PackedVector2Array()
+			for p in forma:
+				sombra.append(p + Vector2(2, 3))
+			draw_polygon(sombra, Color(0, 0, 0, 0.4))
+
+		if es_circulo:
+			draw_circle(pos, radius, node_color)
+		else:
+			draw_polygon(forma, node_color)
 
 		var border_color: Color = Color(0.3, 0.32, 0.4)
 		if is_player:
@@ -645,7 +658,7 @@ func draw_nodes(
 		elif tipo == 3 or tipo == 2:
 			draw_circle(pos, radius, border_color, false, 2.5)
 		else:
-			var borde := _poligono(pos, radius + (2.0 if tipo == 1 else 0.0), 3 if tipo == 1 else 4, PI / 4.0 if tipo == 4 else 0.0)
+			var borde := forma.duplicate()
 			borde.append(borde[0])
 			draw_polyline(borde, border_color, 2.5)
 
