@@ -21,7 +21,7 @@
 	{
 		"id": "intro_avanzado",
 		"title": "Bienvenida — Estrategias Avanzadas",
-      "text": "ESTRATEGIAS AVANZADAS DE DEFENSA.\n\nHOY APRENDERÁS:\n\n1. FIREWALL DE NODO [F]:\n   Protege nodos permanentemente.\n\n2. CORTE MÍNIMO (MIN-CUT):\n   El conjunto más pequeño de aristas que\n   desconecta al atacante del objetivo.\n\n3. TIMING DE BLOQUEOS:\n   Saber CUÁNDO bloquear es tan importante\n   como saber QUÉ bloquear.\n\n4. GESTIÓN DE RECURSOS:\n   Tus bloqueos son limitados.\n\nEl atacante tiene 15 turnos. Tú tienes\n3 bloqueos por turno.\nPresiona [Enter] para comenzar.",
+      "text": "ESTRATEGIAS AVANZADAS DE DEFENSA.\n\nHOY APRENDERÁS:\n\n1. FIREWALL DE NODO [F]:\n   Protege nodos permanentemente.\n\n2. CORTE MÍNIMO (MIN-CUT):\n   El conjunto más pequeño de aristas que\n   desconecta al atacante del objetivo.\n\n3. TIMING DE BLOQUEOS:\n   Saber CUÁNDO bloquear es tan importante\n   como saber QUÉ bloquear.\n\n4. GESTIÓN DE RECURSOS:\n   Tus bloqueos son limitados.\n\nEl atacante tiene 12 turnos. Tú tienes\n2 bloqueos por turno.\nPresiona [Enter] para comenzar.",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -34,7 +34,7 @@
 	{
 		"id": "node_firewall",
 		"title": "Firewall de Nodo [F]",
-      "text": "FIREWALL DE NODO — PROTECCIÓN PERMANENTE.\n\nPresiona [F] para activar el modo firewall\nde nodo. Luego haz clic en un NODO para\ncolocar un firewall permanente.\n\n¿QUÉ HACE?\n- Bloquea TODAS las conexiones que pasan\n  por ese nodo (entrada y salida)\n- Es PERMANENTE: no expira\n- Costo: 3 bloqueos (1 turno completo)\n\nCUÁNDO USARLO:\n- Nodos críticos (DataCenter)\n- Cuellos de botella por donde pasan\n  muchas rutas del atacante\n\nCUÁNDO NO:\n- Si necesitas flexibilidad\n- Si tienes pocos bloqueos\n- Si el nodo no es estratégico\n\n¿Vale 3 bloqueos la protección permanente?",
+      "text": "FIREWALL DE NODO — PROTECCIÓN PERMANENTE.\n\nPresiona [F] para activar el modo firewall\nde nodo. Luego haz clic en un NODO para\ncolocar un firewall permanente.\n\n¿QUÉ HACE?\n- Bloquea TODAS las conexiones que pasan\n  por ese nodo (entrada y salida)\n- Es PERMANENTE: no expira\n- Costo: 2 bloqueos (1 turno completo)\n\nCUÁNDO USARLO:\n- Nodos críticos (DataCenter)\n- Cuellos de botella por donde pasan\n  muchas rutas del atacante\n\nCUÁNDO NO:\n- Si necesitas flexibilidad\n- Si tienes pocos bloqueos\n- Si el nodo no es estratégico\n\n¿Vale 2 bloqueos la protección permanente?",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -60,7 +60,7 @@
 	{
 		"id": "block_timing",
 		"title": "Timing de Bloqueos",
-      "text": "TIMING DE BLOQUEOS — EL ARTE DEL CUÁNDO.\n\nLos bloqueos duran 5 TURNOS y EXPIRAN.\nSaber CUÁNDO colocar un bloqueo es tan\nimportante como DÓNDE.\n\nESTRATEGIAS:\n\n1. RENOVACIÓN PREVENTIVA:\n   Renueva en el turno 4, ANTES de que expire.\n\n2. ROTACIÓN DE DEFENSAS:\n   Alterna entre aristas diferentes para\n   cubrir más terreno.\n\n3. BLOQUEO REACTIVO:\n   Bloquea JUSTO cuando el atacante va a cruzar.\n\n4. BLOQUEO TEMPRANO:\n   Fuerza al atacante a rutas largas desde\n   el principio. Ganas tiempo.\n\nERROR: Bloquear muy temprano en arista equivocada\n= bloqueo desperdiciado.",
+      "text": "TIMING DE BLOQUEOS — SABER CUÁNDO ACTUAR.\n\nLos bloqueos duran 4 TURNOS y EXPIRAN.\nSaber CUÁNDO colocar un bloqueo es tan\nimportante como DÓNDE.\n\nESTRATEGIAS:\n\n1. RENOVACIÓN PREVENTIVA:\n   Renueva ANTES de que expire el bloqueo.\n\n2. ROTACIÓN DE DEFENSAS:\n   Alterna entre aristas diferentes para\n   cubrir más terreno.\n\n3. BLOQUEO REACTIVO:\n   Bloquea JUSTO cuando el atacante va a cruzar.\n\n4. BLOQUEO TEMPRANO:\n   Fuerza al atacante a rutas largas desde\n   el principio. Ganas tiempo.\n\nERROR: Bloquear muy temprano en arista equivocada\n= bloqueo desperdiciado.",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -73,7 +73,7 @@
 	{
 		"id": "resource_mgmt",
 		"title": "Gestión de Recursos",
-      "text": "GESTIÓN DE RECURSOS — CADA BLOQUEO CUENTA.\n\nTienes 3 BLOQUEOS por turno. Son LIMITADOS.\nNo puedes bloquear todo. Debes elegir.\n\nOPCIONES CADA TURNO:\n\n1. COBERTURA AMPLIA (3 aristas distintas):\n   Máxima dispersión. Bueno cuando no sabes\n   por dónde vendrá el atacante.\n\n2. RENOVACIÓN (misma arista):\n   Mantienes un bloqueo crítico activo.\n\n3. FIREWALL DE NODO (3 bloqueos → 1 firewall):\n   Gran inversión, protección permanente.\n\n4. MIXTA: No recomendada — los bloqueos NO\n   usados NO se guardan para el siguiente turno.\n\nEn seguridad real, los equipos SOC priorizan\namenazas y asignan recursos donde más impacto\ntienen. Tú haces lo mismo aquí.",
+      "text": "GESTIÓN DE RECURSOS — CADA BLOQUEO CUENTA.\n\nTienes 2 BLOQUEOS por turno. Son LIMITADOS.\nNo puedes bloquear todo. Debes elegir.\n\nOPCIONES CADA TURNO:\n\n1. COBERTURA AMPLIA (2 aristas distintas):\n   Máxima dispersión. Bueno cuando no sabes\n   por dónde vendrá el atacante.\n\n2. RENOVACIÓN (misma arista):\n   Mantienes un bloqueo crítico activo.\n\n3. FIREWALL DE NODO (2 bloqueos → 1 firewall):\n   Gran inversión, protección permanente.\n\n4. MIXTA: No recomendada — los bloqueos NO\n   usados NO se guardan para el siguiente turno.\n\nEn seguridad real, los equipos SOC priorizan\namenazas y asignan recursos donde más impacto\ntienen. Tú haces lo mismo aquí.",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -86,7 +86,7 @@
 	{
 		"id": "try_advanced",
 		"title": "¡Practica! Ponte a Prueba",
-      "text": "¡MANOS A LA OBRA! — APLICA TODO.\n\nAhora tienes todas las herramientas:\n- Bloqueo de aristas (clic en línea)\n- Firewall de nodo [F] (clic en nodo)\n- Análisis de corte mínimo\n- Timing estratégico\n\nTU MISIÓN:\nEl atacante está en Internet. Quiere llegar\na DataCenter en 15 turnos.\n\n1. Analiza la red: ¿cuántas rutas hay?\n2. Identifica cuellos de botella\n3. Decide: ¿firewall o bloqueos normales?\n4. Coloca defensas con inteligencia\n5. Resuelve turno con [Enter]\n\nCONSEJO: [F] alterna entre modo bloqueo\ny modo firewall. Observa la línea NARANJA.\n¡Demuestra lo aprendido!",
+      "text": "APLICA TODO LO APRENDIDO.\n\nAhora tienes todas las herramientas:\n- Bloqueo de aristas (clic en línea)\n- Firewall de nodo [F] (clic en nodo)\n- Análisis de corte mínimo\n- Timing estratégico\n\nTU MISIÓN:\nEl atacante está en Internet. Quiere llegar\na DataCenter en 12 turnos.\n\n1. Analiza la red: ¿cuántas rutas hay?\n2. Identifica cuellos de botella\n3. Decide: ¿firewall o bloqueos normales?\n4. Coloca defensas con inteligencia\n5. Resuelve turno con [Enter]\n\nCONSEJO: [F] alterna entre modo bloqueo\ny modo firewall. Observa la línea NARANJA.\n¡Demuestra lo aprendido!",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -99,7 +99,7 @@
 	{
 		"id": "win_condition",
 		"title": "Condiciones de Victoria",
-      "text": "CONDICIONES DE VICTORIA Y PUNTUACIÓN.\n\nGANAS SI: El atacante NO llega a DataCenter\nen 15 turnos.\n\nPIERDES SI: El atacante alcanza DataCenter.\n\nSISTEMA DE ESTRELLAS:\n★★★ — Defensa óptima con bloqueos eficientes\n★★ — Detuviste al atacante con margen justo\n★ — Sobreviviste pero casi llega\n\nLa ciberseguridad defensiva es una profesión\nen alta demanda. Herramientas profesionales:\nSplunk (SIEM), Palo Alto (NGFW), CrowdStrike\n(EDR), Wireshark (análisis).\n¡Protege tu red!",
+      "text": "CONDICIONES DE VICTORIA Y PUNTUACIÓN.\n\nGANAS SI: El atacante NO llega a DataCenter\nen 12 turnos.\n\nPIERDES SI: El atacante alcanza DataCenter.\n\nSISTEMA DE ESTRELLAS:\n★★★ — Defensa óptima con bloqueos eficientes\n★★ — Detuviste al atacante con margen justo\n★ — Sobreviviste pero casi llega\n\nLa ciberseguridad defensiva es una profesión\nen alta demanda. Herramientas profesionales:\nSplunk (SIEM), Palo Alto (NGFW), CrowdStrike\n(EDR), Wireshark (análisis).\n¡Protege tu red!",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",

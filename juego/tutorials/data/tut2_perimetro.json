@@ -82,7 +82,7 @@
     {
       "id": "after_ai_turn",
       "title": "Después del Turno IA",
-      "text": "La IA bloqueó otra arista.\nObserva el patrón: siempre bloquea la arista\nMÁS CERCANA a tu destino en tu ruta actual.\n\nESTRATEGIA:\n- Toma rutas largas al inicio para \"gastar\"\n  los bloqueos de la IA en aristas irrelevantes\n- Acelera al final cuando la IA se queda sin recursos",
+      "text": "La IA bloqueó otra arista.\nObserva el patrón: siempre bloquea la arista\nMÁS CERCANA a tu destino en tu ruta actual.\n\nESTRATEGIA:\n- Toma rutas largas al inicio para consumir\n  los bloqueos de la IA en aristas irrelevantes\n- Avanza por la ruta corta al final,\n  cuando la IA se queda sin bloqueos",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",

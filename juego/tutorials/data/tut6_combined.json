@@ -31,7 +31,7 @@
     {
       "id": "phase_attack",
       "title": "Fase 1: Infiltración",
-      "text": "FASE 1: INFILTRACIÓN INICIAL.\n\nTu primer objetivo: llegar a la OFICINA.\nEs un waypoint obligatorio — NO puedes llegar\nal Centro de Datos sin pasar por aquí.\n\nESTRATEGIA:\n- Analiza el grafo con [P] para ver rutas\n- La IA bloquea 1 arista por turno\n- Gestiona tu presupuesto de 10 puntos\n- Elige la ruta de menor costo a Oficina\n\nEn redes reales, la infiltración inicial\nes crítica. Técnicas: phishing, explotación\nde servicios expuestos (RDP, SSH, web),\ncompromiso de IoT con seguridad débil.\nLa Oficina es tu foothold.",
+      "text": "FASE 1: INFILTRACIÓN INICIAL.\n\nTu primer objetivo: llegar a la OFICINA.\nEs un waypoint obligatorio — NO puedes llegar\nal Centro de Datos sin pasar por aquí.\n\nESTRATEGIA:\n- Analiza el grafo con [P] para ver rutas\n- La IA bloquea 1 arista por turno\n- Gestiona tu presupuesto de 10 puntos\n- Elige la ruta de menor costo a Oficina\n\nEn redes reales, la infiltración inicial\nes crítica. Técnicas: phishing, explotación\nde servicios expuestos (RDP, SSH, web),\ncompromiso de IoT con seguridad débil.\nLa Oficina es tu punto de apoyo inicial.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "bottom",
@@ -44,7 +44,7 @@
     {
       "id": "try_attack",
       "title": "¡A la Oficina!",
-      "text": "¡MANOS A LA OBRA!\n\nMuévete hacia la Oficina usando [Click] o [Tab].\nTienes 10 puntos de movimiento.\nLa IA bloquea 1 arista por turno — recalcula\nsi es necesario.\n\nCONSEJOS:\n- Usa [P] para ver la ruta óptima (Dijkstra)\n- Si la IA bloquea tu ruta, busca alternativas\n- No gastes todo el presupuesto en rodeos\n- Tu objetivo FINAL es el Centro de Datos\n\nEn OPSEC real, cada movimiento debe ser\neficiente. Cada paso extra aumenta el riesgo\nde detección. Minimiza tu huella.\n¡Adelante! La Oficina te espera.",
+      "text": "COMIENZA LA INFILTRACIÓN.\n\nMuévete hacia la Oficina usando [Click] o [Tab].\nTienes 10 puntos de movimiento.\nLa IA bloquea 1 arista por turno — recalcula\nsi es necesario.\n\nCONSEJOS:\n- Usa [P] para ver la ruta óptima (Dijkstra)\n- Si la IA bloquea tu ruta, busca alternativas\n- No gastes todo el presupuesto en rodeos\n- Tu objetivo FINAL es el Centro de Datos\n\nEn OPSEC real, cada movimiento debe ser\neficiente. Cada paso extra aumenta el riesgo\nde detección. Minimiza tu huella.\nAvanza hacia la Oficina.",
       "anchor_type": "node",
       "anchor_id": "Exterior",
       "position": "bottom",
@@ -58,7 +58,7 @@
     {
       "id": "phase_defense",
       "title": "Fase 2: Rumbo al Centro de Datos",
-      "text": "FASE 2: RUMBO AL CENTRO DE DATOS.\n\n¡Excelente! Estableciste tu foothold en la Oficina.\nAhora: llegar al Centro de Datos, el objetivo final.\n\nLO QUE DEBES SABER:\n- Los perseguidores están ACTIVOS\n- Si fuiste detectado, te rastrean\n- La IA sigue bloqueando 1 arista/turno\n- Tu presupuesto restante es LIMITADO\n\nEn un pentesting real: \"lateral movement\"\ny \"privilege escalation\" para llegar al\n\"crown jewel\" (base de datos, IP, finanzas).\nEl Centro de Datos es tu objetivo de alto valor.\n\nCuidado con los perseguidores. ¡Planifica\nbien tu ruta final!",
+      "text": "FASE 2: RUMBO AL CENTRO DE DATOS.\n\n¡Excelente! Consolidaste tu punto de apoyo en la Oficina.\nAhora: llegar al Centro de Datos, el objetivo final.\n\nLO QUE DEBES SABER:\n- Los perseguidores están ACTIVOS\n- Si fuiste detectado, te rastrean\n- La IA sigue bloqueando 1 arista/turno\n- Tu presupuesto restante es LIMITADO\n\nEn un pentesting real: movimiento lateral\ny escalada de privilegios para alcanzar\nlos activos más valiosos de la organización.\nEl Centro de Datos es tu objetivo de alto valor.\n\nCuidado con los perseguidores. ¡Planifica\nbien tu ruta final!",
       "anchor_type": "node",
       "anchor_id": "CentroDatos",
       "position": "top",

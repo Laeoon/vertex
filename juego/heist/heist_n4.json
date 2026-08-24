@@ -14,7 +14,7 @@
   "max_movement_points": 20,
   "titulo_nivel": "Heist — Blackout en el Data Center",
   "difficulty": 4,
-  "description": "La alarma escala por turno: refuerzos, velocidad y bloqueos crecen mientras avanzás. Cuatro rutas, una bóveda — y el generador no es tan seguro como parece.",
+  "description": "La alarma escala por turno: refuerzos, velocidad y bloqueos crecen mientras avanza. Cuatro rutas, una bóveda — y el generador no es tan seguro como parece.",
   "pursuer_delay": 2,
   "max_pursuers": 4,
   "pursuer_speed": 1,

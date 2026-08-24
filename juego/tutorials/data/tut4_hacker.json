@@ -35,7 +35,7 @@
     {
       "id": "scan_explain",
       "title": "Escaneo [X]",
-      "text": "ESCANEO DE RED [X] — RECONOCIMIENTO.\n\nPresiona [X] para analizar un nodo vecino\n(selecciónalo primero con [Tab] o clic).\n\nQUÉ REVELA EL ESCANEO:\n- TIPO de nodo: servidor, router, DB\n- RIESGO de detección\n- DEBILIDADES explotables\n\nCOSTO: +5 ruido por escaneo.\n\nEn el mundo real, el escaneo se hace con\nnmap, Nessus, Nikto. Los pentesters pasan\nhoras en reconocimiento antes de atacar.\n\"Know your target\" es la regla #1.",
+      "text": "ESCANEO DE RED [X] — RECONOCIMIENTO.\n\nPresiona [X] para analizar un nodo vecino\n(selecciónalo primero con [Tab] o clic).\n\nQUÉ REVELA EL ESCANEO:\n- TIPO de nodo: servidor, router, DB\n- RIESGO de detección\n- DEBILIDADES explotables\n\nCOSTO: +2 ruido por escaneo.\n\nEn el mundo real, el escaneo se hace con\nnmap, Nessus, Nikto. Los pentesters pasan\nhoras en reconocimiento antes de atacar.\nConocer el objetivo antes de actuar es la regla principal.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -48,7 +48,7 @@
 	{
 		"id": "try_scan",
 		"title": "Tu Primer Escaneo",
-      "text": "ESCANEO PRÁCTICO.\n\nPASOS:\n1. Selecciona WebServer con [Tab] o clic\n2. Presiona [X] para escanear\n3. Lee el resultado en el panel derecho:\n   - Tipo de nodo\n   - Nivel de defensa\n   - Vulnerabilidad detectada\n\nEn el mundo real:\nnmap -sV 192.168.1.1 → escanea servicios\nnikto -h http://target.com → escanea web\n\nEl escaneo es tu herramienta de reconocimiento\nmás importante. Sin información, estás ciego.\n\nINTENTA AHORA: selecciona WebServer y escanea [X].",
+      "text": "ESCANEO PRÁCTICO.\n\nPASOS:\n1. Selecciona WebServer con [Tab] o clic\n2. Presiona [X] para escanear\n3. Lee el resultado en el panel derecho:\n   - Tipo de nodo\n   - Nivel de defensa\n   - Vulnerabilidad detectada\n\nEn el mundo real:\nnmap -sV 192.168.1.1 → escanea servicios\nnikto -h http://target.com → escanea web\n\nEl escaneo es tu herramienta de reconocimiento\nmás importante. Sin información no puedes planificar.\n\nINTENTA AHORA: selecciona WebServer y escanea [X].",
 		"anchor_type": "node",
 		"anchor_id": "DMZ",
 		"position": "bottom",
@@ -62,7 +62,7 @@
     {
       "id": "exploit_explain",
       "title": "Herramientas de Hacker",
-      "text": "HERRAMIENTAS DE HACKER:\n\n[1] BYPASS - Salta nodos protegidos\n    Costo: +15 ruido\n[2] ESCALATE - Accede a áreas restringidas\n    Costo: +25 ruido\n[3] PERSIST - Mantén acceso 3 turnos\n    Costo: +10 ruido\n\nCada exploit genera RUIDO.\nSi ruido > 60: aparecen perseguidores.\n\nEn el mundo real: Metasploit automatiza\nexploits, privilege escalation explota\nvulnerabilidades en sudo/SUID, y APTs\nmantienen persistencia por meses. Más info\nen GLOSARIO [G].",
+      "text": "HERRAMIENTAS DE HACKER:\n\n[1] BYPASS - Salta nodos protegidos\n    Costo: +15 ruido\n[2] ESCALATE - Accede a áreas restringidas\n    Costo: +25 ruido\n[3] PERSIST - Mantén acceso 3 turnos\n    Costo: +10 ruido\n\nCada exploit genera RUIDO.\nSi el ruido alcanza el nivel CRÍTICO (85 o más):\naparecen perseguidores adicionales.\n\nEn el mundo real: Metasploit automatiza\nexploits, privilege escalation explota\nvulnerabilidades en sudo/SUID, y APTs\nmantienen persistencia por meses. Más info\nen GLOSARIO [G].",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -75,7 +75,7 @@
 	{
 		"id": "noise_explain",
 		"title": "Sistema de Ruido",
-      "text": "SISTEMA DE RUIDO — TU NIVEL DE EXPOSICIÓN.\n\nCada acción genera RUIDO. Cuanto más ruido,\nmás visible eres para los sistemas de defensa.\n\nNIVELES DE ALERTA:\n🟢 BAJO (<30): Modo sigiloso, sin detección\n🟡 MEDIO (30-60): Pueden aparecer perseguidores\n🔴 ALTO (60-85): Perseguidores más rápidos\n⛔ CRÍTICO (>85): Seguridad máxima, más perseguidores\n\nCOSTOS DE RUIDO:\n- Moverte: +3  |  Escanear [X]: +5\n- Bypass [1]: +15  |  Escalate [2]: +25\n- Persist [3]: +10\n- El ruido DECAE 3 pts/turno sin persists\n\nEstrategia: \"Low and slow\" — minimiza tu huella.",
+      "text": "SISTEMA DE RUIDO — TU NIVEL DE EXPOSICIÓN.\n\nCada acción genera RUIDO. Cuanto más ruido,\nmás visible eres para los sistemas de defensa.\n\nNIVELES DE ALERTA:\n🟢 BAJO (<30): Modo sigiloso, sin detección\n🟡 MEDIO (30-60): Sin consecuencias directas todavía\n🔴 ALTO (60-85): Aviso de ruido alto en pantalla\n⛔ CRÍTICO (85 o más): Seguridad máxima, más perseguidores\n\nCOSTOS DE RUIDO:\n- Moverte: +5  |  Escanear [X]: +2\n- Bypass [1]: +15  |  Escalate [2]: +25\n- Persist [3]: +10\n- El ruido DECAE 3 pts/turno sin persists\n\nEstrategia: avanza despacio y genera poco ruido.",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "left",
@@ -88,7 +88,7 @@
 	{
 		"id": "try_move",
 		"title": "Muévete hacia WebServer",
-      "text": "MOVIMIENTO LATERAL — AVANZA EN LA RED.\n\nEs hora de moverte de DMZ hacia WebServer.\nEste es el \"lateral movement\": después del\nacceso inicial, te mueves buscando más\nsistemas, datos y credenciales.\n\nTU PLAN DE RUTA:\nDMZ → WebServer → AdminPanel → Core\n\nUsa [Tab] o clic para seleccionar WebServer,\nluego [Enter/Espacio] para moverte.\nTip: presiona [P] para ver la ruta más corta.",
+      "text": "MOVIMIENTO LATERAL — AVANZA EN LA RED.\n\nEs hora de moverte de DMZ hacia WebServer.\nEste es el movimiento lateral: después del\nacceso inicial, te mueves buscando más\nsistemas, datos y credenciales.\n\nTU PLAN DE RUTA:\nDMZ → WebServer → AdminPanel → Core\n\nUsa [Tab] o clic para seleccionar WebServer,\nluego [Enter/Espacio] para moverte.\nTip: presiona [P] para ver la ruta más corta.",
 		"anchor_type": "node",
 		"anchor_id": "WebServer",
 		"position": "bottom",

@@ -4,7 +4,9 @@
   "graph_path": "res://juego/tutorial3/tut3_red.tres",
   "start_node": "Inicio",
   "target_node": "Servidor",
-  "waypoints": ["DMZ"],
+  "waypoints": [
+    "DMZ"
+  ],
   "ai_enabled": true,
   "ai_block_per_turn": 1,
   "ai_bloquea_al_inicio": true,
@@ -29,11 +31,13 @@
     {
       "id": "waypoints_explain",
       "title": "¿Qué son los Waypoints?",
-      "text": "¿QUÉ SON LOS WAYPOINTS?\nSon nodos que DEBES VISITAR en orden.\nSi llegas al target sin pasar por DMZ, PIERDES.\nLos waypoints se marcan con ◇ (actual) y ○ (pendiente).\nSon como \"checkpoints\" obligatorios en la ruta.",
+      "text": "¿QUÉ SON LOS WAYPOINTS?\nSon nodos que DEBES VISITAR en orden.\nSi llegas al target sin pasar por DMZ, PIERDES.\nLos waypoints se marcan con ◇ (actual) y ○ (pendiente).\nSon puntos de control obligatorios en la ruta.",
       "anchor_type": "node",
       "anchor_id": "DMZ",
       "position": "bottom",
-      "highlight_nodes": ["DMZ"],
+      "highlight_nodes": [
+        "DMZ"
+      ],
       "highlight_edges": [],
       "pause_game": true,
       "action_required": null,
@@ -59,7 +63,12 @@
       "anchor_type": "node",
       "anchor_id": "Firewall",
       "position": "right",
-      "highlight_nodes": ["Firewall", "Router", "DMZ", "IDS"],
+      "highlight_nodes": [
+        "Firewall",
+        "Router",
+        "DMZ",
+        "IDS"
+      ],
       "highlight_edges": [],
       "pause_game": true,
       "action_required": null,
@@ -81,7 +90,7 @@
     {
       "id": "risk_management",
       "title": "Gestión de Riesgo",
-      "text": "GESTIÓN DE RIESGO:\n- Rutas con alta detección = más cortas pero peligrosas\n- Rutas seguras = más largas pero sin riesgo\n- Los perseguidores comparten tu ruta\n  (también siguen el camino más corto)\n- Puedes \"enganchar\" perseguidores para que\n  tomen caminos largos mientras tú aceleras",
+      "text": "GESTIÓN DE RIESGO:\n- Rutas con alta detección = más cortas pero peligrosas\n- Rutas seguras = más largas pero sin riesgo\n- Los perseguidores comparten tu ruta\n  (también siguen el camino más corto)\n- Puedes atraer a los perseguidores hacia\n  caminos largos mientras avanzas por una ruta más corta",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -107,11 +116,13 @@
     {
       "id": "try_it",
       "title": "¡Inténtalo!",
-      "text": "Intenta llegar a DMZ primero.\nLuego a Servidor.\nMonitorea el HUD: turnos restantes, alertas,\ny posición de perseguidores.\n¡Buena suerte!",
+      "text": "Intenta llegar a DMZ primero.\nLuego a Servidor.\nMonitorea el HUD: turnos restantes, alertas,\ny posición de perseguidores.",
       "anchor_type": "node",
       "anchor_id": "Inicio",
       "position": "bottom",
-      "highlight_nodes": ["Inicio"],
+      "highlight_nodes": [
+        "Inicio"
+      ],
       "highlight_edges": [],
       "pause_game": false,
       "action_required": "move",

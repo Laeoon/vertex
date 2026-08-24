@@ -55,7 +55,7 @@
     {
       "id": "try_move",
       "title": "Tu Primer Movimiento",
-      "text": "Ahora intenta: haz clic en el nodo Relay (verde)\no usa [Tab] + [Enter] para moverte.\nObserva cómo cambia tu posición en el HUD.\n\nEn una red real, esto es \"lateral movement\":\nusas las credenciales de un sistema\ncomprometido para saltar al siguiente.\n¡Prueba ahora! Muévete hacia Relay.",
+      "text": "Ahora intenta: haz clic en el nodo Relay (verde)\no usa [Tab] + [Enter] para moverte.\nObserva cómo cambia tu posición en el HUD.\n\nEn una red real, esto se llama movimiento lateral:\nusas las credenciales de un sistema\ncomprometido para saltar al siguiente.\n¡Prueba ahora! Muévete hacia Relay.",
       "anchor_type": "node",
       "anchor_id": "Inicio",
       "position": "bottom",
@@ -69,7 +69,7 @@
     {
       "id": "after_first_move",
       "title": "Después del Movimiento",
-      "text": "¡Bien! Te moviste a Relay.\nObserva el HUD: muestra tu POSICIÓN actual,\n el COSTE acumulado y la META.\nAhora sigue hacia el Target (rojo).",
+      "text": "¡Bien! Te moviste a Relay.\nObserva el HUD: muestra tu POSICIÓN actual,\n el COSTO acumulado y la META.\nAhora sigue hacia el Target (rojo).",
       "anchor_type": "node",
       "anchor_id": "Target",
       "position": "top",
@@ -95,7 +95,7 @@
     {
       "id": "reach_target",
       "title": "¡Objetivo Alcanzado!",
-      "text": "¡Excelente! Llegaste al Target.\n\nEl SISTEMA DE ESTRELLAS:\n3★ = ruta casi óptima\n2★ = buena ruta\n1★ = completado\n\nCada nivel tiene un costo de referencia.\n¡Minimiza tu costo para maximizar estrellas!",
+      "text": "¡Excelente! Llegaste al Target.\n\nEl SISTEMA DE ESTRELLAS:\n3★ = cumplir el rendimiento de referencia (par)\n2★ = acercarte al rendimiento de referencia\n1★ = nivel completado\n\nCada nivel tiene un costo de referencia.\n¡Minimiza tu costo para maximizar estrellas!",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
