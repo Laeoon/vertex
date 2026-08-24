@@ -172,24 +172,32 @@ resource_name = "Entrada"
 script = ExtResource("2_mdbpd")
 id = &"Entrada"
 position = Vector2(80, 80)
+node_type = 0
+display_name = "Entrada"
 
 [sub_resource type="Resource" id="Resource_5gffq"]
 resource_name = "Vestibulo"
 script = ExtResource("2_mdbpd")
 id = &"Vestibulo"
 position = Vector2(200, 150)
+node_type = 2
+display_name = "Vestíbulo"
 
 [sub_resource type="Resource" id="Resource_smxlf"]
 resource_name = "Seguridad"
 script = ExtResource("2_mdbpd")
 id = &"Seguridad"
 position = Vector2(120, 280)
+node_type = 1
+display_name = "Puesto de seguridad"
 
 [sub_resource type="Resource" id="Resource_xwgpw"]
 resource_name = "Monitoreo"
 script = ExtResource("2_mdbpd")
 id = &"Monitoreo"
 position = Vector2(300, 300)
+node_type = 1
+display_name = "Centro de monitoreo"
 metadata = {
 "detection_chance": 0.1,
 "label": "Monitoreo activo"
@@ -200,24 +208,32 @@ resource_name = "Oficinas"
 script = ExtResource("2_mdbpd")
 id = &"Oficinas"
 position = Vector2(200, 450)
+node_type = 4
+display_name = "Oficinas"
 
 [sub_resource type="Resource" id="Resource_y6wr5"]
 resource_name = "Archivo"
 script = ExtResource("2_mdbpd")
 id = &"Archivo"
 position = Vector2(350, 460)
+node_type = 4
+display_name = "Archivo general"
 
 [sub_resource type="Resource" id="Resource_3reik"]
 resource_name = "Cafeteria"
 script = ExtResource("2_mdbpd")
 id = &"Cafeteria"
 position = Vector2(100, 550)
+node_type = 4
+display_name = "Cafetería"
 
 [sub_resource type="Resource" id="Resource_m6gud"]
 resource_name = "DataCenter"
 script = ExtResource("2_mdbpd")
 id = &"DataCenter"
 position = Vector2(450, 350)
+node_type = 3
+display_name = "Centro de datos"
 metadata = {
 "detection_chance": 0.1,
 "label": "Centro de datos"
@@ -228,6 +244,8 @@ resource_name = "Servidores"
 script = ExtResource("2_mdbpd")
 id = &"Servidores"
 position = Vector2(550, 280)
+node_type = 3
+display_name = "Sala de servidores"
 metadata = {
 "detection_chance": 0.12,
 "label": "Sala de servidores"
@@ -238,6 +256,8 @@ resource_name = "CriptoVault"
 script = ExtResource("2_mdbpd")
 id = &"CriptoVault"
 position = Vector2(650, 180)
+node_type = 5
+display_name = "Bóveda cripto"
 metadata = {
 "detection_chance": 0.1,
 "label": "Bóveda cripto"
@@ -248,24 +268,32 @@ resource_name = "RedPrivada"
 script = ExtResource("2_mdbpd")
 id = &"RedPrivada"
 position = Vector2(750, 300)
+node_type = 2
+display_name = "Red privada"
 
 [sub_resource type="Resource" id="Resource_mujkr"]
 resource_name = "Firewall"
 script = ExtResource("2_mdbpd")
 id = &"Firewall"
 position = Vector2(650, 450)
+node_type = 1
+display_name = "Firewall"
 
 [sub_resource type="Resource" id="Resource_j3ahn"]
 resource_name = "Direccion"
 script = ExtResource("2_mdbpd")
 id = &"Direccion"
 position = Vector2(500, 550)
+node_type = 4
+display_name = "Dirección"
 
 [sub_resource type="Resource" id="Resource_f3hyy"]
 resource_name = "SalidaSecreta"
 script = ExtResource("2_mdbpd")
 id = &"SalidaSecreta"
 position = Vector2(800, 500)
+node_type = 3
+display_name = "Salida secreta"
 
 [resource]
 script = ExtResource("3_m0hub")
