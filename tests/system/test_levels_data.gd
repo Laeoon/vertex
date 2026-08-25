@@ -14,10 +14,16 @@ extends Node
 ##      si defender_mode → enemy_start_node/enemy_target_node presentes y
 ##      dentro del grafo.
 ##
+##   6. Diversidad de rutas: si el JSON declara "diversidad_minima": K, el
+##      min-cut en aristas (# caminos arista-independientes) entre cada par
+##      de objetivos consecutivos (start → waypoints → target) debe ser ≥ K.
+##      Siempre se imprime un reporte informativo con los min-cuts por tramo.
+##
 ## Test estático (FileAccess + load de recursos), sin autoloads ni escena:
 ## los recursos de core/network/ son Resource puros.
 
 const Registry = preload("res://juego/system/level_registry.gd")
+const GraphBuilder = preload("res://tests/core/_graph_builder.gd")
 
 const NIVELES: Array[String] = [
 	"res://juego/defense/defense_n1.json",
@@ -62,7 +68,85 @@ func _run_tests() -> void:
 	for ruta in NIVELES:
 		_validar_nivel(ruta)
 
+	_unit_extra_min_cut()
+	_verificar_diversidad_niveles()
+
 	_finalizar()
+
+
+## ─── Diversidad de rutas (min-cut ≥ K entre objetivos consecutivos) ───
+
+## Unit extra: grafos sintéticos que fijan la semántica del min-cut.
+func _unit_extra_min_cut() -> void:
+	var cadena := GraphBuilder.chain([&"A", &"B", &"C"])
+	_afirmar(_min_cut_aristas(cadena, &"A", &"C") == 1,
+		"unit cadena A→B→C: min-cut(A,C)=1")
+
+	var rombo := GraphBuilder.build([&"A", &"B", &"C", &"D"], [
+		{"from": &"A", "to": &"B"}, {"from": &"B", "to": &"D"},
+		{"from": &"A", "to": &"C"}, {"from": &"C", "to": &"D"},
+	])
+	_afirmar(_min_cut_aristas(rombo, &"A", &"D") == 2,
+		"unit rombo A→B→D / A→C→D: min-cut(A,D)=2")
+
+
+## Recorre todos los niveles y verifica diversidad de rutas:
+##   - SIEMPRE imprime una línea informativa con el min-cut de cada tramo.
+##   - Si el JSON declara "diversidad_minima": K, afirma min-cut ≥ K por tramo.
+func _verificar_diversidad_niveles() -> void:
+	for ruta in NIVELES:
+		var nombre: String = ruta.get_file().get_basename()
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(ruta))
+		if not (data is Dictionary):
+			continue
+		var graph = load(data.get("graph_path", ""))
+		if graph == null or not ("edges" in graph and "nodes" in graph):
+			continue
+
+		var objetivos: Array[String] = [str(data["start_node"])]
+		for wp in data.get("waypoints", []):
+			objetivos.append(str(wp))
+		objetivos.append(str(data["target_node"]))
+
+		var k: int = int(data.get("diversidad_minima", 0))
+		var cuts: Array[String] = []
+		for i in range(objetivos.size() - 1):
+			var a := StringName(objetivos[i])
+			var b := StringName(objetivos[i + 1])
+			var mc := _min_cut_aristas(graph, a, b)
+			cuts.append("%s→%s=%d" % [a, b, mc])
+			if k > 0:
+				if mc < k:
+					print("FAIL: %s: tramo %s→%s min-cut=%d < %d" % [nombre, a, b, mc, k])
+					failed += 1
+				else:
+					print("PASS: %s: tramo %s→%s min-cut=%d ≥ %d" % [nombre, a, b, mc, k])
+					passed += 1
+		print("INFO: %s diversidad (K=%d): %s" % [nombre, k, ", ".join(cuts)])
+
+
+## Min-cut en ARISTAS entre origen y destino con capacidad 1 por arista
+## (= cantidad máxima de caminos arista-independientes).
+##
+## Reutiliza StrategicAnalyzer.find_min_cut (Edmonds-Karp de producción,
+## core/agents/strategic_analyzer.gd), que lee mitigation_capacity; para
+## imponer capacidad unitaria se reconstruye el grafo vía GraphBuilder con
+## las mismas topología y aristas pero capacity por defecto = 1.
+func _min_cut_aristas(
+		graph: NetworkGraphResource,
+		origen: StringName,
+		destino: StringName
+) -> int:
+	if graph == null or origen == destino:
+		return 0
+	var ids: Array = []
+	for n in graph.nodes:
+		ids.append(n.id)
+	var specs: Array = []
+	for e in graph.edges:
+		specs.append({"from": e.from_id, "to": e.to_id})
+	var unitario: NetworkGraphResource = GraphBuilder.build(ids, specs)
+	return int(StrategicAnalyzer.find_min_cut(unitario, origen, destino)["max_flow"])
 
 
 func _validar_nivel(ruta: String) -> void:
