@@ -20,6 +20,10 @@ class_name AIBlocker extends RefCounted
 ##   - `initial_block()` reproduce el bucle de bloqueo inicial de `reset_state`
 ##     (viejo lines 272–289) como método propio, para que el juego deje de
 ##     contener esa lógica inline.
+##   - Con `ia_predictiva == true`, `take_turn()` apunta primero a la arista de
+##     la ruta ubicada 2-3 pasos adelante del jugador (índices 2..3); si no hay
+##     candidato elegible a esa distancia, cae al escaneo legacy sin error.
+##     Con el flag apagado la conducta es idéntica a la original.
 
 const DefensivePathfinder = preload("res://core/agents/defensive_pathfinder.gd")
 
@@ -94,23 +98,22 @@ func take_turn() -> void:
 		_game.mensaje_estado = "Estas al lado de %s, pero la arista esta bloqueada" % target
 		return
 
+	# Modo predictivo (E3): apuntar a la arista de la ruta ubicada 2-3 pasos
+	# adelante del jugador en vez de recorrer río abajo. Sin candidato
+	# elegible a esa distancia se cae al comportamiento legacy sin error.
+	if _game.ia_predictiva and _game.ai_block_per_turn >= 1:
+		var idx_p: int = _indice_arista_predictiva(path)
+		if idx_p >= 0 and _bloquear_en(path, idx_p):
+			_game.mensaje_estado = "IA bloqueo 1 arista(s)"
+			_cerrar_turno(target)
+			return
+
 	var bloqueos: int = 0
 	# Iterar desde el final de la ruta (bloquear rio abajo primero)
 	var idx: int = path.size() - 2
 	while idx >= 0 and bloqueos < _game.ai_block_per_turn:
-		var from_n: StringName = path[idx]
-		var to_n: StringName = path[idx + 1]
-		var edge_key: String = "%s→%s" % [from_n, to_n]
-		if not _game._is_blocked(edge_key):
-			# Original: `if _no_aisla_al_jugador(edge_key): _block_edge(...)`
-			# Renombrado a `would_isolate` (true == SÍ aísla): se bloquea solo
-			# cuando NO aisla → `if not would_isolate(edge_key):`.
-			if not would_isolate(edge_key):
-				_game._block_edge(edge_key, from_n, to_n)
-				GameLogger.debug("AIBlocker", "Bloquea: %s → %s" % [from_n, to_n])
-				bloqueos += 1
-			else:
-				GameLogger.debug("AIBlocker", "Evita aislar: saltando %s" % edge_key)
+		if _bloquear_en(path, idx):
+			bloqueos += 1
 		idx -= 1
 
 	if bloqueos > 0:
@@ -118,10 +121,49 @@ func take_turn() -> void:
 	else:
 		_game.mensaje_estado = "IA no pudo bloquear mas aristas"
 
+	_cerrar_turno(target)
+
+
+## Índice de nodo de la primera arista elegible ubicada 2-3 pasos adelante del
+## jugador en la ruta (índices 2..3), o -1 si la ruta es demasiado corta o si
+## ningún candidato pasa las guardas (ya bloqueada / aislaría al jugador).
+func _indice_arista_predictiva(path: Array[StringName]) -> int:
+	for i in range(2, 4):
+		if i + 1 >= path.size():
+			break
+		var edge_key: String = "%s→%s" % [path[i], path[i + 1]]
+		if not _game._is_blocked(edge_key) and not would_isolate(edge_key):
+			return i
+	return -1
+
+
+## Intenta bloquear la arista path[idx] → path[idx + 1] respetando las guardas
+## legacy (edge ya bloqueada, would_isolate). Devuelve true si bloqueó.
+func _bloquear_en(path: Array[StringName], idx: int) -> bool:
+	var from_n: StringName = path[idx]
+	var to_n: StringName = path[idx + 1]
+	var edge_key: String = "%s→%s" % [from_n, to_n]
+	if _game._is_blocked(edge_key):
+		return false
+	# Original: `if _no_aisla_al_jugador(edge_key): _block_edge(...)`
+	# Renombrado a `would_isolate` (true == SÍ aísla): se bloquea solo
+	# cuando NO aisla → `if not would_isolate(edge_key):`.
+	if would_isolate(edge_key):
+		GameLogger.debug("AIBlocker", "Evita aislar: saltando %s" % edge_key)
+		return false
+	_game._block_edge(edge_key, from_n, to_n)
+	GameLogger.debug("AIBlocker", "Bloquea: %s → %s" % [from_n, to_n])
+	return true
+
+
+## Cola común de cierre de turno: recalculo de ruta, derrota si no queda
+## salida, mensaje final y redraw. Extraída tal cual del final del viejo
+## `take_turn` para que el camino predictivo y el legacy compartan la misma
+## post-condición observable.
+func _cerrar_turno(target: StringName) -> void:
 	# Nota (slice 5): mostrar_ruta() se invoca ahora desde
 	# GameLogic.mover_jugador() tras CADA turno (antes sólo acá, y los
 	# early-returns dejaban la ruta stale cuando la IA cortaba el camino).
-
 	var result2: Dictionary = DefensivePathfinder.find_path_with_cost(_game.graph, _game.player_pos, target, _game.runtime)
 	if not result2["reachable"] or result2["path"].is_empty():
 		_game._perder("IA bloqueo todas las rutas!")
