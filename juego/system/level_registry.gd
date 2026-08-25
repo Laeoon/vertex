@@ -28,6 +28,11 @@ const WORLDS: Dictionary = {
 				"title": "Blackout en el Data Center",
 				"difficulty": 4,
 			},
+			{
+				"path": "res://juego/heist/heist_n5.json",
+				"title": "La Bifurcación",
+				"difficulty": 5,
+			},
 		]
 	},
 	"hacker": {

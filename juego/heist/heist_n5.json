@@ -1,0 +1,23 @@
+{
+  "id": "heist_n5",
+  "world": "heist",
+  "graph_path": "res://juego/heist/heist_n5.tres",
+  "start_node": "Entrada",
+  "target_node": "Boveda",
+  "waypoints": [],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 7,
+  "block_duration": 3,
+  "max_turns": 14,
+  "max_movement_points": 16,
+  "titulo_nivel": "Heist — La Bifurcación",
+  "difficulty": 5,
+  "description": "La red avanza en una sola dirección: cruzada la bifurcación, no hay camino de regreso. Si el adversario bloquea el ala que elegiste, quedarás sin salida. Pesa el riesgo de detección de cada sala antes de comprometerte.",
+  "pursuer_delay": 2,
+  "max_pursuers": 4,
+  "pursuer_speed": 1,
+  "par_turnos": 7,
+  "par_coste": 14.0
+}

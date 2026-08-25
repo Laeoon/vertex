@@ -49,6 +49,7 @@ func _run() -> void:
 		"res://juego/heist/heist_n2.json",
 		"res://juego/heist/heist_n3.json",
 		"res://juego/heist/heist_n4.json",
+		"res://juego/heist/heist_n5.json",
 	]
 	for path in levels:
 		var data: Dictionary = LevelRegistryClass.load_level_data(path)

@@ -1,0 +1,187 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" format=3]
+
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="1_yvj5x"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_7dc82"]
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="3_db4wp"]
+
+[sub_resource type="Resource" id="Resource_4wss0"]
+script = ExtResource("1_yvj5x")
+from_id = &"Entrada"
+to_id = &"Atrio"
+
+[sub_resource type="Resource" id="Resource_nermr"]
+script = ExtResource("1_yvj5x")
+from_id = &"Atrio"
+to_id = &"SalidaServicio"
+
+[sub_resource type="Resource" id="Resource_ret5n"]
+script = ExtResource("1_yvj5x")
+resource_name = "SalidaServicio_to_Atrio"
+from_id = &"SalidaServicio"
+to_id = &"Atrio"
+
+[sub_resource type="Resource" id="Resource_dgvyc"]
+script = ExtResource("1_yvj5x")
+from_id = &"Atrio"
+to_id = &"Bifurcacion"
+
+[sub_resource type="Resource" id="Resource_iy44a"]
+script = ExtResource("1_yvj5x")
+from_id = &"Bifurcacion"
+to_id = &"PasilloEste"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_5xfsi"]
+script = ExtResource("1_yvj5x")
+from_id = &"Bifurcacion"
+to_id = &"GaleriaOeste"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_2y8lh"]
+script = ExtResource("1_yvj5x")
+from_id = &"PasilloEste"
+to_id = &"SalaServidores"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_xlpao"]
+script = ExtResource("1_yvj5x")
+from_id = &"SalaServidores"
+to_id = &"CajaFuerte"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_ptb0m"]
+script = ExtResource("1_yvj5x")
+from_id = &"SalaServidores"
+to_id = &"Nucleo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_li48n"]
+script = ExtResource("1_yvj5x")
+from_id = &"CajaFuerte"
+to_id = &"Nucleo"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_27dnr"]
+script = ExtResource("1_yvj5x")
+from_id = &"GaleriaOeste"
+to_id = &"ArchivoCentral"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_24ykm"]
+script = ExtResource("1_yvj5x")
+from_id = &"ArchivoCentral"
+to_id = &"Cripto"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_tcndr"]
+script = ExtResource("1_yvj5x")
+from_id = &"Cripto"
+to_id = &"Nucleo"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_djoy1"]
+script = ExtResource("1_yvj5x")
+from_id = &"Nucleo"
+to_id = &"Boveda"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_02ecl"]
+script = ExtResource("2_7dc82")
+id = &"Entrada"
+node_type = 0
+display_name = "Entrada principal"
+position = Vector2(90, 360)
+
+[sub_resource type="Resource" id="Resource_wlsmh"]
+script = ExtResource("2_7dc82")
+id = &"Atrio"
+node_type = 2
+display_name = "Atrio"
+position = Vector2(240, 360)
+
+[sub_resource type="Resource" id="Resource_kfd3j"]
+script = ExtResource("2_7dc82")
+id = &"SalidaServicio"
+node_type = 0
+display_name = "Salida de servicio"
+position = Vector2(320, 620)
+
+[sub_resource type="Resource" id="Resource_4whpr"]
+script = ExtResource("2_7dc82")
+id = &"Bifurcacion"
+node_type = 2
+display_name = "Bifurcación"
+position = Vector2(520, 360)
+
+[sub_resource type="Resource" id="Resource_dsyeb"]
+script = ExtResource("2_7dc82")
+id = &"PasilloEste"
+node_type = 2
+display_name = "Pasillo este"
+position = Vector2(700, 200)
+
+[sub_resource type="Resource" id="Resource_qlfei"]
+script = ExtResource("2_7dc82")
+id = &"SalaServidores"
+display_name = "Sala de servidores"
+position = Vector2(870, 130)
+metadata = {
+"detection_chance": 0.328
+}
+
+[sub_resource type="Resource" id="Resource_5v4vb"]
+script = ExtResource("2_7dc82")
+id = &"CajaFuerte"
+node_type = 1
+display_name = "Caja fuerte"
+position = Vector2(1040, 200)
+metadata = {
+"detection_chance": 0.32
+}
+
+[sub_resource type="Resource" id="Resource_n24a6"]
+script = ExtResource("2_7dc82")
+id = &"GaleriaOeste"
+node_type = 2
+display_name = "Galería oeste"
+position = Vector2(700, 520)
+
+[sub_resource type="Resource" id="Resource_c4jjb"]
+script = ExtResource("2_7dc82")
+id = &"ArchivoCentral"
+node_type = 4
+display_name = "Archivo central"
+position = Vector2(870, 600)
+metadata = {
+"detection_chance": 0.05
+}
+
+[sub_resource type="Resource" id="Resource_ixtsx"]
+script = ExtResource("2_7dc82")
+id = &"Cripto"
+display_name = "Sala criptográfica"
+position = Vector2(1040, 520)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Resource_h131s"]
+script = ExtResource("2_7dc82")
+id = &"Nucleo"
+display_name = "Núcleo"
+position = Vector2(1140, 360)
+metadata = {
+"detection_chance": 0.1
+}
+
+[sub_resource type="Resource" id="Resource_ttygq"]
+script = ExtResource("2_7dc82")
+id = &"Boveda"
+node_type = 5
+display_name = "Bóveda de datos"
+position = Vector2(1230, 360)
+
+[resource]
+script = ExtResource("3_db4wp")
+nodes = Array[ExtResource("2_7dc82")]([SubResource("Resource_02ecl"), SubResource("Resource_wlsmh"), SubResource("Resource_kfd3j"), SubResource("Resource_4whpr"), SubResource("Resource_dsyeb"), SubResource("Resource_qlfei"), SubResource("Resource_5v4vb"), SubResource("Resource_n24a6"), SubResource("Resource_c4jjb"), SubResource("Resource_ixtsx"), SubResource("Resource_h131s"), SubResource("Resource_ttygq")])
+edges = Array[ExtResource("1_yvj5x")]([SubResource("Resource_4wss0"), SubResource("Resource_nermr"), SubResource("Resource_ret5n"), SubResource("Resource_dgvyc"), SubResource("Resource_iy44a"), SubResource("Resource_5xfsi"), SubResource("Resource_2y8lh"), SubResource("Resource_xlpao"), SubResource("Resource_ptb0m"), SubResource("Resource_li48n"), SubResource("Resource_27dnr"), SubResource("Resource_24ykm"), SubResource("Resource_tcndr"), SubResource("Resource_djoy1")])
