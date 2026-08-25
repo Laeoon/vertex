@@ -102,6 +102,11 @@ var level_key: String = ""
 var eventos_alarma: Array = []
 var _eventos_pendientes: Array = []
 
+# E3: IA predictiva (opt-in) y nodos bonus con seguimiento de visita.
+var ia_predictiva: bool = false
+var bonus_nodes: Array = []
+var bonus_visitados: Array = []
+
 # Hacker mode
 var hacker_mode: bool = false
 var hacker_state: Dictionary = {}

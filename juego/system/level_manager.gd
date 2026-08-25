@@ -81,6 +81,8 @@ static func _apply_to_scene_params(data: Dictionary) -> void:
 	SceneParams.max_pursuers = data.get("max_pursuers", 4)
 	SceneParams.pursuer_speed = data.get("pursuer_speed", 1)
 	SceneParams.eventos_alarma = data.get("eventos", [])
+	SceneParams.ia_predictiva = data.get("ia_predictiva", false)
+	SceneParams.bonus_nodes = data.get("bonus_nodes", [])
 
 
 static func get_worlds() -> Dictionary:

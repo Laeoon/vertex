@@ -163,6 +163,13 @@ var pursuer_speed: int = 1:
 ## spawn_pursuer | pursuer_speed_up | ai_extra_block. Vacío = sin escalada.
 var eventos_alarma: Array = []
 
+## E3: IA predictiva — bloquea 2-3 pasos adelante en la ruta del jugador
+## en vez de la arista adyacente. Opt-in por nivel (JSON: ia_predictiva).
+var ia_predictiva: bool = false
+
+## E3: nodos bonus fuera de ruta óptima. Visitar todos garantiza 3 estrellas.
+var bonus_nodes: Array = []
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Reset — usa acceso directo para evitar validación innecesaria
@@ -204,3 +211,5 @@ func reset() -> void:
 	max_pursuers = 4
 	pursuer_speed = 1
 	eventos_alarma = []
+	ia_predictiva = false
+	bonus_nodes = []

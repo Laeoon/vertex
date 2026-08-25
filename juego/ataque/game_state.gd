@@ -57,6 +57,9 @@ func cargar_params() -> void:
 	_game.pursuer_speed = SceneParams.pursuer_speed
 	_game.eventos_alarma = SceneParams.eventos_alarma.duplicate(true)
 	_game._eventos_pendientes = _game.eventos_alarma.duplicate(true)
+	_game.ia_predictiva = SceneParams.ia_predictiva
+	_game.bonus_nodes = SceneParams.bonus_nodes.duplicate(true)
+	_game.bonus_visitados = []
 	_game.level_key = SceneParams.level_key
 	_game._budget_display = float(_game.max_movement_points)
 
