@@ -9,6 +9,59 @@ tags:
 
 # Historial de Cambios
 
+## E3 — Sistema de tensión: IA predictiva, nodos bonus y doctrina de niveles (2026-08-24)
+
+### Origen
+
+Feedback del usuario jugando N4/N5: "sigue sin haber un peligro real, niveles
+cortos, nada de decisiones, la IA bloquea caminos que expiran antes de que
+llegues". Diagnóstico estructural: rutas cortas (5-8 movimientos), IA
+reactiva, perseguidores simétricos inofensivos en DAG, sin objetivos
+intermedios. Además el usuario fijó el principio **Sonic**: los waypoints van
+en zonas estratégicas pero con múltiples accesos — formalizado como regla
+medible: min-cut ≥ 2 entre objetivos consecutivos.
+
+### Doctrina de diseño v2 (documentada)
+
+1. Escala: 18-25 movimientos por nivel.
+2. Waypoints multi-acceso: min-cut ≥ 2 por tramo (validación automática).
+3. IA predictiva opt-in (`ia_predictiva: true` en JSON): sella 2-3 pasos
+   adelante de tu ruta, no donde estás parado.
+4. Persecución con dientes: `pursuer_speed` ≥ 2 hace a los perseguidores
+   reales en grafos con recorridos largos.
+5. Decisiones opcionales: `bonus_nodes` fuera de ruta → visitarlos todos
+   garantiza 3 estrellas.
+6. Duraciones de bloqueo escaladas al tamaño del nivel.
+
+### Cambios (motor)
+
+- **IA predictiva** (`ai_blocker.gd`, opt-in): con flag activo apunta a la
+  primera arista elegible en índices 2..3 de la ruta del jugador; fallback
+  legacy si no hay candidato. Legacy intocado — golden 19/19 intacto.
+- **Nodos bonus**: transporte completo (SceneParams → juego) + visita
+  trackeada en `game_logic.gd` ("DATO EXTRA x/y") + piso de 3★ en
+  `progress_service.calculate_stars()` + marcador visual rombo WARNING/TEXT_DIM
+  vía frame_data en el renderer + limpieza en reset_state (gap detectado:
+  un [R] arrastraba visitas y regalaba el piso).
+- **Validador de diversidad** (`test_levels_data.gd`): `_min_cut_aristas()`
+  reutiliza StrategicAnalyzer.find_min_cut sobre clon cap 1/arista;
+  exigencia declarativa `"diversidad_minima": K`; reporte informativo para
+  niveles sin flag.
+- Cableado compartido previo: SceneParams/level_manager/game_state
+  (`ia_predictiva`, `bonus_nodes`).
+
+### Hallazgo del validador (confirma cuantitativamente el feedback)
+
+Min-cuts actuales por tramo: TODOS los tramos críticos de N1-N5 están en 1
+(heist_n4 entero = corte único Entrada→Bóveda). Los niveles viejos son
+corredores únicos — la doctrina nueva exige ≥ 2 y los próximos niveles se
+construyen con esa barra.
+
+### Verificación
+
+run_all 25/25 · ia_predictiva 13/13 · ai_blocker eq 19/19 · bonus 15/15 ·
+game_logic eq 21/21 · renderer 9/9 · par_estrellas 9/9.
+
 ## Feedback N4 — regla de presupuesto + identidad de nodos (2026-08-23)
 
 ### Reportado por el usuario jugando Blackout
