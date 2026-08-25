@@ -57,6 +57,14 @@ func mover_jugador(destino: StringName) -> void:
 	_game.player_pos = destino
 	AudioManager.play_sfx("move")
 
+	# Bonus nodes (E3): pisar un nodo bonus lo registra una sola vez. El
+	# mensaje puede ser reemplazado en el mismo turno por waypoint/alarma;
+	# el registro en bonus_visitados es lo que alimenta el piso de 3★
+	# (ver ProgressService.calculate_stars).
+	if destino in _game.bonus_nodes and not (destino in _game.bonus_visitados):
+		_game.bonus_visitados.append(destino)
+		_game.mensaje_estado = "DATO EXTRA %d/%d" % [_game.bonus_visitados.size(), _game.bonus_nodes.size()]
+
 	_game._pursuit_system.check_detection(_game.player_pos)
 
 	if _game.tutorial_player != null and _game.tutorial_player.is_active:

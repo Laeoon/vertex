@@ -73,11 +73,11 @@ func draw_frame(d: Dictionary) -> void:
 		draw_hacker_hud(d.vp_size, d.hacker_state, d.scan_results)
 	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge)
 	if d.defender_mode:
-		draw_nodes(d.graph, d.node_positions, d.brain_enemy_pos, d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time)
+		draw_nodes(d.graph, d.node_positions, d.brain_enemy_pos, d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados)
 		if d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
-		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time)
+		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados)
 	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
 	if d.show_optimal_overlay:
 		draw_optimal_overlay(d.optimal_overlay_path, d.node_positions, d.node_radius)
@@ -577,7 +577,9 @@ func draw_nodes(
 	current_waypoint_idx: int = 0,
 	node_firewalls: Dictionary = {},
 	enemy_pos: StringName = &"",
-	_enemy_move_flash_time: float = -1.0
+	_enemy_move_flash_time: float = -1.0,
+	bonus_nodes: Array = [],
+	bonus_visitados: Array = []
 ) -> void:
 	# Identidad por tipo (E2): forma geométrica según NodeType.
 	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
@@ -739,6 +741,12 @@ func draw_nodes(
 			draw_circle(pos, shield_radius, shield_color, false, 2.5)
 			# Icono de escudo
 			draw_string(Vector2(pos.x - 7, pos.y + 5), "🛡", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, Color(0.3, 0.8, 1.0))
+
+		# Bonus node marker (E3): rombo pequeño flotando arriba-izquierda —
+		# WARNING mientras pendiente, TEXT_DIM cuando ya fue visitado.
+		if nid_str in bonus_nodes:
+			var bonus_color: Color = BrandClass.TEXT_DIM if nid_str in bonus_visitados else BrandClass.WARNING
+			draw_polygon(_poligono(pos + Vector2(-(radius + 12.0), -(radius + 12.0)), 6.0, 4), bonus_color)
 
 
 func draw_pursuers(pursuers: Array, node_positions: Dictionary, node_radius: float) -> void:

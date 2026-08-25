@@ -21,6 +21,10 @@ class_name ProgressService extends RefCounted
 ##     `_perder()`.
 ##   - `load_all()` es un static helper para lecturas desde el juego (usado por
 ##     `_draw` para mostrar estrellas en game over).
+##   - Regla E3 (nodos bonus): si el nivel declara `bonus_nodes` y el jugador
+##     visitó TODOS durante la partida, `calculate_stars()` devuelve 3 como
+##     PISO sobre el cálculo por par (max(calculado, 3)). Recolectarlos cuesta
+##     presupuesto/turnos, así que se premia independiente del ratio.
 
 const DefensivePathfinder = preload("res://core/agents/defensive_pathfinder.gd")
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
@@ -39,7 +43,24 @@ func setup(game: Node) -> void:
 func calculate_stars() -> int:
 	"""Calcula las estrellas ganadas (portado de `_calcular_estrellas`).
 
-	Tres modos de cálculo:
+	Tres modos de cálculo (ver `_calculo_base`); el resultado pasa por la
+	regla E3: con bonus_nodes declarados y todos visitados, 3★ es piso."""
+	if _game == null:
+		return 1
+
+	var estrellas: int = _calculo_base()
+
+	# Regla E3: visitar TODOS los nodos bonus garantiza 3★ como piso —
+	# max(calculado, 3) sobre cualquier rama de cálculo (par, presupuesto
+	# legacy o coste óptimo).
+	if not _game.bonus_nodes.is_empty() and _game.bonus_visitados.size() >= _game.bonus_nodes.size():
+		estrellas = maxi(estrellas, 3)
+	return estrellas
+
+
+func _calculo_base() -> int:
+	"""Cálculo clásico de estrellas sin la regla E3.
+
 	  1. Si el nivel define par (par_turnos/par_coste en su JSON, slice 5):
 	     estilo golf — jugar EN el par es 3★; coste ≤1.5×par o turnos
 	     ≤1.25×par es 2★; más allá, 1★. El presupuesto deja de definir

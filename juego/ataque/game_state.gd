@@ -197,6 +197,8 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"player_total_cost": _game.player_total_cost,
 		"waypoints": _game.waypoints,
 		"waypoint_idx": _game.current_waypoint_idx,
+		"bonus_nodes": _game.bonus_nodes,
+		"bonus_visitados": _game.bonus_visitados,
 		"pursuers": _game.pursuers,
 		"alerted_nodes": _game.alerted_nodes,
 		"movement_points": _game.movement_points,
@@ -263,6 +265,9 @@ func reset_state() -> void:
 	_game.show_optimal_overlay = false
 	_game.optimal_overlay_path.clear()
 	_game.player_total_cost = 0.0
+	# E3: el reinicio limpia las visitas bonus — si no, un [R] preservaba
+	# visitados entre intentos y regalaba el piso de 3★ sin recolectar.
+	_game.bonus_visitados = []
 	_game.movement_points = _game.max_movement_points
 	_game._turn_locked_until = 0.0
 	# Escalada de alarma (E1): la cola de eventos se re-arma en cada partida
