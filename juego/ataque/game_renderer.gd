@@ -71,13 +71,15 @@ func draw_frame(d: Dictionary) -> void:
 		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
 	if d.hacker_mode:
 		draw_hacker_hud(d.vp_size, d.hacker_state, d.scan_results)
-	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge)
+	var hidden_nodes: Array = d.get("hidden_nodes", [])
+	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes)
 	if d.defender_mode:
-		draw_nodes(d.graph, d.node_positions, d.brain_enemy_pos, d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados)
+		draw_nodes(d.graph, d.node_positions, d.brain_enemy_pos, d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes)
 		if d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
-		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados)
+		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes)
+
 	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
 	if d.show_optimal_overlay:
 		draw_optimal_overlay(d.optimal_overlay_path, d.node_positions, d.node_radius)
@@ -410,7 +412,8 @@ func draw_edges(
 	enemy_path: Array = [],
 	current_turn: int = 0,
 	_unblock_flash_time: float = -1.0,
-	_unblock_flash_edge: String = ""
+	_unblock_flash_edge: String = "",
+	hidden_nodes: Array = []
 ) -> void:
 	# Pre-pasada: set de claves para detectar pares bidireccionales (A→B + B→A)
 	# y curvarlos aparte — dibujados rectos se superponen exactamente y las
@@ -423,6 +426,9 @@ func draw_edges(
 	for e in graph.edges:
 		if e == null:
 			continue
+		if hidden_nodes.has(e.from_id) or hidden_nodes.has(e.to_id) or hidden_nodes.has(String(e.from_id)) or hidden_nodes.has(String(e.to_id)):
+			continue
+
 		var from_pos: Vector2 = node_positions.get(e.from_id, Vector2.ZERO) as Vector2
 		var to_pos: Vector2 = node_positions.get(e.to_id, Vector2.ZERO) as Vector2
 		if from_pos == Vector2.ZERO or to_pos == Vector2.ZERO:
@@ -507,9 +513,10 @@ func draw_edges(
 			draw_string(centro + Vector2(-5, 5), "X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 0.3, 0.3, 1.0))
 			# TAREA 3: Mostrar duración restante del bloqueo
 			var block_data: Dictionary = blocked_edges.get(edge_key, {})
-			if block_data.has("expires_at"):
+			if block_data.has("expires_at") and not block_data.get("locked", false):
 				var remaining: int = int(block_data["expires_at"]) - current_turn
-				if remaining > 0:
+				if remaining > 0 and remaining < 1000:
+
 					var dur_color: Color
 					if remaining >= 4:
 						dur_color = Color(0.0, 1.0, 0.5)  # verde
@@ -579,7 +586,8 @@ func draw_nodes(
 	enemy_pos: StringName = &"",
 	_enemy_move_flash_time: float = -1.0,
 	bonus_nodes: Array = [],
-	bonus_visitados: Array = []
+	bonus_visitados: Array = [],
+	hidden_nodes: Array = []
 ) -> void:
 	# Identidad por tipo (E2): forma geométrica según NodeType.
 	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
@@ -591,18 +599,25 @@ func draw_nodes(
 
 	for nid in node_positions.keys():
 		var nid_str: StringName = nid as StringName
+		if hidden_nodes.has(nid_str) or hidden_nodes.has(String(nid_str)):
+			continue
 		var pos: Vector2 = node_positions[nid] as Vector2
 
 		var is_player: bool = nid_str == player_pos
 		var is_target: bool = nid_str == target
 		var es_vecino: bool = nid_str in neighbors
 		var in_path: bool = nid_str in current_path
+		var is_bonus: bool = (nid_str in bonus_nodes) or (String(nid_str) in bonus_nodes)
+		var bonus_ya_visitado: bool = (nid_str in bonus_visitados) or (String(nid_str) in bonus_visitados)
+		var is_golden: bool = is_bonus and not bonus_ya_visitado
 
 		var node_color: Color
 		if is_player:
 			node_color = Color(0.0, 0.7, 1.0)
 		elif is_target:
 			node_color = Color(1.0, 0.15, 0.15)
+		elif is_golden:
+			node_color = Color(1.0, 0.82, 0.0)
 		elif es_vecino and not game_over:
 			node_color = Color(0.1, 0.85, 0.2)
 		else:
@@ -611,7 +626,7 @@ func draw_nodes(
 		var radius: float = node_radius
 		if is_player:
 			radius += 6.0
-		elif is_target or es_vecino:
+		elif is_target or es_vecino or is_golden:
 			radius += 3.0
 
 		var node_res = nodos_res.get(nid_str, null)
@@ -629,6 +644,11 @@ func draw_nodes(
 				forma = _poligono(pos, radius, 4)
 			_:
 				es_circulo = true
+
+		if is_golden:
+			var g_pulse: float = 0.5 + sin(Time.get_ticks_msec() * 0.007) * 0.3
+			draw_circle(pos, radius + 6.0, Color(1.0, 0.82, 0.0, g_pulse * 0.45), false, 2.5)
+			draw_circle(pos, radius + 11.0, Color(1.0, 0.82, 0.0, g_pulse * 0.2), false, 1.5)
 
 		# Sombra con la MISMA silueta de la forma (un círculo genérico asomaba
 		# detrás del triángulo/cuadrado/rombo como aureola redonda).
@@ -650,8 +670,11 @@ func draw_nodes(
 			border_color = Color(0.0, 0.9, 1.0)
 		elif is_target:
 			border_color = BrandClass.DANGER
+		elif is_golden:
+			border_color = Color(1.0, 0.95, 0.3)
 		elif es_vecino:
 			border_color = Color(0.3, 1.0, 0.4)
+
 
 		if tipo == 0:
 			# INTERNET: doble anillo (puerta al exterior).

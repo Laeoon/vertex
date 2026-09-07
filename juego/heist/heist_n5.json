@@ -6,18 +6,45 @@
   "target_node": "Boveda",
   "waypoints": [],
   "ai_enabled": true,
+  "ia_predictiva": true,
   "ai_block_per_turn": 1,
   "ai_bloquea_al_inicio": false,
-  "max_ai_blocks": 7,
+  "max_ai_blocks": 8,
   "block_duration": 3,
-  "max_turns": 14,
-  "max_movement_points": 16,
+  "max_turns": 22,
+  "max_movement_points": 28,
   "titulo_nivel": "Heist — La Bifurcación",
   "difficulty": 5,
-  "description": "La red avanza en una sola dirección: cruzada la bifurcación, no hay camino de regreso. Si el adversario bloquea el ala que elegiste, quedarás sin salida. Pesa el riesgo de detección de cada sala antes de comprometerte.",
-  "pursuer_delay": 2,
+  "description": "Dos alas masivas dividen la red hacia la bóveda. La IA bloquea con anticipación y los sistemas responden. El acceso de servicio al inicio esconde datos valiosos, pero vulnerarlo encenderá la alarma y forzará las esclusas de interconexión.",
+  "pursuer_delay": 4,
+
   "max_pursuers": 4,
   "pursuer_speed": 1,
-  "par_turnos": 7,
-  "par_coste": 14.0
+  "par_turnos": 12,
+  "par_coste": 16.0,
+
+  "diversidad_minima": 2,
+  "bonus_nodes": [
+    "SalidaServicio"
+  ],
+  "locked_edges": [
+    "PuenteEste→PuenteOeste",
+    "PuenteOeste→PuenteEste"
+  ],
+  "hidden_nodes": [
+    "PuenteEste",
+    "PuenteOeste"
+  ],
+  "node_triggers": {
+    "SalidaServicio": {
+      "efectos": [
+        "spawn_pursuer",
+        "alert_network",
+        "reveal_nodes:PuenteEste,PuenteOeste",
+        "unlock_edge:PuenteEste→PuenteOeste",
+        "unlock_edge:PuenteOeste→PuenteEste"
+      ],
+      "mensaje": "⚠ ACCESO FORZADO: Rutas de enlace abiertas. Alarma activada."
+    }
+  }
 }

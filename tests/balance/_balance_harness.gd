@@ -38,20 +38,30 @@ func _ready() -> void:
 
 
 func _run() -> void:
-	var runs: int = RUNS_DEFAULT
+	var runs: int = 15
+	var target_level: String = ""
 	for a in OS.get_cmdline_user_args():
 		if a.is_valid_int():
 			runs = int(a)
+		elif a.ends_with(".json") or a.begins_with("heist_"):
+			target_level = a
 	_back_up_user_files()
 
-	var levels := [
-		"res://juego/heist/heist_n1.json",
-		"res://juego/heist/heist_n2.json",
-		"res://juego/heist/heist_n3.json",
-		"res://juego/heist/heist_n4.json",
-		"res://juego/heist/heist_n5.json",
-	]
+	var levels: Array[String] = []
+	if target_level != "":
+		if not target_level.begins_with("res://"):
+			target_level = "res://juego/heist/%s.json" % target_level if not target_level.ends_with(".json") else "res://juego/heist/%s" % target_level
+		levels.append(target_level)
+	else:
+		levels = [
+			"res://juego/heist/heist_n1.json",
+			"res://juego/heist/heist_n2.json",
+			"res://juego/heist/heist_n3.json",
+			"res://juego/heist/heist_n4.json",
+			"res://juego/heist/heist_n5.json",
+		]
 	for path in levels:
+
 		var data: Dictionary = LevelRegistryClass.load_level_data(path)
 		if data.is_empty():
 			print("ERROR: no se pudo cargar %s" % path)

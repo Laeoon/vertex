@@ -60,7 +60,13 @@ func cargar_params() -> void:
 	_game.ia_predictiva = SceneParams.ia_predictiva
 	_game.bonus_nodes = SceneParams.bonus_nodes.duplicate(true)
 	_game.bonus_visitados = []
+	_game.node_triggers = SceneParams.node_triggers.duplicate(true)
+	_game.locked_edges = SceneParams.locked_edges.duplicate(true)
+	_game.hidden_nodes = SceneParams.hidden_nodes.duplicate(true)
+	_game.triggered_nodes = []
 	_game.level_key = SceneParams.level_key
+
+
 	_game._budget_display = float(_game.max_movement_points)
 
 
@@ -148,6 +154,8 @@ func edge_en_posicion(pos: Vector2) -> String:
 ## Puerto del viejo juego_ataque._nodo_en_posicion() (P5).
 func nodo_en_posicion(pos: Vector2) -> StringName:
 	for nid in _game.node_positions.keys():
+		if _game.hidden_nodes.has(nid) or _game.hidden_nodes.has(String(nid)):
+			continue
 		var npos: Vector2 = _game.node_positions[nid] as Vector2
 		if npos.distance_to(pos) <= _game.node_radius + 22.0:
 			return nid as StringName
@@ -158,6 +166,8 @@ func nodo_en_posicion(pos: Vector2) -> StringName:
 ## generoso para colocar firewalls de nodo.
 func nodo_en_posicion_firewall(pos: Vector2) -> StringName:
 	for nid in _game.node_positions.keys():
+		if _game.hidden_nodes.has(nid) or _game.hidden_nodes.has(String(nid)):
+			continue
 		var npos: Vector2 = _game.node_positions[nid] as Vector2
 		if npos.distance_to(pos) <= _game.node_radius + 30.0:
 			return nid as StringName
@@ -187,6 +197,7 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"current_path": _game.current_path,
 		"blocked_edges": _game.blocked_edges,
 		"blocked_keys": blocked_edge_keys(),
+		"hidden_nodes": _game.hidden_nodes,
 		"unblock_flash_time": _game._unblock_flash_time,
 		"unblock_flash_edge": _game._unblock_flash_edge,
 		"enemy_move_flash_time": _game._enemy_move_flash_time,
@@ -275,6 +286,20 @@ func reset_state() -> void:
 	_game._eventos_pendientes = _game.eventos_alarma.duplicate(true)
 	_game.pursuer_speed = SceneParams.pursuer_speed
 	_game.max_ai_blocks = SceneParams.max_ai_blocks
+	# E4: triggers reactivos y aristas bloqueadas inicialmente
+	_game.triggered_nodes = []
+	_game.hidden_nodes = SceneParams.hidden_nodes.duplicate(true)
+	for edge_key in _game.locked_edges:
+
+		var parts: PackedStringArray = str(edge_key).split("→")
+		if parts.size() == 2:
+			var from_n: StringName = parts[0] as StringName
+			var to_n: StringName = parts[1] as StringName
+			block_edge(str(edge_key), from_n, to_n)
+			if _game.blocked_edges.has(str(edge_key)):
+				_game.blocked_edges[str(edge_key)]["locked"] = true
+				_game.blocked_edges[str(edge_key)]["expires_at"] = 999999
+
 
 	if _game.hacker_mode:
 		var starting_exploits: Dictionary = SceneParams.starting_exploits

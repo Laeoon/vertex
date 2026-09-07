@@ -83,6 +83,10 @@ static func _apply_to_scene_params(data: Dictionary) -> void:
 	SceneParams.eventos_alarma = data.get("eventos", [])
 	SceneParams.ia_predictiva = data.get("ia_predictiva", false)
 	SceneParams.bonus_nodes = data.get("bonus_nodes", [])
+	SceneParams.node_triggers = data.get("node_triggers", {})
+	SceneParams.locked_edges = data.get("locked_edges", [])
+	SceneParams.hidden_nodes = data.get("hidden_nodes", [])
+
 
 
 static func get_worlds() -> Dictionary:

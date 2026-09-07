@@ -65,7 +65,10 @@ func mover_jugador(destino: StringName) -> void:
 		_game.bonus_visitados.append(destino)
 		_game.mensaje_estado = "DATO EXTRA %d/%d" % [_game.bonus_visitados.size(), _game.bonus_nodes.size()]
 
+	_procesar_trigger_nodo(destino)
+
 	_game._pursuit_system.check_detection(_game.player_pos)
+
 
 	if _game.tutorial_player != null and _game.tutorial_player.is_active:
 		_game.tutorial_player.notify_moved()
@@ -191,11 +194,14 @@ func vecinos_jugador() -> Array:
 	var result: Array[StringName] = []
 	for n in neighbors:
 		var nid: StringName = n["to_id"]
+		if _game.hidden_nodes.has(nid) or _game.hidden_nodes.has(String(nid)):
+			continue
 		var edge_key: String = "%s→%s" % [_game.player_pos, nid]
 		if _game._is_blocked(edge_key):
 			continue
 		result.append(nid)
 	return result
+
 
 
 ## Puerto del viejo juego_ataque._auto_select_vecino().
@@ -332,3 +338,67 @@ func _aplicar_efecto_alarma(ev: Dictionary) -> void:
 			GameLogger.warn("GameLogic", "Evento de alarma desconocido: %s" % efecto)
 			return
 	GameLogger.info("JuegoAtaque", "Alarma turno %d: %s" % [_game.turn, efecto])
+
+
+## E4: Procesa triggers reactivos asociados a un nodo cuando es visitado.
+func _procesar_trigger_nodo(nodo: StringName) -> void:
+	if _game.node_triggers.is_empty():
+		return
+	var nodo_str: String = str(nodo)
+	if not _game.node_triggers.has(nodo_str):
+		return
+	if nodo in _game.triggered_nodes:
+		return
+	_game.triggered_nodes.append(nodo)
+	var trigger_data: Dictionary = _game.node_triggers[nodo_str]
+	var efectos: Array = trigger_data.get("efectos", [])
+	for ef in efectos:
+		_aplicar_efecto_trigger(str(ef))
+	if trigger_data.has("mensaje"):
+		_game.mensaje_estado = str(trigger_data["mensaje"])
+	_game.queue_redraw()
+
+
+## Aplica UN efecto de trigger de nodo.
+func _aplicar_efecto_trigger(efecto: String) -> void:
+	match efecto:
+		"spawn_pursuer":
+			if _game.pursuers.size() < _game.pursuer_max:
+				var spawn: StringName = _game._pursuit_system.find_spawn_node(_game.player_pos, null)
+				_game._pursuit_system.spawn_pursuer(spawn, _game.pursuer_delay, _game.pursuer_speed)
+				GameLogger.info("GameLogic", "Trigger spawn_pursuer en %s" % spawn)
+		"pursuer_speed_up":
+			if _game.pursuer_speed < 10:
+				_game.pursuer_speed += 1
+		"ai_extra_block":
+			_game.max_ai_blocks += 1
+		"alert_network":
+			if not _game.alerted_nodes.has(_game.player_pos):
+				_game.alerted_nodes.append(_game.player_pos)
+		_:
+			if efecto.begins_with("unlock_edge:"):
+				var edge_key: String = efecto.trim_prefix("unlock_edge:")
+				_game._unblock_edge(edge_key)
+				GameLogger.info("GameLogic", "Trigger unlock_edge: %s" % edge_key)
+			elif efecto.begins_with("block_edge:"):
+				var edge_key: String = efecto.trim_prefix("block_edge:")
+				var parts: PackedStringArray = edge_key.split("→")
+				if parts.size() == 2:
+					_game._block_edge(edge_key, parts[0] as StringName, parts[1] as StringName)
+					GameLogger.info("GameLogic", "Trigger block_edge: %s" % edge_key)
+			elif efecto.begins_with("reveal_node:"):
+				var nid: String = efecto.trim_prefix("reveal_node:")
+				_game.hidden_nodes.erase(nid)
+				_game.hidden_nodes.erase(StringName(nid))
+				GameLogger.info("GameLogic", "Trigger reveal_node: %s" % nid)
+			elif efecto.begins_with("reveal_nodes:"):
+				var list_str: String = efecto.trim_prefix("reveal_nodes:")
+				for nid in list_str.split(","):
+					var clean_nid := nid.strip_edges()
+					_game.hidden_nodes.erase(clean_nid)
+					_game.hidden_nodes.erase(StringName(clean_nid))
+				GameLogger.info("GameLogic", "Trigger reveal_nodes: %s" % list_str)
+			else:
+				GameLogger.warn("GameLogic", "Efecto de trigger desconocido: %s" % efecto)
+
+

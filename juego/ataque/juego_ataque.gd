@@ -107,6 +107,14 @@ var ia_predictiva: bool = false
 var bonus_nodes: Array = []
 var bonus_visitados: Array = []
 
+# E4: triggers reactivos por nodo y aristas bloqueadas de inicio
+var node_triggers: Dictionary = {}
+var triggered_nodes: Array = []
+var locked_edges: Array = []
+var hidden_nodes: Array = []
+
+
+
 # Hacker mode
 var hacker_mode: bool = false
 var hacker_state: Dictionary = {}

@@ -170,6 +170,17 @@ var ia_predictiva: bool = false
 ## E3: nodos bonus fuera de ruta óptima. Visitar todos garantiza 3 estrellas.
 var bonus_nodes: Array = []
 
+## E4: triggers reactivos por nodo al ser visitados. Formato: { "NodeId": { "efectos": [...], "mensaje": "..." } }
+var node_triggers: Dictionary = {}
+
+## E4: aristas bloqueadas inicialmente hasta ser desbloqueadas por eventos. Formato: ["From→To", ...]
+var locked_edges: Array = []
+
+## E4: nodos ocultos inicialmente hasta ser revelados por eventos. Formato: ["NodeId", ...]
+var hidden_nodes: Array = []
+
+
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Reset — usa acceso directo para evitar validación innecesaria
@@ -213,3 +224,7 @@ func reset() -> void:
 	eventos_alarma = []
 	ia_predictiva = false
 	bonus_nodes = []
+	node_triggers = {}
+	locked_edges = []
+	hidden_nodes = []
+
