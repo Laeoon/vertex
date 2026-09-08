@@ -151,6 +151,22 @@ func _bloquear_en(path: Array[StringName], idx: int) -> bool:
 	if would_isolate(edge_key):
 		GameLogger.debug("AIBlocker", "Evita aislar: saltando %s" % edge_key)
 		return false
+
+	# Interceptar si la arista toca un nodo con señuelo activo:
+	# absorbe el bloqueo, consume la acción de la IA y expira el señuelo.
+	if _game.hacker_mode and _game.hacker_state != null and _game.hacker_state.has("active_decoys"):
+		var decoys: Dictionary = _game.hacker_state["active_decoys"]
+		var matched_decoy: String = ""
+		if decoys.has(str(from_n)):
+			matched_decoy = str(from_n)
+		elif decoys.has(str(to_n)):
+			matched_decoy = str(to_n)
+
+		if matched_decoy != "":
+			decoys.erase(matched_decoy)
+			GameLogger.info("AIBlocker", "Bloqueo absorbido por señuelo en %s! Arista %s permanece desbloqueada." % [matched_decoy, edge_key])
+			return true
+
 	_game._block_edge(edge_key, from_n, to_n)
 	GameLogger.debug("AIBlocker", "Bloquea: %s → %s" % [from_n, to_n])
 	return true

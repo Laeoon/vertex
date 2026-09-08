@@ -146,6 +146,13 @@ func _input(event: InputEvent) -> void:
 						return
 					exploit_used.emit("persist")
 					return
+			KEY_4:
+				if hacker_mode and not game_over:
+					if _tutorial_blocks("input"):
+						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						return
+					exploit_used.emit("decoy")
+					return
 
 	# ─── Modo defensor: mouse motion ──────────────────────────
 	if defender_mode and event is InputEventMouseMotion:

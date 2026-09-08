@@ -8,24 +8,28 @@ class_name HackerMechanics
 const EXPLOIT_BYPASS: String = "bypass"
 const EXPLOIT_ESCALATE: String = "escalate"
 const EXPLOIT_PERSIST: String = "persist"
+const EXPLOIT_DECOY: String = "decoy"
 
 ## Nombres estilizados para UI (nunca describen técnicas reales)
 const EXPLOIT_NAMES: Dictionary = {
 	"bypass": "Infiltración",
 	"escalate": "Elevación",
 	"persist": "Persistencia",
+	"decoy": "Señuelo",
 }
 
 const EXPLOIT_ICONS: Dictionary = {
 	"bypass": "⚡",
 	"escalate": "🔓",
 	"persist": "♻",
+	"decoy": "🎯",
 }
 
 const EXPLOIT_DESCRIPTIONS: Dictionary = {
 	"bypass": "Salta la protección de un nodo",
 	"escalate": "Accede a áreas restringidas",
 	"persist": "Mantén acceso por turnos extra",
+	"decoy": "Desvía enemigos y absorbe bloqueos",
 }
 
 ## ─── TIPOS DE NODO ──────────────────────────────────────────────
@@ -39,6 +43,8 @@ const NOISE_MOVE_BASE: int = 5
 const NOISE_EXPLOIT_BYPASS: int = 15
 const NOISE_EXPLOIT_ESCALATE: int = 25
 const NOISE_EXPLOIT_PERSIST: int = 10
+const NOISE_EXPLOIT_DECOY: int = 15
+const DECOY_DURATION_TURNS: int = 2
 const NOISE_SCAN: int = 2
 const NOISE_DECOY_PENALTY: int = 30
 const NOISE_DECAY_PER_TURN: int = 3
@@ -63,14 +69,16 @@ static func create_state(max_exploits: int = MAX_EXPLOITS_DEFAULT) -> Dictionary
 		"exploits_used": 0,
 		"scanned_nodes": {},
 		"active_persists": {},
+		"active_decoys": {},
 		"discovered_vulnerabilities": [],
 	}
 
 
 ## ─── ESCANEO DE NODOS ──────────────────────────────────────────
 
-static func scan_node(state: Dictionary, node_id: StringName, node_metadata: Dictionary) -> Dictionary:
-	state["noise"] = mini(state["noise"] + NOISE_SCAN, state["max_noise"])
+static func scan_node(state: Dictionary, node_id: StringName, node_metadata: Dictionary, add_noise_cost: bool = true) -> Dictionary:
+	if add_noise_cost:
+		state["noise"] = mini(state["noise"] + NOISE_SCAN, state["max_noise"])
 	state["scanned_nodes"][str(node_id)] = true
 
 	var node_type: String = _determine_node_type(node_metadata)
@@ -146,11 +154,15 @@ static func use_exploit(state: Dictionary, exploit_type: String, target_node: St
 			noise_cost = NOISE_EXPLOIT_ESCALATE
 		EXPLOIT_PERSIST:
 			noise_cost = NOISE_EXPLOIT_PERSIST
+		EXPLOIT_DECOY:
+			noise_cost = NOISE_EXPLOIT_DECOY
 
 	state["noise"] = mini(state["noise"] + noise_cost, state["max_noise"])
 
 	if exploit_type == EXPLOIT_PERSIST:
 		state["active_persists"][str(target_node)] = 3
+	elif exploit_type == EXPLOIT_DECOY:
+		state["active_decoys"][str(target_node)] = {"duration": DECOY_DURATION_TURNS}
 
 	return {
 		"success": true,
@@ -168,8 +180,8 @@ static func add_noise(state: Dictionary, amount: int) -> void:
 	state["noise"] = mini(state["noise"] + amount, state["max_noise"])
 
 
-static func decay_noise(state: Dictionary) -> void:
-	state["noise"] = maxi(state["noise"] - NOISE_DECAY_PER_TURN, 0)
+static func decay_noise(state: Dictionary, amount: int = NOISE_DECAY_PER_TURN) -> void:
+	state["noise"] = maxi(state["noise"] - amount, 0)
 
 
 static func get_alert_level(state: Dictionary) -> String:

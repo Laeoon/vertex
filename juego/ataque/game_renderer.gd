@@ -252,9 +252,9 @@ func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: D
 
 	# Exploit inventory
 	var ei_y: float = nm_y + 28.0
-	var exploit_types: Array = ["bypass", "escalate", "persist"]
-	var exploit_icons: Dictionary = {"bypass": "⚡", "escalate": "🔓", "persist": "♻"}
-	var exploit_names: Dictionary = {"bypass": "Infiltrar", "escalate": "Escalar", "persist": "Mantener"}
+	var exploit_types: Array = ["bypass", "escalate", "persist", "decoy"]
+	var exploit_icons: Dictionary = {"bypass": "⚡", "escalate": "🔓", "persist": "♻", "decoy": "🎯"}
+	var exploit_names: Dictionary = {"bypass": "Infiltrar", "escalate": "Escalar", "persist": "Mantener", "decoy": "Señuelo"}
 
 	for i in exploit_types.size():
 		var et: String = exploit_types[i]

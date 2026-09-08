@@ -75,6 +75,8 @@ func check_detection(player_pos: StringName) -> void:
 	if node_res == null:
 		return
 	var detect_chance: float = float(node_res.metadata.get("detection_chance", 0.0))
+	if _game.hacker_mode and _game._hacker_logic != null:
+		detect_chance = _game._hacker_logic.get_detection_chance(player_pos, detect_chance)
 	if detect_chance <= 0.0:
 		return
 	if randf() > detect_chance:
@@ -109,14 +111,31 @@ func process_pursuers(player_pos: StringName) -> bool:
 			continue
 		if not p["active"]:
 			continue
-		var result: Dictionary = DefensivePathfinder.find_path_with_cost(_game.graph, p["pos"], player_pos, _game.runtime)
+
+		var target_dest: StringName = player_pos
+		var is_targeting_decoy: bool = false
+		if _game.hacker_mode and _game.hacker_state != null and _game.hacker_state.has("active_decoys") and not _game.hacker_state["active_decoys"].is_empty():
+			var min_cost: float = INF
+			var best_decoy: StringName = &""
+			for decoy_key in _game.hacker_state["active_decoys"].keys():
+				var d_node := StringName(str(decoy_key))
+				var d_res: Dictionary = DefensivePathfinder.find_path_with_cost(_game.graph, p["pos"], d_node, _game.runtime)
+				if d_res["reachable"] and not d_res["path"].is_empty():
+					if d_res["cost"] < min_cost:
+						min_cost = d_res["cost"]
+						best_decoy = d_node
+			if best_decoy != &"":
+				target_dest = best_decoy
+				is_targeting_decoy = true
+
+		var result: Dictionary = DefensivePathfinder.find_path_with_cost(_game.graph, p["pos"], target_dest, _game.runtime)
 		if not result["reachable"] or result["path"].is_empty():
 			continue
 		var path: Array = result["path"]
 		var steps: int = mini(p["speed"], path.size() - 1)
 		p["pos"] = path[steps]
-		GameLogger.debug("PursuitSystem", "Perseguidor %d → %s" % [p["id"], p["pos"]])
-		if p["pos"] == player_pos:
+		GameLogger.debug("PursuitSystem", "Perseguidor %d → %s (destino: %s)" % [p["id"], p["pos"], target_dest])
+		if not is_targeting_decoy and p["pos"] == player_pos:
 			_game._perder("Capturado por seguridad (perseguidor %d)" % p["id"])
 			return true
 	return false

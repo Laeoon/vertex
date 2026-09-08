@@ -40,7 +40,12 @@ func mover_jugador(destino: StringName) -> void:
 			break
 
 	if _game.hacker_mode and not _game.game_over:
-		HackerMechanicsClass.add_noise(_game.hacker_state, HackerMechanicsClass.NOISE_MOVE_BASE)
+		var origin_persisted: bool = _game.hacker_state.get("active_persists", {}).has(str(_game.player_pos))
+		var dest_persisted: bool = _game.hacker_state.get("active_persists", {}).has(str(destino))
+		if not (origin_persisted or dest_persisted):
+			HackerMechanicsClass.add_noise(_game.hacker_state, HackerMechanicsClass.NOISE_MOVE_BASE)
+		else:
+			GameLogger.debug("JuegoAtaque", "Safe haven (persist) activo — 0 ruido de movimiento")
 
 	if _game.max_movement_points > 0:
 		# FIX: el presupuesto se paga ANTES de cruzar — si la arista cuesta más
@@ -66,6 +71,9 @@ func mover_jugador(destino: StringName) -> void:
 		_game.mensaje_estado = "DATO EXTRA %d/%d" % [_game.bonus_visitados.size(), _game.bonus_nodes.size()]
 
 	_procesar_trigger_nodo(destino)
+
+	if _game.hacker_mode and _game._hacker_logic != null:
+		_game._hacker_logic.on_node_entered(destino)
 
 	_game._pursuit_system.check_detection(_game.player_pos)
 
@@ -110,11 +118,12 @@ func mover_jugador(destino: StringName) -> void:
 	_game.mostrar_ruta()
 
 	if _game.hacker_mode and not _game.game_over:
-		# Si hay persists activos, el ruido no decae (mantienes acceso audible)
-		if _game.hacker_state.get("active_persists", {}).is_empty():
-			HackerMechanicsClass.decay_noise(_game.hacker_state)
+		var resting_on_persist: bool = _game.hacker_state.get("active_persists", {}).has(str(_game.player_pos))
+		if resting_on_persist:
+			HackerMechanicsClass.decay_noise(_game.hacker_state, HackerMechanicsClass.NOISE_DECAY_PER_TURN * 2)
+			GameLogger.debug("JuegoAtaque", "Descansando en persist: doble decay de ruido (-%d)" % (HackerMechanicsClass.NOISE_DECAY_PER_TURN * 2))
 		else:
-			GameLogger.debug("JuegoAtaque", "Persist activo — decay de ruido suspendido")
+			HackerMechanicsClass.decay_noise(_game.hacker_state)
 
 	# Revisar consecuencias de ruido/persists cada turno
 	if _game.hacker_mode:
