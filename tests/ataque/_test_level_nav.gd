@@ -31,6 +31,8 @@ func _run() -> void:
 	_af(u1.get("world") == "heist" and u1.get("idx") == 0, "find_level(heist_n1) → heist[0]")
 	var u3: Dictionary = Registry.find_level("heist_n3")
 	_af(u3.get("world") == "heist" and u3.get("idx") == 2, "find_level(heist_n3) → heist[2]")
+	var u5: Dictionary = Registry.find_level("heist_n5")
+	_af(u5.get("world") == "heist" and u5.get("idx") == 4, "find_level(heist_n5) → heist[4]")
 	var uc: Dictionary = Registry.find_level("cyber_n1")
 	_af(uc.get("world") == "cybersecurity" and uc.get("idx") == 0, "find_level(cyber_n1) → cybersecurity[0]")
 	_af(Registry.find_level("nivel_inexistente").is_empty(), "find_level(desconocido) → {}")
@@ -39,9 +41,9 @@ func _run() -> void:
 	# ── S2: decisión de siguiente nivel (sin fade) ──
 	# heist_n2 existe → hay siguiente desde heist_n1:
 	var levels_heist: Array = Registry.get_levels("heist")
-	_af(levels_heist.size() == 3, "heist tiene 3 niveles registrados")
-	# heist_n3 es el último → idx+1 fuera de rango:
-	_af(not (u3["idx"] + 1 < levels_heist.size()), "heist_n3 es el último del mundo (sin siguiente)")
+	_af(levels_heist.size() == 5, "heist tiene 5 niveles registrados")
+	# heist_n5 es el último → idx+1 fuera de rango:
+	_af(not (u5["idx"] + 1 < levels_heist.size()), "heist_n5 es el último del mundo (sin siguiente)")
 
 	# ── S3: frame_data().has_next_level en juego real ──
 	SceneParams.reset()
@@ -73,11 +75,11 @@ func _run() -> void:
 		"victoria en heist_n1: has_next_level true (sigue heist_n2)")
 
 	# level_key del último nivel del mundo → false aunque gane:
-	juego.level_key = "heist_n3"
+	juego.level_key = "heist_n5"
 	juego._game_state._next_level_cache.clear()
 	d = juego._game_state.frame_data(Vector2(1280, 720))
 	_af(d.game_won and not d.has_next_level,
-		"victoria en heist_n3 (último): has_next_level false")
+		"victoria en heist_n5 (último): has_next_level false")
 
 	# ── S4: señales del InputHandler (guards de teclas) ──
 	var ih = juego._input_handler

@@ -80,13 +80,13 @@ func _run() -> void:
 
 	# ── S2: matriz de visibilidad de [N] ──
 	juego.reset_state()
-	juego.level_key = "heist_n3"
+	juego.level_key = "heist_n5"
 	juego._game_state._next_level_cache.clear()
 	juego._game_logic.ganar()
 	await get_tree().process_frame
 	_af(ov.visible and not ov.next_button.visible,
-		"victoria heist_n3 (último del mundo): sin [N]")
-	_af(_visibles(ov) == ["retry", "select", "menu"], "heist_n3: 3 botones visibles")
+		"victoria heist_n5 (último del mundo): sin [N]")
+	_af(_visibles(ov) == ["retry", "select", "menu"], "heist_n5: 3 botones visibles")
 
 	juego.reset_state()
 	juego.level_key = ""

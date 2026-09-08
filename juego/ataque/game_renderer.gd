@@ -30,7 +30,7 @@ func _init(
 	tiny_font_size = p_tiny
 
 
-func draw_rect(rect: Rect2, color: Color, filled: bool = true, width: float = 1.0, antialiased: bool = false) -> void:
+func draw_rect(rect: Rect2, color: Color, filled: bool = true, width: float = -1.0, antialiased: bool = false) -> void:
 	_canvas.draw_rect(rect, color, filled, width, antialiased)
 
 
@@ -38,7 +38,7 @@ func draw_line(from: Vector2, to: Vector2, color: Color, width: float = 1.0, ant
 	_canvas.draw_line(from, to, color, width, antialiased)
 
 
-func draw_circle(pos: Vector2, radius: float, color: Color, filled: bool = true, width: float = 1.0, antialiased: bool = false) -> void:
+func draw_circle(pos: Vector2, radius: float, color: Color, filled: bool = true, width: float = -1.0, antialiased: bool = false) -> void:
 	_canvas.draw_circle(pos, radius, color, filled, width, antialiased)
 
 

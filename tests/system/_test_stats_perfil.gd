@@ -34,7 +34,7 @@ func _run() -> void:
 
 	var rows: Array = ProfileScript.build_level_rows("heist", progress_cfg, stats_cfg)
 
-	_af(rows.size() == 3, "heist registra 3 filas (una por nivel del WORLDS)")
+	_af(rows.size() == 5, "heist registra 5 filas (una por nivel del WORLDS)")
 
 	var r1: Dictionary = rows[0]
 	_af(r1.key == "heist_n1" and r1.stars == 3 and r1.best_cost == 9.0,
@@ -59,7 +59,7 @@ func _run() -> void:
 
 	# ── S3: primer arranque — cfgs null tolerados ──
 	var fresh: Array = ProfileScript.build_level_rows("heist", null, null)
-	_af(fresh.size() == 3 and fresh[0].stars == 0 and fresh[0].attempts == 0,
+	_af(fresh.size() == 5 and fresh[0].stars == 0 and fresh[0].attempts == 0,
 		"cfgs null → filas en cero (perfil recién instalado)")
 
 	_fin()

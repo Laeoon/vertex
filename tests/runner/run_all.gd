@@ -44,12 +44,14 @@ var _aprobadas: int = 0
 var _fallidas: int = 0
 var _errores: int = 0
 var _usar_timeout := false
+var _incluir_equivalencia := false
 
 
 func _init() -> void:
 	print("==============================================")
 	print("RUNNER VERTEX — iniciando descubrimiento")
 	print("==============================================")
+	_detectar_argumentos()
 	_detectar_timeout()
 	_descubrir_pruebas(RAIZ_PRUEBAS, _descubiertas)
 	_descubiertas.sort()
@@ -78,8 +80,18 @@ func _init() -> void:
 	quit(codigo_salida)
 
 
+func _detectar_argumentos() -> void:
+	_incluir_equivalencia = false
+	var argumentos: PackedStringArray = OS.get_cmdline_args()
+	argumentos.append_array(OS.get_cmdline_user_args())
+	for arg in argumentos:
+		if arg == "--all" or arg == "--include-equivalence":
+			_incluir_equivalencia = true
+			break
+
+
 ## Recorre `ruta` recursivamente y acumula los `test_*.gd` ignorando `_*.gd`
-## y al propio runner.
+## (a menos que _incluir_equivalencia esté activo para `_test_*.gd`) y al propio runner.
 func _descubrir_pruebas(ruta: String, acumulado: Array[String]) -> void:
 	var dir := DirAccess.open(ruta)
 	if dir == null:
@@ -94,8 +106,11 @@ func _descubrir_pruebas(ruta: String, acumulado: Array[String]) -> void:
 		var ruta_completa := "%s/%s" % [ruta, nombre]
 		if dir.current_is_dir():
 			_descubrir_pruebas(ruta_completa, acumulado)
-		elif nombre.ends_with(".gd") and not nombre.begins_with("_") and nombre != NOMBRE_RUNNER:
-			acumulado.push_back(ruta_completa)
+		elif nombre.ends_with(".gd") and nombre != NOMBRE_RUNNER and nombre != RUTA_LANZADOR.get_file():
+			if nombre.begins_with("test_"):
+				acumulado.push_back(ruta_completa)
+			elif _incluir_equivalencia and nombre.begins_with("_test_"):
+				acumulado.push_back(ruta_completa)
 		nombre = dir.get_next()
 	dir.list_dir_end()
 

@@ -54,6 +54,16 @@ func _run() -> void:
 		_fin()
 		return
 
+	var rev_edge = preload("res://core/network/network_edge_resource.gd").new()
+	rev_edge.from_id = &"Puerta_A"
+	rev_edge.to_id = &"Inicio"
+	rev_edge.transit_cost = 1.0
+	juego.graph.edges.append(rev_edge)
+	juego.runtime.rebuild_adjacency()
+	var puerta_a = juego._find_node_resource(&"Puerta_A")
+	if puerta_a:
+		puerta_a.metadata["detection_chance"] = 0.0
+
 	var base_speed: int = juego.pursuer_speed
 	var base_blocks: int = juego.max_ai_blocks
 	_af(base_speed == 1 and base_blocks == 3 and juego.pursuers.is_empty(),
