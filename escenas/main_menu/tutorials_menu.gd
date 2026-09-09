@@ -2,13 +2,37 @@ extends Control
 
 const BrandClass = preload("res://juego/ui/brand.gd")
 
+enum Track { GENERAL, HEIST, HACKER, DEFENDER }
+
+const TRACK_METADATA: Dictionary = {
+	Track.GENERAL: {
+		"title": "GENERAL",
+		"desc": "Fundamentos de Redes y Grafos",
+	},
+	Track.HEIST: {
+		"title": "HEIST",
+		"desc": "Infiltración Física y Evasión",
+	},
+	Track.HACKER: {
+		"title": "HACKER",
+		"desc": "Operaciones Cibernéticas y Exploits",
+	},
+	Track.DEFENDER: {
+		"title": "DEFENDER",
+		"desc": "Defensa Activa y Contramedidas",
+		"is_standby": true,
+	},
+}
+
+var current_track: Track = Track.GENERAL
 var font: Font
 var font_size: int = 14
 var big_font_size: int = 28
-var buttons: Array[Dictionary] = []
 var selected_idx: int = 0
 var progress: Dictionary = {}
 var _pulse: float = 0.0
+
+var track_lessons: Dictionary = {}
 
 
 func _ready() -> void:
@@ -16,25 +40,27 @@ func _ready() -> void:
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
 
-	buttons = [
-		{"label": "Tutorial 1: Reconocimiento", "key": &"tutorial1",
-			"desc": loc("tut1_desc")},
-		{"label": "Tutorial 2: Perimetro", "key": &"tutorial2",
-			"desc": loc("tut2_desc")},
-		{"label": "Tutorial 3: Defensa en Capas", "key": &"tutorial3",
-			"desc": loc("tut3_desc")},
-		{"label": "Tutorial 4: Modo Hacker", "key": &"tutorial4",
-			"desc": loc("tut4_desc")},
-		{"label": "Tutorial 5: Defensa Perimetral", "key": &"tutorial5",
-			"desc": loc("tut5_desc")},
-		{"label": "Tutorial 6: Operaciones Combinadas", "key": &"tutorial6",
-			"desc": loc("tut6_desc")},
-		{"label": "Tutorial 7: Fundamentos de Defensa", "key": &"tutorial7",
-			"desc": loc("tut7_desc")},
-	]
+	track_lessons = {
+		Track.GENERAL: [
+			{"label": "Tutorial 1: Reconocimiento", "key": &"tutorial1", "desc": loc("tut1_desc")},
+			{"label": "Tutorial 3: Defensa en Capas", "key": &"tutorial3", "desc": loc("tut3_desc")},
+		],
+		Track.HEIST: [
+			{"label": "Tutorial 2: Perímetro", "key": &"tutorial2", "desc": loc("tut2_desc")},
+			{"label": "Tutorial 6: Operaciones Combinadas", "key": &"tutorial6", "desc": loc("tut6_desc")},
+		],
+		Track.HACKER: [
+			{"label": "Tutorial 4: Modo Hacker", "key": &"tutorial4", "desc": loc("tut4_desc")},
+		],
+		Track.DEFENDER: [],
+	}
 
 	progress = ProgressUtil.cargar_progreso()
 	queue_redraw()
+
+
+func _get_current_lessons() -> Array:
+	return track_lessons.get(current_track, [])
 
 
 func _input(event: InputEvent) -> void:
@@ -44,13 +70,31 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
 			KEY_ENTER, KEY_SPACE:
-				_launch(buttons[selected_idx].key)
-			KEY_UP:
-				selected_idx = maxi(0, selected_idx - 1)
+				if current_track == Track.DEFENDER:
+					return
+				var lessons := _get_current_lessons()
+				if selected_idx >= 0 and selected_idx < lessons.size():
+					_launch(lessons[selected_idx].key)
+			KEY_LEFT, KEY_A:
+				var total_tracks := Track.size()
+				current_track = ((current_track - 1 + total_tracks) % total_tracks) as Track
+				selected_idx = 0
 				queue_redraw()
-			KEY_DOWN:
-				selected_idx = mini(buttons.size() - 1, selected_idx + 1)
+			KEY_RIGHT, KEY_D:
+				var total_tracks := Track.size()
+				current_track = ((current_track + 1) % total_tracks) as Track
+				selected_idx = 0
 				queue_redraw()
+			KEY_UP, KEY_W:
+				var lessons := _get_current_lessons()
+				if not lessons.is_empty():
+					selected_idx = maxi(0, selected_idx - 1)
+					queue_redraw()
+			KEY_DOWN, KEY_S:
+				var lessons := _get_current_lessons()
+				if not lessons.is_empty():
+					selected_idx = mini(lessons.size() - 1, selected_idx + 1)
+					queue_redraw()
 
 
 func _process(delta: float) -> void:
@@ -79,7 +123,7 @@ func _launch(key: StringName) -> void:
 		SceneParams.ai_block_per_turn = 1
 		SceneParams.max_ai_blocks = 1
 		SceneParams.ai_bloquea_al_inicio = true
-		SceneParams.titulo_nivel = "Tutorial 2: Perimetro"
+		SceneParams.titulo_nivel = "Tutorial 2: Perímetro"
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut2_perimetro.json"
 
@@ -108,24 +152,9 @@ func _launch(key: StringName) -> void:
 		SceneParams.max_turns = 18
 		SceneParams.titulo_nivel = "Tutorial 4: Modo Hacker"
 		SceneParams.hacker_mode = true
-		SceneParams.starting_exploits = {"bypass": 2, "escalate": 1, "persist": 1}
+		SceneParams.starting_exploits = {"bypass": 2, "escalate": 1, "persist": 1, "decoy": 1}
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut4_hacker.json"
-
-	elif key == &"tutorial5":
-		SceneParams.graph_path = "res://juego/defense/defense_n1.tres"
-		SceneParams.start_node = &"Internet"
-		SceneParams.target_node = &"DataCenter"
-		SceneParams.ai_enabled = false
-		SceneParams.max_turns = 12
-		SceneParams.titulo_nivel = "Tutorial 5: Defensa Perimetral"
-		SceneParams.defender_mode = true
-		SceneParams.defender_blocks_per_turn = 2
-		SceneParams.defender_block_duration = 4
-		SceneParams.enemy_start_node = &"Internet"
-		SceneParams.enemy_target_node = &"DataCenter"
-		SceneParams.mensaje_tutorial = ""
-		SceneParams.tutorial_path = "res://juego/tutorials/data/tut5_defense.json"
 
 	elif key == &"tutorial6":
 		SceneParams.graph_path = "res://juego/tutorial6/tut6_red.tres"
@@ -141,23 +170,6 @@ func _launch(key: StringName) -> void:
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut6_combined.json"
 
-	elif key == &"tutorial7":
-		SceneParams.graph_path = "res://juego/tutorial4/tut4_red.tres"
-		SceneParams.start_node = &"Internet"
-		SceneParams.target_node = &"DataCenter"
-		SceneParams.waypoints = []
-		SceneParams.ai_enabled = false
-		SceneParams.max_turns = 12
-		SceneParams.titulo_nivel = "Tutorial 7: Fundamentos de Defensa"
-		SceneParams.defender_mode = true
-		SceneParams.defender_blocks_per_turn = 2
-		SceneParams.defender_block_duration = 5
-		SceneParams.enemy_start_node = &"Internet"
-		SceneParams.enemy_target_node = &"DataCenter"
-		SceneParams.max_ai_blocks = 10
-		SceneParams.mensaje_tutorial = ""
-		SceneParams.tutorial_path = "res://juego/tutorials/data/tut4_defensa.json"
-
 	SceneTransition.fade_to_scene("res://juego/ataque/escena_juego.tscn")
 
 
@@ -169,44 +181,87 @@ func _draw() -> void:
 	var vp_size := get_viewport_rect().size
 	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), BrandClass.BG)
 
-	draw_string(font, Vector2(60, 60), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 8, BrandClass.ACCENT)
-	draw_string(font, Vector2(60, 88), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.TEXT_DIM)
+	# Encabezado principal
+	draw_string(font, Vector2(60, 50), "ACADEMIA DE ENTRENAMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, BrandClass.ACCENT)
+	draw_string(font, Vector2(60, 74), "Selecciona una sección y completa las lecciones operativas", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
 
-	var by: float = 150.0
-	for i in buttons.size():
-		var b := buttons[i]
-		var is_sel: bool = i == selected_idx
-		var color: Color
-		var prefix: String
+	# Pestañas horizontales de categorías
+	var tab_x: float = 60.0
+	var tab_y: float = 110.0
+	var tab_gap: float = 24.0
 
-		if is_sel:
-			var glow := 0.7 + sin(_pulse) * 0.3
-			color = BrandClass.with_alpha(BrandClass.ACCENT, glow)
-			prefix = "> "
-			draw_rect(Rect2(50, by - 16, vp_size.x - 110, 30), BrandClass.with_alpha(BrandClass.ACCENT, 0.06))
-		else:
-			color = BrandClass.TEXT_DIM
-			prefix = "  "
+	for t in Track.values():
+		var meta: Dictionary = TRACK_METADATA.get(t, {})
+		var t_title: String = meta.get("title", "")
+		var is_active: bool = (t == current_track)
+		var tab_text: String = "[ %s ]" % t_title
+		var text_color: Color = BrandClass.ACCENT if is_active else BrandClass.TEXT_DIM
 
-		draw_string(font, Vector2(60, by), prefix + b.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, color)
+		if is_active:
+			var text_size: float = font.get_string_size(tab_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
+			draw_rect(Rect2(tab_x - 8, tab_y - 18, text_size + 16, 26), BrandClass.with_alpha(BrandClass.ACCENT, 0.12))
+			draw_line(Vector2(tab_x - 8, tab_y + 8), Vector2(tab_x + text_size + 8, tab_y + 8), BrandClass.ACCENT, 2.0)
 
-		var lk: StringName = b.get("key", &"")
-		if lk != &"":
-			var level_key: String = lk
-			var stars: int = progress.get(level_key, 0)
-			if stars > 0:
-				var s: String = ""
+		draw_string(font, Vector2(tab_x, tab_y), tab_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, text_color)
+		var tab_width: float = font.get_string_size(tab_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
+		tab_x += tab_width + tab_gap
+
+	# Subtítulo del track activo
+	var active_meta: Dictionary = TRACK_METADATA.get(current_track, {})
+	var track_desc: String = active_meta.get("desc", "")
+	draw_string(font, Vector2(60, 142), track_desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT, 0.8))
+
+	# Contenido del track
+	if current_track == Track.DEFENDER:
+		# Vista Stand-by de Mantenimiento
+		var card_rect := Rect2(60, 175, vp_size.x - 120, 200)
+		draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL, 0.6))
+		draw_rect(card_rect, BrandClass.with_alpha(BrandClass.WARNING, 0.4), false, 1.5)
+
+		var glow := 0.7 + sin(_pulse) * 0.3
+		draw_string(font, Vector2(85, 220), "🛡  MODO DEFENSOR — EN MANTENIMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, glow))
+		draw_string(font, Vector2(85, 255), "Las mecánicas de ciberdefensa perimetral y contramedidas activas", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.TEXT)
+		draw_string(font, Vector2(85, 280), "están actualmente en fase de reestructuración técnica y rebalanceo.", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.TEXT)
+		draw_string(font, Vector2(85, 320), "⚠ Los tutoriales de defensa se reactivarán en la próxima actualización.", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
+	else:
+		# Lista de lecciones del track activo
+		var lessons: Array = _get_current_lessons()
+		var by: float = 190.0
+
+		for i in lessons.size():
+			var b: Dictionary = lessons[i]
+			var is_sel: bool = (i == selected_idx)
+			var color: Color
+			var prefix: String
+
+			if is_sel:
+				var glow := 0.7 + sin(_pulse) * 0.3
+				color = BrandClass.with_alpha(BrandClass.ACCENT, glow)
+				prefix = "> "
+				draw_rect(Rect2(50, by - 16, vp_size.x - 110, 48), BrandClass.with_alpha(BrandClass.ACCENT, 0.08))
+			else:
+				color = BrandClass.TEXT_DIM
+				prefix = "  "
+
+			draw_string(font, Vector2(60, by), prefix + b.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, color)
+
+			# Estrellas de progreso
+			var lk: StringName = b.get("key", &"")
+			if lk != &"":
+				var level_key: String = lk
+				var stars: int = progress.get(level_key, 0)
+				var stars_str: String = ""
 				for si in range(3):
-					s += "★" if si < stars else "☆"
-				draw_string(font, Vector2(vp_size.x - 160, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.WARNING)
+					stars_str += "★" if si < stars else "☆"
+				var star_color: Color = BrandClass.WARNING if stars > 0 else BrandClass.TEXT_DIM
+				draw_string(font, Vector2(vp_size.x - 160, by), stars_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, star_color)
 
-		by += 24
-		draw_string(font, Vector2(78, by), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-		by += 40
+			by += 22
+			draw_string(font, Vector2(78, by), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+			by += 36
 
-	by += 10
-	draw_string(font, Vector2(60, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
-	by += 22
-	draw_string(font, Vector2(60, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-	by += 22
-	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	# Controles al pie
+	var foot_y: float = vp_size.y - 45
+	draw_line(Vector2(60, foot_y - 15), Vector2(vp_size.x - 60, foot_y - 15), BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.4), 1.0)
+	var controls_hint: String = "[← / → / A / D] Cambiar Sección   |   [↑ / ↓ / W / S] Elegir Lección   |   [Enter] Iniciar   |   [Esc] Volver"
+	draw_string(font, Vector2(60, foot_y + 8), controls_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.TEXT_DIM)

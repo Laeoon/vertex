@@ -163,6 +163,65 @@ func _run_tests() -> void:
 		print("FAIL: is_game_paused() fallo")
 		failed += 1
 
+	# TEST 17: Load tut4_hacker with 5 mechanics
+	var loaded4: bool = tp.load_tutorial("res://juego/tutorials/data/tut4_hacker.json")
+	if loaded4 and tp.steps.size() == 10 and tp.tutorial_data.get("starting_exploits", {}).has("decoy"):
+		print("PASS: tut4_hacker carga (10 pasos, decoy incluido)")
+		passed += 1
+	else:
+		print("FAIL: tut4_hacker carga (loaded=%s steps=%d decoy=%s)" % [
+			loaded4, tp.steps.size(), tp.tutorial_data.get("starting_exploits", {}).has("decoy")])
+		failed += 1
+
+	# TEST 18: TutorialsMenu track switching
+	var menu_scene = preload("res://escenas/main_menu/tutorials_menu.tscn")
+	var menu = menu_scene.instantiate()
+	get_tree().root.add_child(menu)
+	await get_tree().process_frame
+
+	if menu.current_track == menu.Track.GENERAL:
+		print("PASS: menu inicia en track GENERAL")
+		passed += 1
+	else:
+		print("FAIL: menu inicio track=%s" % str(menu.current_track))
+		failed += 1
+
+	# Simular flecha derecha para cambiar a HEIST
+	var ev_right := InputEventKey.new()
+	ev_right.pressed = true
+	ev_right.keycode = KEY_RIGHT
+	menu._input(ev_right)
+	if menu.current_track == menu.Track.HEIST and menu._get_current_lessons().size() == 2:
+		print("PASS: menu cambia a HEIST con 2 lecciones")
+		passed += 1
+	else:
+		print("FAIL: menu HEIST fallo (track=%s size=%d)" % [str(menu.current_track), menu._get_current_lessons().size()])
+		failed += 1
+
+	# Cambiar a HACKER y luego a DEFENDER
+	menu._input(ev_right) # HACKER
+	if menu.current_track == menu.Track.HACKER and menu._get_current_lessons().size() == 1:
+		print("PASS: menu cambia a HACKER con 1 lección")
+		passed += 1
+	else:
+		print("FAIL: menu HACKER fallo")
+		failed += 1
+
+	menu._input(ev_right) # DEFENDER
+	# TEST 19: Defender stand-by blocks launch
+	SceneParams.reset()
+	var ev_enter := InputEventKey.new()
+	ev_enter.pressed = true
+	ev_enter.keycode = KEY_ENTER
+	menu._input(ev_enter)
+	if menu.current_track == menu.Track.DEFENDER and SceneParams.tutorial_path == "":
+		print("PASS: Defender stand-by bloquea launch")
+		passed += 1
+	else:
+		print("FAIL: Defender stand-by no bloqueo launch")
+		failed += 1
+
+	menu.queue_free()
 	_quit()
 
 
