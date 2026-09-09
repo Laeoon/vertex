@@ -49,6 +49,21 @@ const WORLDS: Dictionary = {
 				"title": "Brecha en la Red Corporativa",
 				"difficulty": 3,
 			},
+			{
+				"path": "res://juego/hacker/hacker_n3.json",
+				"title": "Persistencia en la Infraestructura",
+				"difficulty": 3,
+			},
+			{
+				"path": "res://juego/hacker/hacker_n4.json",
+				"title": "Guerra de Señuelos y Decepción",
+				"difficulty": 4,
+			},
+			{
+				"path": "res://juego/hacker/hacker_n5.json",
+				"title": "Operación Root Compromise",
+				"difficulty": 5,
+			},
 		]
 	},
 	"cybersecurity": {

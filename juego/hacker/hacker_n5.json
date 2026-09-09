@@ -1,0 +1,26 @@
+{
+  "id": "hacker_n5",
+  "world": "hacker",
+  "graph_path": "res://juego/hacker/hacker_n5.tres",
+  "start_node": "VPC_Ingress",
+  "target_node": "QuantumVault",
+  "waypoints": ["DMZ_Router", "AD_DomainController", "DB_Cluster_Primary"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 2,
+  "ai_bloquea_al_inicio": true,
+  "max_ai_blocks": 5,
+  "max_turns": 30,
+  "max_movement_points": 0,
+  "titulo_nivel": "Hacker — Operación Root Compromise",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 3,
+    "escalate": 2,
+    "persist": 2,
+    "decoy": 2
+  },
+  "defender_mode": false,
+  "difficulty": 5,
+  "diversidad_minima": 2,
+  "description": "El asalto final a la infraestructura crítica: penetra múltiples subredes altamente segregadas y compromete la Bóveda Cuántica."
+}

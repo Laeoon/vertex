@@ -1,0 +1,438 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" format=3]
+
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="1_82gec"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_6lbtw"]
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="3_ojxj1"]
+
+[sub_resource type="Resource" id="Resource_benef"]
+script = ExtResource("1_82gec")
+from_id = &"InternetGate"
+to_id = &"ProxyInverso"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_bkha5"]
+script = ExtResource("1_82gec")
+from_id = &"ProxyInverso"
+to_id = &"InternetGate"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_3yht0"]
+script = ExtResource("1_82gec")
+from_id = &"InternetGate"
+to_id = &"WAFPerimetral"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1fgcc"]
+script = ExtResource("1_82gec")
+from_id = &"WAFPerimetral"
+to_id = &"InternetGate"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_m3u6k"]
+script = ExtResource("1_82gec")
+from_id = &"ProxyInverso"
+to_id = &"DMZ_Web"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_68g2j"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Web"
+to_id = &"ProxyInverso"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_xvmb6"]
+script = ExtResource("1_82gec")
+from_id = &"ProxyInverso"
+to_id = &"DMZ_Api"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_s5x11"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Api"
+to_id = &"ProxyInverso"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ih4ro"]
+script = ExtResource("1_82gec")
+from_id = &"WAFPerimetral"
+to_id = &"DMZ_Api"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_8u4n8"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Api"
+to_id = &"WAFPerimetral"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1jp61"]
+script = ExtResource("1_82gec")
+from_id = &"WAFPerimetral"
+to_id = &"DMZ_Mail"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ifku1"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Mail"
+to_id = &"WAFPerimetral"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_x0710"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Web"
+to_id = &"AuthLDAP"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_l8bvj"]
+script = ExtResource("1_82gec")
+from_id = &"AuthLDAP"
+to_id = &"DMZ_Web"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_yjxme"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Web"
+to_id = &"AppInternal"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ox7s0"]
+script = ExtResource("1_82gec")
+from_id = &"AppInternal"
+to_id = &"DMZ_Web"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_lc71p"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Api"
+to_id = &"AuthLDAP"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_tmd70"]
+script = ExtResource("1_82gec")
+from_id = &"AuthLDAP"
+to_id = &"DMZ_Api"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_4taw7"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Api"
+to_id = &"AppInternal"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_v7htr"]
+script = ExtResource("1_82gec")
+from_id = &"AppInternal"
+to_id = &"DMZ_Api"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_y8hrb"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Mail"
+to_id = &"FileStore"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_u45ik"]
+script = ExtResource("1_82gec")
+from_id = &"FileStore"
+to_id = &"DMZ_Mail"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ntt7c"]
+script = ExtResource("1_82gec")
+from_id = &"DMZ_Mail"
+to_id = &"AppInternal"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_wrx7s"]
+script = ExtResource("1_82gec")
+from_id = &"AppInternal"
+to_id = &"DMZ_Mail"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_hdrtr"]
+script = ExtResource("1_82gec")
+from_id = &"AuthLDAP"
+to_id = &"DBReplica"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_jy86r"]
+script = ExtResource("1_82gec")
+from_id = &"DBReplica"
+to_id = &"AuthLDAP"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_vehkb"]
+script = ExtResource("1_82gec")
+from_id = &"AuthLDAP"
+to_id = &"SecurityGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ahnx4"]
+script = ExtResource("1_82gec")
+from_id = &"SecurityGateway"
+to_id = &"AuthLDAP"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_3syrf"]
+script = ExtResource("1_82gec")
+from_id = &"AppInternal"
+to_id = &"SecurityGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_vialo"]
+script = ExtResource("1_82gec")
+from_id = &"SecurityGateway"
+to_id = &"AppInternal"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1na1t"]
+script = ExtResource("1_82gec")
+from_id = &"AppInternal"
+to_id = &"AdminVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_2xqad"]
+script = ExtResource("1_82gec")
+from_id = &"AdminVault"
+to_id = &"AppInternal"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_at3qk"]
+script = ExtResource("1_82gec")
+from_id = &"FileStore"
+to_id = &"AdminVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_o7hwl"]
+script = ExtResource("1_82gec")
+from_id = &"AdminVault"
+to_id = &"FileStore"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_dtlem"]
+script = ExtResource("1_82gec")
+from_id = &"DBReplica"
+to_id = &"CoreServices"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_g0r8c"]
+script = ExtResource("1_82gec")
+from_id = &"CoreServices"
+to_id = &"DBReplica"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_kp8b1"]
+script = ExtResource("1_82gec")
+from_id = &"SecurityGateway"
+to_id = &"CoreServices"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_h7bdr"]
+script = ExtResource("1_82gec")
+from_id = &"CoreServices"
+to_id = &"SecurityGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_i2nr3"]
+script = ExtResource("1_82gec")
+from_id = &"SecurityGateway"
+to_id = &"SIEMCollector"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_lff4k"]
+script = ExtResource("1_82gec")
+from_id = &"SIEMCollector"
+to_id = &"SecurityGateway"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_db0ou"]
+script = ExtResource("1_82gec")
+from_id = &"AdminVault"
+to_id = &"SIEMCollector"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_p02dg"]
+script = ExtResource("1_82gec")
+from_id = &"SIEMCollector"
+to_id = &"AdminVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_6ism3"]
+script = ExtResource("1_82gec")
+from_id = &"CoreServices"
+to_id = &"MasterVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_fcdnx"]
+script = ExtResource("1_82gec")
+from_id = &"MasterVault"
+to_id = &"CoreServices"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_hsxfo"]
+script = ExtResource("1_82gec")
+from_id = &"SIEMCollector"
+to_id = &"MasterVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_gbuy4"]
+script = ExtResource("1_82gec")
+from_id = &"MasterVault"
+to_id = &"SIEMCollector"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_sc0ao"]
+script = ExtResource("2_6lbtw")
+id = &"InternetGate"
+node_type = 1
+display_name = "InternetGate"
+position = Vector2(80, 320)
+
+[sub_resource type="Resource" id="Resource_t5d7i"]
+script = ExtResource("2_6lbtw")
+id = &"ProxyInverso"
+node_type = 2
+display_name = "ProxyInverso"
+position = Vector2(220, 200)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Resource_vtcc0"]
+script = ExtResource("2_6lbtw")
+id = &"WAFPerimetral"
+node_type = 2
+display_name = "WAFPerimetral"
+position = Vector2(220, 440)
+metadata = {
+"detection_chance": 0.12,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Resource_0ho5d"]
+script = ExtResource("2_6lbtw")
+id = &"DMZ_Web"
+node_type = 2
+display_name = "DMZ_Web"
+position = Vector2(360, 140)
+metadata = {
+"detection_chance": 0.1,
+"exploit_type": "bypass"
+}
+
+[sub_resource type="Resource" id="Resource_3wioa"]
+script = ExtResource("2_6lbtw")
+id = &"DMZ_Api"
+node_type = 2
+display_name = "DMZ_Api"
+position = Vector2(360, 320)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Resource_csrfk"]
+script = ExtResource("2_6lbtw")
+id = &"DMZ_Mail"
+node_type = 2
+display_name = "DMZ_Mail"
+position = Vector2(360, 500)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Resource_mgq8i"]
+script = ExtResource("2_6lbtw")
+id = &"AuthLDAP"
+node_type = 2
+display_name = "AuthLDAP"
+position = Vector2(520, 200)
+metadata = {
+"detection_chance": 0.2,
+"exploit_type": "escalate"
+}
+
+[sub_resource type="Resource" id="Resource_ufumu"]
+script = ExtResource("2_6lbtw")
+id = &"AppInternal"
+node_type = 2
+display_name = "AppInternal"
+position = Vector2(520, 320)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Resource_lo8q6"]
+script = ExtResource("2_6lbtw")
+id = &"FileStore"
+node_type = 2
+display_name = "FileStore"
+position = Vector2(520, 460)
+metadata = {
+"detection_chance": 0.1
+}
+
+[sub_resource type="Resource" id="Resource_fvy1k"]
+script = ExtResource("2_6lbtw")
+id = &"DBReplica"
+node_type = 2
+display_name = "DBReplica"
+position = Vector2(680, 180)
+metadata = {
+"detection_chance": 0.25
+}
+
+[sub_resource type="Resource" id="Resource_alg47"]
+script = ExtResource("2_6lbtw")
+id = &"SecurityGateway"
+node_type = 2
+display_name = "SecurityGateway"
+position = Vector2(680, 320)
+metadata = {
+"detection_chance": 0.2,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Resource_j4wtk"]
+script = ExtResource("2_6lbtw")
+id = &"AdminVault"
+node_type = 2
+display_name = "AdminVault"
+position = Vector2(680, 460)
+metadata = {
+"detection_chance": 0.15,
+"exploit_type": "persist"
+}
+
+[sub_resource type="Resource" id="Resource_h2wca"]
+script = ExtResource("2_6lbtw")
+id = &"CoreServices"
+node_type = 2
+display_name = "CoreServices"
+position = Vector2(820, 240)
+metadata = {
+"detection_chance": 0.2
+}
+
+[sub_resource type="Resource" id="Resource_osfca"]
+script = ExtResource("2_6lbtw")
+id = &"SIEMCollector"
+node_type = 2
+display_name = "SIEMCollector"
+position = Vector2(820, 400)
+metadata = {
+"detection_chance": 0.25,
+"security_spawn": true
+}
+
+[sub_resource type="Resource" id="Resource_ssvh8"]
+script = ExtResource("2_6lbtw")
+id = &"MasterVault"
+display_name = "MasterVault"
+position = Vector2(960, 320)
+metadata = {
+"detection_chance": 0.0
+}
+
+[resource]
+script = ExtResource("3_ojxj1")
+nodes = Array[ExtResource("2_6lbtw")]([SubResource("Resource_sc0ao"), SubResource("Resource_t5d7i"), SubResource("Resource_vtcc0"), SubResource("Resource_0ho5d"), SubResource("Resource_3wioa"), SubResource("Resource_csrfk"), SubResource("Resource_mgq8i"), SubResource("Resource_ufumu"), SubResource("Resource_lo8q6"), SubResource("Resource_fvy1k"), SubResource("Resource_alg47"), SubResource("Resource_j4wtk"), SubResource("Resource_h2wca"), SubResource("Resource_osfca"), SubResource("Resource_ssvh8")])
+edges = Array[ExtResource("1_82gec")]([SubResource("Resource_benef"), SubResource("Resource_bkha5"), SubResource("Resource_3yht0"), SubResource("Resource_1fgcc"), SubResource("Resource_m3u6k"), SubResource("Resource_68g2j"), SubResource("Resource_xvmb6"), SubResource("Resource_s5x11"), SubResource("Resource_ih4ro"), SubResource("Resource_8u4n8"), SubResource("Resource_1jp61"), SubResource("Resource_ifku1"), SubResource("Resource_x0710"), SubResource("Resource_l8bvj"), SubResource("Resource_yjxme"), SubResource("Resource_ox7s0"), SubResource("Resource_lc71p"), SubResource("Resource_tmd70"), SubResource("Resource_4taw7"), SubResource("Resource_v7htr"), SubResource("Resource_y8hrb"), SubResource("Resource_u45ik"), SubResource("Resource_ntt7c"), SubResource("Resource_wrx7s"), SubResource("Resource_hdrtr"), SubResource("Resource_jy86r"), SubResource("Resource_vehkb"), SubResource("Resource_ahnx4"), SubResource("Resource_3syrf"), SubResource("Resource_vialo"), SubResource("Resource_1na1t"), SubResource("Resource_2xqad"), SubResource("Resource_at3qk"), SubResource("Resource_o7hwl"), SubResource("Resource_dtlem"), SubResource("Resource_g0r8c"), SubResource("Resource_kp8b1"), SubResource("Resource_h7bdr"), SubResource("Resource_i2nr3"), SubResource("Resource_lff4k"), SubResource("Resource_db0ou"), SubResource("Resource_p02dg"), SubResource("Resource_6ism3"), SubResource("Resource_fcdnx"), SubResource("Resource_hsxfo"), SubResource("Resource_gbuy4")])

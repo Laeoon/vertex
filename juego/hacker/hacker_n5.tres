@@ -1,0 +1,692 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" format=3]
+
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="1_50m74"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_1rrm4"]
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="3_cogqv"]
+
+[sub_resource type="Resource" id="Resource_32m7h"]
+script = ExtResource("1_50m74")
+from_id = &"VPC_Ingress"
+to_id = &"CloudflareEdge"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_j1gle"]
+script = ExtResource("1_50m74")
+from_id = &"CloudflareEdge"
+to_id = &"VPC_Ingress"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_65h0i"]
+script = ExtResource("1_50m74")
+from_id = &"VPC_Ingress"
+to_id = &"CDN_Cache"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_u7ttg"]
+script = ExtResource("1_50m74")
+from_id = &"CDN_Cache"
+to_id = &"VPC_Ingress"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_v566u"]
+script = ExtResource("1_50m74")
+from_id = &"VPC_Ingress"
+to_id = &"DNS_Resolver"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_hb1q1"]
+script = ExtResource("1_50m74")
+from_id = &"DNS_Resolver"
+to_id = &"VPC_Ingress"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_347mj"]
+script = ExtResource("1_50m74")
+from_id = &"CloudflareEdge"
+to_id = &"DMZ_Router"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_xhr7p"]
+script = ExtResource("1_50m74")
+from_id = &"DMZ_Router"
+to_id = &"CloudflareEdge"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_d6jha"]
+script = ExtResource("1_50m74")
+from_id = &"CDN_Cache"
+to_id = &"DMZ_Router"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_qaxom"]
+script = ExtResource("1_50m74")
+from_id = &"DMZ_Router"
+to_id = &"CDN_Cache"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_auvju"]
+script = ExtResource("1_50m74")
+from_id = &"DNS_Resolver"
+to_id = &"DMZ_Router"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_k0tpw"]
+script = ExtResource("1_50m74")
+from_id = &"DMZ_Router"
+to_id = &"DNS_Resolver"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ufvqn"]
+script = ExtResource("1_50m74")
+from_id = &"DMZ_Router"
+to_id = &"PublicAPI"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1gsk2"]
+script = ExtResource("1_50m74")
+from_id = &"PublicAPI"
+to_id = &"DMZ_Router"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_hbbsp"]
+script = ExtResource("1_50m74")
+from_id = &"DMZ_Router"
+to_id = &"FrontendSvc"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_k66aq"]
+script = ExtResource("1_50m74")
+from_id = &"FrontendSvc"
+to_id = &"DMZ_Router"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ek4uk"]
+script = ExtResource("1_50m74")
+from_id = &"DMZ_Router"
+to_id = &"PaymentGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ohvda"]
+script = ExtResource("1_50m74")
+from_id = &"PaymentGateway"
+to_id = &"DMZ_Router"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_6db4r"]
+script = ExtResource("1_50m74")
+from_id = &"DMZ_Router"
+to_id = &"PartnerGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_opee1"]
+script = ExtResource("1_50m74")
+from_id = &"PartnerGateway"
+to_id = &"DMZ_Router"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_dul4f"]
+script = ExtResource("1_50m74")
+from_id = &"PublicAPI"
+to_id = &"CorpFirewall"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ag4pn"]
+script = ExtResource("1_50m74")
+from_id = &"CorpFirewall"
+to_id = &"PublicAPI"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_xb4rw"]
+script = ExtResource("1_50m74")
+from_id = &"FrontendSvc"
+to_id = &"InternalVPN"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_63c28"]
+script = ExtResource("1_50m74")
+from_id = &"InternalVPN"
+to_id = &"FrontendSvc"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_njcr4"]
+script = ExtResource("1_50m74")
+from_id = &"PaymentGateway"
+to_id = &"JumpServer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ur4sr"]
+script = ExtResource("1_50m74")
+from_id = &"JumpServer"
+to_id = &"PaymentGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_u0mpt"]
+script = ExtResource("1_50m74")
+from_id = &"PartnerGateway"
+to_id = &"BackupStorage"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_hetx8"]
+script = ExtResource("1_50m74")
+from_id = &"BackupStorage"
+to_id = &"PartnerGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_k7we3"]
+script = ExtResource("1_50m74")
+from_id = &"BackupStorage"
+to_id = &"JumpServer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_30bge"]
+script = ExtResource("1_50m74")
+from_id = &"JumpServer"
+to_id = &"BackupStorage"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_hyxgj"]
+script = ExtResource("1_50m74")
+from_id = &"CorpFirewall"
+to_id = &"AD_DomainController"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_tqr2u"]
+script = ExtResource("1_50m74")
+from_id = &"AD_DomainController"
+to_id = &"CorpFirewall"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1eek4"]
+script = ExtResource("1_50m74")
+from_id = &"InternalVPN"
+to_id = &"AD_DomainController"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_q651p"]
+script = ExtResource("1_50m74")
+from_id = &"AD_DomainController"
+to_id = &"InternalVPN"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_f6her"]
+script = ExtResource("1_50m74")
+from_id = &"JumpServer"
+to_id = &"AD_DomainController"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_wn71a"]
+script = ExtResource("1_50m74")
+from_id = &"AD_DomainController"
+to_id = &"JumpServer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_jtr54"]
+script = ExtResource("1_50m74")
+from_id = &"AD_DomainController"
+to_id = &"DevCluster"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_d5eb2"]
+script = ExtResource("1_50m74")
+from_id = &"DevCluster"
+to_id = &"AD_DomainController"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_0dr08"]
+script = ExtResource("1_50m74")
+from_id = &"AD_DomainController"
+to_id = &"Vault_KMS"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_i44m1"]
+script = ExtResource("1_50m74")
+from_id = &"Vault_KMS"
+to_id = &"AD_DomainController"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_4kw4e"]
+script = ExtResource("1_50m74")
+from_id = &"AD_DomainController"
+to_id = &"CoreSwitch"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_bqmg2"]
+script = ExtResource("1_50m74")
+from_id = &"CoreSwitch"
+to_id = &"AD_DomainController"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_oe5ad"]
+script = ExtResource("1_50m74")
+from_id = &"DevCluster"
+to_id = &"DB_Cluster_Secondary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_kn5bv"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Secondary"
+to_id = &"DevCluster"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_tnrms"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Secondary"
+to_id = &"DB_Cluster_Primary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_i4pah"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Primary"
+to_id = &"DB_Cluster_Secondary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_0415r"]
+script = ExtResource("1_50m74")
+from_id = &"Vault_KMS"
+to_id = &"DB_Cluster_Primary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_v4o7d"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Primary"
+to_id = &"Vault_KMS"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_pkn3g"]
+script = ExtResource("1_50m74")
+from_id = &"CoreSwitch"
+to_id = &"DB_Cluster_Primary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_5mwfh"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Primary"
+to_id = &"CoreSwitch"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_qci21"]
+script = ExtResource("1_50m74")
+from_id = &"CoreSwitch"
+to_id = &"Mainframe_Connector"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_sqdte"]
+script = ExtResource("1_50m74")
+from_id = &"Mainframe_Connector"
+to_id = &"CoreSwitch"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_471c7"]
+script = ExtResource("1_50m74")
+from_id = &"Mainframe_Connector"
+to_id = &"DB_Cluster_Primary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_4i7pm"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Primary"
+to_id = &"Mainframe_Connector"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_oknla"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Primary"
+to_id = &"ZeroTrustEnclave"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_e1d5l"]
+script = ExtResource("1_50m74")
+from_id = &"ZeroTrustEnclave"
+to_id = &"DB_Cluster_Primary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_dr524"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Primary"
+to_id = &"SanctionedExfil"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_13jwg"]
+script = ExtResource("1_50m74")
+from_id = &"SanctionedExfil"
+to_id = &"DB_Cluster_Primary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ded0d"]
+script = ExtResource("1_50m74")
+from_id = &"DB_Cluster_Primary"
+to_id = &"AirGapBridge"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_p760i"]
+script = ExtResource("1_50m74")
+from_id = &"AirGapBridge"
+to_id = &"DB_Cluster_Primary"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_tqhof"]
+script = ExtResource("1_50m74")
+from_id = &"ZeroTrustEnclave"
+to_id = &"QuantumVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_2vf68"]
+script = ExtResource("1_50m74")
+from_id = &"QuantumVault"
+to_id = &"ZeroTrustEnclave"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_qjh31"]
+script = ExtResource("1_50m74")
+from_id = &"SanctionedExfil"
+to_id = &"QuantumVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_jdfyj"]
+script = ExtResource("1_50m74")
+from_id = &"QuantumVault"
+to_id = &"SanctionedExfil"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_2ggfs"]
+script = ExtResource("1_50m74")
+from_id = &"AirGapBridge"
+to_id = &"QuantumVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ci3y6"]
+script = ExtResource("1_50m74")
+from_id = &"QuantumVault"
+to_id = &"AirGapBridge"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_eawr8"]
+script = ExtResource("1_50m74")
+from_id = &"AirGapBridge"
+to_id = &"SecurityMonitor"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_qxcsp"]
+script = ExtResource("1_50m74")
+from_id = &"SecurityMonitor"
+to_id = &"AirGapBridge"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_djwty"]
+script = ExtResource("1_50m74")
+from_id = &"SecurityMonitor"
+to_id = &"QuantumVault"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_6ahos"]
+script = ExtResource("1_50m74")
+from_id = &"QuantumVault"
+to_id = &"SecurityMonitor"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_a007s"]
+script = ExtResource("2_1rrm4")
+id = &"VPC_Ingress"
+node_type = 1
+display_name = "VPC_Ingress"
+position = Vector2(60, 340)
+
+[sub_resource type="Resource" id="Resource_shsdr"]
+script = ExtResource("2_1rrm4")
+id = &"CloudflareEdge"
+node_type = 2
+display_name = "CloudflareEdge"
+position = Vector2(180, 180)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Resource_og7sj"]
+script = ExtResource("2_1rrm4")
+id = &"CDN_Cache"
+node_type = 2
+display_name = "CDN_Cache"
+position = Vector2(180, 340)
+metadata = {
+"detection_chance": 0.1
+}
+
+[sub_resource type="Resource" id="Resource_d1y1m"]
+script = ExtResource("2_1rrm4")
+id = &"DNS_Resolver"
+node_type = 2
+display_name = "DNS_Resolver"
+position = Vector2(180, 500)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Resource_7w7ya"]
+script = ExtResource("2_1rrm4")
+id = &"DMZ_Router"
+node_type = 2
+display_name = "DMZ_Router"
+position = Vector2(320, 340)
+metadata = {
+"detection_chance": 0.12
+}
+
+[sub_resource type="Resource" id="Resource_4nmas"]
+script = ExtResource("2_1rrm4")
+id = &"PublicAPI"
+node_type = 2
+display_name = "PublicAPI"
+position = Vector2(440, 160)
+metadata = {
+"detection_chance": 0.15,
+"exploit_type": "bypass"
+}
+
+[sub_resource type="Resource" id="Resource_wc81f"]
+script = ExtResource("2_1rrm4")
+id = &"FrontendSvc"
+node_type = 2
+display_name = "FrontendSvc"
+position = Vector2(440, 280)
+metadata = {
+"detection_chance": 0.12
+}
+
+[sub_resource type="Resource" id="Resource_6h71p"]
+script = ExtResource("2_1rrm4")
+id = &"PaymentGateway"
+node_type = 2
+display_name = "PaymentGateway"
+position = Vector2(440, 400)
+metadata = {
+"detection_chance": 0.2
+}
+
+[sub_resource type="Resource" id="Resource_661ix"]
+script = ExtResource("2_1rrm4")
+id = &"PartnerGateway"
+node_type = 2
+display_name = "PartnerGateway"
+position = Vector2(440, 520)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Resource_li2vh"]
+script = ExtResource("2_1rrm4")
+id = &"CorpFirewall"
+node_type = 2
+display_name = "CorpFirewall"
+position = Vector2(580, 160)
+metadata = {
+"detection_chance": 0.25,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Resource_4ffmg"]
+script = ExtResource("2_1rrm4")
+id = &"InternalVPN"
+node_type = 2
+display_name = "InternalVPN"
+position = Vector2(580, 280)
+metadata = {
+"detection_chance": 0.2
+}
+
+[sub_resource type="Resource" id="Resource_avw5g"]
+script = ExtResource("2_1rrm4")
+id = &"JumpServer"
+node_type = 2
+display_name = "JumpServer"
+position = Vector2(580, 420)
+metadata = {
+"detection_chance": 0.22
+}
+
+[sub_resource type="Resource" id="Resource_75yow"]
+script = ExtResource("2_1rrm4")
+id = &"AD_DomainController"
+node_type = 2
+display_name = "AD_DomainController"
+position = Vector2(720, 340)
+metadata = {
+"detection_chance": 0.3,
+"exploit_type": "escalate"
+}
+
+[sub_resource type="Resource" id="Resource_ggdqr"]
+script = ExtResource("2_1rrm4")
+id = &"DevCluster"
+node_type = 2
+display_name = "DevCluster"
+position = Vector2(840, 160)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Resource_qq5o8"]
+script = ExtResource("2_1rrm4")
+id = &"Vault_KMS"
+node_type = 2
+display_name = "Vault_KMS"
+position = Vector2(840, 280)
+metadata = {
+"detection_chance": 0.25,
+"exploit_type": "decoy"
+}
+
+[sub_resource type="Resource" id="Resource_v6acw"]
+script = ExtResource("2_1rrm4")
+id = &"CoreSwitch"
+node_type = 2
+display_name = "CoreSwitch"
+position = Vector2(840, 400)
+metadata = {
+"detection_chance": 0.22
+}
+
+[sub_resource type="Resource" id="Resource_itco5"]
+script = ExtResource("2_1rrm4")
+id = &"StagingDB"
+node_type = 2
+display_name = "StagingDB"
+position = Vector2(840, 520)
+metadata = {
+"detection_chance": 0.18
+}
+
+[sub_resource type="Resource" id="Resource_ep6j8"]
+script = ExtResource("2_1rrm4")
+id = &"DB_Cluster_Secondary"
+node_type = 2
+display_name = "DB_Cluster_Secondary"
+position = Vector2(980, 200)
+metadata = {
+"detection_chance": 0.25
+}
+
+[sub_resource type="Resource" id="Resource_7tauj"]
+script = ExtResource("2_1rrm4")
+id = &"DB_Cluster_Primary"
+node_type = 2
+display_name = "DB_Cluster_Primary"
+position = Vector2(980, 340)
+metadata = {
+"detection_chance": 0.28,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Resource_1vm3v"]
+script = ExtResource("2_1rrm4")
+id = &"Mainframe_Connector"
+node_type = 2
+display_name = "Mainframe_Connector"
+position = Vector2(980, 480)
+metadata = {
+"detection_chance": 0.25
+}
+
+[sub_resource type="Resource" id="Resource_52lup"]
+script = ExtResource("2_1rrm4")
+id = &"ZeroTrustEnclave"
+node_type = 2
+display_name = "ZeroTrustEnclave"
+position = Vector2(1120, 200)
+metadata = {
+"detection_chance": 0.25,
+"security_spawn": true
+}
+
+[sub_resource type="Resource" id="Resource_hgy8e"]
+script = ExtResource("2_1rrm4")
+id = &"SanctionedExfil"
+node_type = 2
+display_name = "SanctionedExfil"
+position = Vector2(1120, 340)
+metadata = {
+"detection_chance": 0.22
+}
+
+[sub_resource type="Resource" id="Resource_ceq00"]
+script = ExtResource("2_1rrm4")
+id = &"AirGapBridge"
+node_type = 2
+display_name = "AirGapBridge"
+position = Vector2(1120, 480)
+metadata = {
+"detection_chance": 0.28
+}
+
+[sub_resource type="Resource" id="Resource_5jnyv"]
+script = ExtResource("2_1rrm4")
+id = &"SecurityMonitor"
+node_type = 2
+display_name = "SecurityMonitor"
+position = Vector2(1120, 600)
+metadata = {
+"detection_chance": 0.25
+}
+
+[sub_resource type="Resource" id="Resource_kh25v"]
+script = ExtResource("2_1rrm4")
+id = &"BackupStorage"
+node_type = 2
+display_name = "BackupStorage"
+position = Vector2(720, 520)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Resource_24e67"]
+script = ExtResource("2_1rrm4")
+id = &"QuantumVault"
+display_name = "QuantumVault"
+position = Vector2(1260, 340)
+metadata = {
+"detection_chance": 0.0
+}
+
+[resource]
+script = ExtResource("3_cogqv")
+nodes = Array[ExtResource("2_1rrm4")]([SubResource("Resource_a007s"), SubResource("Resource_shsdr"), SubResource("Resource_og7sj"), SubResource("Resource_d1y1m"), SubResource("Resource_7w7ya"), SubResource("Resource_4nmas"), SubResource("Resource_wc81f"), SubResource("Resource_6h71p"), SubResource("Resource_661ix"), SubResource("Resource_li2vh"), SubResource("Resource_4ffmg"), SubResource("Resource_avw5g"), SubResource("Resource_75yow"), SubResource("Resource_ggdqr"), SubResource("Resource_qq5o8"), SubResource("Resource_v6acw"), SubResource("Resource_itco5"), SubResource("Resource_ep6j8"), SubResource("Resource_7tauj"), SubResource("Resource_1vm3v"), SubResource("Resource_52lup"), SubResource("Resource_hgy8e"), SubResource("Resource_ceq00"), SubResource("Resource_5jnyv"), SubResource("Resource_kh25v"), SubResource("Resource_24e67")])
+edges = Array[ExtResource("1_50m74")]([SubResource("Resource_32m7h"), SubResource("Resource_j1gle"), SubResource("Resource_65h0i"), SubResource("Resource_u7ttg"), SubResource("Resource_v566u"), SubResource("Resource_hb1q1"), SubResource("Resource_347mj"), SubResource("Resource_xhr7p"), SubResource("Resource_d6jha"), SubResource("Resource_qaxom"), SubResource("Resource_auvju"), SubResource("Resource_k0tpw"), SubResource("Resource_ufvqn"), SubResource("Resource_1gsk2"), SubResource("Resource_hbbsp"), SubResource("Resource_k66aq"), SubResource("Resource_ek4uk"), SubResource("Resource_ohvda"), SubResource("Resource_6db4r"), SubResource("Resource_opee1"), SubResource("Resource_dul4f"), SubResource("Resource_ag4pn"), SubResource("Resource_xb4rw"), SubResource("Resource_63c28"), SubResource("Resource_njcr4"), SubResource("Resource_ur4sr"), SubResource("Resource_u0mpt"), SubResource("Resource_hetx8"), SubResource("Resource_k7we3"), SubResource("Resource_30bge"), SubResource("Resource_hyxgj"), SubResource("Resource_tqr2u"), SubResource("Resource_1eek4"), SubResource("Resource_q651p"), SubResource("Resource_f6her"), SubResource("Resource_wn71a"), SubResource("Resource_jtr54"), SubResource("Resource_d5eb2"), SubResource("Resource_0dr08"), SubResource("Resource_i44m1"), SubResource("Resource_4kw4e"), SubResource("Resource_bqmg2"), SubResource("Resource_oe5ad"), SubResource("Resource_kn5bv"), SubResource("Resource_tnrms"), SubResource("Resource_i4pah"), SubResource("Resource_0415r"), SubResource("Resource_v4o7d"), SubResource("Resource_pkn3g"), SubResource("Resource_5mwfh"), SubResource("Resource_qci21"), SubResource("Resource_sqdte"), SubResource("Resource_471c7"), SubResource("Resource_4i7pm"), SubResource("Resource_oknla"), SubResource("Resource_e1d5l"), SubResource("Resource_dr524"), SubResource("Resource_13jwg"), SubResource("Resource_ded0d"), SubResource("Resource_p760i"), SubResource("Resource_tqhof"), SubResource("Resource_2vf68"), SubResource("Resource_qjh31"), SubResource("Resource_jdfyj"), SubResource("Resource_2ggfs"), SubResource("Resource_ci3y6"), SubResource("Resource_eawr8"), SubResource("Resource_qxcsp"), SubResource("Resource_djwty"), SubResource("Resource_6ahos")])

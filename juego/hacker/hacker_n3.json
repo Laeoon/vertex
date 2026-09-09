@@ -1,0 +1,24 @@
+{
+  "id": "hacker_n3",
+  "world": "hacker",
+  "graph_path": "res://juego/hacker/hacker_n3.tres",
+  "start_node": "InternetGate",
+  "target_node": "MasterVault",
+  "waypoints": ["DMZ_Api", "AuthLDAP"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": true,
+  "max_ai_blocks": 3,
+  "max_turns": 22,
+  "max_movement_points": 0,
+  "titulo_nivel": "Hacker — Persistencia en la Infraestructura",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 2,
+    "persist": 2,
+    "escalate": 1
+  },
+  "defender_mode": false,
+  "difficulty": 3,
+  "description": "Establece refugios seguros con Persist [3] para disipar el calor de las patrullas mientras te abres paso a la Bóveda Maestra."
+}

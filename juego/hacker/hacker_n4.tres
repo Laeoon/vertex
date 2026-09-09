@@ -1,0 +1,516 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" format=3]
+
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="1_qqsoe"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_jl1bo"]
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="3_0vg8o"]
+
+[sub_resource type="Resource" id="Resource_a8b5e"]
+script = ExtResource("1_qqsoe")
+from_id = &"ExtGateway"
+to_id = &"EdgeProxy"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_mbws6"]
+script = ExtResource("1_qqsoe")
+from_id = &"EdgeProxy"
+to_id = &"ExtGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_dqqhf"]
+script = ExtResource("1_qqsoe")
+from_id = &"ExtGateway"
+to_id = &"LoadBalancer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_v18px"]
+script = ExtResource("1_qqsoe")
+from_id = &"LoadBalancer"
+to_id = &"ExtGateway"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_fuic1"]
+script = ExtResource("1_qqsoe")
+from_id = &"EdgeProxy"
+to_id = &"WebPortal"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_5s0iq"]
+script = ExtResource("1_qqsoe")
+from_id = &"WebPortal"
+to_id = &"EdgeProxy"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_qedg6"]
+script = ExtResource("1_qqsoe")
+from_id = &"EdgeProxy"
+to_id = &"MicroserviceA"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_pqimb"]
+script = ExtResource("1_qqsoe")
+from_id = &"MicroserviceA"
+to_id = &"EdgeProxy"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_kngmd"]
+script = ExtResource("1_qqsoe")
+from_id = &"LoadBalancer"
+to_id = &"MicroserviceA"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_boupg"]
+script = ExtResource("1_qqsoe")
+from_id = &"MicroserviceA"
+to_id = &"LoadBalancer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_7oa3k"]
+script = ExtResource("1_qqsoe")
+from_id = &"LoadBalancer"
+to_id = &"MicroserviceB"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_csndl"]
+script = ExtResource("1_qqsoe")
+from_id = &"MicroserviceB"
+to_id = &"LoadBalancer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_e8eyt"]
+script = ExtResource("1_qqsoe")
+from_id = &"WebPortal"
+to_id = &"CacheCluster"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_xicpo"]
+script = ExtResource("1_qqsoe")
+from_id = &"CacheCluster"
+to_id = &"WebPortal"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_63vur"]
+script = ExtResource("1_qqsoe")
+from_id = &"WebPortal"
+to_id = &"MessageQueue"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_7y43g"]
+script = ExtResource("1_qqsoe")
+from_id = &"MessageQueue"
+to_id = &"WebPortal"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_nnljt"]
+script = ExtResource("1_qqsoe")
+from_id = &"MicroserviceA"
+to_id = &"MessageQueue"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_q85gq"]
+script = ExtResource("1_qqsoe")
+from_id = &"MessageQueue"
+to_id = &"MicroserviceA"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_kbc1v"]
+script = ExtResource("1_qqsoe")
+from_id = &"MicroserviceA"
+to_id = &"ServiceBus"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_u3cfi"]
+script = ExtResource("1_qqsoe")
+from_id = &"ServiceBus"
+to_id = &"MicroserviceA"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_3pn84"]
+script = ExtResource("1_qqsoe")
+from_id = &"MicroserviceB"
+to_id = &"ServiceBus"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_otajk"]
+script = ExtResource("1_qqsoe")
+from_id = &"ServiceBus"
+to_id = &"MicroserviceB"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_q4oi0"]
+script = ExtResource("1_qqsoe")
+from_id = &"CacheCluster"
+to_id = &"ConfigServer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ipkqy"]
+script = ExtResource("1_qqsoe")
+from_id = &"ConfigServer"
+to_id = &"CacheCluster"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_cfg5c"]
+script = ExtResource("1_qqsoe")
+from_id = &"MessageQueue"
+to_id = &"ConfigServer"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_hmiea"]
+script = ExtResource("1_qqsoe")
+from_id = &"ConfigServer"
+to_id = &"MessageQueue"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_pp0we"]
+script = ExtResource("1_qqsoe")
+from_id = &"MessageQueue"
+to_id = &"SecretManager"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_xiooi"]
+script = ExtResource("1_qqsoe")
+from_id = &"SecretManager"
+to_id = &"MessageQueue"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_eqryo"]
+script = ExtResource("1_qqsoe")
+from_id = &"MessageQueue"
+to_id = &"TxProcessor"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ymx72"]
+script = ExtResource("1_qqsoe")
+from_id = &"TxProcessor"
+to_id = &"MessageQueue"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_2vlod"]
+script = ExtResource("1_qqsoe")
+from_id = &"ServiceBus"
+to_id = &"TxProcessor"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_nar7p"]
+script = ExtResource("1_qqsoe")
+from_id = &"TxProcessor"
+to_id = &"ServiceBus"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_7iix8"]
+script = ExtResource("1_qqsoe")
+from_id = &"ConfigServer"
+to_id = &"DBShard1"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_xql0s"]
+script = ExtResource("1_qqsoe")
+from_id = &"DBShard1"
+to_id = &"ConfigServer"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_dbqiq"]
+script = ExtResource("1_qqsoe")
+from_id = &"SecretManager"
+to_id = &"DBShard1"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_q8sf2"]
+script = ExtResource("1_qqsoe")
+from_id = &"DBShard1"
+to_id = &"SecretManager"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_o525o"]
+script = ExtResource("1_qqsoe")
+from_id = &"SecretManager"
+to_id = &"DBShard2"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_cscuf"]
+script = ExtResource("1_qqsoe")
+from_id = &"DBShard2"
+to_id = &"SecretManager"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_rk8xx"]
+script = ExtResource("1_qqsoe")
+from_id = &"TxProcessor"
+to_id = &"DBShard2"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_gb3ik"]
+script = ExtResource("1_qqsoe")
+from_id = &"DBShard2"
+to_id = &"TxProcessor"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_3bs67"]
+script = ExtResource("1_qqsoe")
+from_id = &"TxProcessor"
+to_id = &"AuditLogger"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_1fxio"]
+script = ExtResource("1_qqsoe")
+from_id = &"AuditLogger"
+to_id = &"TxProcessor"
+transit_cost = 3.0
+
+[sub_resource type="Resource" id="Resource_8l1gf"]
+script = ExtResource("1_qqsoe")
+from_id = &"DBShard1"
+to_id = &"HSMModule"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_u3qum"]
+script = ExtResource("1_qqsoe")
+from_id = &"HSMModule"
+to_id = &"DBShard1"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_3iqke"]
+script = ExtResource("1_qqsoe")
+from_id = &"DBShard2"
+to_id = &"HSMModule"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_n1eao"]
+script = ExtResource("1_qqsoe")
+from_id = &"HSMModule"
+to_id = &"DBShard2"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ctgdh"]
+script = ExtResource("1_qqsoe")
+from_id = &"DBShard2"
+to_id = &"CoreRouter"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_gt4ie"]
+script = ExtResource("1_qqsoe")
+from_id = &"CoreRouter"
+to_id = &"DBShard2"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_rvl0d"]
+script = ExtResource("1_qqsoe")
+from_id = &"AuditLogger"
+to_id = &"CoreRouter"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_1qjgu"]
+script = ExtResource("1_qqsoe")
+from_id = &"CoreRouter"
+to_id = &"AuditLogger"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_4t86e"]
+script = ExtResource("1_qqsoe")
+from_id = &"HSMModule"
+to_id = &"CentralLedger"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_ehrse"]
+script = ExtResource("1_qqsoe")
+from_id = &"CentralLedger"
+to_id = &"HSMModule"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_8ne45"]
+script = ExtResource("1_qqsoe")
+from_id = &"CoreRouter"
+to_id = &"CentralLedger"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_x8suj"]
+script = ExtResource("1_qqsoe")
+from_id = &"CentralLedger"
+to_id = &"CoreRouter"
+transit_cost = 2.0
+
+[sub_resource type="Resource" id="Resource_rfm31"]
+script = ExtResource("2_jl1bo")
+id = &"ExtGateway"
+node_type = 1
+display_name = "ExtGateway"
+position = Vector2(80, 320)
+
+[sub_resource type="Resource" id="Resource_q4j40"]
+script = ExtResource("2_jl1bo")
+id = &"EdgeProxy"
+node_type = 2
+display_name = "EdgeProxy"
+position = Vector2(200, 200)
+metadata = {
+"detection_chance": 0.08
+}
+
+[sub_resource type="Resource" id="Resource_mj68e"]
+script = ExtResource("2_jl1bo")
+id = &"LoadBalancer"
+node_type = 2
+display_name = "LoadBalancer"
+position = Vector2(200, 440)
+metadata = {
+"detection_chance": 0.1
+}
+
+[sub_resource type="Resource" id="Resource_5nvjt"]
+script = ExtResource("2_jl1bo")
+id = &"WebPortal"
+node_type = 2
+display_name = "WebPortal"
+position = Vector2(340, 160)
+metadata = {
+"detection_chance": 0.12,
+"exploit_type": "bypass"
+}
+
+[sub_resource type="Resource" id="Resource_7a6nh"]
+script = ExtResource("2_jl1bo")
+id = &"MicroserviceA"
+node_type = 2
+display_name = "MicroserviceA"
+position = Vector2(340, 320)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Resource_63pwl"]
+script = ExtResource("2_jl1bo")
+id = &"MicroserviceB"
+node_type = 2
+display_name = "MicroserviceB"
+position = Vector2(340, 480)
+metadata = {
+"detection_chance": 0.12
+}
+
+[sub_resource type="Resource" id="Resource_7cxpe"]
+script = ExtResource("2_jl1bo")
+id = &"CacheCluster"
+node_type = 2
+display_name = "CacheCluster"
+position = Vector2(480, 160)
+metadata = {
+"detection_chance": 0.15
+}
+
+[sub_resource type="Resource" id="Resource_kmtgv"]
+script = ExtResource("2_jl1bo")
+id = &"MessageQueue"
+node_type = 2
+display_name = "MessageQueue"
+position = Vector2(480, 320)
+metadata = {
+"detection_chance": 0.2
+}
+
+[sub_resource type="Resource" id="Resource_bq31f"]
+script = ExtResource("2_jl1bo")
+id = &"ServiceBus"
+node_type = 2
+display_name = "ServiceBus"
+position = Vector2(480, 480)
+metadata = {
+"detection_chance": 0.18
+}
+
+[sub_resource type="Resource" id="Resource_k8e6q"]
+script = ExtResource("2_jl1bo")
+id = &"ConfigServer"
+node_type = 2
+display_name = "ConfigServer"
+position = Vector2(620, 160)
+metadata = {
+"detection_chance": 0.2
+}
+
+[sub_resource type="Resource" id="Resource_fcm0p"]
+script = ExtResource("2_jl1bo")
+id = &"SecretManager"
+node_type = 2
+display_name = "SecretManager"
+position = Vector2(620, 320)
+metadata = {
+"detection_chance": 0.25,
+"exploit_type": "decoy"
+}
+
+[sub_resource type="Resource" id="Resource_ni4t3"]
+script = ExtResource("2_jl1bo")
+id = &"TxProcessor"
+node_type = 2
+display_name = "TxProcessor"
+position = Vector2(620, 480)
+metadata = {
+"detection_chance": 0.22,
+"exploit_type": "escalate"
+}
+
+[sub_resource type="Resource" id="Resource_e0ape"]
+script = ExtResource("2_jl1bo")
+id = &"DBShard1"
+node_type = 2
+display_name = "DBShard1"
+position = Vector2(760, 160)
+metadata = {
+"detection_chance": 0.25,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Resource_y8ufn"]
+script = ExtResource("2_jl1bo")
+id = &"DBShard2"
+node_type = 2
+display_name = "DBShard2"
+position = Vector2(760, 320)
+metadata = {
+"detection_chance": 0.25,
+"has_firewall": true
+}
+
+[sub_resource type="Resource" id="Resource_f2qal"]
+script = ExtResource("2_jl1bo")
+id = &"AuditLogger"
+node_type = 2
+display_name = "AuditLogger"
+position = Vector2(760, 480)
+metadata = {
+"detection_chance": 0.2,
+"security_spawn": true
+}
+
+[sub_resource type="Resource" id="Resource_1orhl"]
+script = ExtResource("2_jl1bo")
+id = &"HSMModule"
+node_type = 2
+display_name = "HSMModule"
+position = Vector2(900, 240)
+metadata = {
+"detection_chance": 0.25
+}
+
+[sub_resource type="Resource" id="Resource_7oqx7"]
+script = ExtResource("2_jl1bo")
+id = &"CoreRouter"
+node_type = 2
+display_name = "CoreRouter"
+position = Vector2(900, 400)
+metadata = {
+"detection_chance": 0.2
+}
+
+[sub_resource type="Resource" id="Resource_3mg0x"]
+script = ExtResource("2_jl1bo")
+id = &"CentralLedger"
+display_name = "CentralLedger"
+position = Vector2(1040, 320)
+metadata = {
+"detection_chance": 0.0
+}
+
+[resource]
+script = ExtResource("3_0vg8o")
+nodes = Array[ExtResource("2_jl1bo")]([SubResource("Resource_rfm31"), SubResource("Resource_q4j40"), SubResource("Resource_mj68e"), SubResource("Resource_5nvjt"), SubResource("Resource_7a6nh"), SubResource("Resource_63pwl"), SubResource("Resource_7cxpe"), SubResource("Resource_kmtgv"), SubResource("Resource_bq31f"), SubResource("Resource_k8e6q"), SubResource("Resource_fcm0p"), SubResource("Resource_ni4t3"), SubResource("Resource_e0ape"), SubResource("Resource_y8ufn"), SubResource("Resource_f2qal"), SubResource("Resource_1orhl"), SubResource("Resource_7oqx7"), SubResource("Resource_3mg0x")])
+edges = Array[ExtResource("1_qqsoe")]([SubResource("Resource_a8b5e"), SubResource("Resource_mbws6"), SubResource("Resource_dqqhf"), SubResource("Resource_v18px"), SubResource("Resource_fuic1"), SubResource("Resource_5s0iq"), SubResource("Resource_qedg6"), SubResource("Resource_pqimb"), SubResource("Resource_kngmd"), SubResource("Resource_boupg"), SubResource("Resource_7oa3k"), SubResource("Resource_csndl"), SubResource("Resource_e8eyt"), SubResource("Resource_xicpo"), SubResource("Resource_63vur"), SubResource("Resource_7y43g"), SubResource("Resource_nnljt"), SubResource("Resource_q85gq"), SubResource("Resource_kbc1v"), SubResource("Resource_u3cfi"), SubResource("Resource_3pn84"), SubResource("Resource_otajk"), SubResource("Resource_q4oi0"), SubResource("Resource_ipkqy"), SubResource("Resource_cfg5c"), SubResource("Resource_hmiea"), SubResource("Resource_pp0we"), SubResource("Resource_xiooi"), SubResource("Resource_eqryo"), SubResource("Resource_ymx72"), SubResource("Resource_2vlod"), SubResource("Resource_nar7p"), SubResource("Resource_7iix8"), SubResource("Resource_xql0s"), SubResource("Resource_dbqiq"), SubResource("Resource_q8sf2"), SubResource("Resource_o525o"), SubResource("Resource_cscuf"), SubResource("Resource_rk8xx"), SubResource("Resource_gb3ik"), SubResource("Resource_3bs67"), SubResource("Resource_1fxio"), SubResource("Resource_8l1gf"), SubResource("Resource_u3qum"), SubResource("Resource_3iqke"), SubResource("Resource_n1eao"), SubResource("Resource_ctgdh"), SubResource("Resource_gt4ie"), SubResource("Resource_rvl0d"), SubResource("Resource_1qjgu"), SubResource("Resource_4t86e"), SubResource("Resource_ehrse"), SubResource("Resource_8ne45"), SubResource("Resource_x8suj")])
