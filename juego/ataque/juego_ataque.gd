@@ -246,6 +246,7 @@ func _mover_jugador(destino: StringName) -> void: _game_logic.mover_jugador(dest
 func _perder(razon: String) -> void: _game_logic.perder(razon)
 func _auto_select_vecino() -> void: _game_logic.auto_select_vecino()
 func _cycle_neighbor(dir: int) -> void: _game_logic.cycle_neighbor(dir)
+func _select_neighbor_directional(dir: Vector2) -> void: _game_logic.select_neighbor_directional(dir)
 
 # hacker_logic.gd
 func _scan_selected_node() -> void: _hacker_logic.scan_selected_node()
@@ -291,6 +292,8 @@ func _connect_input_signals() -> void:
 	_input_handler.quit_requested.connect(_on_quit)
 	_input_handler.toggle_optimal_route.connect(_on_toggle_optimal_route)
 	_input_handler.cycle_neighbor.connect(_on_cycle_neighbor)
+	_input_handler.directional_neighbor_requested.connect(_on_directional_neighbor_requested)
+	_input_handler.neighbor_hovered.connect(_on_neighbor_hovered)
 	_input_handler.defender_resolve_turn.connect(_on_defender_resolve_turn)
 	_input_handler.defender_toggle_firewall.connect(_on_defender_toggle_firewall)
 	_input_handler.defender_block_edge.connect(_on_defender_block_edge)
@@ -319,6 +322,14 @@ func _on_scan_requested() -> void: _scan_selected_node()
 func _on_exploit_used(exploit_type: String) -> void: _use_hacker_exploit(exploit_type)
 func _on_toggle_optimal_route() -> void: _game_logic.reveal_optimal_route()
 func _on_cycle_neighbor(dir: int) -> void: _cycle_neighbor(dir)
+func _on_directional_neighbor_requested(dir: Vector2) -> void:
+	if not defender_mode and not game_over:
+		_game_logic.select_neighbor_directional(dir)
+
+func _on_neighbor_hovered(node_id: StringName) -> void:
+	if not defender_mode and not game_over:
+		selected_neighbor = node_id
+		queue_redraw()
 func _on_defender_block_edge(edge_key: String) -> void: _game_logic.defender_block_edge(edge_key)
 func _on_defender_place_firewall(node_id: StringName) -> void: _game_logic.defender_place_firewall(node_id)
 func _on_return_to_menu() -> void: SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")

@@ -244,6 +244,36 @@ func cycle_neighbor(dir: int) -> void:
 	_game.queue_redraw()
 
 
+## Select neighbor spatially based on a directional vector (WASD / Arrow keys).
+func select_neighbor_directional(dir_vector: Vector2) -> void:
+	var vecinos: Array = vecinos_jugador()
+	if vecinos.is_empty():
+		_game.selected_neighbor = &""
+		return
+	var norm_dir: Vector2 = dir_vector.normalized()
+	if norm_dir == Vector2.ZERO:
+		return
+	var ppos: Vector2 = _game.node_positions.get(_game.player_pos, Vector2.ZERO)
+	var best_nid: StringName = &""
+	var best_dot: float = -INF
+	for nid in vecinos:
+		var npos: Vector2 = _game.node_positions.get(nid, Vector2.ZERO)
+		var offset: Vector2 = npos - ppos
+		if offset.length_squared() > 0.0:
+			var cand_dir: Vector2 = offset.normalized()
+			var d: float = cand_dir.dot(norm_dir)
+			if d > best_dot:
+				best_dot = d
+				best_nid = nid
+
+	if best_dot > 0.2:
+		_game.selected_neighbor = best_nid
+		_game.queue_redraw()
+	elif _game.selected_neighbor == &"" or not (_game.selected_neighbor in vecinos):
+		_game.selected_neighbor = vecinos[0]
+		_game.queue_redraw()
+
+
 ## Puerto del viejo juego_ataque._reveal_optimal_route() (P5): toggle [P] de
 ## la pista de ruta más corta.
 func reveal_optimal_route() -> void:

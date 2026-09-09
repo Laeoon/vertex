@@ -9,420 +9,490 @@ script = ExtResource("1_50m74")
 from_id = &"VPC_Ingress"
 to_id = &"CloudflareEdge"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_j1gle"]
 script = ExtResource("1_50m74")
 from_id = &"CloudflareEdge"
 to_id = &"VPC_Ingress"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_65h0i"]
 script = ExtResource("1_50m74")
 from_id = &"VPC_Ingress"
 to_id = &"CDN_Cache"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_u7ttg"]
 script = ExtResource("1_50m74")
 from_id = &"CDN_Cache"
 to_id = &"VPC_Ingress"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_v566u"]
 script = ExtResource("1_50m74")
 from_id = &"VPC_Ingress"
 to_id = &"DNS_Resolver"
 transit_cost = 2.0
+protocol = &"DNS"
 
 [sub_resource type="Resource" id="Resource_hb1q1"]
 script = ExtResource("1_50m74")
 from_id = &"DNS_Resolver"
 to_id = &"VPC_Ingress"
 transit_cost = 2.0
+protocol = &"DNS"
 
 [sub_resource type="Resource" id="Resource_347mj"]
 script = ExtResource("1_50m74")
 from_id = &"CloudflareEdge"
 to_id = &"DMZ_Router"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_xhr7p"]
 script = ExtResource("1_50m74")
 from_id = &"DMZ_Router"
 to_id = &"CloudflareEdge"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_d6jha"]
 script = ExtResource("1_50m74")
 from_id = &"CDN_Cache"
 to_id = &"DMZ_Router"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_qaxom"]
 script = ExtResource("1_50m74")
 from_id = &"DMZ_Router"
 to_id = &"CDN_Cache"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_auvju"]
 script = ExtResource("1_50m74")
 from_id = &"DNS_Resolver"
 to_id = &"DMZ_Router"
 transit_cost = 2.0
+protocol = &"DNS"
 
 [sub_resource type="Resource" id="Resource_k0tpw"]
 script = ExtResource("1_50m74")
 from_id = &"DMZ_Router"
 to_id = &"DNS_Resolver"
 transit_cost = 2.0
+protocol = &"DNS"
 
 [sub_resource type="Resource" id="Resource_ufvqn"]
 script = ExtResource("1_50m74")
 from_id = &"DMZ_Router"
 to_id = &"PublicAPI"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_1gsk2"]
 script = ExtResource("1_50m74")
 from_id = &"PublicAPI"
 to_id = &"DMZ_Router"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_hbbsp"]
 script = ExtResource("1_50m74")
 from_id = &"DMZ_Router"
 to_id = &"FrontendSvc"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_k66aq"]
 script = ExtResource("1_50m74")
 from_id = &"FrontendSvc"
 to_id = &"DMZ_Router"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_ek4uk"]
 script = ExtResource("1_50m74")
 from_id = &"DMZ_Router"
 to_id = &"PaymentGateway"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_ohvda"]
 script = ExtResource("1_50m74")
 from_id = &"PaymentGateway"
 to_id = &"DMZ_Router"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_6db4r"]
 script = ExtResource("1_50m74")
 from_id = &"DMZ_Router"
 to_id = &"PartnerGateway"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_opee1"]
 script = ExtResource("1_50m74")
 from_id = &"PartnerGateway"
 to_id = &"DMZ_Router"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_dul4f"]
 script = ExtResource("1_50m74")
 from_id = &"PublicAPI"
 to_id = &"CorpFirewall"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_ag4pn"]
 script = ExtResource("1_50m74")
 from_id = &"CorpFirewall"
 to_id = &"PublicAPI"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_xb4rw"]
 script = ExtResource("1_50m74")
 from_id = &"FrontendSvc"
 to_id = &"InternalVPN"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_63c28"]
 script = ExtResource("1_50m74")
 from_id = &"InternalVPN"
 to_id = &"FrontendSvc"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_njcr4"]
 script = ExtResource("1_50m74")
 from_id = &"PaymentGateway"
 to_id = &"JumpServer"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_ur4sr"]
 script = ExtResource("1_50m74")
 from_id = &"JumpServer"
 to_id = &"PaymentGateway"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_u0mpt"]
 script = ExtResource("1_50m74")
 from_id = &"PartnerGateway"
 to_id = &"BackupStorage"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_hetx8"]
 script = ExtResource("1_50m74")
 from_id = &"BackupStorage"
 to_id = &"PartnerGateway"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_k7we3"]
 script = ExtResource("1_50m74")
 from_id = &"BackupStorage"
 to_id = &"JumpServer"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_30bge"]
 script = ExtResource("1_50m74")
 from_id = &"JumpServer"
 to_id = &"BackupStorage"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_hyxgj"]
 script = ExtResource("1_50m74")
 from_id = &"CorpFirewall"
 to_id = &"AD_DomainController"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_tqr2u"]
 script = ExtResource("1_50m74")
 from_id = &"AD_DomainController"
 to_id = &"CorpFirewall"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_1eek4"]
 script = ExtResource("1_50m74")
 from_id = &"InternalVPN"
 to_id = &"AD_DomainController"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_q651p"]
 script = ExtResource("1_50m74")
 from_id = &"AD_DomainController"
 to_id = &"InternalVPN"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_f6her"]
 script = ExtResource("1_50m74")
 from_id = &"JumpServer"
 to_id = &"AD_DomainController"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_wn71a"]
 script = ExtResource("1_50m74")
 from_id = &"AD_DomainController"
 to_id = &"JumpServer"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_jtr54"]
 script = ExtResource("1_50m74")
 from_id = &"AD_DomainController"
 to_id = &"DevCluster"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_d5eb2"]
 script = ExtResource("1_50m74")
 from_id = &"DevCluster"
 to_id = &"AD_DomainController"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_0dr08"]
 script = ExtResource("1_50m74")
 from_id = &"AD_DomainController"
 to_id = &"Vault_KMS"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_i44m1"]
 script = ExtResource("1_50m74")
 from_id = &"Vault_KMS"
 to_id = &"AD_DomainController"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_4kw4e"]
 script = ExtResource("1_50m74")
 from_id = &"AD_DomainController"
 to_id = &"CoreSwitch"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_bqmg2"]
 script = ExtResource("1_50m74")
 from_id = &"CoreSwitch"
 to_id = &"AD_DomainController"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_oe5ad"]
 script = ExtResource("1_50m74")
 from_id = &"DevCluster"
 to_id = &"DB_Cluster_Secondary"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_kn5bv"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Secondary"
 to_id = &"DevCluster"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_tnrms"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Secondary"
 to_id = &"DB_Cluster_Primary"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_i4pah"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Primary"
 to_id = &"DB_Cluster_Secondary"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_0415r"]
 script = ExtResource("1_50m74")
 from_id = &"Vault_KMS"
 to_id = &"DB_Cluster_Primary"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_v4o7d"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Primary"
 to_id = &"Vault_KMS"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_pkn3g"]
 script = ExtResource("1_50m74")
 from_id = &"CoreSwitch"
 to_id = &"DB_Cluster_Primary"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_5mwfh"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Primary"
 to_id = &"CoreSwitch"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_qci21"]
 script = ExtResource("1_50m74")
 from_id = &"CoreSwitch"
 to_id = &"Mainframe_Connector"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_sqdte"]
 script = ExtResource("1_50m74")
 from_id = &"Mainframe_Connector"
 to_id = &"CoreSwitch"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_471c7"]
 script = ExtResource("1_50m74")
 from_id = &"Mainframe_Connector"
 to_id = &"DB_Cluster_Primary"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_4i7pm"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Primary"
 to_id = &"Mainframe_Connector"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_oknla"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Primary"
 to_id = &"ZeroTrustEnclave"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_e1d5l"]
 script = ExtResource("1_50m74")
 from_id = &"ZeroTrustEnclave"
 to_id = &"DB_Cluster_Primary"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_dr524"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Primary"
 to_id = &"SanctionedExfil"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_13jwg"]
 script = ExtResource("1_50m74")
 from_id = &"SanctionedExfil"
 to_id = &"DB_Cluster_Primary"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_ded0d"]
 script = ExtResource("1_50m74")
 from_id = &"DB_Cluster_Primary"
 to_id = &"AirGapBridge"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_p760i"]
 script = ExtResource("1_50m74")
 from_id = &"AirGapBridge"
 to_id = &"DB_Cluster_Primary"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_tqhof"]
 script = ExtResource("1_50m74")
 from_id = &"ZeroTrustEnclave"
 to_id = &"QuantumVault"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_2vf68"]
 script = ExtResource("1_50m74")
 from_id = &"QuantumVault"
 to_id = &"ZeroTrustEnclave"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_qjh31"]
 script = ExtResource("1_50m74")
 from_id = &"SanctionedExfil"
 to_id = &"QuantumVault"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_jdfyj"]
 script = ExtResource("1_50m74")
 from_id = &"QuantumVault"
 to_id = &"SanctionedExfil"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_2ggfs"]
 script = ExtResource("1_50m74")
 from_id = &"AirGapBridge"
 to_id = &"QuantumVault"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_ci3y6"]
 script = ExtResource("1_50m74")
 from_id = &"QuantumVault"
 to_id = &"AirGapBridge"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_eawr8"]
 script = ExtResource("1_50m74")
 from_id = &"AirGapBridge"
 to_id = &"SecurityMonitor"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_qxcsp"]
 script = ExtResource("1_50m74")
 from_id = &"SecurityMonitor"
 to_id = &"AirGapBridge"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_djwty"]
 script = ExtResource("1_50m74")
 from_id = &"SecurityMonitor"
 to_id = &"QuantumVault"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_6ahos"]
 script = ExtResource("1_50m74")
 from_id = &"QuantumVault"
 to_id = &"SecurityMonitor"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_a007s"]
 script = ExtResource("2_1rrm4")

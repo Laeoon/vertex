@@ -20,6 +20,8 @@ signal level_select_requested()
 signal quit_requested()
 signal toggle_optimal_route()
 signal cycle_neighbor(dir: int)
+signal directional_neighbor_requested(dir: Vector2)
+signal neighbor_hovered(node_id: StringName)
 
 signal defender_resolve_turn()
 signal defender_toggle_firewall()
@@ -101,10 +103,16 @@ func _input(event: InputEvent) -> void:
 				toggle_optimal_route.emit()
 				return
 			KEY_UP, KEY_W:
-				cycle_neighbor.emit(-1)
+				directional_neighbor_requested.emit(Vector2.UP)
 				return
 			KEY_DOWN, KEY_S:
-				cycle_neighbor.emit(1)
+				directional_neighbor_requested.emit(Vector2.DOWN)
+				return
+			KEY_LEFT, KEY_A:
+				directional_neighbor_requested.emit(Vector2.LEFT)
+				return
+			KEY_RIGHT, KEY_D:
+				directional_neighbor_requested.emit(Vector2.RIGHT)
 				return
 			KEY_TAB:
 				cycle_neighbor.emit(1)
@@ -158,6 +166,15 @@ func _input(event: InputEvent) -> void:
 	if defender_mode and event is InputEventMouseMotion:
 		var edge: String = _find_edge_at_pos(event.position)
 		defender_hover_edge.emit(edge)
+		return
+
+	# ─── Modo atacante: mouse motion ──────────────────────────
+	if not defender_mode and event is InputEventMouseMotion:
+		if not game_over:
+			var nid: StringName = _find_node_at_pos(event.position)
+			if nid != &"" and _es_vecino_valido(nid) and nid != selected_neighbor:
+				selected_neighbor = nid
+				neighbor_hovered.emit(nid)
 		return
 
 	# ─── Modo defensor: teclas ────────────────────────────────

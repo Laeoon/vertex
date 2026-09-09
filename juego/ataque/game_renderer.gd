@@ -72,7 +72,7 @@ func draw_frame(d: Dictionary) -> void:
 	if d.hacker_mode:
 		draw_hacker_hud(d.vp_size, d.hacker_state, d.scan_results)
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
-	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes)
+	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
 	if d.defender_mode:
 		draw_nodes(d.graph, d.node_positions, d.brain_enemy_pos, d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes)
 		if d.brain_enemy_path.size() >= 2:
@@ -413,7 +413,9 @@ func draw_edges(
 	current_turn: int = 0,
 	_unblock_flash_time: float = -1.0,
 	_unblock_flash_edge: String = "",
-	hidden_nodes: Array = []
+	hidden_nodes: Array = [],
+	player_pos: StringName = &"",
+	selected_neighbor: StringName = &""
 ) -> void:
 	# Pre-pasada: set de claves para detectar pares bidireccionales (A→B + B→A)
 	# y curvarlos aparte — dibujados rectos se superponen exactamente y las
@@ -544,19 +546,32 @@ func draw_edges(
 				edge_color
 			)
 
-			var apex: Vector2 = (
-				inicio.lerp(centro + perp * bend * 2.0, 0.5).lerp(
-					(centro + perp * bend * 2.0).lerp(tip, 0.5), 0.5)
-				if absf(bend) >= 0.5
-				else centro
-			)
-			var label_bg: Color = BrandClass.PANEL_SOLID
-			var label_text: String = str(e.protocol)
-			var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
-			var label_pos: Vector2 = apex + Vector2(-text_w / 2.0, -12.0)
-			draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), label_bg)
-			draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), Color(edge_color.r, edge_color.g, edge_color.b, 0.5), false, 1.0)
-			draw_string(label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.85, 0.88, 0.95, 0.95))
+			var show_badge: bool = false
+			if (player_pos != &"" and player_pos != "") and (e.from_id == player_pos or e.to_id == player_pos or String(e.from_id) == String(player_pos) or String(e.to_id) == String(player_pos)):
+				show_badge = true
+			elif (selected_neighbor != &"" and selected_neighbor != "") and (e.from_id == selected_neighbor or e.to_id == selected_neighbor or String(e.from_id) == String(selected_neighbor) or String(e.to_id) == String(selected_neighbor)):
+				show_badge = true
+			elif hovered_edge != "" and hovered_edge == edge_key:
+				show_badge = true
+			elif in_path or in_enemy_path:
+				show_badge = true
+			elif String(e.protocol) != "" and String(e.protocol) != "TCP":
+				show_badge = true
+
+			if show_badge:
+				var apex: Vector2 = (
+					inicio.lerp(centro + perp * bend * 2.0, 0.5).lerp(
+						(centro + perp * bend * 2.0).lerp(tip, 0.5), 0.5)
+					if absf(bend) >= 0.5
+					else centro
+				)
+				var label_bg: Color = BrandClass.PANEL_SOLID
+				var label_text: String = str(e.protocol)
+				var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
+				var label_pos: Vector2 = apex + Vector2(-text_w / 2.0, -12.0)
+				draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), label_bg)
+				draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), Color(edge_color.r, edge_color.g, edge_color.b, 0.5), false, 1.0)
+				draw_string(label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.85, 0.88, 0.95, 0.95))
 
 
 ## Polígono regular centrado en `centro` (identidad visual de nodos, E2).
@@ -707,7 +722,18 @@ func draw_nodes(
 
 		if nid_str == selected_neighbor and not game_over:
 			var sel_pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.006) * 0.3
-			draw_circle(pos, radius + 7.0, Color(1.0, 0.4, 0.8, sel_pulse * 0.45), false, 3.0)
+			# Dual-ring tactical cyber reticle
+			draw_circle(pos, radius + 7.0, Color(0.0, 0.95, 1.0, sel_pulse * 0.8), false, 2.5)
+			draw_circle(pos, radius + 3.5, Color(1.0, 0.85, 0.2, sel_pulse * 0.5), false, 1.5)
+			# 4 corner framing brackets
+			var b_offset: float = radius + 9.0
+			var b_arm: float = 6.0
+			var bracket_color: Color = Color(0.0, 0.95, 1.0, clampf(sel_pulse * 0.9, 0.0, 1.0))
+			for sx in [-1.0, 1.0]:
+				for sy in [-1.0, 1.0]:
+					var corner: Vector2 = pos + Vector2(sx * b_offset, sy * b_offset)
+					draw_line(corner, corner + Vector2(-sx * b_arm, 0.0), bracket_color, 1.5)
+					draw_line(corner, corner + Vector2(0.0, -sy * b_arm), bracket_color, 1.5)
 
 		var label_bg_color: Color = Color(0.03, 0.03, 0.07, 0.9)
 		var label_text: String = str(nid_str)

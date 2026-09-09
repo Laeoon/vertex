@@ -9,324 +9,378 @@ script = ExtResource("1_qqsoe")
 from_id = &"ExtGateway"
 to_id = &"EdgeProxy"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_mbws6"]
 script = ExtResource("1_qqsoe")
 from_id = &"EdgeProxy"
 to_id = &"ExtGateway"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_dqqhf"]
 script = ExtResource("1_qqsoe")
 from_id = &"ExtGateway"
 to_id = &"LoadBalancer"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_v18px"]
 script = ExtResource("1_qqsoe")
 from_id = &"LoadBalancer"
 to_id = &"ExtGateway"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_fuic1"]
 script = ExtResource("1_qqsoe")
 from_id = &"EdgeProxy"
 to_id = &"WebPortal"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_5s0iq"]
 script = ExtResource("1_qqsoe")
 from_id = &"WebPortal"
 to_id = &"EdgeProxy"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_qedg6"]
 script = ExtResource("1_qqsoe")
 from_id = &"EdgeProxy"
 to_id = &"MicroserviceA"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_pqimb"]
 script = ExtResource("1_qqsoe")
 from_id = &"MicroserviceA"
 to_id = &"EdgeProxy"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_kngmd"]
 script = ExtResource("1_qqsoe")
 from_id = &"LoadBalancer"
 to_id = &"MicroserviceA"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_boupg"]
 script = ExtResource("1_qqsoe")
 from_id = &"MicroserviceA"
 to_id = &"LoadBalancer"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_7oa3k"]
 script = ExtResource("1_qqsoe")
 from_id = &"LoadBalancer"
 to_id = &"MicroserviceB"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_csndl"]
 script = ExtResource("1_qqsoe")
 from_id = &"MicroserviceB"
 to_id = &"LoadBalancer"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_e8eyt"]
 script = ExtResource("1_qqsoe")
 from_id = &"WebPortal"
 to_id = &"CacheCluster"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_xicpo"]
 script = ExtResource("1_qqsoe")
 from_id = &"CacheCluster"
 to_id = &"WebPortal"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_63vur"]
 script = ExtResource("1_qqsoe")
 from_id = &"WebPortal"
 to_id = &"MessageQueue"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_7y43g"]
 script = ExtResource("1_qqsoe")
 from_id = &"MessageQueue"
 to_id = &"WebPortal"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_nnljt"]
 script = ExtResource("1_qqsoe")
 from_id = &"MicroserviceA"
 to_id = &"MessageQueue"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_q85gq"]
 script = ExtResource("1_qqsoe")
 from_id = &"MessageQueue"
 to_id = &"MicroserviceA"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_kbc1v"]
 script = ExtResource("1_qqsoe")
 from_id = &"MicroserviceA"
 to_id = &"ServiceBus"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_u3cfi"]
 script = ExtResource("1_qqsoe")
 from_id = &"ServiceBus"
 to_id = &"MicroserviceA"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_3pn84"]
 script = ExtResource("1_qqsoe")
 from_id = &"MicroserviceB"
 to_id = &"ServiceBus"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_otajk"]
 script = ExtResource("1_qqsoe")
 from_id = &"ServiceBus"
 to_id = &"MicroserviceB"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_q4oi0"]
 script = ExtResource("1_qqsoe")
 from_id = &"CacheCluster"
 to_id = &"ConfigServer"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_ipkqy"]
 script = ExtResource("1_qqsoe")
 from_id = &"ConfigServer"
 to_id = &"CacheCluster"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_cfg5c"]
 script = ExtResource("1_qqsoe")
 from_id = &"MessageQueue"
 to_id = &"ConfigServer"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_hmiea"]
 script = ExtResource("1_qqsoe")
 from_id = &"ConfigServer"
 to_id = &"MessageQueue"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_pp0we"]
 script = ExtResource("1_qqsoe")
 from_id = &"MessageQueue"
 to_id = &"SecretManager"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_xiooi"]
 script = ExtResource("1_qqsoe")
 from_id = &"SecretManager"
 to_id = &"MessageQueue"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_eqryo"]
 script = ExtResource("1_qqsoe")
 from_id = &"MessageQueue"
 to_id = &"TxProcessor"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_ymx72"]
 script = ExtResource("1_qqsoe")
 from_id = &"TxProcessor"
 to_id = &"MessageQueue"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_2vlod"]
 script = ExtResource("1_qqsoe")
 from_id = &"ServiceBus"
 to_id = &"TxProcessor"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_nar7p"]
 script = ExtResource("1_qqsoe")
 from_id = &"TxProcessor"
 to_id = &"ServiceBus"
 transit_cost = 2.0
+protocol = &"QUIC"
 
 [sub_resource type="Resource" id="Resource_7iix8"]
 script = ExtResource("1_qqsoe")
 from_id = &"ConfigServer"
 to_id = &"DBShard1"
 transit_cost = 3.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_xql0s"]
 script = ExtResource("1_qqsoe")
 from_id = &"DBShard1"
 to_id = &"ConfigServer"
 transit_cost = 3.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_dbqiq"]
 script = ExtResource("1_qqsoe")
 from_id = &"SecretManager"
 to_id = &"DBShard1"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_q8sf2"]
 script = ExtResource("1_qqsoe")
 from_id = &"DBShard1"
 to_id = &"SecretManager"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_o525o"]
 script = ExtResource("1_qqsoe")
 from_id = &"SecretManager"
 to_id = &"DBShard2"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_cscuf"]
 script = ExtResource("1_qqsoe")
 from_id = &"DBShard2"
 to_id = &"SecretManager"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_rk8xx"]
 script = ExtResource("1_qqsoe")
 from_id = &"TxProcessor"
 to_id = &"DBShard2"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_gb3ik"]
 script = ExtResource("1_qqsoe")
 from_id = &"DBShard2"
 to_id = &"TxProcessor"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_3bs67"]
 script = ExtResource("1_qqsoe")
 from_id = &"TxProcessor"
 to_id = &"AuditLogger"
 transit_cost = 3.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_1fxio"]
 script = ExtResource("1_qqsoe")
 from_id = &"AuditLogger"
 to_id = &"TxProcessor"
 transit_cost = 3.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_8l1gf"]
 script = ExtResource("1_qqsoe")
 from_id = &"DBShard1"
 to_id = &"HSMModule"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_u3qum"]
 script = ExtResource("1_qqsoe")
 from_id = &"HSMModule"
 to_id = &"DBShard1"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_3iqke"]
 script = ExtResource("1_qqsoe")
 from_id = &"DBShard2"
 to_id = &"HSMModule"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_n1eao"]
 script = ExtResource("1_qqsoe")
 from_id = &"HSMModule"
 to_id = &"DBShard2"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_ctgdh"]
 script = ExtResource("1_qqsoe")
 from_id = &"DBShard2"
 to_id = &"CoreRouter"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_gt4ie"]
 script = ExtResource("1_qqsoe")
 from_id = &"CoreRouter"
 to_id = &"DBShard2"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_rvl0d"]
 script = ExtResource("1_qqsoe")
 from_id = &"AuditLogger"
 to_id = &"CoreRouter"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_1qjgu"]
 script = ExtResource("1_qqsoe")
 from_id = &"CoreRouter"
 to_id = &"AuditLogger"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_4t86e"]
 script = ExtResource("1_qqsoe")
 from_id = &"HSMModule"
 to_id = &"CentralLedger"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_ehrse"]
 script = ExtResource("1_qqsoe")
 from_id = &"CentralLedger"
 to_id = &"HSMModule"
 transit_cost = 2.0
+protocol = &"VPN"
 
 [sub_resource type="Resource" id="Resource_8ne45"]
 script = ExtResource("1_qqsoe")
 from_id = &"CoreRouter"
 to_id = &"CentralLedger"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_x8suj"]
 script = ExtResource("1_qqsoe")
 from_id = &"CentralLedger"
 to_id = &"CoreRouter"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_rfm31"]
 script = ExtResource("2_jl1bo")

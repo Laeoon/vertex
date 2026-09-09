@@ -9,276 +9,322 @@ script = ExtResource("1_82gec")
 from_id = &"InternetGate"
 to_id = &"ProxyInverso"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_bkha5"]
 script = ExtResource("1_82gec")
 from_id = &"ProxyInverso"
 to_id = &"InternetGate"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_3yht0"]
 script = ExtResource("1_82gec")
 from_id = &"InternetGate"
 to_id = &"WAFPerimetral"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_1fgcc"]
 script = ExtResource("1_82gec")
 from_id = &"WAFPerimetral"
 to_id = &"InternetGate"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_m3u6k"]
 script = ExtResource("1_82gec")
 from_id = &"ProxyInverso"
 to_id = &"DMZ_Web"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_68g2j"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Web"
 to_id = &"ProxyInverso"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_xvmb6"]
 script = ExtResource("1_82gec")
 from_id = &"ProxyInverso"
 to_id = &"DMZ_Api"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_s5x11"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Api"
 to_id = &"ProxyInverso"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_ih4ro"]
 script = ExtResource("1_82gec")
 from_id = &"WAFPerimetral"
 to_id = &"DMZ_Api"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_8u4n8"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Api"
 to_id = &"WAFPerimetral"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_1jp61"]
 script = ExtResource("1_82gec")
 from_id = &"WAFPerimetral"
 to_id = &"DMZ_Mail"
 transit_cost = 2.0
+protocol = &"DNS"
 
 [sub_resource type="Resource" id="Resource_ifku1"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Mail"
 to_id = &"WAFPerimetral"
 transit_cost = 2.0
+protocol = &"DNS"
 
 [sub_resource type="Resource" id="Resource_x0710"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Web"
 to_id = &"AuthLDAP"
 transit_cost = 3.0
+protocol = &"LDAP"
 
 [sub_resource type="Resource" id="Resource_l8bvj"]
 script = ExtResource("1_82gec")
 from_id = &"AuthLDAP"
 to_id = &"DMZ_Web"
 transit_cost = 3.0
+protocol = &"LDAP"
 
 [sub_resource type="Resource" id="Resource_yjxme"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Web"
 to_id = &"AppInternal"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_ox7s0"]
 script = ExtResource("1_82gec")
 from_id = &"AppInternal"
 to_id = &"DMZ_Web"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_lc71p"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Api"
 to_id = &"AuthLDAP"
 transit_cost = 2.0
+protocol = &"LDAP"
 
 [sub_resource type="Resource" id="Resource_tmd70"]
 script = ExtResource("1_82gec")
 from_id = &"AuthLDAP"
 to_id = &"DMZ_Api"
 transit_cost = 2.0
+protocol = &"LDAP"
 
 [sub_resource type="Resource" id="Resource_4taw7"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Api"
 to_id = &"AppInternal"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_v7htr"]
 script = ExtResource("1_82gec")
 from_id = &"AppInternal"
 to_id = &"DMZ_Api"
 transit_cost = 2.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_y8hrb"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Mail"
 to_id = &"FileStore"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_u45ik"]
 script = ExtResource("1_82gec")
 from_id = &"FileStore"
 to_id = &"DMZ_Mail"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_ntt7c"]
 script = ExtResource("1_82gec")
 from_id = &"DMZ_Mail"
 to_id = &"AppInternal"
 transit_cost = 3.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_wrx7s"]
 script = ExtResource("1_82gec")
 from_id = &"AppInternal"
 to_id = &"DMZ_Mail"
 transit_cost = 3.0
+protocol = &"HTTPS"
 
 [sub_resource type="Resource" id="Resource_hdrtr"]
 script = ExtResource("1_82gec")
 from_id = &"AuthLDAP"
 to_id = &"DBReplica"
 transit_cost = 3.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_jy86r"]
 script = ExtResource("1_82gec")
 from_id = &"DBReplica"
 to_id = &"AuthLDAP"
 transit_cost = 3.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_vehkb"]
 script = ExtResource("1_82gec")
 from_id = &"AuthLDAP"
 to_id = &"SecurityGateway"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_ahnx4"]
 script = ExtResource("1_82gec")
 from_id = &"SecurityGateway"
 to_id = &"AuthLDAP"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_3syrf"]
 script = ExtResource("1_82gec")
 from_id = &"AppInternal"
 to_id = &"SecurityGateway"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_vialo"]
 script = ExtResource("1_82gec")
 from_id = &"SecurityGateway"
 to_id = &"AppInternal"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_1na1t"]
 script = ExtResource("1_82gec")
 from_id = &"AppInternal"
 to_id = &"AdminVault"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_2xqad"]
 script = ExtResource("1_82gec")
 from_id = &"AdminVault"
 to_id = &"AppInternal"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_at3qk"]
 script = ExtResource("1_82gec")
 from_id = &"FileStore"
 to_id = &"AdminVault"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_o7hwl"]
 script = ExtResource("1_82gec")
 from_id = &"AdminVault"
 to_id = &"FileStore"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_dtlem"]
 script = ExtResource("1_82gec")
 from_id = &"DBReplica"
 to_id = &"CoreServices"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_g0r8c"]
 script = ExtResource("1_82gec")
 from_id = &"CoreServices"
 to_id = &"DBReplica"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_kp8b1"]
 script = ExtResource("1_82gec")
 from_id = &"SecurityGateway"
 to_id = &"CoreServices"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_h7bdr"]
 script = ExtResource("1_82gec")
 from_id = &"CoreServices"
 to_id = &"SecurityGateway"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_i2nr3"]
 script = ExtResource("1_82gec")
 from_id = &"SecurityGateway"
 to_id = &"SIEMCollector"
 transit_cost = 3.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_lff4k"]
 script = ExtResource("1_82gec")
 from_id = &"SIEMCollector"
 to_id = &"SecurityGateway"
 transit_cost = 3.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_db0ou"]
 script = ExtResource("1_82gec")
 from_id = &"AdminVault"
 to_id = &"SIEMCollector"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_p02dg"]
 script = ExtResource("1_82gec")
 from_id = &"SIEMCollector"
 to_id = &"AdminVault"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_6ism3"]
 script = ExtResource("1_82gec")
 from_id = &"CoreServices"
 to_id = &"MasterVault"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_fcdnx"]
 script = ExtResource("1_82gec")
 from_id = &"MasterVault"
 to_id = &"CoreServices"
 transit_cost = 2.0
+protocol = &"SQL"
 
 [sub_resource type="Resource" id="Resource_hsxfo"]
 script = ExtResource("1_82gec")
 from_id = &"SIEMCollector"
 to_id = &"MasterVault"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_gbuy4"]
 script = ExtResource("1_82gec")
 from_id = &"MasterVault"
 to_id = &"SIEMCollector"
 transit_cost = 2.0
+protocol = &"SSH"
 
 [sub_resource type="Resource" id="Resource_sc0ao"]
 script = ExtResource("2_6lbtw")
