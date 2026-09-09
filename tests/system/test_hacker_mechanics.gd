@@ -319,6 +319,27 @@ func _test_mechanics_advantages(juego: Node) -> void:
 		"travesía con bypass garantiza 0% de detección")
 	juego._hacker_logic.bypass_stealth_active = false
 
+	# 3b. Bypass blocked edge unblocking & neighbor selection in hacker mode
+	juego.player_pos = &"DMZ"
+	juego._block_edge("DMZ→WebServer", &"DMZ", &"WebServer")
+	var vecinos_hacker: Array = juego._vecinos_jugador()
+	_afirmar(vecinos_hacker.has(&"WebServer"),
+		"en modo hacker los vecinos con aristas bloqueadas son seleccionables")
+
+	juego.selected_neighbor = &"WebServer"
+	juego._game_logic.mover_jugador(&"WebServer")
+	_afirmar(juego.player_pos == &"DMZ",
+		"movimiento normal hacia arista bloqueada se rechaza")
+	_afirmar(juego.mensaje_estado.contains("Bypass"),
+		"mensaje de arista bloqueada instruye usar Bypass")
+
+	juego.hacker_state["exploits"]["bypass"] = 1
+	juego._use_hacker_exploit("bypass")
+	_afirmar(juego.player_pos == &"WebServer",
+		"Bypass atraviesa y desbloquea la arista bloqueada exitosamente")
+	_afirmar(not juego._is_blocked("DMZ→WebServer"),
+		"Bypass remueve el bloqueo de la arista")
+
 	# 4. Escalate 2-hop network telemetry
 	juego.hacker_state["scanned_nodes"].clear()
 	juego.scan_results.clear()

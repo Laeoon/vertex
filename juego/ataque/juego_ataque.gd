@@ -305,6 +305,7 @@ func _on_move_requested(destino: StringName) -> void:
 	# Fix defensor (Enmienda A): en modo defensor no hay jugador que se mueva
 	# por aristas — el movimiento del "jugador" es un no-op.
 	if not defender_mode:
+		selected_neighbor = destino
 		_mover_jugador(destino)
 
 

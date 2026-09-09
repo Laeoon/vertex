@@ -107,33 +107,22 @@ func use_hacker_exploit(exploit_type: String) -> void:
 		"bypass":
 			# Sigilo garantizado al entrar con bypass (0% detección)
 			bypass_stealth_active = true
-			# Saltar protección: solo funciona en nodos conectados
-			if _game.selected_neighbor in _game._vecinos_jugador():
-				_game._mover_jugador(_game.selected_neighbor)
-			else:
-				# Verificar que existe una arista (bloqueada o no)
-				var edge_key: String = "%s→%s" % [_game.player_pos, _game.selected_neighbor]
-				var edge_exists: bool = false
-				for e in _game.graph.edges:
-					if e != null and e.from_id == _game.player_pos and e.to_id == _game.selected_neighbor:
-						edge_exists = true
-						break
-				if not edge_exists:
-					bypass_stealth_active = false
-					_game.mensaje_estado = "Sin conexión directa a %s" % str(_game.selected_neighbor)
-					_refund_exploit(exploit_type)
-					_game.queue_redraw()
-					return
-				if _game._is_blocked(edge_key):
-					_game.blocked_edges.erase(edge_key)
-					_game.runtime.set_transit_cost(_game.player_pos, _game.selected_neighbor, 1.0)
-					_game._mover_jugador(_game.selected_neighbor)
-				else:
-					bypass_stealth_active = false
-					_game.mensaje_estado = "No hay protección que saltar en %s" % str(_game.selected_neighbor)
-					_refund_exploit(exploit_type)
-					_game.queue_redraw()
-					return
+			var edge_key: String = "%s→%s" % [_game.player_pos, _game.selected_neighbor]
+			var edge_exists: bool = false
+			for e in _game.graph.edges:
+				if e != null and e.from_id == _game.player_pos and e.to_id == _game.selected_neighbor:
+					edge_exists = true
+					break
+			if not edge_exists:
+				bypass_stealth_active = false
+				_game.mensaje_estado = "Sin conexión directa a %s" % str(_game.selected_neighbor)
+				_refund_exploit(exploit_type)
+				_game.queue_redraw()
+				return
+			if _game._is_blocked(edge_key):
+				_game.blocked_edges.erase(edge_key)
+				_game.runtime.set_transit_cost(_game.player_pos, _game.selected_neighbor, 1.0)
+			_game._mover_jugador(_game.selected_neighbor)
 			bypass_stealth_active = false
 		"escalate":
 			# Acceder a área restringida: solo nodos conectados

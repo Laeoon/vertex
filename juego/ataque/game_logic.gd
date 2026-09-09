@@ -28,6 +28,10 @@ func mover_jugador(destino: StringName) -> void:
 		if _game.hacker_mode and _game.hacker_state.get("active_persists", {}).has(str(destino)):
 			GameLogger.debug("JuegoAtaque", "Persist activo en %s — ignorando bloqueo" % str(destino))
 		else:
+			if _game.hacker_mode:
+				_game.mensaje_estado = "Ruta bloqueada por defensas. Usa Bypass [1] para forzar el paso."
+			_game.selected_neighbor = destino
+			_game.queue_redraw()
 			return
 
 	_game.mensaje_estado = ""
@@ -206,7 +210,7 @@ func vecinos_jugador() -> Array:
 		if _game.hidden_nodes.has(nid) or _game.hidden_nodes.has(String(nid)):
 			continue
 		var edge_key: String = "%s→%s" % [_game.player_pos, nid]
-		if _game._is_blocked(edge_key):
+		if not _game.hacker_mode and _game._is_blocked(edge_key):
 			continue
 		result.append(nid)
 	return result
