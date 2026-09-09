@@ -1,0 +1,88 @@
+{
+  "id": "tut_hacker_2",
+  "title": "Hacker Módulo 2: Escalada y Telemetría",
+  "graph_path": "res://juego/hacker/hacker_n1.tres",
+  "start_node": "WebServer",
+  "target_node": "Core",
+  "waypoints": ["AppServer"],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 0,
+  "max_turns": 15,
+  "titulo_nivel": "Hacker Módulo 2: Escalada y Telemetría",
+  "objective": "Dominar la escalada de privilegios [2] y aprovechar la telemetría de red a 2 saltos para pivotar.",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 1,
+    "escalate": 2
+  },
+  "steps": [
+    {
+      "id": "intro_mod2",
+      "title": "Fase 2: Escalada y Pivoting",
+      "text": "MÓDULO 2: ESCALADA Y TELEMETRÍA\n\nUna vez dentro del perímetro inicial (WebServer), un atacante tiene privilegios limitados.\nPara alcanzar activos críticos (bases de datos o controladores de dominio),\nes necesario realizar ESCALADA DE PRIVILEGIOS (PrivEsc) y PIVOTING.\n\nEn entornos reales, esto implica explotar malas configuraciones de sudo,\ntokens de autenticación o vulnerabilidades de kernel para obtener acceso de Administrador/Root.\n\nEn este módulo aprenderás:\n- Escalate [2]: Fuerza el acceso a nodos restringidos y desencadena telemetría profunda.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["WebServer", "AppServer"],
+      "highlight_edges": ["WebServer→AppServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "escalate_mechanic",
+      "title": "Mecánica: Escalate [2] (Root Compromise)",
+      "text": "ELEVACIÓN DE PRIVILEGIOS [2]:\n\nPresiona [2] sobre un nodo vecino para vulnerar sus defensas y tomar control.\n\nVENTAJAS TÁCTICAS:\n- Accede a servidores protegidos o con restricciones de firewall.\n- TELEMETRÍA DE RED AUTOMÁTICA: al ingresar, escanea automáticamente todos los nodos\n  en un radio de 2 saltos sin consumir ruido adicional ni turnos.\n\nCOSTO: +25 de ruido.\nGenera ruido considerable porque las auditorías internas registran la elevación de privilegios.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "top",
+      "highlight_nodes": ["AppServer"],
+      "highlight_edges": ["WebServer→AppServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_escalate_mod2",
+      "title": "Práctica: Escalar hacia AppServer",
+      "text": "PASOS:\n1. Selecciona AppServer con [Tab] o clic.\n2. Presiona [2] para activar la elevación de privilegios.\n3. Observa cómo saltas hacia AppServer y la telemetría revela automáticamente\n   los nodos contiguos (DBServer y sus conexiones).\n\nINTENTA AHORA: selecciona AppServer y presiona [2].",
+      "anchor_type": "node",
+      "anchor_id": "WebServer",
+      "position": "bottom",
+      "highlight_nodes": ["WebServer", "AppServer"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "input",
+      "hint": "Selecciona AppServer y presiona [2] para ejecutar Escalate.",
+      "auto_advance_after": null
+    },
+    {
+      "id": "telemetry_reflection",
+      "title": "Análisis de Telemetría",
+      "text": "¡Acceso concedido y red cartografiada!\nObserva el tablero: los nodos adyacentes a AppServer han sido escaneados.\n\nEn ciberseguridad, esto simula el descubrimiento de Active Directory y topología interna:\ncuando comprometes un servidor de aplicaciones, extraes credenciales y tablas de enrutamiento\nque dejan al descubierto toda la subred corporativa.\n\nContinúa hacia DBServer y AdminPanel rumbo al Core.",
+      "anchor_type": "node",
+      "anchor_id": "AppServer",
+      "position": "center",
+      "highlight_nodes": ["DBServer", "AdminPanel"],
+      "highlight_edges": ["AppServer→DBServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "mod2_conclusion",
+      "title": "Conclusión y Buenas Prácticas",
+      "text": "Has completado la elevación de privilegios.\n\nDEFENSA EN EL MUNDO REAL:\nPara mitigar este riesgo, los defensores implementan Principio de Menor Privilegio (PoLP),\nmicrosegmentación y monitoreo de llamadas al sistema con EDRs.\n\nExfiltra hacia el Core para finalizar el módulo.",
+      "anchor_type": "node",
+      "anchor_id": "Core",
+      "position": "top",
+      "highlight_nodes": ["Core"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    }
+  ]
+}

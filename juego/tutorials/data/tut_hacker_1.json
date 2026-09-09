@@ -1,0 +1,101 @@
+{
+  "id": "tut_hacker_1",
+  "title": "Hacker Módulo 1: Reconocimiento e Infiltración",
+  "graph_path": "res://juego/hacker/hacker_n1.tres",
+  "start_node": "DMZ",
+  "target_node": "Core",
+  "waypoints": ["WebServer"],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 0,
+  "max_turns": 15,
+  "titulo_nivel": "Hacker Módulo 1: Reconocimiento e Infiltración",
+  "objective": "Aprender reconocimiento de objetivos con Scan [X] e infiltración perimetral con Bypass [1].",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 2
+  },
+  "steps": [
+    {
+      "id": "intro_mod1",
+      "title": "Fase 1: Reconocimiento del Objetivo",
+      "text": "MÓDULO 1: RECONOCIMIENTO E INFILTRACIÓN\n\nEn ciberseguridad ofensiva y auditorías de Red Team, nunca se ataca a ciegas.\nLa primera fase de la Cyber Kill Chain es el RECONOCIMIENTO.\n\nHerramientas del mundo real como Nmap, Nessus o Shodan permiten mapear puertos,\nservicios expuestos y versiones vulnerables antes de interactuar.\n\nEn este módulo dominarás:\n1) Scan [X]: Detección de activos y neutralización de trampas.\n2) Bypass [1]: Infiltración limpia aprovechando vulnerabilidades perimetrales.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["DMZ", "WebServer", "MailServer"],
+      "highlight_edges": ["DMZ→WebServer", "DMZ→MailServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "scan_mechanic",
+      "title": "Mecánica: Scan [X] (Escaneo Pasivo)",
+      "text": "ESCANEADOR DE RED [X]:\n\nPresiona [X] sobre un nodo adyacente seleccionado para obtener telemetría.\n\nVENTAJAS TÁCTICAS:\n- Revela el tipo de nodo, vulnerabilidades y nivel de riesgo de detección.\n- DESACTIVA TRAMPAS: si el nodo tiene trampas pasivas, evita un castigo de +30 de ruido.\n- MITIGA DETECCIÓN: reduce a la mitad la probabilidad de ser detectado al ingresar.\n\nCOSTO: +2 de ruido. Rápido, silencioso y seguro.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "top",
+      "highlight_nodes": ["WebServer"],
+      "highlight_edges": ["DMZ→WebServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_scan_mod1",
+      "title": "Práctica: Escanear WebServer",
+      "text": "PASOS:\n1. Selecciona el nodo WebServer con [Tab] o clic.\n2. Presiona [X] para ejecutar el escaneo.\n3. Observa los datos del nodo y el registro en consola.\n\nINTENTA AHORA: selecciona WebServer y presiona [X].",
+      "anchor_type": "node",
+      "anchor_id": "DMZ",
+      "position": "bottom",
+      "highlight_nodes": ["DMZ", "WebServer"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "input",
+      "hint": "Selecciona WebServer con clic o [Tab] y presiona [X].",
+      "auto_advance_after": null
+    },
+    {
+      "id": "bypass_mechanic",
+      "title": "Mecánica: Bypass [1] (Explotación Web)",
+      "text": "INFILTRACIÓN PERIMETRAL [1]:\n\nUna vez identificada la vulnerabilidad (ej. fallo en servidor web o API),\nel atacante ejecuta un exploit para ingresar al sistema.\n\nVENTAJAS TÁCTICAS:\n- SIGILO ABSOLUTO: garantiza 0% de probabilidad de detección al entrar al nodo.\n- Desbloquea aristas bloqueadas por defensas activas.\n\nCOSTO: +15 de ruido.\nÚsalo cuando el riesgo de detección en el salto sea elevado.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["WebServer"],
+      "highlight_edges": ["DMZ→WebServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_bypass_mod1",
+      "title": "Práctica: Infiltración con Bypass",
+      "text": "PASOS:\n1. Mantén seleccionado WebServer.\n2. Presiona [1] para consumir un exploit Bypass y penetrar el nodo en sigilo.\n\nINTENTA AHORA: presiona [1] para cruzar hacia WebServer.",
+      "anchor_type": "node",
+      "anchor_id": "WebServer",
+      "position": "bottom",
+      "highlight_nodes": ["WebServer"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "input",
+      "hint": "Con WebServer seleccionado, presiona [1] para activar Bypass.",
+      "auto_advance_after": null
+    },
+    {
+      "id": "mod1_conclusion",
+      "title": "Conclusión y Exfiltración",
+      "text": "¡Infiltración perimetral completada!\nHas combinado reconocimiento previo con explotación precisa.\n\nContinúa navegando hacia el Core para completar la misión.\nRecuerda: si el ruido sube de 60 entrarás en alerta alta.\n\nMARCO ÉTICO:\nEn auditorías profesionales (pentesting), el reconocimiento se limita\nestrictamente al alcance contratado (Rules of Engagement).",
+      "anchor_type": "node",
+      "anchor_id": "Core",
+      "position": "top",
+      "highlight_nodes": ["Core"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    }
+  ]
+}

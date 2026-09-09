@@ -42,15 +42,18 @@ func _ready() -> void:
 
 	track_lessons = {
 		Track.GENERAL: [
-			{"label": "Tutorial 1: Reconocimiento", "key": &"tutorial1", "desc": loc("tut1_desc")},
-			{"label": "Tutorial 3: Defensa en Capas", "key": &"tutorial3", "desc": loc("tut3_desc")},
+			{"label": "Módulo 1: Topología y Reconocimiento", "key": &"tutorial1", "desc": loc("tut1_desc")},
+			{"label": "Módulo 2: Defensa en Capas y Rutas", "key": &"tutorial3", "desc": loc("tut3_desc")},
 		],
 		Track.HEIST: [
-			{"label": "Tutorial 2: Perímetro", "key": &"tutorial2", "desc": loc("tut2_desc")},
-			{"label": "Tutorial 6: Operaciones Combinadas", "key": &"tutorial6", "desc": loc("tut6_desc")},
+			{"label": "Módulo 1: Sensores y Perímetro", "key": &"tutorial2", "desc": loc("tut2_desc")},
+			{"label": "Módulo 2: Presupuesto y Op. Combinadas", "key": &"tutorial6", "desc": loc("tut6_desc")},
 		],
 		Track.HACKER: [
-			{"label": "Tutorial 4: Modo Hacker", "key": &"tutorial4", "desc": loc("tut4_desc")},
+			{"label": "Módulo 1: Reconocimiento e Infiltración", "key": &"tut_hacker_1", "desc": "Scan [X] y Bypass [1] con Nmap y Web Exploitation."},
+			{"label": "Módulo 2: Escalada y Telemetría", "key": &"tut_hacker_2", "desc": "Escalate [2] y telemetría de red a 2 saltos."},
+			{"label": "Módulo 3: Persistencia y Refugio", "key": &"tut_hacker_3", "desc": "Persist [3], 0 ruido de movimiento y doble enfriamiento."},
+			{"label": "Módulo 4: Señuelos y Contramedidas", "key": &"tut_hacker_4", "desc": "Decoy [4], absorción de bloqueos de IA y desvío de patrullas."},
 		],
 		Track.DEFENDER: [],
 	}
@@ -110,7 +113,7 @@ func _launch(key: StringName) -> void:
 		SceneParams.target_node = &"Target"
 		SceneParams.waypoints = []
 		SceneParams.ai_enabled = false
-		SceneParams.titulo_nivel = "Tutorial 1: Reconocimiento"
+		SceneParams.titulo_nivel = "General Módulo 1: Reconocimiento"
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut1_movimiento.json"
 
@@ -123,7 +126,7 @@ func _launch(key: StringName) -> void:
 		SceneParams.ai_block_per_turn = 1
 		SceneParams.max_ai_blocks = 1
 		SceneParams.ai_bloquea_al_inicio = true
-		SceneParams.titulo_nivel = "Tutorial 2: Perímetro"
+		SceneParams.titulo_nivel = "Heist Módulo 1: Perímetro"
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut2_perimetro.json"
 
@@ -137,24 +140,65 @@ func _launch(key: StringName) -> void:
 		SceneParams.max_ai_blocks = 2
 		SceneParams.ai_bloquea_al_inicio = true
 		SceneParams.max_turns = 8
-		SceneParams.titulo_nivel = "Tutorial 3: Defensa en Capas"
+		SceneParams.titulo_nivel = "General Módulo 2: Defensa en Capas"
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut3_avanzado.json"
 
-	elif key == &"tutorial4":
+	elif key == &"tut_hacker_1":
 		SceneParams.graph_path = "res://juego/hacker/hacker_n1.tres"
 		SceneParams.start_node = &"DMZ"
 		SceneParams.target_node = &"Core"
-		SceneParams.waypoints = [&"WebServer", &"AdminPanel"]
+		SceneParams.waypoints = [&"WebServer"]
+		SceneParams.ai_enabled = false
+		SceneParams.titulo_nivel = "Hacker Módulo 1: Reconocimiento e Infiltración"
+		SceneParams.hacker_mode = true
+		SceneParams.starting_exploits = {"bypass": 2}
+		SceneParams.mensaje_tutorial = ""
+		SceneParams.tutorial_path = "res://juego/tutorials/data/tut_hacker_1.json"
+
+	elif key == &"tut_hacker_2":
+		SceneParams.graph_path = "res://juego/hacker/hacker_n1.tres"
+		SceneParams.start_node = &"WebServer"
+		SceneParams.target_node = &"Core"
+		SceneParams.waypoints = [&"AppServer"]
+		SceneParams.ai_enabled = false
+		SceneParams.titulo_nivel = "Hacker Módulo 2: Escalada y Telemetría"
+		SceneParams.hacker_mode = true
+		SceneParams.starting_exploits = {"bypass": 1, "escalate": 2}
+		SceneParams.mensaje_tutorial = ""
+		SceneParams.tutorial_path = "res://juego/tutorials/data/tut_hacker_2.json"
+
+	elif key == &"tut_hacker_3":
+		SceneParams.graph_path = "res://juego/hacker/hacker_n1.tres"
+		SceneParams.start_node = &"DMZ"
+		SceneParams.target_node = &"Core"
+		SceneParams.waypoints = [&"WebServer"]
+		SceneParams.ai_enabled = false
+		SceneParams.titulo_nivel = "Hacker Módulo 3: Persistencia y Refugio"
+		SceneParams.hacker_mode = true
+		SceneParams.starting_exploits = {"bypass": 1, "persist": 2}
+		SceneParams.mensaje_tutorial = ""
+		SceneParams.tutorial_path = "res://juego/tutorials/data/tut_hacker_3.json"
+
+	elif key == &"tut_hacker_4":
+		SceneParams.graph_path = "res://juego/hacker/hacker_n1.tres"
+		SceneParams.start_node = &"WebServer"
+		SceneParams.target_node = &"Core"
+		SceneParams.waypoints = [&"AppServer"]
 		SceneParams.ai_enabled = true
 		SceneParams.ai_block_per_turn = 1
 		SceneParams.max_ai_blocks = 2
 		SceneParams.max_turns = 18
-		SceneParams.titulo_nivel = "Tutorial 4: Modo Hacker"
+		SceneParams.titulo_nivel = "Hacker Módulo 4: Señuelos y Contramedidas"
 		SceneParams.hacker_mode = true
-		SceneParams.starting_exploits = {"bypass": 2, "escalate": 1, "persist": 1, "decoy": 1}
+		SceneParams.starting_exploits = {"bypass": 1, "decoy": 2}
 		SceneParams.mensaje_tutorial = ""
-		SceneParams.tutorial_path = "res://juego/tutorials/data/tut4_hacker.json"
+		SceneParams.tutorial_path = "res://juego/tutorials/data/tut_hacker_4.json"
+
+	elif key == &"tutorial4":
+		# Fallback de compatibilidad
+		_launch(&"tut_hacker_1")
+		return
 
 	elif key == &"tutorial6":
 		SceneParams.graph_path = "res://juego/tutorial6/tut6_red.tres"
@@ -166,7 +210,7 @@ func _launch(key: StringName) -> void:
 		SceneParams.max_ai_blocks = 3
 		SceneParams.max_turns = 12
 		SceneParams.max_movement_points = 10
-		SceneParams.titulo_nivel = "Tutorial 6: Op. Combinadas"
+		SceneParams.titulo_nivel = "Heist Módulo 2: Op. Combinadas"
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut6_combined.json"
 

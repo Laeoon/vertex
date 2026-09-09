@@ -163,14 +163,16 @@ func _run_tests() -> void:
 		print("FAIL: is_game_paused() fallo")
 		failed += 1
 
-	# TEST 17: Load tut4_hacker with 5 mechanics
-	var loaded4: bool = tp.load_tutorial("res://juego/tutorials/data/tut4_hacker.json")
-	if loaded4 and tp.steps.size() == 10 and tp.tutorial_data.get("starting_exploits", {}).has("decoy"):
-		print("PASS: tut4_hacker carga (10 pasos, decoy incluido)")
+	# TEST 17: Load 4 modular hacker tutorials
+	var h1_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_1.json") and tp.steps.size() >= 5
+	var h2_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_2.json") and tp.steps.size() >= 5
+	var h3_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_3.json") and tp.steps.size() >= 5
+	var h4_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_4.json") and tp.steps.size() >= 5
+	if h1_ok and h2_ok and h3_ok and h4_ok:
+		print("PASS: 4 módulos de hacker cargan correctamente")
 		passed += 1
 	else:
-		print("FAIL: tut4_hacker carga (loaded=%s steps=%d decoy=%s)" % [
-			loaded4, tp.steps.size(), tp.tutorial_data.get("starting_exploits", {}).has("decoy")])
+		print("FAIL: módulos hacker carga (h1=%s h2=%s h3=%s h4=%s)" % [h1_ok, h2_ok, h3_ok, h4_ok])
 		failed += 1
 
 	# TEST 18: TutorialsMenu track switching
@@ -179,8 +181,8 @@ func _run_tests() -> void:
 	get_tree().root.add_child(menu)
 	await get_tree().process_frame
 
-	if menu.current_track == menu.Track.GENERAL:
-		print("PASS: menu inicia en track GENERAL")
+	if menu.current_track == menu.Track.GENERAL and menu._get_current_lessons().size() == 2:
+		print("PASS: menu inicia en track GENERAL con 2 módulos")
 		passed += 1
 	else:
 		print("FAIL: menu inicio track=%s" % str(menu.current_track))
@@ -192,19 +194,20 @@ func _run_tests() -> void:
 	ev_right.keycode = KEY_RIGHT
 	menu._input(ev_right)
 	if menu.current_track == menu.Track.HEIST and menu._get_current_lessons().size() == 2:
-		print("PASS: menu cambia a HEIST con 2 lecciones")
+		print("PASS: menu cambia a HEIST con 2 módulos")
 		passed += 1
 	else:
 		print("FAIL: menu HEIST fallo (track=%s size=%d)" % [str(menu.current_track), menu._get_current_lessons().size()])
 		failed += 1
 
-	# Cambiar a HACKER y luego a DEFENDER
+	# Cambiar a HACKER y verificar 4 módulos modulares
 	menu._input(ev_right) # HACKER
-	if menu.current_track == menu.Track.HACKER and menu._get_current_lessons().size() == 1:
-		print("PASS: menu cambia a HACKER con 1 lección")
+	var hacker_lessons = menu._get_current_lessons()
+	if menu.current_track == menu.Track.HACKER and hacker_lessons.size() == 4:
+		print("PASS: menu cambia a HACKER con 4 módulos secuenciales")
 		passed += 1
 	else:
-		print("FAIL: menu HACKER fallo")
+		print("FAIL: menu HACKER fallo (size=%d)" % hacker_lessons.size())
 		failed += 1
 
 	menu._input(ev_right) # DEFENDER
