@@ -1,0 +1,88 @@
+{
+  "id": "tut_hacker_3",
+  "title": "Hacker Módulo 3: Persistencia y Refugio",
+  "graph_path": "res://juego/hacker/hacker_n1.tres",
+  "start_node": "DMZ",
+  "target_node": "Core",
+  "waypoints": ["WebServer"],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 0,
+  "max_turns": 15,
+  "titulo_nivel": "Hacker Módulo 3: Persistencia y Refugio",
+  "objective": "Aprender a instalar balizas de persistencia [3] para crear refugios seguros y enfriar el ruido.",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 1,
+    "persist": 2
+  },
+  "steps": [
+    {
+      "id": "intro_mod3",
+      "title": "Fase 3: Persistencia y C2",
+      "text": "MÓDULO 3: PERSISTENCIA Y REFUGIO\n\nEn operaciones avanzadas, mantener el acceso sin ser expulsado es crítico.\nLos atacantes implementan técnicas de PERSISTENCIA (ej. tareas programadas,\nclaves de registro, rootkits o webshells) y canales de Comando y Control (C2).\n\nEsto les permite contar con \"puntos ciegos\" seguros en la infraestructura,\ndesde donde pueden monitorear, descansar y esperar a que baje la alerta.\n\nEn este módulo aprenderás:\n- Persist [3]: Establece un refugio con 0 ruido de tránsito y doble enfriamiento.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["DMZ", "WebServer"],
+      "highlight_edges": ["DMZ→WebServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "persist_mechanic",
+      "title": "Mecánica: Persist [3] (Backdoor C2)",
+      "text": "PERSISTENCIA DE RED [3]:\n\nPresiona [3] sobre un nodo seleccionado para desplegar un backdoor activo durante 3 turnos.\n\nVENTAJAS TÁCTICAS:\n- MOVIMIENTO SILENCIOSO: entrar o salir de un nodo persistido cuesta 0 RUIDO de movimiento.\n- REFUGIO DE ENFRIAMIENTO (Safe Haven): descansar en este nodo DUPLICA el decaimiento natural\n  del ruido (-6 por turno en vez del habitual -3).\n\nCOSTO: +10 de ruido inicial.\nIdeal para limpiar la alerta acumulada tras hackeos ruidosos como Escalate.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "top",
+      "highlight_nodes": ["WebServer"],
+      "highlight_edges": ["DMZ→WebServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_persist_mod3",
+      "title": "Práctica: Desplegar Persistencia",
+      "text": "PASOS:\n1. Selecciona el nodo WebServer con [Tab] o clic.\n2. Presiona [3] para instalar el backdoor de persistencia.\n3. Verás el indicador ♻ activo sobre el nodo indicando que el refugio está listo.\n\nINTENTA AHORA: selecciona WebServer y presiona [3].",
+      "anchor_type": "node",
+      "anchor_id": "DMZ",
+      "position": "bottom",
+      "highlight_nodes": ["DMZ", "WebServer"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "input",
+      "hint": "Selecciona WebServer y presiona [3] para instalar Persistencia.",
+      "auto_advance_after": null
+    },
+    {
+      "id": "safe_haven_usage",
+      "title": "Uso Táctico del Refugio",
+      "text": "¡Persistencia establecida!\nAhora entra a WebServer usando movimiento normal (o [Enter]).\nNota que no se sumará ruido de movimiento.\n\nSi te quedas descansando en un nodo con persistencia activa, tu medidor de ruido\nreducirá 6 unidades en cada turno. Es la herramienta clave para operaciones prolongadas.\n\nContinúa tu avance hacia AdminPanel y Core.",
+      "anchor_type": "node",
+      "anchor_id": "WebServer",
+      "position": "center",
+      "highlight_nodes": ["WebServer", "AppServer"],
+      "highlight_edges": ["WebServer→AppServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "mod3_conclusion",
+      "title": "Conclusión y Detección de Persistencia",
+      "text": "Has dominado el mantenimiento del acceso táctico.\n\nDEFENSA EN EL MUNDO REAL:\nLos equipos de respuesta a incidentes (DFIR) buscan persistencias analizando autoruns,\nprocesos huérfanos, firmas en memoria y conexiones anómalas a servidores C2 externos.\n\nAlcanza el Core para completar el módulo.",
+      "anchor_type": "node",
+      "anchor_id": "Core",
+      "position": "top",
+      "highlight_nodes": ["Core"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    }
+  ]
+}

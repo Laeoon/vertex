@@ -1,0 +1,88 @@
+{
+  "id": "tut_hacker_4",
+  "title": "Hacker Módulo 4: Señuelos y Contramedidas",
+  "graph_path": "res://juego/hacker/hacker_n1.tres",
+  "start_node": "WebServer",
+  "target_node": "Core",
+  "waypoints": ["AppServer"],
+  "ai_enabled": true,
+  "ai_block_per_turn": 1,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 2,
+  "max_turns": 18,
+  "titulo_nivel": "Hacker Módulo 4: Señuelos y Contramedidas",
+  "objective": "Desplegar señuelos activos [4] para engañar defensas automatizadas y absorber bloqueos de la IA.",
+  "hacker_mode": true,
+  "starting_exploits": {
+    "bypass": 1,
+    "decoy": 2
+  },
+  "steps": [
+    {
+      "id": "intro_mod4",
+      "title": "Fase 4: Decepción y Contramedidas",
+      "text": "MÓDULO 4: SEÑUELOS Y CONTRAMEDIDAS\n\nEn redes corporativas modernas, los sistemas defensivos no son pasivos:\noperan con SIEM, SOAR y algoritmos predictivos que bloquean aristas y despachan patrullas.\n\nPara contrarrestarlos, los atacantes y equipos de Red Team emplean técnicas de DECEPCIÓN:\ninyecciones de tráfico señuelo (decoy traffic), generación de alarmas distractoras y señuelos activos.\n\nEn este módulo aprenderás:\n- Decoy [4]: Coloca un señuelo que absorbe bloqueos de la IA y atrae patrullas enemigas.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "center",
+      "highlight_nodes": ["WebServer", "AppServer"],
+      "highlight_edges": ["WebServer→AppServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "decoy_mechanic",
+      "title": "Mecánica: Decoy [4] (Honeytoken Ofensivo)",
+      "text": "SEÑUELO ACTIVO [4]:\n\nPresiona [4] sobre un nodo vecino conectado para plantar un señuelo por 2 turnos.\n\nVENTAJAS TÁCTICAS:\n- ABSORCIÓN DE BLOQUEOS: si el sistema de defensa intenta bloquear una conexión hacia ese nodo,\n  el señuelo absorbe el corte, mantiene la arista abierta y agota la acción defensiva.\n- DISTRACCIÓN DE PATRULLAS: los agentes de seguridad priorizan el señuelo sobre tu posición real.\n\nCOSTO: +15 de ruido.\nLa herramienta defensiva definitiva contra cortes de ruta en cuellos de botella.",
+      "anchor_type": "screen",
+      "anchor_id": "",
+      "position": "top",
+      "highlight_nodes": ["AppServer"],
+      "highlight_edges": ["WebServer→AppServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "try_decoy_mod4",
+      "title": "Práctica: Plantar Señuelo en AppServer",
+      "text": "PASOS:\n1. Selecciona AppServer con [Tab] o clic.\n2. Presiona [4] para desplegar el señuelo activo.\n3. Verás el indicador 🎯 sobre AppServer protegiendo el segmento.\n\nINTENTA AHORA: selecciona AppServer y presiona [4].",
+      "anchor_type": "node",
+      "anchor_id": "WebServer",
+      "position": "bottom",
+      "highlight_nodes": ["WebServer", "AppServer"],
+      "highlight_edges": [],
+      "pause_game": false,
+      "action_required": "input",
+      "hint": "Selecciona AppServer y presiona [4] para desplegar el Señuelo.",
+      "auto_advance_after": null
+    },
+    {
+      "id": "decoy_reflection",
+      "title": "Estrategia con Sistemas Predictivos",
+      "text": "¡Señuelo operativo!\nCualquier intento de contramedida en ese segmento será neutralizado por el señuelo.\n\nEn ciberseguridad, la tecnología de engaño es bidireccional:\nlos defensores usan Honeypots y Honeytokens para cazar intrusos,\nmientras los atacantes saturan los SOCs con telemetría señuelo para cubrir su exfiltración.\n\nAvanza hacia AppServer, neutraliza contingencias y llega al Core.",
+      "anchor_type": "node",
+      "anchor_id": "AppServer",
+      "position": "center",
+      "highlight_nodes": ["DBServer", "AdminPanel"],
+      "highlight_edges": ["AppServer→DBServer"],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    },
+    {
+      "id": "mod4_conclusion",
+      "title": "Fin del Entrenamiento Hacker",
+      "text": "¡Has completado el currículum táctico completo de Hacker!\n\nRESUMEN DE ARSENAL:\n- Scan [X]: Reconocimiento pasivo e inmunidad a trampas.\n- Bypass [1]: Infiltración con sigilo absoluto.\n- Escalate [2]: Control root y telemetría de subred a 2 saltos.\n- Persist [3]: Refugio táctico con doble reducción de ruido.\n- Decoy [4]: Absorción de bloqueos y distracción de perseguidores.\n\n¡Estás listo para las misiones avanzadas de la campaña Vertex!",
+      "anchor_type": "node",
+      "anchor_id": "Core",
+      "position": "top",
+      "highlight_nodes": ["Core"],
+      "highlight_edges": [],
+      "pause_game": true,
+      "action_required": null,
+      "auto_advance_after": null
+    }
+  ]
+}

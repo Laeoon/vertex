@@ -163,6 +163,68 @@ func _run_tests() -> void:
 		print("FAIL: is_game_paused() fallo")
 		failed += 1
 
+	# TEST 17: Load 4 modular hacker tutorials
+	var h1_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_1.json") and tp.steps.size() >= 5
+	var h2_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_2.json") and tp.steps.size() >= 5
+	var h3_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_3.json") and tp.steps.size() >= 5
+	var h4_ok: bool = tp.load_tutorial("res://juego/tutorials/data/tut_hacker_4.json") and tp.steps.size() >= 5
+	if h1_ok and h2_ok and h3_ok and h4_ok:
+		print("PASS: 4 módulos de hacker cargan correctamente")
+		passed += 1
+	else:
+		print("FAIL: módulos hacker carga (h1=%s h2=%s h3=%s h4=%s)" % [h1_ok, h2_ok, h3_ok, h4_ok])
+		failed += 1
+
+	# TEST 18: TutorialsMenu track switching
+	var menu_scene = preload("res://escenas/main_menu/tutorials_menu.tscn")
+	var menu = menu_scene.instantiate()
+	get_tree().root.add_child(menu)
+	await get_tree().process_frame
+
+	if menu.current_track == menu.Track.GENERAL and menu._get_current_lessons().size() == 2:
+		print("PASS: menu inicia en track GENERAL con 2 módulos")
+		passed += 1
+	else:
+		print("FAIL: menu inicio track=%s" % str(menu.current_track))
+		failed += 1
+
+	# Simular flecha derecha para cambiar a HEIST
+	var ev_right := InputEventKey.new()
+	ev_right.pressed = true
+	ev_right.keycode = KEY_RIGHT
+	menu._input(ev_right)
+	if menu.current_track == menu.Track.HEIST and menu._get_current_lessons().size() == 2:
+		print("PASS: menu cambia a HEIST con 2 módulos")
+		passed += 1
+	else:
+		print("FAIL: menu HEIST fallo (track=%s size=%d)" % [str(menu.current_track), menu._get_current_lessons().size()])
+		failed += 1
+
+	# Cambiar a HACKER y verificar 4 módulos modulares
+	menu._input(ev_right) # HACKER
+	var hacker_lessons = menu._get_current_lessons()
+	if menu.current_track == menu.Track.HACKER and hacker_lessons.size() == 4:
+		print("PASS: menu cambia a HACKER con 4 módulos secuenciales")
+		passed += 1
+	else:
+		print("FAIL: menu HACKER fallo (size=%d)" % hacker_lessons.size())
+		failed += 1
+
+	menu._input(ev_right) # DEFENDER
+	# TEST 19: Defender stand-by blocks launch
+	SceneParams.reset()
+	var ev_enter := InputEventKey.new()
+	ev_enter.pressed = true
+	ev_enter.keycode = KEY_ENTER
+	menu._input(ev_enter)
+	if menu.current_track == menu.Track.DEFENDER and SceneParams.tutorial_path == "":
+		print("PASS: Defender stand-by bloquea launch")
+		passed += 1
+	else:
+		print("FAIL: Defender stand-by no bloqueo launch")
+		failed += 1
+
+	menu.queue_free()
 	_quit()
 
 

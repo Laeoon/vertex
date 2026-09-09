@@ -31,23 +31,29 @@ func setup(p_font: Font) -> void:
 	font = p_font
 
 
-## Puerto del viejo tutorial_player._wrap_text().
+## Puerto del viejo tutorial_player._wrap_text(), mejorado para soportar saltos de línea explícitos y párrafos.
 func _wrap_text(text: String, max_width: float, fsize: int) -> Array[String]:
-	var words: PackedStringArray = text.split(" ")
+	if text.is_empty():
+		return [""]
+	var raw_paragraphs: PackedStringArray = text.split("\n")
 	var lines: Array[String] = []
-	var current_line: String = ""
 
-	for word in words:
-		var test_line: String = current_line + (" " if current_line != "" else "") + word
-		var test_w: float = font.get_string_size(test_line, HORIZONTAL_ALIGNMENT_LEFT, -1, fsize).x
-		if test_w > max_width and current_line != "":
+	for paragraph in raw_paragraphs:
+		if paragraph.is_empty():
+			lines.append("")
+			continue
+		var words: PackedStringArray = paragraph.split(" ")
+		var current_line: String = ""
+		for word in words:
+			var test_line: String = current_line + (" " if current_line != "" else "") + word
+			var test_w: float = font.get_string_size(test_line, HORIZONTAL_ALIGNMENT_LEFT, -1, fsize).x
+			if test_w > max_width and current_line != "":
+				lines.append(current_line)
+				current_line = word
+			else:
+				current_line = test_line
+		if current_line != "":
 			lines.append(current_line)
-			current_line = word
-		else:
-			current_line = test_line
-
-	if current_line != "":
-		lines.append(current_line)
 
 	if lines.is_empty():
 		lines.append(text)
@@ -84,13 +90,16 @@ func _get_action_key_hint(action_type: String) -> String:
 ## Puerto del viejo tutorial_player._get_next_button_rect(), parametrizado
 ## en panel_rect en vez de leer el estado del player (el vp_size del original
 ## era una local muerta: nunca se usaba).
-func _get_next_button_rect(panel_rect: Rect2) -> Rect2:
+func _get_next_button_rect(panel_rect: Rect2, vp_size: Vector2 = Vector2.ZERO) -> Rect2:
 	var btn_w: float = 130.0
 	var btn_h: float = 36.0
 	var margin: float = 20.0
+	var btn_y: float = panel_rect.position.y + panel_rect.size.y + 12.0
+	if vp_size.y > 0.0:
+		btn_y = min(btn_y, vp_size.y - btn_h - 10.0)
 	var btn_pos: Vector2 = Vector2(
 		panel_rect.position.x + panel_rect.size.x - btn_w - margin,
-		panel_rect.position.y + panel_rect.size.y + 12.0
+		btn_y
 	)
 	return Rect2(btn_pos, Vector2(btn_w, btn_h))
 
@@ -104,7 +113,7 @@ func _build_tooltip_buttons(vp_size: Vector2, waiting_for_action: bool, panel_re
 	# Next button (solo en pasos informativos; en pasos de acción el avance
 	# se confirma con [Enter] desde el recordatorio superior)
 	if not waiting_for_action:
-		var btn_rect: Rect2 = _get_next_button_rect(panel_rect)
+		var btn_rect: Rect2 = _get_next_button_rect(panel_rect, vp_size)
 		buttons.append({
 			"rect": btn_rect,
 			"text": "Avanzar al siguiente paso",
@@ -158,10 +167,13 @@ func _build_tooltip_buttons(vp_size: Vector2, waiting_for_action: bool, panel_re
 ## Layout del panel flotante informativo (puerto de _draw_floating_panel):
 ## Rect2 según la posición pedida + líneas y alto de línea para el dibujado.
 func _floating_panel_layout(vp_size: Vector2, text: String, position: String) -> Dictionary:
-	var panel_w: float = min(480.0, vp_size.x - 60.0)
-	var lines: PackedStringArray = text.split("\n")
-	var line_h: float = 18.0
-	var panel_h: float = max(80.0, lines.size() * line_h + 40.0)
+	var panel_w: float = min(620.0, vp_size.x - 60.0)
+	var lines: Array[String] = _wrap_text(text, panel_w - 40.0, 14) if font else []
+	if lines.is_empty():
+		for l in text.split("\n"):
+			lines.append(l)
+	var line_h: float = 22.0
+	var panel_h: float = max(100.0, lines.size() * line_h + 50.0)
 
 	var panel_pos: Vector2
 	match position:
@@ -175,6 +187,9 @@ func _floating_panel_layout(vp_size: Vector2, text: String, position: String) ->
 			panel_pos = Vector2(vp_size.x - panel_w - 30.0, (vp_size.y - panel_h) / 2.0)
 		_:
 			panel_pos = Vector2((vp_size.x - panel_w) / 2.0, (vp_size.y - panel_h) / 2.0)
+
+	panel_pos.x = clampf(panel_pos.x, 10.0, max(10.0, vp_size.x - panel_w - 10.0))
+	panel_pos.y = clampf(panel_pos.y, 10.0, max(10.0, vp_size.y - panel_h - 10.0))
 
 	return {
 		"rect": Rect2(panel_pos, Vector2(panel_w, panel_h)),
@@ -270,7 +285,7 @@ func _draw_floating_panel(canvas: Control, s: Dictionary, text: String, position
 	var layout: Dictionary = _floating_panel_layout(s.vp_size, text, position)
 	var panel_rect: Rect2 = layout["rect"]
 	s["panel_rect"] = panel_rect
-	var lines: PackedStringArray = layout["lines"]
+	var lines: Array = layout["lines"]
 	var line_h: float = layout["line_h"]
 	var panel_pos: Vector2 = panel_rect.position
 	var panel_w: float = panel_rect.size.x
@@ -292,13 +307,15 @@ func _draw_floating_panel(canvas: Control, s: Dictionary, text: String, position
 		canvas.draw_circle(corner, 3.0, Color(border.r, border.g, border.b, panel_alpha * 0.6))
 
 	var text_x: float = panel_pos.x + 20.0
-	var text_y: float = panel_pos.y + 28.0
+	var text_y: float = panel_pos.y + 32.0
 	var text_alpha: float = panel_alpha
 
 	for line in lines:
 		var lcolor: Color = Color(s.text_color.r, s.text_color.g, s.text_color.b, text_alpha)
 		if line.begins_with("⚠") or line.begins_with("ALERTA"):
 			lcolor = Color(s.warning_color.r, s.warning_color.g, s.warning_color.b, text_alpha)
+		elif line.begins_with("VENTAJAS TÁCTICAS:") or line.begins_with("PASOS:") or line.begins_with("MARCO ÉTICO:"):
+			lcolor = Color(s.accent_color.r, s.accent_color.g, s.accent_color.b, text_alpha)
 		canvas.draw_string(fnt, Vector2(text_x, text_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, s.font_size, lcolor)
 		text_y += line_h
 
@@ -343,7 +360,7 @@ func _draw_action_reminder(canvas: Control, s: Dictionary, step: Dictionary) -> 
 ## Puerto del viejo tutorial_player._draw_next_button().
 func _draw_next_button(canvas: Control, s: Dictionary) -> void:
 	var fnt: Font = s.font
-	var btn_rect: Rect2 = _get_next_button_rect(s.panel_rect)
+	var btn_rect: Rect2 = _get_next_button_rect(s.panel_rect, s.vp_size)
 
 	var can_advance: bool = not s.waiting_for_action
 	var bg: Color
