@@ -8,123 +8,135 @@
 
 ![Godot](https://img.shields.io/badge/Godot-4.7-478CBF?logo=godotengine&logoColor=white)
 ![Lenguaje](https://img.shields.io/badge/GDScript-100%25-478CBF)
-![Tests](https://img.shields.io/badge/tests-25%20%2B%2014%20escenas-39FF88)
+![Tests](https://img.shields.io/badge/tests-47%20suites%20pass-39FF88)
 ![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-0078D6)
+![Versión](https://img.shields.io/badge/versión-0.3.5-00e5ff)
 
-[📥 Descargar](#-descargar-el-juego-windows) · [🎮 Características](#-características) · [🕹 Controles](#-controles) · [🛠 Desarrollo](#-para-desarrolladores)
+[📥 Descargar](#-descargar-el-juego-windows) · [🎮 Características](#-características) · [🕹 Controles](#-controles) · [🧰 Código Fuente](#-descargar-el-código-fuente) · [🛠 Desarrollo y Motor](#-para-desarrolladores-y-uso-del-motor)
 
 </div>
 
 ---
 
-VERTEX es un juego educativo en el que el jugador navega redes de computadoras como intruso: cada nivel es un grafo dirigido con pesos, una IA que analiza sus rutas con Dijkstra y las bloquea, nodos con cámaras de detección probabilística y perseguidores que se desplazan por la red. El objetivo se alcanza aplicando conceptos de teoría de grafos: pathfinding, flujo máximo y corte mínimo.
+VERTEX es un videojuego de estrategia y educación donde navegas redes corporativas como un atacante o defiendes la infraestructura como analista de seguridad: cada nivel es un grafo dirigido con pesos, una IA que analiza rutas mediante Dijkstra y corta pasos críticos, nodos con detección probabilística, firewalls y unidades de respuesta que patrullan la topología.
+
+---
 
 ## 🎮 Características
 
-**Tres modos sobre el mismo motor de redes:**
+**Modos de Juego:**
 
-- **🗡 Heist** — infiltración: alcanzar la bóveda pasando por waypoints mientras la IA bloquea rutas. Campaña con niveles de identidad propia:
+- **🗡 Heist (Infiltración)** — Campaña de evasión: alcanza la bóveda y los waypoints críticos mientras la IA bloquea rutas de escape y los sensores alertan a las patrullas.
+  - *Niveles:* N1 La Entrada, N2 El Laberinto, N3 Ojo del Casino, N4 Blackout, N5 Extracción Final.
+- **💻 Hacker (Guerra Cibernética)** — Campaña completa de 5 niveles de movimiento lateral en redes corporativas con doctrina de corte mínimo $\ge 2$:
+  - *Mecánicas:* Escaneo de vulnerabilidades (`Scan [X]`), evasión de aristas bloqueadas (`Bypass [1]`), elevación con telemetría de 2 saltos (`Escalate [2]`), zonas de sigilo seguras (`Persist [3]`) y despliegue activo de señuelos (`Decoy [4]`) para absorber bloqueos y desviar rastreadores.
+  - *Niveles:* N1 Lateral Movement, N2 Brecha Corporativa, N3 Persistencia de Red, N4 Guerra de Señuelos, N5 Operación Root Compromise.
+- **🛡 Defensa (Ciberseguridad)** — *(En desarrollo)*: Modo invertido donde administras la seguridad de la red colocando firewalls y bloqueos estratégicos para aislar al atacante.
 
-  | Nivel | Identidad |
-  |-------|-----------|
-  | N1 · La Entrada | Movimiento básico por el grafo |
-  | N2 · El Laberinto | Bloqueos de IA con aristas de retorno |
-  | N3 · Ojo del Casino | Detección probabilística + perseguidores |
-  | N4 · Blackout | Escalada de alarma por turnos |
+**Interfaz & Experiencia Visual:**
+- 🎯 **Retícula Táctica HUD:** Doble anillo cian/dorado de alto contraste con brackets angulares para enfoque inequívoco del objetivo.
+- 🌐 **Telemetría de Red Realista:** Filtrado inteligente de badges de protocolo (HTTPS, SSH, DNS, LDAP, VPN, SQL, QUIC), eliminando el ruido visual en grafos densos.
+- 🧭 **Navegación Espacial:** Selección direccional geométrica con WASD o flechas de teclado, y selección rápida al posar el cursor sobre cualquier nodo adyacente.
+- 📚 **Academia de Tutoriales Modulares:** Pistas divididas por categorías (Fundamentos, Heist, Hacker) con lecciones prácticas guiadas y glosario interactivo de términos.
+- ⭐ **Sistema de Par y Evaluación:** Puntuación de 1 a 3 estrellas según el rendimiento y consumo de recursos.
+- 🧪 **Suite de Pruebas Robusta:** 47 suites de tests automatizados (unitarios, equivalencia golden, navegación espacial y simulación de balance por self-play).
 
-- **💻 Hacker** — movimiento lateral en red corporativa: ruido, escaneos y exploits (bypass / escalate / persist).
-- **🛡 Defensa** — modo invertido: el jugador administra la defensa, bloquea aristas y coloca firewalls para impedir que el atacante alcance su objetivo (corte mínimo como mecánica).
-
-**Además:**
-
-- 📚 **7 tutoriales guiados** paso a paso con glosario integrado
-- ⭐ Sistema de par por nivel: cumplir el rendimiento de referencia otorga 3 estrellas
-- 🚨 Eventos por turno definidos por datos (escalada de alarma configurable por JSON)
-- 🔀 Navegación post-partida directa: siguiente nivel, selector o menú
-- 🧪 Suite de tests con golden equivalence y harness de balance por self-play
-
-<!-- TODO: capturas — soltar 2-3 PNG en .github/ y descomentar:
-<p align="center">
-  <img src=".github/screenshot-heist.png" width="45%" />
-  <img src=".github/screenshot-defensa.png" width="45%" />
-</p>
--->
+---
 
 ## 📥 Descargar el juego (Windows)
 
-El juego compilado para Windows 10/11 (x64). No requiere instalar nada, es un solo archivo autocontenido.
+Binario precompilado para Windows 10/11 (x64), autocontenido y listo para jugar sin instalación previa.
 
-**Última versión:** [VERtex Alfa 0.1.0](https://github.com/Laeoon/vertex/releases/latest)
+**Última versión:** [VERtex 0.3.5](https://github.com/Laeoon/vertex/releases/latest)
 
 ```bash
-# Descargar el .exe directamente (v0.1.0-alpha)
-curl -L -o VERtex-alpha-0.1.0.exe https://github.com/Laeoon/vertex/releases/download/v0.1.0-alpha/VERtex-alpha-0.1.0.exe
+# Descarga directa vía curl
+curl -L -o VERtex-0.3.5.exe https://github.com/Laeoon/vertex/releases/download/v0.3.5/VERtex-0.3.5.exe
 
-# Con wget
-wget https://github.com/Laeoon/vertex/releases/download/v0.1.0-alpha/VERtex-alpha-0.1.0.exe
+# O con wget
+wget https://github.com/Laeoon/vertex/releases/download/v0.3.5/VERtex-0.3.5.exe
 ```
 
-**Requisitos:** Windows 10/11 x64, GPU con DirectX 12, ~300 MB de espacio. Al ejecutarlo se abre en pantalla completa.
+*Requisitos:* Windows 10/11 x64, GPU compatible con Vulkan / DirectX 12.
+
+---
 
 ## 🕹 Controles
 
-| Tecla / Acción | Atacante | Defensa |
+| Acción | Tecla / Control | Descripción |
 |---|---|---|
-| **Click** en nodo vecino | Moverse | Bloquear arista |
-| **Tab** + **Enter** | Seleccionar y mover | Resolver turno |
-| **P** | Ruta óptima (hint) | — |
-| **F** | — | Firewall de nodo |
-| **X / E** | Escanear / Exploit (hacker) | — |
-| **R** | Reiniciar nivel | Reiniciar nivel |
-| **Q** | Menú principal | Menú principal |
+| **Moverse al nodo seleccionado** | `Enter` / `Espacio` | Avanza hacia el vecino activo en el turno. |
+| **Moverse / Seleccionar con Mouse** | `Clic Izquierdo` en nodo | Moverse directo o calcular primer paso. |
+| **Selección por Hover** | `Pasar cursor` sobre vecino | Enfoca instantáneamente el nodo adyacente. |
+| **Navegación Espacial** | `WASD` / `Flechas` | Selecciona el vecino en esa dirección angular. |
+| **Ciclo Secuencial** | `Tab` | Cicla entre vecinos disponibles. |
+| **Pista de Ruta Óptima** | `P` | Alterna la visualización del camino más corto. |
+| **Escanear Nodo** | `X` | *(Hacker)* Revela tipo y reduce probabilidad de alerta. |
+| **Bypass de Bloqueo** | `1` | *(Hacker)* Atraviesa arista bloqueada sin detección. |
+| **Escalar Privilegios** | `2` | *(Hacker)* Telemetría de red a 2 saltos de distancia. |
+| **Persistir en Nodo** | `3` | *(Hacker)* Crea zona segura sin ruido y con doble disipación. |
+| **Desplegar Señuelo** | `4` | *(Hacker)* Coloca señuelo adyacente que absorbe bloqueos. |
+| **Reiniciar Nivel** | `R` | Reinicia la partida en curso. |
+| **Menú Principal** | `Q` / `Esc` | Vuelve a la pantalla de inicio. |
 
-Al terminar una partida: **[R]** reintentar · **[N]** siguiente nivel · **[L]** selector de niveles · **[Q]** menú.
+*Navegación post-partida:* `[R]` Reintentar · `[N]` Siguiente nivel · `[L]` Selector de niveles · `[Q]` Menú.
+
+---
 
 ## 🧰 Descargar el código fuente
 
 ```bash
-# Clonar con historial completo (recomendado para desarrollo)
+# Clonar el repositorio completo
 git clone https://github.com/Laeoon/vertex.git
 
-# Clon "shallow" (solo última versión)
-git clone --depth 1 https://github.com/Laeoon/vertex.git
-
-# Sin Git
-curl -L -o vertex.tar.gz https://github.com/Laeoon/vertex/archive/refs/heads/main.tar.gz && tar -xzf vertex.tar.gz
+# O descargar el tarball de la versión más reciente
+curl -L -o vertex-0.3.5.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.3.5.tar.gz
+tar -xzf vertex-0.3.5.tar.gz
 ```
 
-Abrí `project.godot` con **Godot 4.7+** y presioná F5.
+---
 
-## 🛠 Para desarrolladores
+## 🛠 Para desarrolladores y uso del motor
 
-**Stack:** Godot 4.7 · GDScript · renderizado Forward Plus · arquitectura en capas `core/` (algoritmos de grafos, autoloads) → `juego/` (lógica data-driven) → `escenas/` (UI).
+<details>
+<summary><b>📖 Ver instrucciones de ejecución, motor y suite de pruebas</b></summary>
+<br>
 
-Los niveles son **datos, no código**: un `.json` (params, eventos, par) + un `.tres` (grafo dirigido con costos y metadatos de detección). El balance se valida con un harness de self-play (greedy / greedy_err / random, semillas deterministas).
+### Arquitectura
+- **Motor:** [Godot Engine 4.7+](https://godotengine.org/)
+- **Lenguaje:** GDScript 2.0 (estricto y tipado)
+- **Estructura en capas:**
+  - `core/`: Algoritmos puros de teoría de grafos (Dijkstra, Min-Cut / Edmonds-Karp, MinHeap), runtime de red y contratos de eventos.
+  - `juego/`: Lógica de juego orientada a datos (`juego_ataque.gd`, `game_logic.gd`, `hacker_logic.gd`, `game_renderer.gd`).
+  - `escenas/`: Interfaz de usuario, menús y transiciones.
+  - `tests/`: Batería de pruebas automatizadas y arneses de simulación.
 
-### Correr y testear
+### Cómo abrir el proyecto
+1. Descarga e instala **Godot Engine 4.7** (Standard o .NET con soporte GDScript).
+2. En el Administrador de Proyectos de Godot, haz clic en **Importar** y selecciona el archivo `project.godot` ubicado en la raíz del repositorio.
+3. Presiona **F5** para ejecutar la escena principal o **F6** para correr la escena activa.
+
+### Ejecución de Pruebas Automatizadas
+El proyecto incluye un runner headless propio para ejecutar todas las pruebas desde la terminal:
 
 ```bash
-# Suite completa (25 pruebas)
+# Correr la suite de pruebas estándar:
 godot --headless --script res://tests/runner/run_all.gd
 
-# Golden equivalence tests por módulo (congelan comportamiento)
-godot --headless res://tests/ataque/_test_game_logic_equivalence.tscn   # 19 asserts
-godot --headless res://tests/tutorials/_test_tutorial_render_equivalence.tscn  # 34
+# Correr la suite COMPLETA (incluye pruebas de equivalencia y visuales - 47 suites):
+godot --headless --script res://tests/runner/run_all.gd -- --all
 
-# Harness de balance self-play (100 corridas por política)
+# Correr una prueba específica de forma individual:
+godot --headless --script res://tests/runner/_run_one.gd -- res://tests/system/test_spatial_navigation.gd
+
+# Simulación de balance por self-play (ejemplo: 100 corridas monte-carlo):
 godot --headless res://tests/balance/_balance_harness.tscn -- 100
 ```
 
-Detalle completo de verificación en [`documentacion/VERTEX/17 - Handoff a orquestador.md`](documentacion/VERTEX/17%20-%20Handoff%20a%20orquestador.md).
+</details>
 
-### Convenciones de commits
+---
 
-[Conventional Commits](https://www.conventionalcommits.org/) en español técnico: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf` — ej: `feat(slice-6): navegación post-partida con guardas N/L`.
+## 📄 Licencia
 
-### Documentación
-
-La bitácora completa vive en [`documentacion/VERTEX/`](documentacion/VERTEX/): arquitectura ([03](documentacion/VERTEX/03%20-%20Arquitectura.md)), diseño de niveles ([06](documentacion/VERTEX/06%20-%20Level%20Design.md)), historial de cambios ([14](documentacion/VERTEX/14%20-%20Historial%20de%20cambios.md)) y estado del repo ([18 - Overview](documentacion/VERTEX/18%20-%20Overview%20y%20auditor%C3%ADa%20pendiente.md)).
-
-## Licencia
-
-Por definir. El contenido pedagógico es de acceso libre; el código fuente se comparte con fines educativos.
+El contenido pedagógico y el código fuente de VERTEX se distribuyen con fines educativos y de investigación bajo acceso abierto.
