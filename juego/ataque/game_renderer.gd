@@ -163,11 +163,6 @@ func draw_hud(
 		var pts_text: String = "%d/%d" % [movement_points, max_movement_points]
 		draw_string(Vector2(bar_x + bar_w + 8, ind_y), pts_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, pts_color)
 
-	# Meta (derecha, después de puntos)
-	var meta_text: String = "META: %s" % str(target)
-	var meta_x: float = vp_size.x - 200.0
-	draw_string(Vector2(meta_x, ind_y), meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.DANGER)
-
 	# Indicadores secundarios (debajo)
 	var sec_y: float = 42.0
 	var sec_x: float = 16.0
@@ -196,10 +191,12 @@ func draw_hud(
 
 	# Indicador de amenaza (derecha)
 	var alert_x: float = vp_size.x - 16.0
+	var badge_left: float = vp_size.x - 16.0
 	if pursuers.size() > 0:
 		var p_text: String = "PERSEGUIDORES: %d" % pursuers.size()
 		var pw: float = font.get_string_size(p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
 		alert_x -= pw + 8.0
+		badge_left = alert_x - 6.0
 		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(0.8, 0.05, 0.02, 0.4))
 		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(1.0, 0.2, 0.1, 0.7), false, 1.0)
 		draw_string(Vector2(alert_x, ind_y), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.DANGER)
@@ -207,7 +204,14 @@ func draw_hud(
 		var a_text: String = "ALERTAS: %d" % alerted_nodes.size()
 		var aw: float = font.get_string_size(a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
 		alert_x -= aw + 8.0
+		badge_left = alert_x
 		draw_string(Vector2(alert_x, ind_y), a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WARNING)
+
+	# Meta (a la izquierda de las insignias de amenaza, sin colisión)
+	var meta_text: String = "META: %s" % str(target)
+	var meta_w: float = font.get_string_size(meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var meta_x: float = badge_left - 16.0 - meta_w
+	draw_string(Vector2(meta_x, ind_y), meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.DANGER)
 
 
 func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: Dictionary) -> void:
@@ -315,8 +319,12 @@ func draw_defender_hud(
 
 	# Indicador de modo firewall (en la barra principal)
 	if firewall_mode:
-		draw_rect(Rect2(center_x - 100, 42, vp_size.x - center_x + 100 - 160 - 120, 14), Color(1.0, 0.3, 0.0, 0.2))
-		draw_string(Vector2(center_x - 100, 42), "🔥 CORTARRUEGOS ACTIVO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.4, 0.0))
+		var fw_text: String = "🔥 CORTAFUEGOS ACTIVO"
+		var fw_w: float = font.get_string_size(fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
+		var fw_x: float = vp_size.x - fw_w - 16.0
+		draw_rect(Rect2(fw_x - 4, 30, fw_w + 8, 16), Color(1.0, 0.3, 0.0, 0.2))
+		draw_rect(Rect2(fw_x - 4, 30, fw_w + 8, 16), Color(1.0, 0.4, 0.0, 0.6), false, 1.0)
+		draw_string(Vector2(fw_x, 42), fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.4, 0.0))
 
 	# Indicador de estado de rutas del atacante
 	var has_path: bool = enemy_pos != &"" and enemy_pos != enemy_target

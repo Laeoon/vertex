@@ -10,12 +10,15 @@ extends Node
 # Paths y configuración de escena
 # ──────────────────────────────────────────────────────────────────────────────
 
-var graph_path: String = "":
+var _graph_path: String = ""
+var graph_path: String:
+	get:
+		return _graph_path
 	set(value):
 		if value.is_empty():
 			GameLogger.warn("SceneParams", "graph_path no puede ser vacío — manteniendo valor anterior")
 			return
-		graph_path = value
+		_graph_path = value
 
 var start_node: StringName = &""
 
@@ -25,12 +28,15 @@ var waypoints: Array = []
 
 var titulo_nivel: String = ""
 
-var level_key: String = "":
+var _level_key: String = ""
+var level_key: String:
+	get:
+		return _level_key
 	set(value):
 		if value.is_empty():
 			GameLogger.warn("SceneParams", "level_key no puede ser vacío — manteniendo valor anterior")
 			return
-		level_key = value
+		_level_key = value
 
 var tutorial_path: String = ""  # Puede ser vacío (opcional)
 
@@ -188,12 +194,12 @@ var hidden_nodes: Array = []
 
 func reset() -> void:
 	# Paths y configuración de escena
-	graph_path = ""
+	_graph_path = ""
 	start_node = &""
 	target_node = &""
 	waypoints = []
 	titulo_nivel = ""
-	level_key = ""
+	_level_key = ""
 	tutorial_path = ""
 	mensaje_tutorial = ""
 

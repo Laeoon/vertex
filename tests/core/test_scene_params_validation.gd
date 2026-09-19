@@ -354,12 +354,15 @@ func _test_reset() -> void:
 	_params.ai_block_per_turn = 7
 	_params.max_turns = 500
 	_params.graph_path = "res://test.tscn"
+	_params.level_key = "test_key"
 	_params.defender_mode = true
 
 	# Reset
 	_params.reset()
 
 	# Verificar valores por defecto
+	_assert(_params.graph_path == "", "reset: graph_path = \"\"")
+	_assert(_params.level_key == "", "reset: level_key = \"\"")
 	_assert(_params.ai_block_per_turn == 1, "reset: ai_block_per_turn = 1")
 	_assert(_params.max_turns == 0, "reset: max_turns = 0")
 	_assert(_params.max_movement_points == 0, "reset: max_movement_points = 0")

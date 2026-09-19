@@ -150,17 +150,15 @@ func use_hacker_exploit(exploit_type: String) -> void:
 			_game.mensaje_estado = "♻ Persistencia activa en %s por 3 turnos" % str(_game.selected_neighbor)
 		"decoy":
 			var node_key: String = str(_game.selected_neighbor)
+			_game.hacker_state["active_decoys"][node_key] = {"duration": HackerMechanicsClass.DECOY_DURATION_TURNS}
 			_game.mensaje_estado = "🎯 Señuelo activo en %s por %d turnos" % [str(_game.selected_neighbor), HackerMechanicsClass.DECOY_DURATION_TURNS]
 
-	_game.mensaje_estado = "%s %s aplicado en %s (ruido: %d)" % [result.get("icon", ""), result.get("name", ""), str(_game.selected_neighbor), _game.hacker_state.get("noise", 0)]
+	if exploit_type == "bypass" or exploit_type == "escalate":
+		_game.mensaje_estado = "%s %s aplicado en %s (ruido: %d)" % [result.get("icon", ""), result.get("name", ""), str(_game.selected_neighbor), _game.hacker_state.get("noise", 0)]
 	GameLogger.debug("JuegoAtaque", "[EXPLOIT] %s en %s — ruido: %d" % [exploit_type, str(_game.selected_neighbor), _game.hacker_state.get("noise", 0)])
 	# Los exploits también pueden ser la acción requerida del tutorial
 	# (action_required="input") → avisar para confirmar con Enter.
 	_game._notify_tutorial_input()
-	check_hacker_consequences()
-	if exploit_type == "decoy":
-		var node_key: String = str(_game.selected_neighbor)
-		_game.hacker_state["active_decoys"][node_key] = {"duration": HackerMechanicsClass.DECOY_DURATION_TURNS}
 	_game.queue_redraw()
 
 

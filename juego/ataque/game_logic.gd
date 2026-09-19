@@ -99,6 +99,14 @@ func mover_jugador(destino: StringName) -> void:
 				return
 			GameLogger.info("JuegoAtaque", "Waypoint %s alcanzado! Siguiente: %s" % [target_check, next])
 			_game.mensaje_estado = "Waypoint alcanzado! Ve hacia %s" % next
+			if _game.hacker_mode:
+				var resting_on_persist: bool = _game.hacker_state.get("active_persists", {}).has(str(_game.player_pos))
+				if resting_on_persist:
+					HackerMechanicsClass.decay_noise(_game.hacker_state, HackerMechanicsClass.NOISE_DECAY_PER_TURN * 2)
+					GameLogger.debug("JuegoAtaque", "Descansando en persist: doble decay de ruido (-%d)" % (HackerMechanicsClass.NOISE_DECAY_PER_TURN * 2))
+				else:
+					HackerMechanicsClass.decay_noise(_game.hacker_state)
+				_game._check_hacker_consequences()
 			_game.mostrar_ruta()
 			_game.queue_redraw()
 			return
