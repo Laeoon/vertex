@@ -201,7 +201,7 @@ func perder(razon: String) -> void:
 	_game.game_over = true
 	_game._game_over_time = Time.get_ticks_msec() / 1000.0
 	_game.game_won = false
-	AudioManager.play_sfx("lose")
+	AudioManager.play_sfx("captured")
 	_game.mensaje_estado = "PERDISTE: %s" % razon
 	GameLogger.info("JuegoAtaque", "DERROTA: %s" % razon)
 	# Track pérdida en estadísticas (migrado a ProgressService)

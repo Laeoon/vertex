@@ -1,17 +1,74 @@
 extends Node
 
-## Gestor centralizado de audio.
+## Gestor centralizado de audio con soporte para buses, pooling y sonidos en disco.
 ## Uso: AudioManager.play_sfx("move")
 
+const SFX_POOL_SIZE: int = 8
+
 var _sounds: Dictionary = {}
+var _disk_sounds: Dictionary = {}
 var _music_player: AudioStreamPlayer
+var _sfx_pool: Array[AudioStreamPlayer] = []
+var _sfx_pool_index: int = 0
 var _initialized: bool = false
 
 
 func _ready() -> void:
+	_ensure_audio_buses()
 	_generate_sounds()
+	_load_disk_sounds()
 	_setup_music_player()
+	_setup_sfx_pool()
 	_initialized = true
+
+
+func _ensure_audio_buses() -> void:
+	if AudioServer.get_bus_index("Music") == -1:
+		var music_idx: int = AudioServer.bus_count
+		AudioServer.add_bus(music_idx)
+		AudioServer.set_bus_name(music_idx, "Music")
+		AudioServer.set_bus_send(music_idx, "Master")
+
+	if AudioServer.get_bus_index("SFX") == -1:
+		var sfx_idx: int = AudioServer.bus_count
+		AudioServer.add_bus(sfx_idx)
+		AudioServer.set_bus_name(sfx_idx, "SFX")
+		AudioServer.set_bus_send(sfx_idx, "Master")
+
+
+func _setup_music_player() -> void:
+	_music_player = AudioStreamPlayer.new()
+	_music_player.name = "MusicPlayer"
+	_music_player.bus = "Music"
+	add_child(_music_player)
+
+
+func _setup_sfx_pool() -> void:
+	for i in range(SFX_POOL_SIZE):
+		var p := AudioStreamPlayer.new()
+		p.name = "SFXPlayer_%d" % i
+		p.bus = "SFX"
+		add_child(p)
+		_sfx_pool.append(p)
+
+
+func _load_disk_sounds() -> void:
+	var sound_files := {
+		"bypass": "res://sounds/bypass.wav",
+		"scalate": "res://sounds/scalate.wav",
+		"escalate": "res://sounds/scalate.wav",
+		"persist": "res://sounds/persist.wav",
+		"decoy": "res://sounds/decoy.wav",
+		"captured": "res://sounds/captured.wav",
+		"lose": "res://sounds/captured.wav",
+		"win": "res://sounds/win.wav",
+	}
+	for key in sound_files:
+		var path: String = sound_files[key]
+		if ResourceLoader.exists(path):
+			var res = load(path)
+			if res is AudioStream:
+				_disk_sounds[key] = res
 
 
 func _generate_sounds() -> void:
@@ -87,20 +144,53 @@ func _make_sweep(dur: float, sr: float) -> AudioStreamWAV:
 	return wav
 
 
-func _setup_music_player() -> void:
-	_music_player = AudioStreamPlayer.new()
-	_music_player.name = "MusicPlayer"
-	add_child(_music_player)
+func has_sound(name: String) -> bool:
+	return _disk_sounds.has(name) or _sounds.has(name)
 
 
-func play_sfx(name: String) -> void:
-	if not _initialized or not _sounds.has(name):
+func play_sfx(name: String, pitch_scale: float = 1.0) -> void:
+	if not _initialized:
 		return
-	var temp := AudioStreamPlayer.new()
-	temp.stream = _sounds[name] as AudioStream
-	temp.finished.connect(temp.queue_free)
-	add_child(temp)
-	temp.play()
+	var stream: AudioStream = null
+	if _disk_sounds.has(name):
+		stream = _disk_sounds[name]
+	elif _sounds.has(name):
+		stream = _sounds[name]
+	else:
+		return
+
+	# Si el mismo sonido ya está sonando, reiniciarlo en ese reproductor
+	# para evitar superposición cuando se llama repetidamente.
+	for p in _sfx_pool:
+		if p.playing and p.stream == stream:
+			p.stop()
+			p.pitch_scale = pitch_scale
+			p.play()
+			return
+
+	# Reutilizar el reproductor del pool sin instanciar/destruir nodos
+	var player: AudioStreamPlayer = null
+	for p in _sfx_pool:
+		if not p.playing:
+			player = p
+			break
+
+	if player == null and not _sfx_pool.is_empty():
+		player = _sfx_pool[_sfx_pool_index]
+		_sfx_pool_index = (_sfx_pool_index + 1) % _sfx_pool.size()
+
+	if player != null:
+		player.pitch_scale = pitch_scale
+		player.stream = stream
+		player.play()
+	else:
+		var temp := AudioStreamPlayer.new()
+		temp.bus = "SFX"
+		temp.pitch_scale = pitch_scale
+		temp.stream = stream
+		temp.finished.connect(temp.queue_free)
+		add_child(temp)
+		temp.play()
 
 
 func play_music(stream: AudioStream, volume_db: float = -10.0) -> void:

@@ -59,7 +59,6 @@ func on_node_entered(node_id: StringName) -> void:
 ## Puerto del viejo juego_ataque._scan_selected_node(). El SFX vive acá (como
 ## el "move" en GameLogic.mover_jugador) para que el handler sea delgado (P5).
 func scan_selected_node() -> void:
-	AudioManager.play_sfx("scan")
 	if _game.selected_neighbor == &"":
 		_game.mensaje_estado = "Selecciona un nodo para escanear [X]"
 		_game.queue_redraw()
@@ -67,6 +66,7 @@ func scan_selected_node() -> void:
 	var node_res = _game._find_node_resource(_game.selected_neighbor)
 	if node_res == null:
 		return
+	AudioManager.play_sfx("scan")
 	var result: Dictionary = HackerMechanicsClass.scan_node(_game.hacker_state, _game.selected_neighbor, node_res.metadata)
 	_game.scan_results[str(_game.selected_neighbor)] = result
 	var type_label: String = result.get("node_type", "unknown")
@@ -82,7 +82,6 @@ func scan_selected_node() -> void:
 ## Puerto del viejo juego_ataque._use_hacker_exploit() con el refund unificado
 ## (SFX acá, como "scan" — ver scan_selected_node).
 func use_hacker_exploit(exploit_type: String) -> void:
-	AudioManager.play_sfx("exploit")
 	if _game.selected_neighbor == &"":
 		_game.mensaje_estado = "Selecciona un nodo para explotar"
 		_game.queue_redraw()
@@ -156,6 +155,12 @@ func use_hacker_exploit(exploit_type: String) -> void:
 	if exploit_type == "bypass" or exploit_type == "escalate":
 		_game.mensaje_estado = "%s %s aplicado en %s (ruido: %d)" % [result.get("icon", ""), result.get("name", ""), str(_game.selected_neighbor), _game.hacker_state.get("noise", 0)]
 	GameLogger.debug("JuegoAtaque", "[EXPLOIT] %s en %s — ruido: %d" % [exploit_type, str(_game.selected_neighbor), _game.hacker_state.get("noise", 0)])
+
+	if AudioManager.has_sound(exploit_type):
+		AudioManager.play_sfx(exploit_type)
+	else:
+		AudioManager.play_sfx("exploit")
+
 	# Los exploits también pueden ser la acción requerida del tutorial
 	# (action_required="input") → avisar para confirmar con Enter.
 	_game._notify_tutorial_input()
