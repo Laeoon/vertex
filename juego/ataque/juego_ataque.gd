@@ -60,6 +60,9 @@ var optimal_overlay_path: Array[StringName] = []
 var player_total_cost: float = 0.0
 var movement_points: int = 0
 var _turn_locked_until: float = 0.0
+var player_visual_pos: Vector2 = Vector2.ZERO
+var is_moving: bool = false
+var _move_tween: Tween = null
 
 # Tutorial
 var tutorial_player = null
@@ -242,7 +245,32 @@ func _nodo_en_posicion_firewall(pos: Vector2) -> StringName: return _game_state.
 
 # game_logic.gd
 func _vecinos_jugador() -> Array: return _game_logic.vecinos_jugador()
-func _mover_jugador(destino: StringName) -> void: _game_logic.mover_jugador(destino)
+func _mover_jugador(destino: StringName) -> void:
+	var origin_pos: Vector2 = node_positions.get(player_pos, Vector2.ZERO)
+	_game_logic.mover_jugador(destino)
+	var target_pos: Vector2 = node_positions.get(player_pos, Vector2.ZERO)
+
+	if DisplayServer.get_name() == "headless":
+		player_visual_pos = target_pos
+		is_moving = false
+		queue_redraw()
+		return
+
+	if _move_tween != null and _move_tween.is_valid():
+		_move_tween.kill()
+
+	is_moving = true
+	player_visual_pos = origin_pos
+	_move_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_move_tween.tween_method(func(pos: Vector2) -> void:
+		player_visual_pos = pos
+		queue_redraw()
+	, origin_pos, target_pos, 0.15)
+	_move_tween.finished.connect(func() -> void:
+		is_moving = false
+		player_visual_pos = target_pos
+		queue_redraw()
+	)
 func _perder(razon: String) -> void: _game_logic.perder(razon)
 func _auto_select_vecino() -> void: _game_logic.auto_select_vecino()
 func _cycle_neighbor(dir: int) -> void: _game_logic.cycle_neighbor(dir)

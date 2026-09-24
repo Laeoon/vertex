@@ -45,6 +45,7 @@ var _turn_locked_until: float = 0.0
 var selected_neighbor: StringName = &""
 var hovered_edge: String = ""
 var player_pos: StringName = &""
+var is_moving: bool = false
 
 
 func sync_state() -> void:
@@ -59,11 +60,23 @@ func sync_state() -> void:
 	_turn_locked_until = game._turn_locked_until if "_turn_locked_until" in game else 0.0
 	selected_neighbor = game.selected_neighbor if "selected_neighbor" in game else &""
 	player_pos = game.player_pos if "player_pos" in game else &""
+	is_moving = game.is_moving if "is_moving" in game else false
 	tutorial_player = game.tutorial_player if "tutorial_player" in game else null
 
 
 func _input(event: InputEvent) -> void:
 	sync_state()
+
+	# ─── Bloqueo durante movimiento interpolado ────────────────
+	if is_moving:
+		if event is InputEventKey and event.pressed:
+			var k: InputEventKey = event as InputEventKey
+			if k.keycode in [KEY_Q, KEY_ESCAPE, KEY_R]:
+				pass
+			else:
+				return
+		else:
+			return
 
 	# ─── Tutorial ──────────────────────────────────────────────
 	if tutorial_player != null and is_instance_valid(tutorial_player) and tutorial_player.is_active:

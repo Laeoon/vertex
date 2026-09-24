@@ -78,7 +78,7 @@ func draw_frame(d: Dictionary) -> void:
 		if d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
-		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes)
+		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false))
 
 	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
 	if d.show_optimal_overlay:
@@ -610,7 +610,9 @@ func draw_nodes(
 	_enemy_move_flash_time: float = -1.0,
 	bonus_nodes: Array = [],
 	bonus_visitados: Array = [],
-	hidden_nodes: Array = []
+	hidden_nodes: Array = [],
+	player_visual_pos: Vector2 = Vector2.ZERO,
+	is_moving: bool = false
 ) -> void:
 	# Identidad por tipo (E2): forma geométrica según NodeType.
 	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
@@ -754,7 +756,7 @@ func draw_nodes(
 		draw_rect(Rect2(label_x - 4, label_y - 14, text_w + 8, 18), border_color, false, 1.0)
 		draw_string(Vector2(label_x, label_y), label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 
-		if is_player:
+		if is_player and not is_moving:
 			draw_string(Vector2(pos.x - 8, pos.y + radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
 		elif is_target:
 			draw_string(Vector2(pos.x - 18, pos.y + radius + 16), "TARGET", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, BrandClass.DANGER)
@@ -804,6 +806,18 @@ func draw_nodes(
 		if nid_str in bonus_nodes:
 			var bonus_color: Color = BrandClass.TEXT_DIM if nid_str in bonus_visitados else BrandClass.WARNING
 			draw_polygon(_poligono(pos + Vector2(-(radius + 12.0), -(radius + 12.0)), 6.0, 4), bonus_color)
+
+	# Token visual del jugador interpolado (movimiento fluido)
+	var ppos: Vector2 = player_visual_pos if player_visual_pos != Vector2.ZERO else (node_positions.get(player_pos, Vector2.ZERO) as Vector2)
+	if ppos != Vector2.ZERO and not game_over and player_pos != &"":
+		var pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.007) * 0.25
+		# Anillo de energía exterior
+		draw_circle(ppos, node_radius + 4.0, Color(0.0, 0.95, 1.0, pulse * 0.6), false, 2.0)
+		# Núcleo del avatar
+		draw_circle(ppos, 7.0, Color(0.0, 1.0, 1.0, 0.95))
+		draw_circle(ppos, 3.5, Color.WHITE)
+		if is_moving:
+			draw_string(Vector2(ppos.x - 8, ppos.y + node_radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
 
 
 func draw_pursuers(pursuers: Array, node_positions: Dictionary, node_radius: float) -> void:

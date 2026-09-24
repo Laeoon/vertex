@@ -203,6 +203,8 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"enemy_move_flash_time": _game._enemy_move_flash_time,
 		"titulo_nivel": _game.titulo_nivel,
 		"player_pos": _game.player_pos,
+		"player_visual_pos": _game.player_visual_pos,
+		"is_moving": _game.is_moving,
 		"target": target_actual(),
 		"neighbors": _game._game_logic.vecinos_jugador(),
 		"player_total_cost": _game.player_total_cost,
@@ -269,6 +271,10 @@ func reset_state() -> void:
 	_game.current_path.clear()
 	_game.showing_path = false
 	_game.player_pos = _game.start_node
+	_game.player_visual_pos = _game.node_positions.get(_game.player_pos, Vector2.ZERO)
+	_game.is_moving = false
+	if _game._move_tween != null and _game._move_tween.is_valid():
+		_game._move_tween.kill()
 	_game.current_waypoint_idx = -1 if _game.waypoints.is_empty() else 0
 	# Detección/persecución: limpieza en `_pursuit_system.reset()` (porta el
 	# viejo `alerted_nodes.clear()` + `pursuers.clear()` + `_pursuer_next_id=1`).
