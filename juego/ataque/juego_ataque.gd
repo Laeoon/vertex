@@ -63,6 +63,10 @@ var _turn_locked_until: float = 0.0
 var player_visual_pos: Vector2 = Vector2.ZERO
 var is_moving: bool = false
 var _move_tween: Tween = null
+var _camera: Camera2D = null
+var _trauma: float = 0.0
+const TRAUMA_DECAY: float = 1.8
+const MAX_SHAKE_OFFSET: float = 10.0
 
 # Tutorial
 var tutorial_player = null
@@ -148,18 +152,21 @@ var _game_over_overlay  # GameOverOverlay (capa 2: botones de mouse)
 var _overlay_shown_for_game_over: bool = false
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not game_over:
 		_budget_display = lerp(_budget_display, float(movement_points), 0.15)
-		return
-	if not _overlay_shown_for_game_over:
+	elif not _overlay_shown_for_game_over:
 		_show_game_over_overlay()
+
+	_process_camera_shake(delta)
 
 
 func _ready() -> void:
 	# Fuente de identidad (JetBrains Mono, OFL) en vez del fallback de Godot.
 	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
+
+	_setup_camera()
 
 	# game_state/hacker_logic/game_logic ANTES de cargar el grafo: reset_state()
 	# (vía load_graph) y los turnos dependen de sus métodos.
@@ -484,3 +491,38 @@ func _draw() -> void:
 	# P5/tarea 3: el frame se dibuja con datos puros (GameState.frame_data),
 	# sin callables — orquestación en GameRenderer.draw_frame().
 	_renderer.draw_frame(_game_state.frame_data(vp_size))
+
+
+# ─── Cámara & Screen Shake ────────────────────────────────────────
+
+func _setup_camera() -> void:
+	_camera = Camera2D.new()
+	_camera.name = "GameCamera"
+	_camera.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
+	add_child(_camera)
+	_update_camera_position()
+	var vp = get_viewport()
+	if vp != null:
+		vp.size_changed.connect(_update_camera_position)
+
+
+func _update_camera_position() -> void:
+	if _camera != null and is_instance_valid(_camera):
+		var vp_size: Vector2 = get_viewport_rect().size
+		_camera.position = vp_size / 2.0
+
+
+func add_trauma(amount: float) -> void:
+	_trauma = clampf(_trauma + amount, 0.0, 1.0)
+
+
+func _process_camera_shake(delta: float) -> void:
+	if _trauma > 0.0:
+		_trauma = maxf(0.0, _trauma - TRAUMA_DECAY * delta)
+		if DisplayServer.get_name() != "headless" and _camera != null and is_instance_valid(_camera):
+			var intensity: float = _trauma * _trauma
+			var shake_x: float = randf_range(-1.0, 1.0) * MAX_SHAKE_OFFSET * intensity
+			var shake_y: float = randf_range(-1.0, 1.0) * MAX_SHAKE_OFFSET * intensity
+			_camera.offset = Vector2(shake_x, shake_y)
+		if _trauma == 0.0 and _camera != null and is_instance_valid(_camera):
+			_camera.offset = Vector2.ZERO

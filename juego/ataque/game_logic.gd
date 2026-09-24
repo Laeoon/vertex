@@ -202,6 +202,8 @@ func perder(razon: String) -> void:
 	_game._game_over_time = Time.get_ticks_msec() / 1000.0
 	_game.game_won = false
 	AudioManager.play_sfx("captured")
+	if _game.has_method("add_trauma"):
+		_game.add_trauma(0.75)
 	_game.mensaje_estado = "PERDISTE: %s" % razon
 	GameLogger.info("JuegoAtaque", "DERROTA: %s" % razon)
 	# Track pérdida en estadísticas (migrado a ProgressService)
@@ -363,6 +365,8 @@ func _procesar_eventos_alarma() -> void:
 ## Aplica UN efecto de alarma. Efectos v1: spawn_pursuer | pursuer_speed_up |
 ## ai_extra_block. Desconocido → warning y se descarta (datos robustos).
 func _aplicar_efecto_alarma(ev: Dictionary) -> void:
+	if _game.has_method("add_trauma"):
+		_game.add_trauma(0.45)
 	var efecto: String = str(ev.get("efecto", ""))
 	match efecto:
 		"spawn_pursuer":

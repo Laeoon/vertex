@@ -161,6 +161,9 @@ func use_hacker_exploit(exploit_type: String) -> void:
 	else:
 		AudioManager.play_sfx("exploit")
 
+	if _game.has_method("add_trauma"):
+		_game.add_trauma(0.25)
+
 	# Los exploits también pueden ser la acción requerida del tutorial
 	# (action_required="input") → avisar para confirmar con Enter.
 	_game._notify_tutorial_input()
