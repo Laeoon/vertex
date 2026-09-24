@@ -65,12 +65,16 @@ func draw_error(vp_size: Vector2, mensaje_estado: String) -> void:
 ## diccionario de datos puro armado por GameState.frame_data() — sin
 ## callables ni lectura de estado del nodo juego.
 func draw_frame(d: Dictionary) -> void:
-	if d.defender_mode:
-		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode)
-	else:
-		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
-	if d.hacker_mode:
-		draw_hacker_hud(d.vp_size, d.hacker_state, d.scan_results)
+	var pan: Vector2 = d.get("topology_pan", Vector2.ZERO)
+	var zoom: float = d.get("topology_zoom", 1.0)
+	var has_transform: bool = pan != Vector2.ZERO or not is_equal_approx(zoom, 1.0)
+
+	# 1. Capa de topología: sujeta a pan y zoom
+	if has_transform:
+		_canvas.draw_set_transform(pan, 0.0, Vector2(zoom, zoom))
+
+	draw_background_grid(d.vp_size, pan, zoom)
+
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
 	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
 	if d.defender_mode:
@@ -86,6 +90,17 @@ func draw_frame(d: Dictionary) -> void:
 	if d.tutorial_player != null and d.tutorial_player.is_active:
 		# Flecha guía del tutorial: en modo defensor no hay jugador.
 		draw_tutorial_highlights(d.tutorial_player, d.node_positions, d.node_radius, d.tutorial_arrow_pos)
+
+	# 2. Capa de UI fija (HUD, status bar, tutoriales, paneles)
+	if has_transform:
+		_canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+	if d.defender_mode:
+		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode)
+	else:
+		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
+	if d.hacker_mode:
+		draw_hacker_hud(d.vp_size, d.hacker_state, d.scan_results)
 	# El game over ya no se dibuja acá: lo lleva GameOverOverlay (capa 2b) a
 	# pantalla completa. frame_data() sigue exponiendo los campos para el overlay.
 	if d.mensaje_tutorial != "" and not d.game_over:
@@ -95,16 +110,22 @@ func draw_frame(d: Dictionary) -> void:
 	draw_status_bar(d.vp_size, d.mensaje_estado, d.selected_neighbor, d.game_over, d.game_won, d.defender_mode)
 
 
-func draw_background_grid(vp_size: Vector2) -> void:
+func draw_background_grid(vp_size: Vector2, pan: Vector2 = Vector2.ZERO, zoom: float = 1.0) -> void:
 	var spacing: float = 50.0
 	var grid_color: Color = Color(0.12, 0.14, 0.2, 0.3)
-	var x: float = 0.0
-	while x < vp_size.x:
-		draw_line(Vector2(x, 0), Vector2(x, vp_size.y), grid_color, 1.0)
+	var z := zoom if zoom > 0.0 else 1.0
+	var x_start: float = floor((-pan.x / z) / spacing) * spacing
+	var x_end: float = ceil(((vp_size.x - pan.x) / z) / spacing) * spacing
+	var y_start: float = floor((-pan.y / z) / spacing) * spacing
+	var y_end: float = ceil(((vp_size.y - pan.y) / z) / spacing) * spacing
+
+	var x: float = x_start
+	while x <= x_end:
+		draw_line(Vector2(x, y_start), Vector2(x, y_end), grid_color, 1.0)
 		x += spacing
-	var y: float = 0.0
-	while y < vp_size.y:
-		draw_line(Vector2(0, y), Vector2(vp_size.x, y), grid_color, 1.0)
+	var y: float = y_start
+	while y <= y_end:
+		draw_line(Vector2(x_start, y), Vector2(x_end, y), grid_color, 1.0)
 		y += spacing
 
 
@@ -628,7 +649,8 @@ func draw_nodes(
 			continue
 		var pos: Vector2 = node_positions[nid] as Vector2
 
-		var is_player: bool = nid_str == player_pos
+		var is_player: bool = nid_str == player_pos and not is_moving
+		var is_dest: bool = nid_str == player_pos and is_moving
 		var is_target: bool = nid_str == target
 		var es_vecino: bool = nid_str in neighbors
 		var in_path: bool = nid_str in current_path
@@ -639,6 +661,8 @@ func draw_nodes(
 		var node_color: Color
 		if is_player:
 			node_color = Color(0.0, 0.7, 1.0)
+		elif is_dest:
+			node_color = Color(0.12, 0.35, 0.45, 0.9)
 		elif is_target:
 			node_color = Color(1.0, 0.15, 0.15)
 		elif is_golden:
@@ -651,6 +675,8 @@ func draw_nodes(
 		var radius: float = node_radius
 		if is_player:
 			radius += 6.0
+		elif is_dest:
+			radius += 4.0
 		elif is_target or es_vecino or is_golden:
 			radius += 3.0
 
@@ -693,6 +719,8 @@ func draw_nodes(
 		var border_color: Color = Color(0.3, 0.32, 0.4)
 		if is_player:
 			border_color = Color(0.0, 0.9, 1.0)
+		elif is_dest:
+			border_color = Color(0.0, 0.95, 1.0, 0.85)
 		elif is_target:
 			border_color = BrandClass.DANGER
 		elif is_golden:
@@ -812,12 +840,15 @@ func draw_nodes(
 	if ppos != Vector2.ZERO and not game_over and player_pos != &"":
 		var pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.007) * 0.25
 		# Anillo de energía exterior
-		draw_circle(ppos, node_radius + 4.0, Color(0.0, 0.95, 1.0, pulse * 0.6), false, 2.0)
-		# Núcleo del avatar
-		draw_circle(ppos, 7.0, Color(0.0, 1.0, 1.0, 0.95))
-		draw_circle(ppos, 3.5, Color.WHITE)
+		var ring_r: float = (node_radius + 6.0) if is_moving else (node_radius + 4.0)
+		var ring_alpha: float = 0.9 if is_moving else (pulse * 0.6)
+		draw_circle(ppos, ring_r, Color(0.0, 0.95, 1.0, ring_alpha), false, 2.5 if is_moving else 2.0)
 		if is_moving:
-			draw_string(Vector2(ppos.x - 8, ppos.y + node_radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
+			draw_circle(ppos, node_radius + 11.0, Color(0.0, 0.8, 1.0, 0.4), false, 1.5)
+		# Núcleo del avatar
+		draw_circle(ppos, 8.0 if is_moving else 7.0, Color(0.0, 1.0, 1.0, 0.95))
+		draw_circle(ppos, 4.0 if is_moving else 3.5, Color.WHITE)
+		draw_string(Vector2(ppos.x - 8, ppos.y + node_radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
 
 
 func draw_pursuers(pursuers: Array, node_positions: Dictionary, node_radius: float) -> void:

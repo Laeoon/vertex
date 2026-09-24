@@ -205,6 +205,8 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"player_pos": _game.player_pos,
 		"player_visual_pos": _game.player_visual_pos,
 		"is_moving": _game.is_moving,
+		"topology_pan": _game.topology_pan if "topology_pan" in _game else Vector2.ZERO,
+		"topology_zoom": _game.topology_zoom if "topology_zoom" in _game else 1.0,
 		"target": target_actual(),
 		"neighbors": _game._game_logic.vecinos_jugador(),
 		"player_total_cost": _game.player_total_cost,
@@ -273,6 +275,10 @@ func reset_state() -> void:
 	_game.player_pos = _game.start_node
 	_game.player_visual_pos = _game.node_positions.get(_game.player_pos, Vector2.ZERO)
 	_game.is_moving = false
+	if "topology_pan" in _game:
+		_game.topology_pan = Vector2.ZERO
+	if "topology_zoom" in _game:
+		_game.topology_zoom = 1.0
 	if _game._move_tween != null and _game._move_tween.is_valid():
 		_game._move_tween.kill()
 	_game.current_waypoint_idx = -1 if _game.waypoints.is_empty() else 0

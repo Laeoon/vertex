@@ -66,7 +66,14 @@ var _move_tween: Tween = null
 var _camera: Camera2D = null
 var _trauma: float = 0.0
 const TRAUMA_DECAY: float = 1.8
-const MAX_SHAKE_OFFSET: float = 10.0
+const MAX_SHAKE_OFFSET: float = 24.0
+const MAX_SHAKE_ROLL: float = 0.035
+
+var topology_pan: Vector2 = Vector2.ZERO
+var topology_zoom: float = 1.0
+const ZOOM_MIN: float = 0.5
+const ZOOM_MAX: float = 2.5
+const ZOOM_STEP: float = 1.15
 
 # Tutorial
 var tutorial_player = null
@@ -217,6 +224,8 @@ func _ready() -> void:
 
 # game_state.gd — InputHandler y tests los consumen vía has_method/refs.
 func reset_state() -> void:
+	topology_pan = Vector2.ZERO
+	topology_zoom = 1.0
 	_game_state.reset_state()
 	_overlay_shown_for_game_over = false
 	if _game_over_overlay != null:
@@ -268,14 +277,15 @@ func _mover_jugador(destino: StringName) -> void:
 
 	is_moving = true
 	player_visual_pos = origin_pos
-	_move_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_move_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_move_tween.tween_method(func(pos: Vector2) -> void:
 		player_visual_pos = pos
 		queue_redraw()
-	, origin_pos, target_pos, 0.15)
+	, origin_pos, target_pos, 0.20)
 	_move_tween.finished.connect(func() -> void:
 		is_moving = false
 		player_visual_pos = target_pos
+		add_trauma(0.12)
 		queue_redraw()
 	)
 func _perder(razon: String) -> void: _game_logic.perder(razon)
@@ -523,6 +533,43 @@ func _process_camera_shake(delta: float) -> void:
 			var intensity: float = _trauma * _trauma
 			var shake_x: float = randf_range(-1.0, 1.0) * MAX_SHAKE_OFFSET * intensity
 			var shake_y: float = randf_range(-1.0, 1.0) * MAX_SHAKE_OFFSET * intensity
+			var shake_rot: float = randf_range(-1.0, 1.0) * MAX_SHAKE_ROLL * intensity
 			_camera.offset = Vector2(shake_x, shake_y)
+			_camera.rotation = shake_rot
 		if _trauma == 0.0 and _camera != null and is_instance_valid(_camera):
 			_camera.offset = Vector2.ZERO
+			_camera.rotation = 0.0
+
+
+# ─── Control de Zoom & Pan de Topología ───────────────────────────
+
+func zoom_in(at_screen_pos: Vector2) -> void:
+	var old_zoom := topology_zoom
+	var new_zoom := clampf(topology_zoom * ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+	if not is_equal_approx(new_zoom, old_zoom):
+		var world_pos := (at_screen_pos - topology_pan) / old_zoom
+		topology_pan = at_screen_pos - world_pos * new_zoom
+		topology_zoom = new_zoom
+		queue_redraw()
+
+
+func zoom_out(at_screen_pos: Vector2) -> void:
+	var old_zoom := topology_zoom
+	var new_zoom := clampf(topology_zoom / ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+	if not is_equal_approx(new_zoom, old_zoom):
+		var world_pos := (at_screen_pos - topology_pan) / old_zoom
+		topology_pan = at_screen_pos - world_pos * new_zoom
+		topology_zoom = new_zoom
+		queue_redraw()
+
+
+func pan_by(delta: Vector2) -> void:
+	topology_pan += delta
+	queue_redraw()
+
+
+func reset_pan_zoom() -> void:
+	topology_pan = Vector2.ZERO
+	topology_zoom = 1.0
+	queue_redraw()
+

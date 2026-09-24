@@ -156,6 +156,10 @@ func _save_settings() -> void:
 	for section in _sections:
 		for item in section.items:
 			cfg.set_value("options", item.id, item.value)
+			if item.id == "lang" and item.value is int:
+				var _langs: Array[String] = ["es", "en", "pt"]
+				if item.value >= 0 and item.value < _langs.size():
+					cfg.set_value("locale", "lang", _langs[item.value])
 	cfg.save("user://settings.cfg")
 
 

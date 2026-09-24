@@ -70,10 +70,37 @@ func _input(event: InputEvent) -> void:
 				var items := _current_items()
 				selected_idx = mini(items.size() - 1, selected_idx + 1)
 				queue_redraw()
-			KEY_LEFT:
-				_cycle_lang(-1)
-			KEY_RIGHT:
-				_cycle_lang(1)
+
+	elif event is InputEventMouseMotion:
+		var mpos := (event as InputEventMouseMotion).position
+		var items := _current_items()
+		var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
+		var vp := get_viewport_rect().size
+		for i in items.size():
+			var item_by: float = start_y + i * 48.0
+			var rect := Rect2(50, item_by - 16, vp.x - 110, 42)
+			if rect.has_point(mpos):
+				if selected_idx != i:
+					selected_idx = i
+					queue_redraw()
+				break
+
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var mpos := (event as InputEventMouseButton).position
+		var items := _current_items()
+		var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
+		var vp := get_viewport_rect().size
+		for i in items.size():
+			var item_by: float = start_y + i * 48.0
+			var rect := Rect2(50, item_by - 16, vp.x - 110, 42)
+			if rect.has_point(mpos):
+				selected_idx = i
+				_activate_selected()
+				return
+		if current_state == State.WORLD_SELECT:
+			var back_y: float = start_y + items.size() * 48.0 + 10.0
+			if Rect2(50, back_y - 10, 200, 36).has_point(mpos):
+				_go_to_state(State.MAIN_MENU)
 
 
 func _process(delta: float) -> void:
@@ -131,15 +158,6 @@ func _launch_world(world_id: String) -> void:
 			SceneTransition.fade_to_scene("res://juego/system/level_select_screen.tscn")
 
 
-func _cycle_lang(dir: int) -> void:
-	_lang_idx = (_lang_idx + dir) % _lang_options.size()
-	if _lang_idx < 0:
-		_lang_idx = _lang_options.size() - 1
-	LocUtil.set_locale(self, _lang_options[_lang_idx])
-	_save_lang_setting()
-	_refresh_texts()
-
-
 func loc(key: String) -> String:
 	return LocUtil.loc(self, key)
 
@@ -166,18 +184,21 @@ func _load_lang_setting() -> void:
 	var cfg := ConfigFile.new()
 	var err := cfg.load("user://settings.cfg")
 	if err == OK:
-		var saved: String = cfg.get_value("locale", "lang", "es")
-		_lang_idx = _lang_options.find(saved)
-		if _lang_idx < 0:
-			_lang_idx = 0
+		if cfg.has_section_key("options", "lang"):
+			var saved = cfg.get_value("options", "lang", 0)
+			if saved is int and saved >= 0 and saved < _lang_options.size():
+				_lang_idx = saved
+			elif saved is String:
+				var idx := _lang_options.find(saved.to_lower())
+				if idx >= 0:
+					_lang_idx = idx
+		elif cfg.has_section_key("locale", "lang"):
+			var saved_str: String = cfg.get_value("locale", "lang", "es")
+			_lang_idx = _lang_options.find(saved_str)
+			if _lang_idx < 0:
+				_lang_idx = 0
 		LocUtil.set_locale(self, _lang_options[_lang_idx])
-
-
-func _save_lang_setting() -> void:
-	var cfg := ConfigFile.new()
-	cfg.load("user://settings.cfg")
-	cfg.set_value("locale", "lang", _lang_options[_lang_idx])
-	cfg.save("user://settings.cfg")
+		_refresh_texts()
 
 
 
@@ -215,8 +236,6 @@ func _draw() -> void:
 			_draw_main_menu(vp, alpha)
 		State.WORLD_SELECT:
 			_draw_world_select(vp, alpha)
-
-	_draw_lang_indicator(vp, alpha)
 
 
 func _draw_main_menu(vp: Vector2, alpha: float) -> void:
@@ -317,19 +336,3 @@ func _draw_world_select(vp: Vector2, alpha: float) -> void:
 	draw_rect(Rect2(60, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
 	by += 10
 	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
-
-
-func _draw_lang_indicator(vp: Vector2, alpha: float) -> void:
-	var lang: String = _lang_options[_lang_idx].to_upper()
-	var box_w: float = 80.0
-	var box_h: float = 28.0
-	var box_x: float = vp.x - box_w - 20.0
-	var box_y: float = 20.0
-
-	draw_rect(Rect2(box_x, box_y, box_w, box_h), BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.85))
-	draw_rect(Rect2(box_x, box_y, box_w, box_h), BrandClass.accent_dim(alpha * 0.3), false, 1.5)
-
-	var text_w: float = font.get_string_size(lang, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1).x
-	draw_string(font, Vector2(box_x + (box_w - text_w) / 2.0, box_y + 18), lang, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.ACCENT, alpha))
-
-	draw_string(font, Vector2(box_x - 60, box_y + 18), loc("menu.lang"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
