@@ -5,6 +5,25 @@ extends Node
 
 const SFX_POOL_SIZE: int = 8
 
+const SFX_PRIORITY: Dictionary = {
+	"win": 100,
+	"lose": 100,
+	"captured": 100,
+	"alert": 80,
+	"exploit": 60,
+	"bypass": 60,
+	"escalate": 60,
+	"scalate": 60,
+	"persist": 60,
+	"decoy": 60,
+	"firewall": 50,
+	"scan": 40,
+	"block": 30,
+	"move": 10,
+	"click": 5,
+	"reset": 50,
+}
+
 var _sounds: Dictionary = {}
 var _disk_sounds: Dictionary = {}
 var _music_player: AudioStreamPlayer
@@ -15,8 +34,10 @@ var _initialized: bool = false
 var _current_music_world: String = ""
 var _current_music_path: String = ""
 var _world_music_playlists: Dictionary = {
-	"heist": [
+	"menu": [
 		"res://assets/audio/music/heist/DavidKBD - Pink Bloom Pack - 01 - Pink Bloom.ogg",
+	],
+	"heist": [
 		"res://assets/audio/music/heist/DavidKBD - Pink Bloom Pack - 02 - Portal to Underworld.ogg",
 		"res://assets/audio/music/heist/DavidKBD - Pink Bloom Pack - 03 - To the Unknown.ogg",
 		"res://assets/audio/music/heist/DavidKBD - Pink Bloom Pack - 04 - Valley of Spirits.ogg",
@@ -190,35 +211,63 @@ func play_sfx(name: String, pitch_scale: float = 1.0) -> void:
 	else:
 		return
 
+	var priority: int = SFX_PRIORITY.get(name, 20)
+
+	# Si es un sonido de alta prioridad (e.g. win, lose, captured),
+	# detener cualquier SFX de menor prioridad inmediatamente para evitar contaminación sonora.
+	if priority >= 90:
+		for p in _sfx_pool:
+			if p.playing:
+				var p_prio: int = p.get_meta("sfx_priority", 0)
+				if p_prio < priority:
+					p.stop()
+
 	# Si el mismo sonido ya está sonando, reiniciarlo en ese reproductor
-	# para evitar superposición cuando se llama repetidamente.
+	# para evitar superposición redundante.
 	for p in _sfx_pool:
 		if p.playing and p.stream == stream:
 			p.stop()
 			p.pitch_scale = pitch_scale
+			p.set_meta("sfx_priority", priority)
 			p.play()
 			return
 
-	# Reutilizar el reproductor del pool sin instanciar/destruir nodos
+	# Reutilizar un reproductor libre del pool
 	var player: AudioStreamPlayer = null
 	for p in _sfx_pool:
 		if not p.playing:
 			player = p
 			break
 
+	# Si todos están ocupados, buscar el de menor prioridad que sea inferior al nuevo
 	if player == null and not _sfx_pool.is_empty():
-		player = _sfx_pool[_sfx_pool_index]
-		_sfx_pool_index = (_sfx_pool_index + 1) % _sfx_pool.size()
+		var lowest_prio_idx: int = -1
+		var lowest_prio_val: int = 9999
+		for i in range(_sfx_pool.size()):
+			var p: AudioStreamPlayer = _sfx_pool[i]
+			var p_prio: int = p.get_meta("sfx_priority", 0)
+			if p_prio < lowest_prio_val:
+				lowest_prio_val = p_prio
+				lowest_prio_idx = i
+
+		if lowest_prio_val <= priority and lowest_prio_idx != -1:
+			player = _sfx_pool[lowest_prio_idx]
+			player.stop()
+		else:
+			# Si el pool está ocupado por sonidos de mayor prioridad, descartar el de menor prioridad
+			return
 
 	if player != null:
 		player.pitch_scale = pitch_scale
 		player.stream = stream
+		player.set_meta("sfx_priority", priority)
 		player.play()
 	else:
 		var temp := AudioStreamPlayer.new()
 		temp.bus = "SFX"
 		temp.pitch_scale = pitch_scale
 		temp.stream = stream
+		temp.set_meta("sfx_priority", priority)
 		temp.finished.connect(temp.queue_free)
 		add_child(temp)
 		temp.play()
@@ -277,6 +326,10 @@ func play_world_music(world_id: String, track_index: int = -1, volume_db: float 
 
 	_current_music_world = normalized_world
 	play_track(playlist[chosen_idx], volume_db)
+
+
+func play_menu_music(volume_db: float = -14.0) -> void:
+	play_world_music("menu", 0, volume_db)
 
 
 func stop_music() -> void:

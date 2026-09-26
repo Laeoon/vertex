@@ -46,6 +46,8 @@ func _ready() -> void:
 
 	_load_lang_setting()
 	progress = ProgressUtil.cargar_progreso()
+	if get_node_or_null("/root/AudioManager") != null:
+		AudioManager.play_menu_music()
 	queue_redraw()
 
 

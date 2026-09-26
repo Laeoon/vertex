@@ -156,10 +156,11 @@ func use_hacker_exploit(exploit_type: String) -> void:
 		_game.mensaje_estado = "%s %s aplicado en %s (ruido: %d)" % [result.get("icon", ""), result.get("name", ""), str(_game.selected_neighbor), _game.hacker_state.get("noise", 0)]
 	GameLogger.debug("JuegoAtaque", "[EXPLOIT] %s en %s — ruido: %d" % [exploit_type, str(_game.selected_neighbor), _game.hacker_state.get("noise", 0)])
 
-	if AudioManager.has_sound(exploit_type):
-		AudioManager.play_sfx(exploit_type)
-	else:
-		AudioManager.play_sfx("exploit")
+	if not _game.game_over:
+		if AudioManager.has_sound(exploit_type):
+			AudioManager.play_sfx(exploit_type)
+		else:
+			AudioManager.play_sfx("exploit")
 
 	if _game.has_method("add_trauma"):
 		_game.add_trauma(0.40)

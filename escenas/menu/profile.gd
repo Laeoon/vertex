@@ -48,6 +48,8 @@ func _ready() -> void:
 	big_font_size = font_size + 14
 	_load_profile()
 	_load_stats()
+	if get_node_or_null("/root/AudioManager") != null:
+		AudioManager.play_menu_music()
 	queue_redraw()
 
 

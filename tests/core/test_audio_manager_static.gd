@@ -62,11 +62,19 @@ func _run_tests() -> void:
 	_afirmar(disk_sounds.has("win") and disk_sounds.has("bypass"), "carga sonidos desde res://assets/audio/sfx/")
 
 	var playlists: Dictionary = am.get("_world_music_playlists")
-	_afirmar(playlists.has("heist") and playlists["heist"].size() == 9, "playlist de heist contiene las 9 pistas Pink Bloom")
+	_afirmar(playlists.has("menu") and playlists["menu"].size() >= 1, "playlist de menu configurada")
+	_afirmar(playlists.has("heist") and playlists["heist"].size() == 8, "playlist de heist contiene las 8 pistas Pink Bloom de juego")
 	_afirmar(playlists.has("hacker") and playlists["hacker"].size() == 13, "playlist de hacker contiene las 13 pistas Code Injection")
 
 	am.play_world_music("mundo_inexistente")
 	_afirmar(true, "play_world_music con mundo inexistente no crashea")
+
+	am.play_menu_music()
+	_afirmar(am.get("_current_music_world") == "menu", "play_menu_music activa el mundo 'menu'")
+
+	var priorities: Dictionary = am.get("SFX_PRIORITY")
+	_afirmar(priorities.get("win", 0) > priorities.get("bypass", 0), "prioridad de win es mayor que bypass")
+	_afirmar(priorities.get("bypass", 0) > priorities.get("move", 0), "prioridad de bypass es mayor que move")
 
 	am.stop_music()
 	_afirmar(am.get("_current_music_world") == "", "stop_music limpia _current_music_world")

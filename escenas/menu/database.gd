@@ -46,6 +46,8 @@ func _ready() -> void:
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
 	ProgressUtil.cargar_misiones(missions)
+	if get_node_or_null("/root/AudioManager") != null:
+		AudioManager.play_menu_music()
 	queue_redraw()
 
 

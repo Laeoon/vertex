@@ -25,6 +25,8 @@ func _ready() -> void:
 		world_id = sp.titulo_nivel
 	progress = ProgressUtil.cargar_progreso()
 	_load_world_data()
+	if get_node_or_null("/root/AudioManager") != null:
+		AudioManager.play_menu_music()
 	queue_redraw()
 
 
