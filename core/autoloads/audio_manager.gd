@@ -48,19 +48,19 @@ var _world_music_playlists: Dictionary = {
 		"res://assets/audio/music/heist/DavidKBD - Pink Bloom Pack - 09 - Lightyear City.ogg",
 	],
 	"hacker": [
-		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 01 - Underbeat.ogg",
-		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 02 - Behind the Darkness-loop.ogg",
-		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 03 - Synthetic Whisper-loop.ogg",
-		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 04 - Secret Dissonance-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 06 - Electric Inferno-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 07 - Binary Chaos-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 02 - Behind the Darkness-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 11 - I.A.'s Growl-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 04 - Secret Dissonance-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 03 - Synthetic Whisper-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 08 - Sentinel Cloud-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 09 - Ghost Steps-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 10 - Space Echoes-loop.ogg",
-		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 11 - I.A.'s Growl-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 12 - Faceless Crowd-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 13 - Between Everyone and Anyone-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 14 - There's Someone Here-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 01 - Underbeat.ogg",
 	],
 }
 
@@ -324,8 +324,12 @@ func play_world_music(world_id: String, track_index: int = -1, volume_db: float 
 	else:
 		chosen_idx = randi() % playlist.size()
 
+	var actual_vol := volume_db
+	if normalized_world == "hacker" and volume_db == -12.0:
+		actual_vol = -8.0
+
 	_current_music_world = normalized_world
-	play_track(playlist[chosen_idx], volume_db)
+	play_track(playlist[chosen_idx], actual_vol)
 
 
 func play_menu_music(volume_db: float = -14.0) -> void:

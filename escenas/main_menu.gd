@@ -21,6 +21,10 @@ var _lang_idx: int = 0
 var _fade_alpha: float = 1.0
 var _transitioning: bool = false
 var _transition_target: State = State.MAIN_MENU
+var _transition_stage: int = 0
+var _slide_offset_x: float = 0.0
+var _smooth_selected_y: float = 150.0
+var _hovered_back: bool = false
 var _pulse: float = 0.0
 
 
@@ -46,9 +50,16 @@ func _ready() -> void:
 
 	_load_lang_setting()
 	progress = ProgressUtil.cargar_progreso()
-	if get_node_or_null("/root/AudioManager") != null:
-		AudioManager.play_menu_music()
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_menu_music"):
+		am.play_menu_music()
 	queue_redraw()
+
+
+func _play_click_sfx() -> void:
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("click")
 
 
 func _input(event: InputEvent) -> void:
@@ -64,13 +75,16 @@ func _input(event: InputEvent) -> void:
 				else:
 					get_tree().quit()
 			KEY_ENTER, KEY_SPACE:
+				_play_click_sfx()
 				_activate_selected()
 			KEY_UP:
 				selected_idx = maxi(0, selected_idx - 1)
+				_play_click_sfx()
 				queue_redraw()
 			KEY_DOWN:
 				var items := _current_items()
 				selected_idx = mini(items.size() - 1, selected_idx + 1)
+				_play_click_sfx()
 				queue_redraw()
 
 	elif event is InputEventMouseMotion:
@@ -78,14 +92,23 @@ func _input(event: InputEvent) -> void:
 		var items := _current_items()
 		var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
 		var vp := get_viewport_rect().size
+		var prev_hover_back := _hovered_back
+		_hovered_back = false
 		for i in items.size():
 			var item_by: float = start_y + i * 48.0
 			var rect := Rect2(50, item_by - 16, vp.x - 110, 42)
 			if rect.has_point(mpos):
 				if selected_idx != i:
 					selected_idx = i
+					_play_click_sfx()
 					queue_redraw()
 				break
+		if current_state == State.WORLD_SELECT:
+			var back_y: float = start_y + items.size() * 48.0 + 10.0
+			if Rect2(50, back_y - 10, 200, 36).has_point(mpos):
+				_hovered_back = true
+		if prev_hover_back != _hovered_back:
+			queue_redraw()
 
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var mpos := (event as InputEventMouseButton).position
@@ -97,6 +120,7 @@ func _input(event: InputEvent) -> void:
 			var rect := Rect2(50, item_by - 16, vp.x - 110, 42)
 			if rect.has_point(mpos):
 				selected_idx = i
+				_play_click_sfx()
 				_activate_selected()
 				return
 		if current_state == State.WORLD_SELECT:
@@ -107,13 +131,30 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
+
+	var target_start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
+	var target_y: float = target_start_y + selected_idx * 48.0
+	_smooth_selected_y = lerpf(_smooth_selected_y, target_y, delta * 20.0)
+
 	if _transitioning:
-		_fade_alpha = move_toward(_fade_alpha, 0.0, delta * 4.0)
-		if _fade_alpha <= 0.0:
-			current_state = _transition_target
-			selected_idx = 0
-			_fade_alpha = 0.0
-			_transitioning = false
+		if _transition_stage == 1:
+			_fade_alpha = move_toward(_fade_alpha, 0.0, delta * 8.0)
+			_slide_offset_x = lerpf(_slide_offset_x, -30.0 if _transition_target == State.WORLD_SELECT else 30.0, delta * 16.0)
+			if _fade_alpha <= 0.0:
+				current_state = _transition_target
+				selected_idx = 0
+				_smooth_selected_y = 140.0 if current_state == State.WORLD_SELECT else 150.0
+				_slide_offset_x = 30.0 if current_state == State.WORLD_SELECT else -30.0
+				_transition_stage = 2
+		elif _transition_stage == 2:
+			_fade_alpha = move_toward(_fade_alpha, 1.0, delta * 8.0)
+			_slide_offset_x = lerpf(_slide_offset_x, 0.0, delta * 16.0)
+			if _fade_alpha >= 1.0 and absf(_slide_offset_x) < 0.5:
+				_fade_alpha = 1.0
+				_slide_offset_x = 0.0
+				_transition_stage = 0
+				_transitioning = false
+
 	queue_redraw()
 
 
@@ -146,9 +187,13 @@ func _activate_selected() -> void:
 
 
 func _go_to_state(new_state: State) -> void:
+	if current_state == new_state and not _transitioning:
+		return
 	_transitioning = true
 	_transition_target = new_state
+	_transition_stage = 1
 	_fade_alpha = 1.0
+	_play_click_sfx()
 
 
 func _launch_world(world_id: String) -> void:
@@ -203,9 +248,6 @@ func _load_lang_setting() -> void:
 		_refresh_texts()
 
 
-
-
-
 func _draw() -> void:
 	var vp := get_viewport_rect().size
 	draw_rect(Rect2(0, 0, vp.x, vp.y), BrandClass.BG)
@@ -227,31 +269,33 @@ func _draw() -> void:
 		draw_line(Vector2(0, gy), Vector2(vp.x, gy), grid_color, 1.0)
 		gy += spacing
 
-	if _transitioning and current_state == State.MAIN_MENU and _transition_target != State.MAIN_MENU:
-		draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0, 0, 0, 1.0 - _fade_alpha))
-		return
-
-	var alpha: float = _fade_alpha if _transitioning else 1.0
+	var alpha: float = clampf(_fade_alpha, 0.0, 1.0)
+	var ox: float = _slide_offset_x
 
 	match current_state:
 		State.MAIN_MENU:
-			_draw_main_menu(vp, alpha)
+			_draw_main_menu(vp, alpha, ox)
 		State.WORLD_SELECT:
-			_draw_world_select(vp, alpha)
+			_draw_world_select(vp, alpha, ox)
 
 
-func _draw_main_menu(vp: Vector2, alpha: float) -> void:
+func _draw_main_menu(vp: Vector2, alpha: float, ox: float) -> void:
 	# Glow effect on title
 	var glow: float = 0.6 + sin(_pulse * 1.5) * 0.4
 	var title_color := BrandClass.with_alpha(BrandClass.ACCENT, alpha * glow)
-	draw_string(font, Vector2(62, 62), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, BrandClass.accent_dim(alpha * 0.3))
-	draw_string(font, Vector2(60, 60), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, title_color)
+	draw_string(font, Vector2(62 + ox, 62), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, BrandClass.accent_dim(alpha * 0.3))
+	draw_string(font, Vector2(60 + ox, 60), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, title_color)
 
 	var subtitle_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
-	draw_string(font, Vector2(62, 90), loc("menu.subtitle"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, subtitle_color)
+	draw_string(font, Vector2(62 + ox, 90), loc("menu.subtitle"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, subtitle_color)
 
 	# Decorative line under title
-	draw_rect(Rect2(60, 100, 200, 2.0), BrandClass.accent_dim(alpha * 0.5))
+	draw_rect(Rect2(60 + ox, 100, 200, 2.0), BrandClass.accent_dim(alpha * 0.5))
+
+	# Smooth sliding selection pill
+	var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
+	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
+	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7 * sel_glow))
 
 	var by: float = 150.0
 	for i in _main_items.size():
@@ -261,20 +305,17 @@ func _draw_main_menu(vp: Vector2, alpha: float) -> void:
 		var prefix: String
 
 		if is_sel:
-			var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
 			text_color = BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow)
 			prefix = "▶ "
-			draw_rect(Rect2(50, by - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
-			draw_rect(Rect2(50, by - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.6))
 		else:
 			text_color = BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
 			prefix = "  "
 
-		draw_string(font, Vector2(68, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
+		draw_string(font, Vector2(68 + ox, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
 
 		if item.desc != "":
 			var desc_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.7)
-			draw_string(font, Vector2(88, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
+			draw_string(font, Vector2(88 + ox, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
 
 		if item.get("action") == "play":
 			var lk: String = "heist"
@@ -282,24 +323,28 @@ func _draw_main_menu(vp: Vector2, alpha: float) -> void:
 				if wk in progress and progress[wk] > 0:
 					lk = wk
 
-		by += 48
+		by += 48.0
 
-	by += 10
-	draw_rect(Rect2(60, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
-	by += 10
-	draw_string(font, Vector2(60, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
-	by += 20
-	draw_string(font, Vector2(60, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+	by += 10.0
+	draw_rect(Rect2(60 + ox, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
+	by += 10.0
+	draw_string(font, Vector2(60 + ox, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+	by += 20.0
+	draw_string(font, Vector2(60 + ox, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
 
 
-func _draw_world_select(vp: Vector2, alpha: float) -> void:
+func _draw_world_select(vp: Vector2, alpha: float, ox: float) -> void:
 	var title_color := BrandClass.with_alpha(BrandClass.ACCENT, alpha)
-	var glow: float = 0.6 + sin(_pulse * 1.5) * 0.4
 
-	draw_string(font, Vector2(62, 62), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, BrandClass.accent_dim(alpha * 0.3))
-	draw_string(font, Vector2(60, 60), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, title_color)
-	draw_string(font, Vector2(60, 86), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
-	draw_rect(Rect2(60, 96, 200, 2.0), BrandClass.accent_dim(alpha * 0.4))
+	draw_string(font, Vector2(62 + ox, 62), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, BrandClass.accent_dim(alpha * 0.3))
+	draw_string(font, Vector2(60 + ox, 60), loc("menu.select_world"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, title_color)
+	draw_string(font, Vector2(60 + ox, 86), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+	draw_rect(Rect2(60 + ox, 96, 200, 2.0), BrandClass.accent_dim(alpha * 0.4))
+
+	# Smooth sliding selection pill
+	var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
+	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
+	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7 * sel_glow))
 
 	var by: float = 140.0
 	for i in _world_items.size():
@@ -309,20 +354,17 @@ func _draw_world_select(vp: Vector2, alpha: float) -> void:
 		var prefix: String
 
 		if is_sel:
-			var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
 			text_color = BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow)
 			prefix = "▶ "
-			draw_rect(Rect2(50, by - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
-			draw_rect(Rect2(50, by - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.6))
 		else:
 			text_color = BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
 			prefix = "  "
 
-		draw_string(font, Vector2(68, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
+		draw_string(font, Vector2(68 + ox, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
 
 		if item.desc != "":
 			var desc_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.7)
-			draw_string(font, Vector2(88, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
+			draw_string(font, Vector2(88 + ox, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
 
 		var world_id: String = item.id
 		if world_id in progress and progress[world_id] > 0:
@@ -330,11 +372,20 @@ func _draw_world_select(vp: Vector2, alpha: float) -> void:
 			var s: String = ""
 			for si in range(3):
 				s += "★" if si < stars else "☆"
-				draw_string(font, Vector2(vp.x - 160, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, alpha))
+				draw_string(font, Vector2(vp.x - 160 + ox, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, alpha))
 
-		by += 48
+		by += 48.0
 
-	by += 10
-	draw_rect(Rect2(60, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
-	by += 10
-	draw_string(font, Vector2(60, by), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+	by += 10.0
+	draw_rect(Rect2(60 + ox, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
+	by += 10.0
+
+	# Interactive Back Button
+	var back_rect := Rect2(50 + ox, by - 10, 200, 36)
+	if _hovered_back:
+		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.12 * alpha))
+		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.8 * alpha), false, 1.2)
+		draw_string(font, Vector2(68 + ox, by + 14), "← " + loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.ACCENT, alpha))
+	else:
+		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.25 * alpha), false, 1.0)
+		draw_string(font, Vector2(68 + ox, by + 14), "← " + loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
