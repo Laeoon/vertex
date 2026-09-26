@@ -25,7 +25,7 @@ func _run_tests() -> void:
 
 	_afirmar(am is Node, "AudioManager instancia sin árbol de autoloads")
 
-	for metodo in ["play_sfx", "play_music", "stop_music"]:
+	for metodo in ["play_sfx", "play_music", "play_track", "play_world_music", "stop_music"]:
 		_afirmar(am.has_method(metodo), "expone el método público %s()" % metodo)
 
 	var sonidos: Dictionary = am.get("_sounds")
@@ -57,6 +57,19 @@ func _run_tests() -> void:
 	# sin reproducir nada — es lo único ejecutable de forma segura headless.
 	am.play_sfx("sonido_inexistente")
 	_afirmar(true, "play_sfx con nombre desconocido no crashea (guard _sounds)")
+
+	var disk_sounds: Dictionary = am.get("_disk_sounds")
+	_afirmar(disk_sounds.has("win") and disk_sounds.has("bypass"), "carga sonidos desde res://assets/audio/sfx/")
+
+	var playlists: Dictionary = am.get("_world_music_playlists")
+	_afirmar(playlists.has("heist") and playlists["heist"].size() == 9, "playlist de heist contiene las 9 pistas Pink Bloom")
+	_afirmar(playlists.has("hacker") and playlists["hacker"].size() == 13, "playlist de hacker contiene las 13 pistas Code Injection")
+
+	am.play_world_music("mundo_inexistente")
+	_afirmar(true, "play_world_music con mundo inexistente no crashea")
+
+	am.stop_music()
+	_afirmar(am.get("_current_music_world") == "", "stop_music limpia _current_music_world")
 
 	_finalizar()
 

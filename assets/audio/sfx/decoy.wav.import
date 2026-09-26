@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://c8sjrkickari8"
-path="res://.godot/imported/bypass.wav-03565f87476e5ae58a7f7b3ca1a23f45.sample"
+uid="uid://c14gax8wc4j6d"
+path="res://.godot/imported/decoy.wav-bb2863766134ebf8e08fe4a1c72a49cd.sample"
 
 [deps]
 
-source_file="res://sounds/bypass.wav"
-dest_files=["res://.godot/imported/bypass.wav-03565f87476e5ae58a7f7b3ca1a23f45.sample"]
+source_file="res://assets/audio/sfx/decoy.wav"
+dest_files=["res://.godot/imported/decoy.wav-bb2863766134ebf8e08fe4a1c72a49cd.sample"]
 
 [params]
 

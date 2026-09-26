@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dpidjsejkbd1b"
+path="res://.godot/imported/DavidKBD - Code injection Pack - 10 - Space Echoes-loop.ogg-566d462a21ab0efc4518da69f0f85827.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 10 - Space Echoes-loop.ogg"
+dest_files=["res://.godot/imported/DavidKBD - Code injection Pack - 10 - Space Echoes-loop.ogg-566d462a21ab0efc4518da69f0f85827.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

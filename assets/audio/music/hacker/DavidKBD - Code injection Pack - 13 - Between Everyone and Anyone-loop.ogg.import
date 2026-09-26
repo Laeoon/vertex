@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dbygxs0l2s7tm"
+path="res://.godot/imported/DavidKBD - Code injection Pack - 13 - Between Everyone and Anyone-loop.ogg-269964a28f0d011f53d216b9c26e8f76.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 13 - Between Everyone and Anyone-loop.ogg"
+dest_files=["res://.godot/imported/DavidKBD - Code injection Pack - 13 - Between Everyone and Anyone-loop.ogg-269964a28f0d011f53d216b9c26e8f76.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -219,6 +219,23 @@ func _ready() -> void:
 		GameLogger.info("JuegoAtaque", "Enemigo: %s → %s" % [enemy_start_node, enemy_target_node])
 		GameLogger.info("JuegoAtaque", "Bloques/turno: %d, Duración: %d" % [defender_blocks_per_turn, defender_block_duration])
 
+	_start_level_music()
+
+
+func _start_level_music() -> void:
+	if not Engine.has_singleton("AudioManager") and get_node_or_null("/root/AudioManager") == null:
+		return
+	var am = get_node_or_null("/root/AudioManager")
+	if am == null:
+		return
+	var world_id: String = ""
+	if hacker_mode:
+		world_id = "hacker"
+	else:
+		var loc_info: Dictionary = LevelRegistryClass.find_level(level_key)
+		world_id = loc_info.get("world", "heist")
+	am.play_world_music(world_id)
+
 
 # ─── Delegates a módulos (duck-typing de servicios + tests) ────────
 
