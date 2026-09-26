@@ -572,4 +572,3 @@ func reset_pan_zoom() -> void:
 	topology_pan = Vector2.ZERO
 	topology_zoom = 1.0
 	queue_redraw()
-

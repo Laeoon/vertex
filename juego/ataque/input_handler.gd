@@ -99,8 +99,24 @@ func _input(event: InputEvent) -> void:
 			return
 
 	# ─── Teclado general ──────────────────────────────────────
-	if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
+	if event is InputEventKey and event.pressed:
 		var k: InputEventKey = event as InputEventKey
+
+		# Zoom por teclado (+/- / PageUp/PageDown) con soporte para mantener presionado
+		if k.keycode in [KEY_PLUS, KEY_EQUAL, KEY_KP_ADD, KEY_PAGEUP]:
+			if game != null and game.has_method("zoom_in"):
+				var center: Vector2 = game.get_viewport_rect().size / 2.0
+				game.zoom_in(center)
+			return
+		elif k.keycode in [KEY_MINUS, KEY_KP_SUBTRACT, KEY_PAGEDOWN]:
+			if game != null and game.has_method("zoom_out"):
+				var center: Vector2 = game.get_viewport_rect().size / 2.0
+				game.zoom_out(center)
+			return
+
+		if k.echo:
+			return
+
 		match k.keycode:
 			KEY_Q:
 				return_to_menu_requested.emit()

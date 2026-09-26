@@ -14,10 +14,10 @@ func _ready() -> void:
 
 
 func _create_game() -> Node:
+	SceneParams.graph_path = "res://juego/tutorial2/tut2_red.tres"
+	SceneParams.start_node = &"Inicio"
+	SceneParams.target_node = &"Target"
 	var game = JuegoAtaqueClass.new()
-	game.graph_path = "res://juego/tutorial2/tut2_red.tres"
-	game.start_node = &"Inicio"
-	game.target_node = &"Target"
 	add_child(game)
 	return game
 
@@ -31,6 +31,7 @@ func _run_tests() -> void:
 	_test_reset_pan_zoom()
 	_test_input_handler_screen_to_world()
 	_test_input_handler_mouse_wheel_and_drag()
+	_test_input_handler_keyboard_zoom()
 	_test_reset_state_clears_pan_zoom()
 	_finish()
 
@@ -151,6 +152,49 @@ func _test_input_handler_mouse_wheel_and_drag() -> void:
 	handler._input(ev_home)
 	_assert(game.topology_pan == Vector2.ZERO, "KEY_HOME resets topology_pan")
 	_assert(is_equal_approx(game.topology_zoom, 1.0), "KEY_HOME resets topology_zoom")
+
+	handler.queue_free()
+	game.queue_free()
+
+
+func _test_input_handler_keyboard_zoom() -> void:
+	var game = _create_game()
+	var handler = InputHandlerClass.new()
+	add_child(handler)
+	handler.game = game
+
+	# Key PLUS (+) zooms in
+	var ev_plus = InputEventKey.new()
+	ev_plus.keycode = KEY_PLUS
+	ev_plus.pressed = true
+	handler._input(ev_plus)
+	_assert(game.topology_zoom > 1.0, "KEY_PLUS increases topology_zoom")
+
+	# Key EQUAL (= / unshifted plus) also zooms in with echo
+	var prev_zoom: float = game.topology_zoom
+	var ev_equal = InputEventKey.new()
+	ev_equal.keycode = KEY_EQUAL
+	ev_equal.pressed = true
+	ev_equal.echo = true
+	handler._input(ev_equal)
+	_assert(game.topology_zoom > prev_zoom, "KEY_EQUAL with echo increases topology_zoom")
+
+	# Key MINUS (-) zooms out
+	prev_zoom = game.topology_zoom
+	var ev_minus = InputEventKey.new()
+	ev_minus.keycode = KEY_MINUS
+	ev_minus.pressed = true
+	handler._input(ev_minus)
+	_assert(game.topology_zoom < prev_zoom, "KEY_MINUS decreases topology_zoom")
+
+	# Key KP_SUBTRACT also zooms out with echo
+	prev_zoom = game.topology_zoom
+	var ev_sub = InputEventKey.new()
+	ev_sub.keycode = KEY_KP_SUBTRACT
+	ev_sub.pressed = true
+	ev_sub.echo = true
+	handler._input(ev_sub)
+	_assert(game.topology_zoom < prev_zoom, "KEY_KP_SUBTRACT with echo decreases topology_zoom")
 
 	handler.queue_free()
 	game.queue_free()
