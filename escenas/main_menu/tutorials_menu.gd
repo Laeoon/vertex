@@ -1,6 +1,8 @@
 extends Control
 
 const BrandClass = preload("res://juego/ui/brand.gd")
+const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
+var _cyber_bg := CyberBackgroundClass.new()
 
 enum Track { GENERAL, HEIST, HACKER, DEFENDER }
 
@@ -104,6 +106,7 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
+	_cyber_bg.update(delta, get_viewport_rect().size)
 	queue_redraw()
 
 
@@ -225,7 +228,7 @@ func loc(key: String) -> String:
 
 func _draw() -> void:
 	var vp_size := get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), BrandClass.BG)
+	_cyber_bg.draw(self, vp_size)
 
 	# Encabezado principal
 	draw_string(font, Vector2(60, 50), "ACADEMIA DE ENTRENAMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, BrandClass.ACCENT)

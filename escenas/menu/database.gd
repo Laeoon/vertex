@@ -6,6 +6,8 @@ var big_font_size: int = 28
 var _pulse: float = 0.0
 
 const BrandClass = preload("res://juego/ui/brand.gd")
+const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
+var _cyber_bg := CyberBackgroundClass.new()
 
 const CYAN: Color = BrandClass.ACCENT
 const GRIS: Color = BrandClass.TEXT_DIM
@@ -80,6 +82,7 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
+	_cyber_bg.update(delta, get_viewport_rect().size)
 	queue_redraw()
 
 
@@ -104,7 +107,7 @@ func _get_max_scroll() -> float:
 
 func _draw() -> void:
 	var vp := get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp.x, vp.y), BrandClass.BG)
+	_cyber_bg.draw(self, vp)
 
 	# Title
 	draw_string(font, Vector2(60, 60), loc("menu.database"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, CYAN)

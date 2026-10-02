@@ -3,6 +3,7 @@ extends Control
 signal start_world(world_id: String)
 
 const BrandClass = preload("res://juego/ui/brand.gd")
+const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
 
 enum State { MAIN_MENU, WORLD_SELECT }
 
@@ -26,6 +27,7 @@ var _slide_offset_x: float = 0.0
 var _smooth_selected_y: float = 150.0
 var _hovered_back: bool = false
 var _pulse: float = 0.0
+var _cyber_bg := CyberBackgroundClass.new()
 
 
 func _ready() -> void:
@@ -131,6 +133,7 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
+	_cyber_bg.update(delta, get_viewport_rect().size)
 
 	var target_start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
 	var target_y: float = target_start_y + selected_idx * 48.0
@@ -250,24 +253,7 @@ func _load_lang_setting() -> void:
 
 func _draw() -> void:
 	var vp := get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp.x, vp.y), BrandClass.BG)
-
-	# Scan lines effect
-	var scan_y: float = fmod(Time.get_ticks_msec() * 0.03, vp.y)
-	draw_rect(Rect2(0, scan_y, vp.x, 2.0), BrandClass.with_alpha(BrandClass.ACCENT, 0.08))
-	draw_rect(Rect2(0, scan_y - vp.y, vp.x, 2.0), BrandClass.with_alpha(BrandClass.ACCENT, 0.08))
-
-	# Grid background
-	var grid_color: Color = BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.25)
-	var spacing: float = 60.0
-	var x: float = 0.0
-	while x < vp.x:
-		draw_line(Vector2(x, 0), Vector2(x, vp.y), grid_color, 1.0)
-		x += spacing
-	var gy: float = 0.0
-	while gy < vp.y:
-		draw_line(Vector2(0, gy), Vector2(vp.x, gy), grid_color, 1.0)
-		gy += spacing
+	_cyber_bg.draw(self, vp)
 
 	var alpha: float = clampf(_fade_alpha, 0.0, 1.0)
 	var ox: float = _slide_offset_x

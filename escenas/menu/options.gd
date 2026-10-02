@@ -6,6 +6,8 @@ var big_font_size: int = 28
 var _pulse: float = 0.0
 
 const BrandClass = preload("res://juego/ui/brand.gd")
+const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
+var _cyber_bg := CyberBackgroundClass.new()
 
 const CYAN: Color = BrandClass.ACCENT
 const GRIS: Color = BrandClass.TEXT_DIM
@@ -221,6 +223,7 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
+	_cyber_bg.update(delta, get_viewport_rect().size)
 
 	# Smoothly glide tab indicator
 	if _section_idx < _tab_rects.size():
@@ -345,19 +348,7 @@ func loc(key: String) -> String:
 
 func _draw() -> void:
 	var vp := get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp.x, vp.y), BrandClass.BG)
-
-	# Grid background
-	var grid_color: Color = BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.20)
-	var spacing: float = 60.0
-	var x: float = 0.0
-	while x < vp.x:
-		draw_line(Vector2(x, 0), Vector2(x, vp.y), grid_color, 1.0)
-		x += spacing
-	var gy: float = 0.0
-	while gy < vp.y:
-		draw_line(Vector2(0, gy), Vector2(vp.x, gy), grid_color, 1.0)
-		gy += spacing
+	_cyber_bg.draw(self, vp)
 
 	# Header Title
 	var glow: float = 0.7 + sin(_pulse * 1.5) * 0.3

@@ -13,6 +13,8 @@ var big_font_size: int = 24
 var small_font_size: int = 12
 var _pulse: float = 0.0
 var _selected_node: String = ""
+const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
+var _cyber_bg := CyberBackgroundClass.new()
 
 
 func _ready() -> void:
@@ -98,12 +100,13 @@ func _play_level(node_id: String) -> void:
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
+	_cyber_bg.update(delta, get_viewport_rect().size)
 	queue_redraw()
 
 
 func _draw() -> void:
 	var vp: Vector2 = get_viewport_rect().size
-	draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.04, 0.04, 0.08))
+	_cyber_bg.draw(self, vp)
 
 	draw_string(font, Vector2(60, 50), world_title, HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, Color(0.0, 1.0, 0.83))
 	draw_string(font, Vector2(60, 75), "Selecciona un nivel", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.7, 0.75, 0.85))
