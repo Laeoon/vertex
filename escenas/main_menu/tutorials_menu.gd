@@ -59,6 +59,8 @@ func _ready() -> void:
 	}
 
 	progress = ProgressUtil.cargar_progreso()
+	if get_node_or_null("/root/AudioManager") != null:
+		AudioManager.play_menu_music()
 	queue_redraw()
 
 

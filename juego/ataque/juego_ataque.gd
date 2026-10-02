@@ -60,6 +60,20 @@ var optimal_overlay_path: Array[StringName] = []
 var player_total_cost: float = 0.0
 var movement_points: int = 0
 var _turn_locked_until: float = 0.0
+var player_visual_pos: Vector2 = Vector2.ZERO
+var is_moving: bool = false
+var _move_tween: Tween = null
+var _camera: Camera2D = null
+var _trauma: float = 0.0
+const TRAUMA_DECAY: float = 1.8
+const MAX_SHAKE_OFFSET: float = 24.0
+const MAX_SHAKE_ROLL: float = 0.035
+
+var topology_pan: Vector2 = Vector2.ZERO
+var topology_zoom: float = 1.0
+const ZOOM_MIN: float = 0.5
+const ZOOM_MAX: float = 2.5
+const ZOOM_STEP: float = 1.15
 
 # Tutorial
 var tutorial_player = null
@@ -145,18 +159,21 @@ var _game_over_overlay  # GameOverOverlay (capa 2: botones de mouse)
 var _overlay_shown_for_game_over: bool = false
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not game_over:
 		_budget_display = lerp(_budget_display, float(movement_points), 0.15)
-		return
-	if not _overlay_shown_for_game_over:
+	elif not _overlay_shown_for_game_over:
 		_show_game_over_overlay()
+
+	_process_camera_shake(delta)
 
 
 func _ready() -> void:
 	# Fuente de identidad (JetBrains Mono, OFL) en vez del fallback de Godot.
 	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
+
+	_setup_camera()
 
 	# game_state/hacker_logic/game_logic ANTES de cargar el grafo: reset_state()
 	# (vía load_graph) y los turnos dependen de sus métodos.
@@ -202,11 +219,30 @@ func _ready() -> void:
 		GameLogger.info("JuegoAtaque", "Enemigo: %s → %s" % [enemy_start_node, enemy_target_node])
 		GameLogger.info("JuegoAtaque", "Bloques/turno: %d, Duración: %d" % [defender_blocks_per_turn, defender_block_duration])
 
+	_start_level_music()
+
+
+func _start_level_music() -> void:
+	if not Engine.has_singleton("AudioManager") and get_node_or_null("/root/AudioManager") == null:
+		return
+	var am = get_node_or_null("/root/AudioManager")
+	if am == null:
+		return
+	var world_id: String = ""
+	if hacker_mode:
+		world_id = "hacker"
+	else:
+		var loc_info: Dictionary = LevelRegistryClass.find_level(level_key)
+		world_id = loc_info.get("world", "heist")
+	am.play_world_music(world_id)
+
 
 # ─── Delegates a módulos (duck-typing de servicios + tests) ────────
 
 # game_state.gd — InputHandler y tests los consumen vía has_method/refs.
 func reset_state() -> void:
+	topology_pan = Vector2.ZERO
+	topology_zoom = 1.0
 	_game_state.reset_state()
 	_overlay_shown_for_game_over = false
 	if _game_over_overlay != null:
@@ -242,7 +278,33 @@ func _nodo_en_posicion_firewall(pos: Vector2) -> StringName: return _game_state.
 
 # game_logic.gd
 func _vecinos_jugador() -> Array: return _game_logic.vecinos_jugador()
-func _mover_jugador(destino: StringName) -> void: _game_logic.mover_jugador(destino)
+func _mover_jugador(destino: StringName) -> void:
+	var origin_pos: Vector2 = node_positions.get(player_pos, Vector2.ZERO)
+	_game_logic.mover_jugador(destino)
+	var target_pos: Vector2 = node_positions.get(player_pos, Vector2.ZERO)
+
+	if DisplayServer.get_name() == "headless":
+		player_visual_pos = target_pos
+		is_moving = false
+		queue_redraw()
+		return
+
+	if _move_tween != null and _move_tween.is_valid():
+		_move_tween.kill()
+
+	is_moving = true
+	player_visual_pos = origin_pos
+	_move_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_move_tween.tween_method(func(pos: Vector2) -> void:
+		player_visual_pos = pos
+		queue_redraw()
+	, origin_pos, target_pos, 0.20)
+	_move_tween.finished.connect(func() -> void:
+		is_moving = false
+		player_visual_pos = target_pos
+		add_trauma(0.12)
+		queue_redraw()
+	)
 func _perder(razon: String) -> void: _game_logic.perder(razon)
 func _auto_select_vecino() -> void: _game_logic.auto_select_vecino()
 func _cycle_neighbor(dir: int) -> void: _game_logic.cycle_neighbor(dir)
@@ -456,3 +518,74 @@ func _draw() -> void:
 	# P5/tarea 3: el frame se dibuja con datos puros (GameState.frame_data),
 	# sin callables — orquestación en GameRenderer.draw_frame().
 	_renderer.draw_frame(_game_state.frame_data(vp_size))
+
+
+# ─── Cámara & Screen Shake ────────────────────────────────────────
+
+func _setup_camera() -> void:
+	_camera = Camera2D.new()
+	_camera.name = "GameCamera"
+	_camera.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
+	add_child(_camera)
+	_update_camera_position()
+	var vp = get_viewport()
+	if vp != null:
+		vp.size_changed.connect(_update_camera_position)
+
+
+func _update_camera_position() -> void:
+	if _camera != null and is_instance_valid(_camera):
+		var vp_size: Vector2 = get_viewport_rect().size
+		_camera.position = vp_size / 2.0
+
+
+func add_trauma(amount: float) -> void:
+	_trauma = clampf(_trauma + amount, 0.0, 1.0)
+
+
+func _process_camera_shake(delta: float) -> void:
+	if _trauma > 0.0:
+		_trauma = maxf(0.0, _trauma - TRAUMA_DECAY * delta)
+		if DisplayServer.get_name() != "headless" and _camera != null and is_instance_valid(_camera):
+			var intensity: float = _trauma * _trauma
+			var shake_x: float = randf_range(-1.0, 1.0) * MAX_SHAKE_OFFSET * intensity
+			var shake_y: float = randf_range(-1.0, 1.0) * MAX_SHAKE_OFFSET * intensity
+			var shake_rot: float = randf_range(-1.0, 1.0) * MAX_SHAKE_ROLL * intensity
+			_camera.offset = Vector2(shake_x, shake_y)
+			_camera.rotation = shake_rot
+		if _trauma == 0.0 and _camera != null and is_instance_valid(_camera):
+			_camera.offset = Vector2.ZERO
+			_camera.rotation = 0.0
+
+
+# ─── Control de Zoom & Pan de Topología ───────────────────────────
+
+func zoom_in(at_screen_pos: Vector2) -> void:
+	var old_zoom := topology_zoom
+	var new_zoom := clampf(topology_zoom * ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+	if not is_equal_approx(new_zoom, old_zoom):
+		var world_pos := (at_screen_pos - topology_pan) / old_zoom
+		topology_pan = at_screen_pos - world_pos * new_zoom
+		topology_zoom = new_zoom
+		queue_redraw()
+
+
+func zoom_out(at_screen_pos: Vector2) -> void:
+	var old_zoom := topology_zoom
+	var new_zoom := clampf(topology_zoom / ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+	if not is_equal_approx(new_zoom, old_zoom):
+		var world_pos := (at_screen_pos - topology_pan) / old_zoom
+		topology_pan = at_screen_pos - world_pos * new_zoom
+		topology_zoom = new_zoom
+		queue_redraw()
+
+
+func pan_by(delta: Vector2) -> void:
+	topology_pan += delta
+	queue_redraw()
+
+
+func reset_pan_zoom() -> void:
+	topology_pan = Vector2.ZERO
+	topology_zoom = 1.0
+	queue_redraw()

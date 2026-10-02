@@ -45,6 +45,17 @@ var _turn_locked_until: float = 0.0
 var selected_neighbor: StringName = &""
 var hovered_edge: String = ""
 var player_pos: StringName = &""
+var is_moving: bool = false
+var _is_panning: bool = false
+
+
+func _screen_to_world(pos: Vector2) -> Vector2:
+	if game != null:
+		var pan: Vector2 = game.topology_pan if "topology_pan" in game else Vector2.ZERO
+		var zoom: float = game.topology_zoom if "topology_zoom" in game else 1.0
+		if zoom > 0.0:
+			return (pos - pan) / zoom
+	return pos
 
 
 func sync_state() -> void:
@@ -59,11 +70,23 @@ func sync_state() -> void:
 	_turn_locked_until = game._turn_locked_until if "_turn_locked_until" in game else 0.0
 	selected_neighbor = game.selected_neighbor if "selected_neighbor" in game else &""
 	player_pos = game.player_pos if "player_pos" in game else &""
+	is_moving = game.is_moving if "is_moving" in game else false
 	tutorial_player = game.tutorial_player if "tutorial_player" in game else null
 
 
 func _input(event: InputEvent) -> void:
 	sync_state()
+
+	# ─── Bloqueo durante movimiento interpolado ────────────────
+	if is_moving:
+		if event is InputEventKey and event.pressed:
+			var k: InputEventKey = event as InputEventKey
+			if k.keycode in [KEY_Q, KEY_ESCAPE, KEY_R]:
+				pass
+			else:
+				return
+		else:
+			return
 
 	# ─── Tutorial ──────────────────────────────────────────────
 	if tutorial_player != null and is_instance_valid(tutorial_player) and tutorial_player.is_active:
@@ -76,8 +99,24 @@ func _input(event: InputEvent) -> void:
 			return
 
 	# ─── Teclado general ──────────────────────────────────────
-	if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
+	if event is InputEventKey and event.pressed:
 		var k: InputEventKey = event as InputEventKey
+
+		# Zoom por teclado (+/- / PageUp/PageDown) con soporte para mantener presionado
+		if k.keycode in [KEY_PLUS, KEY_EQUAL, KEY_KP_ADD, KEY_PAGEUP]:
+			if game != null and game.has_method("zoom_in"):
+				var center: Vector2 = game.get_viewport_rect().size / 2.0
+				game.zoom_in(center)
+			return
+		elif k.keycode in [KEY_MINUS, KEY_KP_SUBTRACT, KEY_PAGEDOWN]:
+			if game != null and game.has_method("zoom_out"):
+				var center: Vector2 = game.get_viewport_rect().size / 2.0
+				game.zoom_out(center)
+			return
+
+		if k.echo:
+			return
+
 		match k.keycode:
 			KEY_Q:
 				return_to_menu_requested.emit()
@@ -101,6 +140,10 @@ func _input(event: InputEvent) -> void:
 				return
 			KEY_P:
 				toggle_optimal_route.emit()
+				return
+			KEY_HOME:
+				if game != null and game.has_method("reset_pan_zoom"):
+					game.reset_pan_zoom()
 				return
 			KEY_UP, KEY_W:
 				directional_neighbor_requested.emit(Vector2.UP)
@@ -161,6 +204,27 @@ func _input(event: InputEvent) -> void:
 						return
 					exploit_used.emit("decoy")
 					return
+
+	# ─── Pan & Zoom de topología (Rueda y Drag Derecho/Medio) ─
+	if event is InputEventMouseButton:
+		var mb: InputEventMouseButton = event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_WHEEL_UP and mb.pressed:
+			if game != null and game.has_method("zoom_in"):
+				game.zoom_in(mb.position)
+			return
+		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN and mb.pressed:
+			if game != null and game.has_method("zoom_out"):
+				game.zoom_out(mb.position)
+			return
+		elif mb.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+			_is_panning = mb.pressed
+			return
+
+	if event is InputEventMouseMotion and _is_panning:
+		var mm: InputEventMouseMotion = event as InputEventMouseMotion
+		if game != null and game.has_method("pan_by"):
+			game.pan_by(mm.relative)
+		return
 
 	# ─── Modo defensor: mouse motion ──────────────────────────
 	if defender_mode and event is InputEventMouseMotion:
@@ -240,21 +304,21 @@ func _find_edge_at_pos(pos: Vector2) -> String:
 	"""Delega a _edge_en_posicion del juego."""
 	if game == null or not game.has_method("_edge_en_posicion"):
 		return ""
-	return game._edge_en_posicion(pos)
+	return game._edge_en_posicion(_screen_to_world(pos))
 
 
 func _find_node_at_pos(pos: Vector2) -> StringName:
 	"""Delega a _nodo_en_posicion del juego."""
 	if game == null or not game.has_method("_nodo_en_posicion"):
 		return &""
-	return game._nodo_en_posicion(pos)
+	return game._nodo_en_posicion(_screen_to_world(pos))
 
 
 func _find_node_at_pos_firewall(pos: Vector2) -> StringName:
 	"""Delega a _nodo_en_posicion_firewall del juego."""
 	if game == null or not game.has_method("_nodo_en_posicion_firewall"):
 		return &""
-	return game._nodo_en_posicion_firewall(pos)
+	return game._nodo_en_posicion_firewall(_screen_to_world(pos))
 
 
 func _es_vecino_valido(nid: StringName) -> bool:

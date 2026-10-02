@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bnagoedb5t1v1"
+path="res://.godot/imported/DavidKBD - Code injection Pack - 08 - Sentinel Cloud-loop.ogg-06ef259069de8cedffa6d23d1944fdfc.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 08 - Sentinel Cloud-loop.ogg"
+dest_files=["res://.godot/imported/DavidKBD - Code injection Pack - 08 - Sentinel Cloud-loop.ogg-06ef259069de8cedffa6d23d1944fdfc.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

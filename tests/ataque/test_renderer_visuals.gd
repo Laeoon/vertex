@@ -22,6 +22,7 @@ func _run_tests() -> void:
 	_test_reticle_visibility_conditions()
 	_test_protocol_diversification()
 	_test_renderer_canvas_smoke()
+	_test_movement_interpolation_state()
 	_finish()
 
 
@@ -255,6 +256,39 @@ func _test_renderer_canvas_smoke() -> void:
 	# Trigger _draw in headless canvas
 	canvas.notification(CanvasItem.NOTIFICATION_DRAW)
 	_assert(true, "GameRenderer executes draw_edges and draw_nodes with reticle without crash")
+
+	canvas.queue_free()
+
+
+func _test_movement_interpolation_state() -> void:
+	var canvas = Node2D.new()
+	add_child(canvas)
+	var font = ThemeDB.fallback_font
+	var renderer = GameRendererClass.new(canvas, font, 14, 18, 12, 10)
+
+	var graph = NetworkGraphClass.new()
+	var nA = NetworkNodeClass.new()
+	nA.id = &"NodeA"
+	nA.position = Vector2(100, 100)
+	var nB = NetworkNodeClass.new()
+	nB.id = &"NodeB"
+	nB.position = Vector2(300, 100)
+	graph.nodes.append(nA)
+	graph.nodes.append(nB)
+
+	var node_positions = {
+		&"NodeA": Vector2(100, 100),
+		&"NodeB": Vector2(300, 100)
+	}
+
+	# Test drawing with moving player avatar interpolation
+	var interp_pos = Vector2(200, 100)
+	renderer.draw_nodes(graph, node_positions, &"NodeB", &"NodeB", [], [], 22.0, false, [], &"", {}, [], 0, {}, &"", -1.0, [], [], [], interp_pos, true)
+	_assert(true, "draw_nodes supports player_visual_pos and is_moving without crash")
+
+	# Test static draw
+	renderer.draw_nodes(graph, node_positions, &"NodeA", &"NodeB", [&"NodeB"], [], 22.0, false, [], &"NodeB", {}, [], 0, {}, &"", -1.0, [], [], [], Vector2(100, 100), false)
+	_assert(true, "draw_nodes supports static player_visual_pos at origin node")
 
 	canvas.queue_free()
 

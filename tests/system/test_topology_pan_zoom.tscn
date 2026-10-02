@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/system/test_topology_pan_zoom.gd" id="1"]
+
+[node name="TestTopologyPanZoom" type="Node"]
+script = ExtResource("1")

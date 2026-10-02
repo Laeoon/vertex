@@ -137,6 +137,8 @@ godot --headless res://tests/balance/_balance_harness.tscn -- 100
 
 ---
 
-## 📄 Licencia
+## 📄 Licencia y Créditos
 
 El contenido pedagógico y el código fuente de VERTEX se distribuyen con fines educativos y de investigación bajo acceso abierto.
+
+Para información sobre licencias de terceros, música (DavidKBD CC-BY 4.0) y tipografías, consulta el archivo [CREDITS.md](CREDITS.md).
