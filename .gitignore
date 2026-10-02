@@ -57,3 +57,6 @@ addons/ziva_agent/
 # Builds de exportación (.exe etc.)
 builds/
 .zcode/
+
+# Persistent memory
+.engram/
