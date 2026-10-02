@@ -36,18 +36,18 @@ func _ready() -> void:
 	big_font_size = font_size + 14
 
 	_main_items = [
-		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play"},
-		{"label": loc("menu.options"), "desc": loc("menu.options_desc"), "action": "options"},
-		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile"},
-		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database"},
-		{"label": loc("menu.exit"), "desc": "", "action": "exit"},
+		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play", "icon": "▶"},
+		{"label": loc("menu.options"), "desc": loc("menu.options_desc"), "action": "options", "icon": "⚙"},
+		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon": "👤"},
+		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database", "icon": "🗄"},
+		{"label": loc("menu.exit"), "desc": "", "action": "exit", "icon": "➔"},
 	]
 
 	_world_items = [
-		{"label": "Heist", "desc": loc("world.heist_desc"), "id": "heist"},
-		{"label": "Hacker", "desc": loc("world.hacker_desc"), "id": "hacker"},
-		{"label": "Cybersecurity", "desc": loc("world.cyber_desc"), "id": "cybersecurity"},
-		{"label": loc("world.tutorials"), "desc": loc("world.tutorials_desc"), "id": "tutorials"},
+		{"label": "Heist", "desc": loc("world.heist_desc"), "id": "heist", "icon": "🗡"},
+		{"label": "Hacker", "desc": loc("world.hacker_desc"), "id": "hacker", "icon": "💻"},
+		{"label": "Cybersecurity", "desc": loc("world.cyber_desc"), "id": "cybersecurity", "icon": "🛡"},
+		{"label": loc("world.tutorials"), "desc": loc("world.tutorials_desc"), "id": "tutorials", "icon": "📚"},
 	]
 
 	_load_lang_setting()
@@ -93,12 +93,12 @@ func _input(event: InputEvent) -> void:
 		var mpos := (event as InputEventMouseMotion).position
 		var items := _current_items()
 		var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
-		var vp := get_viewport_rect().size
+		var card_w: float = 340.0
 		var prev_hover_back := _hovered_back
 		_hovered_back = false
 		for i in items.size():
 			var item_by: float = start_y + i * 48.0
-			var rect := Rect2(50, item_by - 16, vp.x - 110, 42)
+			var rect := Rect2(50, item_by - 16, card_w, 44)
 			if rect.has_point(mpos):
 				if selected_idx != i:
 					selected_idx = i
@@ -107,7 +107,7 @@ func _input(event: InputEvent) -> void:
 				break
 		if current_state == State.WORLD_SELECT:
 			var back_y: float = start_y + items.size() * 48.0 + 10.0
-			if Rect2(50, back_y - 10, 200, 36).has_point(mpos):
+			if Rect2(50, back_y - 10, card_w, 36).has_point(mpos):
 				_hovered_back = true
 		if prev_hover_back != _hovered_back:
 			queue_redraw()
@@ -116,10 +116,10 @@ func _input(event: InputEvent) -> void:
 		var mpos := (event as InputEventMouseButton).position
 		var items := _current_items()
 		var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
-		var vp := get_viewport_rect().size
+		var card_w: float = 340.0
 		for i in items.size():
 			var item_by: float = start_y + i * 48.0
-			var rect := Rect2(50, item_by - 16, vp.x - 110, 42)
+			var rect := Rect2(50, item_by - 16, card_w, 44)
 			if rect.has_point(mpos):
 				selected_idx = i
 				_play_click_sfx()
@@ -127,7 +127,7 @@ func _input(event: InputEvent) -> void:
 				return
 		if current_state == State.WORLD_SELECT:
 			var back_y: float = start_y + items.size() * 48.0 + 10.0
-			if Rect2(50, back_y - 10, 200, 36).has_point(mpos):
+			if Rect2(50, back_y - 10, card_w, 36).has_point(mpos):
 				_go_to_state(State.MAIN_MENU)
 
 
@@ -266,57 +266,63 @@ func _draw() -> void:
 
 
 func _draw_main_menu(vp: Vector2, alpha: float, ox: float) -> void:
-	# Glow effect on title
-	var glow: float = 0.6 + sin(_pulse * 1.5) * 0.4
+	# Glow effect on title with chromatic cyber shadow
+	var glow: float = 0.7 + sin(_pulse * 1.5) * 0.3
 	var title_color := BrandClass.with_alpha(BrandClass.ACCENT, alpha * glow)
-	draw_string(font, Vector2(62 + ox, 62), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, BrandClass.accent_dim(alpha * 0.3))
-	draw_string(font, Vector2(60 + ox, 60), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 12, title_color)
 
-	var subtitle_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
-	draw_string(font, Vector2(62 + ox, 90), loc("menu.subtitle"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, subtitle_color)
+	draw_string(font, Vector2(62 + ox, 62), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 14, BrandClass.accent_dim(alpha * 0.35))
+	draw_string(font, Vector2(59 + ox, 59), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 14, BrandClass.with_alpha(BrandClass.ENEMY, alpha * 0.25))
+	draw_string(font, Vector2(60 + ox, 60), "VERTEX", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 14, title_color)
 
-	# Decorative line under title
-	draw_rect(Rect2(60 + ox, 100, 200, 2.0), BrandClass.accent_dim(alpha * 0.5))
+	var subtitle_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.9)
+	draw_string(font, Vector2(62 + ox, 90), loc("menu.subtitle"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, subtitle_color)
 
-	# Smooth sliding selection pill
-	var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
-	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
-	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7 * sel_glow))
+	# Decorative circuit line under title
+	draw_rect(Rect2(60 + ox, 102, 220, 2.0), BrandClass.accent_dim(alpha * 0.6))
+	draw_circle(Vector2(280 + ox, 103), 2.5, BrandClass.with_alpha(BrandClass.ACCENT, alpha * glow))
 
-	var by: float = 150.0
+	var card_w: float = 340.0
+	var card_h: float = 44.0
+	var by: float = 146.0
+	var sel_glow := 0.75 + sin(_pulse * 2.2) * 0.25
+
 	for i in _main_items.size():
 		var item := _main_items[i]
 		var is_sel: bool = i == selected_idx
-		var text_color: Color
-		var prefix: String
+		var card_rect := Rect2(50 + ox, by - 16, card_w, card_h)
 
 		if is_sel:
-			text_color = BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow)
-			prefix = "▶ "
+			# Highlighted card panel
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.92))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.12))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow), false, 1.5)
+			# Left active tab marker
+			draw_rect(Rect2(card_rect.position.x, card_rect.position.y, 4, card_h), BrandClass.ACCENT)
+
+			var icon: String = item.get("icon", "▶")
+			draw_string(font, Vector2(68 + ox, by + 12), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow))
+			draw_string(font, Vector2(98 + ox, by + 12), item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.TEXT, alpha))
+
+			if item.desc != "":
+				draw_string(font, Vector2(98 + ox, by + 26), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.85))
+
+			if vp.x > 800.0:
+				_draw_telemetry_callout(vp, card_rect, item, alpha, ox)
 		else:
-			text_color = BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
-			prefix = "  "
+			# Unselected card panel
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.60))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, alpha * 0.40), false, 1.0)
 
-		draw_string(font, Vector2(68 + ox, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
+			var icon: String = item.get("icon", "•")
+			draw_string(font, Vector2(68 + ox, by + 12), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.6))
+			draw_string(font, Vector2(98 + ox, by + 12), item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.85))
 
-		if item.desc != "":
-			var desc_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.7)
-			draw_string(font, Vector2(88 + ox, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
+			if item.desc != "":
+				draw_string(font, Vector2(98 + ox, by + 26), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.45))
 
-		if item.get("action") == "play":
-			var lk: String = "heist"
-			for wk in ["heist", "hacker", "cybersecurity", "tutorials"]:
-				if wk in progress and progress[wk] > 0:
-					lk = wk
+		by += 52.0
 
-		by += 48.0
-
-	by += 10.0
-	draw_rect(Rect2(60 + ox, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
-	by += 10.0
-	draw_string(font, Vector2(60 + ox, by), loc("menu.controls"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
-	by += 20.0
-	draw_string(font, Vector2(60 + ox, by), loc("menu.controls_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+	_draw_bottom_dock(vp, alpha, ox)
 
 
 func _draw_world_select(vp: Vector2, alpha: float, ox: float) -> void:
@@ -327,30 +333,41 @@ func _draw_world_select(vp: Vector2, alpha: float, ox: float) -> void:
 	draw_string(font, Vector2(60 + ox, 86), loc("menu.select_world_desc"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
 	draw_rect(Rect2(60 + ox, 96, 200, 2.0), BrandClass.accent_dim(alpha * 0.4))
 
-	# Smooth sliding selection pill
-	var sel_glow := 0.7 + sin(_pulse * 2.0) * 0.3
-	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, vp.x - 110, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.08))
-	draw_rect(Rect2(50 + ox, _smooth_selected_y - 16, 3, 32), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7 * sel_glow))
-
+	var card_w: float = 340.0
+	var card_h: float = 44.0
 	var by: float = 140.0
+	var sel_glow := 0.75 + sin(_pulse * 2.2) * 0.25
+
 	for i in _world_items.size():
 		var item := _world_items[i]
 		var is_sel: bool = i == selected_idx
-		var text_color: Color
-		var prefix: String
+		var card_rect := Rect2(50 + ox, by - 16, card_w, card_h)
 
 		if is_sel:
-			text_color = BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow)
-			prefix = "▶ "
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.92))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.12))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow), false, 1.5)
+			draw_rect(Rect2(card_rect.position.x, card_rect.position.y, 4, card_h), BrandClass.ACCENT)
+
+			var icon: String = item.get("icon", "▶")
+			draw_string(font, Vector2(68 + ox, by + 12), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.ACCENT, alpha * sel_glow))
+			draw_string(font, Vector2(98 + ox, by + 12), item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.TEXT, alpha))
+
+			if item.desc != "":
+				draw_string(font, Vector2(98 + ox, by + 26), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.85))
+
+			if vp.x > 800.0:
+				_draw_telemetry_callout(vp, card_rect, item, alpha, ox)
 		else:
-			text_color = BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha)
-			prefix = "  "
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.60))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, alpha * 0.40), false, 1.0)
 
-		draw_string(font, Vector2(68 + ox, by), prefix + item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 6, text_color)
+			var icon: String = item.get("icon", "•")
+			draw_string(font, Vector2(68 + ox, by + 12), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.6))
+			draw_string(font, Vector2(98 + ox, by + 12), item.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.85))
 
-		if item.desc != "":
-			var desc_color := BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.7)
-			draw_string(font, Vector2(88 + ox, by + 18), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, desc_color)
+			if item.desc != "":
+				draw_string(font, Vector2(98 + ox, by + 26), item.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.45))
 
 		var world_id: String = item.id
 		if world_id in progress and progress[world_id] > 0:
@@ -358,20 +375,64 @@ func _draw_world_select(vp: Vector2, alpha: float, ox: float) -> void:
 			var s: String = ""
 			for si in range(3):
 				s += "★" if si < stars else "☆"
-				draw_string(font, Vector2(vp.x - 160 + ox, by), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, alpha))
+			draw_string(font, Vector2(card_rect.position.x + card_w - 55, by + 12), s, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.with_alpha(BrandClass.WARNING, alpha))
 
-		by += 48.0
-
-	by += 10.0
-	draw_rect(Rect2(60 + ox, by - 5, vp.x - 120, 1.0), BrandClass.accent_dim(alpha * 0.2))
-	by += 10.0
+		by += 52.0
 
 	# Interactive Back Button
-	var back_rect := Rect2(50 + ox, by - 10, 200, 36)
+	var back_rect := Rect2(50 + ox, by - 6, card_w, 38)
 	if _hovered_back:
-		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.12 * alpha))
-		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.8 * alpha), false, 1.2)
-		draw_string(font, Vector2(68 + ox, by + 14), "← " + loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.ACCENT, alpha))
+		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.14 * alpha))
+		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.85 * alpha), false, 1.2)
+		draw_string(font, Vector2(68 + ox, by + 18), "← " + loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.ACCENT, alpha))
 	else:
-		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.25 * alpha), false, 1.0)
-		draw_string(font, Vector2(68 + ox, by + 14), "← " + loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.5 * alpha))
+		draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.35 * alpha), false, 1.0)
+		draw_string(font, Vector2(68 + ox, by + 18), "← " + loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha))
+
+	_draw_bottom_dock(vp, alpha, ox)
+
+
+func _draw_telemetry_callout(vp: Vector2, card_rect: Rect2, item: Dictionary, alpha: float, ox: float) -> void:
+	var tx0 := card_rect.position.x + card_rect.size.x
+	var ty0 := card_rect.position.y + card_rect.size.y * 0.5
+	var tx1 := tx0 + 20.0
+	var tx2 := tx1 + 18.0
+	var ty2 := ty0 - 6.0
+
+	draw_line(Vector2(tx0, ty0), Vector2(tx1, ty0), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7), 1.2)
+	draw_line(Vector2(tx1, ty0), Vector2(tx2, ty2), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7), 1.2)
+
+	var tel_w := clampf(vp.x * 0.22, 180.0, 260.0)
+	var tel_rect := Rect2(tx2, ty2 - 14.0, tel_w, 36.0)
+
+	draw_rect(tel_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.90))
+	draw_rect(tel_rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.45), false, 1.0)
+	draw_rect(Rect2(tel_rect.position.x, tel_rect.position.y, 2, tel_rect.size.y), BrandClass.ACCENT)
+
+	var action: String = item.get("action", item.get("id", ""))
+	var header_txt := "[SYS::%s]" % action.to_upper()
+	var detail_txt := "node: 0x%08X" % (hash(action) & 0xFFFFFFFF)
+	draw_string(font, Vector2(tx2 + 8, ty2), header_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.9))
+	draw_string(font, Vector2(tx2 + 8, ty2 + 14), detail_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.75))
+
+
+func _draw_bottom_dock(vp: Vector2, alpha: float, ox: float) -> void:
+	var dock_h: float = 44.0
+	var dock_y: float = vp.y - dock_h - 16.0
+	var dock_w: float = vp.x - 80.0
+	var dock_rect := Rect2(40.0 + ox, dock_y, dock_w, dock_h)
+
+	# Frosted dock plate
+	draw_rect(dock_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.85))
+	draw_rect(dock_rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.35), false, 1.2)
+	draw_line(Vector2(dock_rect.position.x + 2, dock_rect.position.y + 1), Vector2(dock_rect.position.x + dock_w - 2, dock_rect.position.y + 1), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.5), 1.0)
+
+	# Left localized shortcuts
+	var hint_text: String = "%s: %s" % [loc("menu.controls").to_upper(), loc("menu.controls_hint")]
+	draw_string(font, Vector2(dock_rect.position.x + 16, dock_y + 27), hint_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.9))
+
+	# Right version badge
+	var ver_text := "VERTEX v0.4.0  |  ONLINE"
+	var ver_size := font.get_string_size(ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2)
+	draw_string(font, Vector2(dock_rect.position.x + dock_w - ver_size.x - 16, dock_y + 27), ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7))
