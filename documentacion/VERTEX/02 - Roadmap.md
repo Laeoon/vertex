@@ -25,7 +25,7 @@ tags:
 
 | # | Tarea | Prioridad | Dependencias |
 |---|-------|-----------|--------------|
-| 1 | Sonidos y feedback audiovisual | Baja | — |
+| 1 | Sonidos y feedback audiovisual — **Completado en v0.4.0 (AudioManager, buses, 16 SFX, música DavidKBD, trauma shake)** | — | — |
 | 2 | Balanced tuning y playtesting — **Heist N1-N3 hecho (slice 5: self-play + par por nivel, ver [[14 - Historial de cambios]])**; falta hacker/cyber/defense | Alta | Todos los niveles |
 | 3 | Stats extendidas (tiempo, racha, intentos) | Baja | Perfil |
 

@@ -9,6 +9,25 @@ tags:
 
 # Historial de Cambios
 
+## v0.4.0 — Audio Multicanal, Juice Cinematográfico y Calidad de Vida (QoL) (2026-10-02)
+
+### Motor de Audio y Música
+- **Buses de Audio y Autoload:** Implementación de `AudioManager` con buses `Master`, `Music` y `SFX`, con persistencia en `user://settings.cfg`.
+- **Paisaje Sonoro Táctico:** Batería de 16 efectos de sonido procedurales/sintéticos (movimiento, escaneo, bypass, persistencia, señuelo, alertas, victoria, derrota).
+- **Sistema de Prioridad Dinámica:** Los sonidos críticos (`win`, `lose`, `captured`) silencian o interrumpen SFX de menor rango, evitando superposiciones cacofónicas.
+- **Música Temática por Modo:** Integración de packs musicales CC-BY 4.0 de DavidKBD (Cyberpunk / Synth), música dedicada para el menú principal (`Pink Bloom`) y bucles calibrados de alta energía a -8 dB para el modo Hacker.
+
+### Juice y Cinematismo Visual
+- **Interpolación de Movimiento:** Desplazamiento visual interpolado (tweening en 0.15s, `TRANS_QUAD`, `EASE_OUT`) del avatar entre nodos, preservando la lógica determinista por turnos.
+- **Trauma & Screen Shake:** Sacudida de cámara no lineal basada en trauma acumulativo ante alarmas, despliegue de exploits y derrota.
+- **Navegación Espacial & Pan-Zoom:** Navegación direccional geométrica con WASD o flechas de teclado, selección por hover y paneo/zoom de la topología con el teclado (`+`/`-`) y mouse.
+
+### Calidad de Vida (QoL) y Menús
+- **Menú de Opciones 100% con Mouse:** Pestañas navegables con mouse, deslizadores de volumen con arrastre y clic directo, interruptores táctiles cibernéticos y selector de idioma ciclable.
+- **Transiciones Fluidas:** Crossfade de 2 fases y desplazamiento horizontal suave entre el menú principal y selección de mundos.
+
+---
+
 ## E3 — Sistema de tensión: IA predictiva, nodos bonus y doctrina de niveles (2026-08-24)
 
 ### Origen

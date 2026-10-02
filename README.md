@@ -8,9 +8,9 @@
 
 ![Godot](https://img.shields.io/badge/Godot-4.7-478CBF?logo=godotengine&logoColor=white)
 ![Lenguaje](https://img.shields.io/badge/GDScript-100%25-478CBF)
-![Tests](https://img.shields.io/badge/tests-47%20suites%20pass-39FF88)
+![Tests](https://img.shields.io/badge/tests-52%20suites%20pass-39FF88)
 ![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-0078D6)
-![Versión](https://img.shields.io/badge/versión-0.3.5-00e5ff)
+![Versión](https://img.shields.io/badge/versión-0.4.0-00e5ff)
 
 [📥 Descargar](#-descargar-el-juego-windows) · [🎮 Características](#-características) · [🕹 Controles](#-controles) · [🧰 Código Fuente](#-descargar-el-código-fuente) · [🛠 Desarrollo y Motor](#-para-desarrolladores-y-uso-del-motor)
 
@@ -33,13 +33,16 @@ VERTEX es un videojuego de estrategia y educación donde navegas redes corporati
   - *Niveles:* N1 Lateral Movement, N2 Brecha Corporativa, N3 Persistencia de Red, N4 Guerra de Señuelos, N5 Operación Root Compromise.
 - **🛡 Defensa (Ciberseguridad)** — *(En desarrollo)*: Modo invertido donde administras la seguridad de la red colocando firewalls y bloqueos estratégicos para aislar al atacante.
 
-**Interfaz & Experiencia Visual:**
+**Interfaz, Inmersión & Experiencia Visual:**
+- 🔊 **Paisaje Sonoro & SFX Tácticos:** Motor de audio multicanal con buses dedicados (Master, Music, SFX), prioridad dinámica de sonidos para eventos críticos y bandas sonoras temáticas (packs Cyberpunk y Synth de DavidKBD).
+- 💥 **Juice & Cinematismo:** Sacudida de cámara no lineal basada en trauma ante exploits/alarmas, e interpolación fluida de movimiento (tweening) entre nodos.
 - 🎯 **Retícula Táctica HUD:** Doble anillo cian/dorado de alto contraste con brackets angulares para enfoque inequívoco del objetivo.
 - 🌐 **Telemetría de Red Realista:** Filtrado inteligente de badges de protocolo (HTTPS, SSH, DNS, LDAP, VPN, SQL, QUIC), eliminando el ruido visual en grafos densos.
-- 🧭 **Navegación Espacial:** Selección direccional geométrica con WASD o flechas de teclado, y selección rápida al posar el cursor sobre cualquier nodo adyacente.
+- 🧭 **Navegación Espacial & Pan-Zoom:** Selección direccional geométrica con WASD o flechas de teclado, selección rápida al posar el cursor, y controles de paneo y zoom de topología.
+- 🖱 **Menús Fluidos y Control Total con Mouse:** Menú de opciones rediseñado con deslizadores arrastrables, interruptores táctiles, pestañas navegables con mouse y transiciones fluidas de dos fases entre escenas.
 - 📚 **Academia de Tutoriales Modulares:** Pistas divididas por categorías (Fundamentos, Heist, Hacker) con lecciones prácticas guiadas y glosario interactivo de términos.
 - ⭐ **Sistema de Par y Evaluación:** Puntuación de 1 a 3 estrellas según el rendimiento y consumo de recursos.
-- 🧪 **Suite de Pruebas Robusta:** 47 suites de tests automatizados (unitarios, equivalencia golden, navegación espacial y simulación de balance por self-play).
+- 🧪 **Suite de Pruebas Robusta:** 52 suites de tests automatizados (unitarios, equivalencia golden, navegación espacial, audio, interpolación y simulación de balance por self-play).
 
 ---
 
@@ -47,14 +50,14 @@ VERTEX es un videojuego de estrategia y educación donde navegas redes corporati
 
 Binario precompilado para Windows 10/11 (x64), autocontenido y listo para jugar sin instalación previa.
 
-**Última versión:** [VERtex 0.3.5](https://github.com/Laeoon/vertex/releases/latest)
+**Última versión:** [VERtex 0.4.0](https://github.com/Laeoon/vertex/releases/latest)
 
 ```bash
 # Descarga directa vía curl
-curl -L -o VERtex-0.3.5.exe https://github.com/Laeoon/vertex/releases/download/v0.3.5/VERtex-0.3.5.exe
+curl -L -o VERtex-0.4.0.exe https://github.com/Laeoon/vertex/releases/download/v0.4.0/VERtex-0.4.0.exe
 
 # O con wget
-wget https://github.com/Laeoon/vertex/releases/download/v0.3.5/VERtex-0.3.5.exe
+wget https://github.com/Laeoon/vertex/releases/download/v0.4.0/VERtex-0.4.0.exe
 ```
 
 *Requisitos:* Windows 10/11 x64, GPU compatible con Vulkan / DirectX 12.
@@ -70,6 +73,8 @@ wget https://github.com/Laeoon/vertex/releases/download/v0.3.5/VERtex-0.3.5.exe
 | **Selección por Hover** | `Pasar cursor` sobre vecino | Enfoca instantáneamente el nodo adyacente. |
 | **Navegación Espacial** | `WASD` / `Flechas` | Selecciona el vecino en esa dirección angular. |
 | **Ciclo Secuencial** | `Tab` | Cicla entre vecinos disponibles. |
+| **Zoom de Topología** | `+` / `-` (o Numpad) | Acerca o aleja la visualización de la red. |
+| **Paneo de Grafo** | `Clic + Arrastrar` | Desplaza la vista por redes complejas. |
 | **Pista de Ruta Óptima** | `P` | Alterna la visualización del camino más corto. |
 | **Escanear Nodo** | `X` | *(Hacker)* Revela tipo y reduce probabilidad de alerta. |
 | **Bypass de Bloqueo** | `1` | *(Hacker)* Atraviesa arista bloqueada sin detección. |
@@ -90,8 +95,8 @@ wget https://github.com/Laeoon/vertex/releases/download/v0.3.5/VERtex-0.3.5.exe
 git clone https://github.com/Laeoon/vertex.git
 
 # O descargar el tarball de la versión más reciente
-curl -L -o vertex-0.3.5.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.3.5.tar.gz
-tar -xzf vertex-0.3.5.tar.gz
+curl -L -o vertex-0.4.0.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.4.0.tar.gz
+tar -xzf vertex-0.4.0.tar.gz
 ```
 
 ---
@@ -106,7 +111,7 @@ tar -xzf vertex-0.3.5.tar.gz
 - **Motor:** [Godot Engine 4.7+](https://godotengine.org/)
 - **Lenguaje:** GDScript 2.0 (estricto y tipado)
 - **Estructura en capas:**
-  - `core/`: Algoritmos puros de teoría de grafos (Dijkstra, Min-Cut / Edmonds-Karp, MinHeap), runtime de red y contratos de eventos.
+  - `core/`: Algoritmos puros de teoría de grafos (Dijkstra, Min-Cut / Edmonds-Karp, MinHeap), runtime de red, gestión de audio y contratos de eventos.
   - `juego/`: Lógica de juego orientada a datos (`juego_ataque.gd`, `game_logic.gd`, `hacker_logic.gd`, `game_renderer.gd`).
   - `escenas/`: Interfaz de usuario, menús y transiciones.
   - `tests/`: Batería de pruebas automatizadas y arneses de simulación.
@@ -123,7 +128,7 @@ El proyecto incluye un runner headless propio para ejecutar todas las pruebas de
 # Correr la suite de pruebas estándar:
 godot --headless --script res://tests/runner/run_all.gd
 
-# Correr la suite COMPLETA (incluye pruebas de equivalencia y visuales - 47 suites):
+# Correr la suite COMPLETA (incluye pruebas de equivalencia y visuales - 52 suites):
 godot --headless --script res://tests/runner/run_all.gd -- --all
 
 # Correr una prueba específica de forma individual:
