@@ -163,7 +163,6 @@ func _input(event: InputEvent) -> void:
 				return
 			KEY_ESCAPE:
 				pause_toggle_requested.emit()
-				quit_requested.emit()
 				return
 			KEY_R:
 				if not game_over:
