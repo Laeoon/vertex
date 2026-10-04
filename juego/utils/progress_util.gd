@@ -49,3 +49,56 @@ static func cargar_misiones(missions: Array[Dictionary]) -> void:
 		var stars: int = cfg.get_value("estrellas", key, 0)
 		missions[i]["stars"] = stars
 		missions[i]["completed"] = stars > 0
+
+
+## Comprueba si un mundo está desbloqueado según el progreso de tutoriales.
+## Reglas:
+## - "tutorials": Siempre desbloqueado.
+## - General: Requiere tutorial1 y tutorial3 (fundamentos de redes y defensa).
+## - "heist": Requiere General + tutorial2 y tutorial6 (sensores y presupuesto).
+## - "hacker": Requiere General + tut_hacker_1..tut_hacker_4.
+## - "cybersecurity": Requiere General (modo defender en standby).
+static func is_world_unlocked(world_id: String, progress: Dictionary) -> bool:
+	if world_id == "tutorials":
+		return true
+
+	var general_done: bool = progress.get("tutorial1", 0) > 0 and progress.get("tutorial3", 0) > 0
+	if not general_done:
+		return false
+
+	match world_id:
+		"heist":
+			return progress.get("tutorial2", 0) > 0 and progress.get("tutorial6", 0) > 0
+		"hacker":
+			return progress.get("tut_hacker_1", 0) > 0 \
+				and progress.get("tut_hacker_2", 0) > 0 \
+				and progress.get("tut_hacker_3", 0) > 0 \
+				and progress.get("tut_hacker_4", 0) > 0
+		"cybersecurity":
+			return true
+		_:
+			return true
+
+
+## Devuelve la razón de bloqueo o los requisitos faltantes para un mundo.
+static func get_world_lock_reason(world_id: String, progress: Dictionary) -> String:
+	if world_id == "tutorials":
+		return ""
+
+	var general_done: bool = progress.get("tutorial1", 0) > 0 and progress.get("tutorial3", 0) > 0
+	if not general_done:
+		return "REQ: TUTORIAL GENERAL (MODULOS 1 Y 2)"
+
+	match world_id:
+		"heist":
+			if progress.get("tutorial2", 0) <= 0 or progress.get("tutorial6", 0) <= 0:
+				return "REQ: TUTORIAL HEIST (MODULOS 1 Y 2)"
+		"hacker":
+			if progress.get("tut_hacker_1", 0) <= 0 \
+				or progress.get("tut_hacker_2", 0) <= 0 \
+				or progress.get("tut_hacker_3", 0) <= 0 \
+				or progress.get("tut_hacker_4", 0) <= 0:
+				return "REQ: TUTORIAL HACKER (MODULOS 1-4)"
+		"cybersecurity":
+			return ""
+	return ""
