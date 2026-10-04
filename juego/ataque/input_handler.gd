@@ -121,7 +121,7 @@ func _input(event: InputEvent) -> void:
 	if is_moving:
 		if event is InputEventKey and event.pressed:
 			var k: InputEventKey = event as InputEventKey
-			if k.keycode in [KEY_Q, KEY_ESCAPE, KEY_R]:
+			if k.keycode in [KEY_Q, KEY_ESCAPE, KEY_M, KEY_PAUSE, KEY_R]:
 				pass
 			else:
 				return
@@ -161,7 +161,7 @@ func _input(event: InputEvent) -> void:
 			KEY_Q:
 				return_to_menu_requested.emit()
 				return
-			KEY_ESCAPE:
+			KEY_ESCAPE, KEY_M, KEY_PAUSE:
 				pause_toggle_requested.emit()
 				return
 			KEY_R:
@@ -306,6 +306,10 @@ func _input(event: InputEvent) -> void:
 		if game_over or Time.get_ticks_msec() < _turn_locked_until:
 			return
 		var click_pos: Vector2 = event.position
+		var vp_size: Vector2 = game.get_viewport_rect().size if game != null else Vector2(1280, 720)
+		if click_pos.y >= vp_size.y - 32.0:
+			pause_toggle_requested.emit()
+			return
 
 		# Defender mode: clics
 		if defender_mode:

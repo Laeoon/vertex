@@ -1061,9 +1061,9 @@ func draw_status_bar(
 	# Keybinds (izquierda)
 	var kb_text: String
 	if defender_mode:
-		kb_text = "[Click arista] Bloquear  [F] Firewall  [Enter] Resolver  [ESC] Pausa"
+		kb_text = "[Click arista] Bloquear  [F] Firewall  [Enter] Resolver  [ESC / M] Pausa"
 	else:
-		kb_text = "[Click/WASD] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [ESC] Pausa"
+		kb_text = "[Click/WASD] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [ESC / M] Pausa"
 	draw_string(Vector2(16, vp_size.y - 10), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 	# Estado (centro-derecha)

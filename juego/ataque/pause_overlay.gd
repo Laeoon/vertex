@@ -46,6 +46,7 @@ var _options_box: VBoxContainer
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	z_index = 100
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	visible = false
 
@@ -61,11 +62,11 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, vp), Color(0.04, 0.07, 0.12, 0.85))
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
+		if event.keycode in [KEY_ESCAPE, KEY_M, KEY_PAUSE]:
 			get_viewport().set_input_as_handled()
 			if current_view == "confirm" or current_view == "options":
 				show_main()
@@ -140,8 +141,11 @@ func _layout_content() -> void:
 	var vp: Vector2 = get_viewport_rect().size
 	position = Vector2.ZERO
 	custom_minimum_size = vp
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	if _center_container != null:
+		_center_container.position = Vector2.ZERO
 		_center_container.custom_minimum_size = vp
+		_center_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
 # ─── Construccion de UI ─────────────────────────────────────────────
