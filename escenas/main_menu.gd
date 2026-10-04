@@ -29,25 +29,38 @@ var _hovered_back: bool = false
 var _pulse: float = 0.0
 var _cyber_bg := CyberBackgroundClass.new()
 
+# ─── 3D Orbital Graph Hub & Dive-In ─────────────────────────────────
+var _orbit_rot: float = 0.0
+var _is_diving: bool = false
+var _dive_progress: float = 0.0
+var _dive_center: Vector2 = Vector2.ZERO
+var _dive_target_scene: String = ""
+var _dive_target_world: String = ""
+var _dive_warp_angles: PackedFloat32Array = []
+
 
 func _ready() -> void:
 	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
 
+	_dive_warp_angles = PackedFloat32Array()
+	for i in range(32):
+		_dive_warp_angles.append(float(i) * TAU / 32.0)
+
 	_main_items = [
-		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play", "icon": "▶"},
-		{"label": loc("menu.options"), "desc": loc("menu.options_desc"), "action": "options", "icon": "⚙"},
-		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon": "👤"},
-		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database", "icon": "🗄"},
-		{"label": loc("menu.exit"), "desc": "", "action": "exit", "icon": "➔"},
+		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play", "icon": "[>]"},
+		{"label": loc("menu.options"), "desc": loc("menu.options_desc"), "action": "options", "icon": "[#]"},
+		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon": "[ID]"},
+		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database", "icon": "[DB]"},
+		{"label": loc("menu.exit"), "desc": "", "action": "exit", "icon": "[X]"},
 	]
 
 	_world_items = [
-		{"label": "Heist", "desc": loc("world.heist_desc"), "id": "heist", "icon": "🗡"},
-		{"label": "Hacker", "desc": loc("world.hacker_desc"), "id": "hacker", "icon": "💻"},
-		{"label": "Cybersecurity", "desc": loc("world.cyber_desc"), "id": "cybersecurity", "icon": "🛡"},
-		{"label": loc("world.tutorials"), "desc": loc("world.tutorials_desc"), "id": "tutorials", "icon": "📚"},
+		{"label": "Heist", "desc": loc("world.heist_desc"), "id": "heist", "icon": "[HST]"},
+		{"label": "Hacker", "desc": loc("world.hacker_desc"), "id": "hacker", "icon": "[HCK]"},
+		{"label": "Cybersecurity", "desc": loc("world.cyber_desc"), "id": "cybersecurity", "icon": "[DEF]"},
+		{"label": loc("world.tutorials"), "desc": loc("world.tutorials_desc"), "id": "tutorials", "icon": "[TUT]"},
 	]
 
 	_load_lang_setting()
@@ -79,13 +92,14 @@ func _input(event: InputEvent) -> void:
 			KEY_ENTER, KEY_SPACE:
 				_play_click_sfx()
 				_activate_selected()
-			KEY_UP:
-				selected_idx = maxi(0, selected_idx - 1)
+			KEY_UP, KEY_LEFT:
+				var items := _current_items()
+				selected_idx = (selected_idx - 1 + items.size()) % items.size()
 				_play_click_sfx()
 				queue_redraw()
-			KEY_DOWN:
+			KEY_DOWN, KEY_RIGHT:
 				var items := _current_items()
-				selected_idx = mini(items.size() - 1, selected_idx + 1)
+				selected_idx = (selected_idx + 1) % items.size()
 				_play_click_sfx()
 				queue_redraw()
 
@@ -96,15 +110,30 @@ func _input(event: InputEvent) -> void:
 		var card_w: float = 340.0
 		var prev_hover_back := _hovered_back
 		_hovered_back = false
+		var hovered_any: bool = false
 		for i in items.size():
 			var item_by: float = start_y + i * 48.0
 			var rect := Rect2(50, item_by - 16, card_w, 44)
 			if rect.has_point(mpos):
+				hovered_any = true
 				if selected_idx != i:
 					selected_idx = i
 					_play_click_sfx()
 					queue_redraw()
 				break
+
+		# Check 3D orbital nodes if not hovering card
+		if not hovered_any:
+			var vp := get_viewport_rect().size
+			for i in items.size():
+				var npos: Vector2 = _get_orbital_node_pos(i, items.size(), vp)
+				if mpos.distance_to(npos) <= 30.0:
+					if selected_idx != i:
+						selected_idx = i
+						_play_click_sfx()
+						queue_redraw()
+					break
+
 		if current_state == State.WORLD_SELECT:
 			var back_y: float = start_y + items.size() * 48.0 + 10.0
 			if Rect2(50, back_y - 10, card_w, 36).has_point(mpos):
@@ -125,6 +154,17 @@ func _input(event: InputEvent) -> void:
 				_play_click_sfx()
 				_activate_selected()
 				return
+
+		# Check 3D orbital nodes click
+		var vp := get_viewport_rect().size
+		for i in items.size():
+			var npos: Vector2 = _get_orbital_node_pos(i, items.size(), vp)
+			if mpos.distance_to(npos) <= 30.0:
+				selected_idx = i
+				_play_click_sfx()
+				_activate_selected()
+				return
+
 		if current_state == State.WORLD_SELECT:
 			var back_y: float = start_y + items.size() * 48.0 + 10.0
 			if Rect2(50, back_y - 10, card_w, 36).has_point(mpos):
@@ -138,6 +178,26 @@ func _process(delta: float) -> void:
 	var target_start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
 	var target_y: float = target_start_y + selected_idx * 48.0
 	_smooth_selected_y = lerpf(_smooth_selected_y, target_y, delta * 20.0)
+
+	# Smooth orbital rotation aligning selected node to the front
+	var items := _current_items()
+	var total_items: int = maxi(1, items.size())
+	var target_angle: float = -float(selected_idx) * (TAU / float(total_items)) + (PI * 0.5)
+	_orbit_rot = lerp_angle(_orbit_rot, target_angle, delta * 8.0)
+
+	# Dive-in breach transition
+	if _is_diving:
+		_dive_progress += delta * 2.2
+		if _dive_progress >= 1.0:
+			_is_diving = false
+			var sp = get_node_or_null("/root/SceneParams")
+			if sp != null and _dive_target_world != "":
+				sp.titulo_nivel = _dive_target_world
+			var st = get_node_or_null("/root/SceneTransition")
+			if st != null and st.has_method("fade_to_scene"):
+				st.fade_to_scene(_dive_target_scene, 0.22)
+			elif get_tree() != null:
+				get_tree().change_scene_to_file(_dive_target_scene)
 
 	if _transitioning:
 		if _transition_stage == 1:
@@ -167,7 +227,60 @@ func _current_items() -> Array[Dictionary]:
 	return _main_items
 
 
+func _get_orbital_node_info(idx: int, total: int, vp: Vector2) -> Dictionary:
+	var holo_center := Vector2(vp.x * 0.72, vp.y * 0.50)
+	var radius: float = minf(vp.x, vp.y) * 0.32
+	var base_angle: float = (float(idx) / float(maxi(1, total))) * TAU
+	var cur_angle: float = base_angle + _orbit_rot
+	var cos_a := cos(cur_angle)
+	var sin_a := sin(cur_angle)
+	var tilt_x: float = 0.38 + sin(_pulse * 0.25) * 0.12
+	var px: float = holo_center.x + cos_a * radius
+	var py: float = holo_center.y + sin_a * radius * sin(tilt_x)
+	var pz: float = sin_a
+	var node_scale: float = 0.82 + (pz + 1.0) * 0.24
+	var node_alpha: float = 0.45 + (pz + 1.0) * 0.28
+	return {
+		"pos": Vector2(px, py),
+		"depth": pz,
+		"scale": node_scale,
+		"alpha": node_alpha,
+		"angle": cur_angle
+	}
+
+
+func _get_orbital_node_pos(idx: int, total: int, vp: Vector2) -> Vector2:
+	return _get_orbital_node_info(idx, total, vp).pos
+
+
+func _start_dive_in(target_scene: String, target_world_id: String = "") -> void:
+	if DisplayServer.get_name() == "headless":
+		var sp = get_node_or_null("/root/SceneParams")
+		if sp != null and target_world_id != "":
+			sp.titulo_nivel = target_world_id
+		var st = get_node_or_null("/root/SceneTransition")
+		if st != null and st.has_method("fade_to_scene"):
+			st.fade_to_scene(target_scene)
+		elif get_tree() != null:
+			get_tree().change_scene_to_file(target_scene)
+		return
+
+	_is_diving = true
+	_dive_progress = 0.0
+	_dive_target_scene = target_scene
+	_dive_target_world = target_world_id
+	var vp := get_viewport_rect().size
+	var items := _current_items()
+	_dive_center = _get_orbital_node_pos(selected_idx, items.size(), vp)
+
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("bypass")
+
+
 func _activate_selected() -> void:
+	if _is_diving:
+		return
 	var items := _current_items()
 	if selected_idx < 0 or selected_idx >= items.size():
 		return
@@ -178,11 +291,11 @@ func _activate_selected() -> void:
 			"play":
 				_go_to_state(State.WORLD_SELECT)
 			"options":
-				SceneTransition.fade_to_scene("res://escenas/menu/options.tscn")
+				_start_dive_in("res://escenas/menu/options.tscn")
 			"profile":
-				SceneTransition.fade_to_scene("res://escenas/menu/profile.tscn")
+				_start_dive_in("res://escenas/menu/profile.tscn")
 			"database":
-				SceneTransition.fade_to_scene("res://escenas/menu/database.tscn")
+				_start_dive_in("res://escenas/menu/database.tscn")
 			"exit":
 				get_tree().quit()
 	elif current_state == State.WORLD_SELECT:
@@ -202,10 +315,9 @@ func _go_to_state(new_state: State) -> void:
 func _launch_world(world_id: String) -> void:
 	match world_id:
 		"tutorials":
-			SceneTransition.fade_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
+			_start_dive_in("res://escenas/main_menu/tutorials_menu.tscn")
 		_:
-			SceneParams.titulo_nivel = world_id
-			SceneTransition.fade_to_scene("res://juego/system/level_select_screen.tscn")
+			_start_dive_in("res://juego/system/level_select_screen.tscn", world_id)
 
 
 func loc(key: String) -> String:
@@ -255,6 +367,10 @@ func _draw() -> void:
 	var vp := get_viewport_rect().size
 	_cyber_bg.draw(self, vp)
 
+	if _is_diving:
+		_draw_dive_in(vp)
+		return
+
 	var alpha: float = clampf(_fade_alpha, 0.0, 1.0)
 	var ox: float = _slide_offset_x
 
@@ -263,6 +379,8 @@ func _draw() -> void:
 			_draw_main_menu(vp, alpha, ox)
 		State.WORLD_SELECT:
 			_draw_world_select(vp, alpha, ox)
+
+	_draw_3d_orbital_graph(vp, alpha, ox)
 
 
 func _draw_main_menu(vp: Vector2, alpha: float, ox: float) -> void:
@@ -436,3 +554,196 @@ func _draw_bottom_dock(vp: Vector2, alpha: float, ox: float) -> void:
 	var ver_text := "VERTEX v0.4.0  |  ONLINE"
 	var ver_size := font.get_string_size(ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2)
 	draw_string(font, Vector2(dock_rect.position.x + dock_w - ver_size.x - 16, dock_y + 27), ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7))
+
+
+func _draw_3d_orbital_graph(vp: Vector2, alpha: float, ox: float) -> void:
+	if vp.x < 750.0:
+		return
+
+	var holo_center := Vector2(vp.x * 0.72 + ox * 0.5, vp.y * 0.48)
+	var radius: float = minf(vp.x * 0.22, vp.y * 0.32)
+
+	# 1. Central Gyroscope Wireframe Core
+	var gyro_pulse := 0.7 + sin(_pulse * 1.8) * 0.3
+	draw_arc(holo_center, 42.0, 0, TAU, 32, BrandClass.with_alpha(BrandClass.PANEL_BORDER, alpha * 0.4), 1.2)
+	var g_angle := _pulse * 0.6
+	draw_arc(holo_center, 30.0, g_angle, g_angle + PI * 0.75, 16, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.6 * gyro_pulse), 1.5)
+	draw_arc(holo_center, 30.0, g_angle + PI, g_angle + PI * 1.75, 16, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.6 * gyro_pulse), 1.5)
+	draw_arc(holo_center, 18.0, -g_angle * 1.3, -g_angle * 1.3 + PI * 1.2, 16, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.5), 1.2)
+	draw_circle(holo_center, 4.0, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.9 * gyro_pulse))
+	draw_circle(holo_center, 10.0, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.25))
+
+	var core_txt := "VERTEX::CORE"
+	var csize := font.get_string_size(core_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 4)
+	draw_string(font, holo_center + Vector2(-csize.x * 0.5, 56), core_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 4, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.6))
+
+	# 2. Orbital Track
+	var orbit_pts := PackedVector2Array()
+	var tilt_x: float = 0.38 + sin(_pulse * 0.25) * 0.12
+	for s in range(37):
+		var t: float = float(s) * TAU / 36.0
+		var opx := holo_center.x + cos(t) * radius
+		var opy := holo_center.y + sin(t) * radius * sin(tilt_x)
+		orbit_pts.append(Vector2(opx, opy))
+	draw_polyline(orbit_pts, BrandClass.with_alpha(BrandClass.PANEL_BORDER, alpha * 0.35), 1.0)
+
+	# 3. Depth-sorted Orbital Nodes
+	var items := _current_items()
+	var total_items := items.size()
+	if total_items == 0:
+		return
+
+	var node_entries: Array[Dictionary] = []
+	for i in range(total_items):
+		var info := _get_orbital_node_info(i, total_items, vp)
+		info["idx"] = i
+		info["item"] = items[i]
+		node_entries.append(info)
+
+	node_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a["depth"]) < float(b["depth"])
+	)
+
+	var sel_node_pos := Vector2.ZERO
+
+	for node in node_entries:
+		var i: int = node["idx"]
+		var item: Dictionary = node["item"]
+		var npos: Vector2 = node["pos"] + Vector2(ox * 0.5, 0.0)
+		var nscale: float = node["scale"]
+		var nalpha: float = clampf(float(node["alpha"]) * alpha, 0.0, 1.0)
+		var is_sel: bool = i == selected_idx
+
+		if is_sel:
+			sel_node_pos = npos
+
+		# Line from core to node
+		draw_line(holo_center, npos, BrandClass.with_alpha(BrandClass.ACCENT if is_sel else BrandClass.PANEL_BORDER, nalpha * (0.45 if is_sel else 0.15)), 1.0)
+
+		# Node body circle
+		var base_r: float = (20.0 if is_sel else 16.0) * nscale
+		var fill_color := BrandClass.with_alpha(BrandClass.PANEL_SOLID, nalpha * 0.95)
+		var border_color := BrandClass.with_alpha(BrandClass.ACCENT if is_sel else BrandClass.PANEL_BORDER, nalpha * (0.95 if is_sel else 0.60))
+
+		draw_circle(npos, base_r, fill_color)
+		draw_circle(npos, base_r, border_color, false, 1.5 if is_sel else 1.0)
+
+		if is_sel:
+			draw_circle(npos, base_r + 6.0, BrandClass.with_alpha(BrandClass.ACCENT, nalpha * 0.25), false, 1.0)
+			var bra_rot := _pulse * 2.0
+			var bra_r := base_r + 9.0
+			draw_arc(npos, bra_r, bra_rot, bra_rot + PI * 0.4, 8, BrandClass.with_alpha(BrandClass.ACCENT, nalpha * 0.85), 1.5)
+			draw_arc(npos, bra_r, bra_rot + PI * 0.5, bra_rot + PI * 0.9, 8, BrandClass.with_alpha(BrandClass.ACCENT, nalpha * 0.85), 1.5)
+			draw_arc(npos, bra_r, bra_rot + PI, bra_rot + PI * 1.4, 8, BrandClass.with_alpha(BrandClass.ACCENT, nalpha * 0.85), 1.5)
+			draw_arc(npos, bra_r, bra_rot + PI * 1.5, bra_rot + PI * 1.9, 8, BrandClass.with_alpha(BrandClass.ACCENT, nalpha * 0.85), 1.5)
+
+		# Tactical ASCII icon text
+		var icon: String = item.get("icon", "[*]")
+		var icon_fsize: int = maxi(10, int((font_size + (2 if is_sel else 0)) * nscale))
+		var isize := font.get_string_size(icon, HORIZONTAL_ALIGNMENT_CENTER, -1, icon_fsize)
+		var icon_color := BrandClass.with_alpha(BrandClass.ACCENT if is_sel else BrandClass.TEXT_DIM, nalpha)
+		draw_string(font, npos + Vector2(-isize.x * 0.5, isize.y * 0.35), icon, HORIZONTAL_ALIGNMENT_CENTER, -1, icon_fsize, icon_color)
+
+		# Label badge below node
+		if is_sel or float(node["depth"]) > 0.1:
+			var lbl: String = item.label
+			var lbl_fsize: int = maxi(9, int((font_size - 2) * nscale))
+			var lsize := font.get_string_size(lbl, HORIZONTAL_ALIGNMENT_CENTER, -1, lbl_fsize)
+			var badge_y := npos.y + base_r + 14.0
+			var badge_rect := Rect2(npos.x - lsize.x * 0.5 - 6, badge_y - 10, lsize.x + 12, 16)
+			draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, nalpha * 0.85))
+			draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.ACCENT if is_sel else BrandClass.PANEL_BORDER, nalpha * 0.5), false, 1.0)
+			var text_color := BrandClass.with_alpha(BrandClass.TEXT if is_sel else BrandClass.TEXT_DIM, nalpha)
+			draw_string(font, Vector2(npos.x - lsize.x * 0.5, badge_y + 2), lbl, HORIZONTAL_ALIGNMENT_CENTER, -1, lbl_fsize, text_color)
+
+	# 4. Holographic Bridge connecting active card to 3D node
+	if sel_node_pos != Vector2.ZERO:
+		var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
+		var card_y: float = start_y + selected_idx * 48.0
+		var card_edge := Vector2(50.0 + 340.0 + ox, card_y + 6.0)
+		if vp.x > 800.0:
+			var tel_w := clampf(vp.x * 0.22, 180.0, 260.0)
+			card_edge.x = 50.0 + 340.0 + 38.0 + tel_w + ox
+
+		var mid_x := (card_edge.x + sel_node_pos.x) * 0.5
+		var p1 := Vector2(mid_x, card_edge.y)
+		var p2 := Vector2(mid_x, sel_node_pos.y)
+
+		var bridge_color := BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.40)
+		draw_line(card_edge, p1, bridge_color, 1.2)
+		draw_line(p1, p2, bridge_color, 1.2)
+		draw_line(p2, sel_node_pos, bridge_color, 1.2)
+
+		var t_pkt := fmod(_pulse * 2.2, 1.0)
+		var pkt_pos: Vector2
+		if t_pkt < 0.33:
+			pkt_pos = card_edge.lerp(p1, t_pkt / 0.33)
+		elif t_pkt < 0.66:
+			pkt_pos = p1.lerp(p2, (t_pkt - 0.33) / 0.33)
+		else:
+			pkt_pos = p2.lerp(sel_node_pos, (t_pkt - 0.66) / 0.34)
+
+		draw_circle(pkt_pos, 2.5, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.95))
+		draw_circle(pkt_pos, 5.5, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.35))
+
+
+func _draw_dive_in(vp: Vector2) -> void:
+	var p := _dive_progress
+	var veil_alpha := clampf(p * 1.5, 0.0, 0.92)
+	draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.02, 0.05, 0.08, veil_alpha))
+
+	var center := _dive_center
+	if center == Vector2.ZERO:
+		center = vp * 0.5
+
+	# 1. Radial Warp Hyper-drive Lines
+	var max_r := vp.length() * 0.9
+	var warp_count := _dive_warp_angles.size()
+	for i in range(warp_count):
+		var ang: float = _dive_warp_angles[i] + p * 0.2
+		var length_factor: float = 0.2 + fmod(float(i * 7) / float(warp_count), 0.8)
+		var r_start: float = 20.0 + pow(p, 1.8) * max_r * length_factor * 0.5
+		var r_end: float = r_start + (30.0 + p * 400.0 * length_factor)
+		var dir := Vector2(cos(ang), sin(ang))
+		var p0 := center + dir * r_start
+		var p1 := center + dir * r_end
+		var line_alpha: float = clampf((1.0 - p * 0.7) * 0.85, 0.0, 1.0)
+		var col := BrandClass.with_alpha(BrandClass.ACCENT if (i % 3 == 0) else BrandClass.accent_dim(0.7), line_alpha)
+		draw_line(p0, p1, col, 1.5 + p * 2.0)
+
+	# 2. Concentric Shockwave Breach Rings
+	for r_idx in range(4):
+		var ring_p := fmod(p * 2.5 + float(r_idx) * 0.25, 1.0)
+		var ring_r := pow(ring_p, 1.3) * max_r * 0.65
+		var ring_alpha := (1.0 - ring_p) * 0.75 * (1.0 - p * 0.5)
+		draw_arc(center, ring_r, 0, TAU, 36, BrandClass.with_alpha(BrandClass.ACCENT, ring_alpha), 2.0)
+
+	# 3. Expanding Breach Reticle at Center
+	var ret_scale := 1.0 + p * 4.0
+	var ret_r := 35.0 * ret_scale
+	var ret_rot := _pulse * 3.0 + p * 6.0
+	draw_arc(center, ret_r, ret_rot, ret_rot + PI * 0.5, 12, BrandClass.with_alpha(BrandClass.ACCENT, 0.9), 2.0)
+	draw_arc(center, ret_r, ret_rot + PI, ret_rot + PI * 1.5, 12, BrandClass.with_alpha(BrandClass.ACCENT, 0.9), 2.0)
+	draw_line(center - Vector2(ret_r + 15, 0), center - Vector2(ret_r - 5, 0), BrandClass.ACCENT, 2.0)
+	draw_line(center + Vector2(ret_r - 5, 0), center + Vector2(ret_r + 15, 0), BrandClass.ACCENT, 2.0)
+	draw_line(center - Vector2(0, ret_r + 15), center - Vector2(0, ret_r - 5), BrandClass.ACCENT, 2.0)
+	draw_line(center + Vector2(0, ret_r - 5), center + Vector2(0, ret_r + 15), BrandClass.ACCENT, 2.0)
+
+	# 4. Tactical OSD Banner
+	var banner_y := vp.y * 0.50
+	var title_txt := "[ BREACH PENETRATION // INITIATED ]"
+	var tsize := font.get_string_size(title_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, big_font_size - 4)
+	var banner_rect := Rect2(vp.x * 0.5 - tsize.x * 0.5 - 20, banner_y - 20, tsize.x + 40, 60)
+	draw_rect(banner_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.90))
+	draw_rect(banner_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.85), false, 1.5)
+	draw_string(font, Vector2(vp.x * 0.5 - tsize.x * 0.5, banner_y + 10), title_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, big_font_size - 4, BrandClass.ACCENT)
+
+	var sub_txt := "ESTABLISHING NEURAL LINK... 0x%08X" % (hash(_dive_target_scene) & 0xFFFFFFFF)
+	var ssize := font.get_string_size(sub_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2)
+	draw_string(font, Vector2(vp.x * 0.5 - ssize.x * 0.5, banner_y + 32), sub_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2, BrandClass.TEXT_DIM)
+
+	# 5. Cyber White/Cyan Breach Flash near climax
+	if p > 0.65:
+		var flash_alpha := ((p - 0.65) / 0.35) * 0.95
+		draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.85, 1.0, 1.0, flash_alpha))
+
