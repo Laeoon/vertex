@@ -303,9 +303,6 @@ func play_world_music(world_id: String, track_index: int = -1, volume_db: float 
 	if not _initialized:
 		return
 	var normalized_world := world_id.to_lower().strip_edges()
-	# Si ya estamos sonando música del mismo mundo y track_index == -1, mantenemos la reproducción continua
-	if _current_music_world == normalized_world and _music_player != null and _music_player.playing and track_index < 0:
-		return
 
 	if not _world_music_playlists.has(normalized_world):
 		# Fallback para mundos sin playlist específica (ej: cybersecurity usa pistas hacker/cyber)
@@ -322,14 +319,20 @@ func play_world_music(world_id: String, track_index: int = -1, volume_db: float 
 	if track_index >= 0 and track_index < playlist.size():
 		chosen_idx = track_index
 	else:
-		chosen_idx = randi() % playlist.size()
+		chosen_idx = 0
+
+	var chosen_path: String = playlist[chosen_idx]
+	# Si ya estamos sonando música del mismo mundo y pista (o mismo mundo con track_index < 0), mantenemos reproducción continua
+	if _current_music_world == normalized_world and _music_player != null and _music_player.playing:
+		if track_index < 0 or _current_music_path == chosen_path:
+			return
 
 	var actual_vol := volume_db
 	if normalized_world == "hacker" and volume_db == -12.0:
 		actual_vol = -8.0
 
 	_current_music_world = normalized_world
-	play_track(playlist[chosen_idx], actual_vol)
+	play_track(chosen_path, actual_vol)
 
 
 func play_menu_music(volume_db: float = -14.0) -> void:

@@ -278,7 +278,7 @@ func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: D
 	# Exploit inventory
 	var ei_y: float = nm_y + 28.0
 	var exploit_types: Array = ["bypass", "escalate", "persist", "decoy"]
-	var exploit_icons: Dictionary = {"bypass": "⚡", "escalate": "🔓", "persist": "♻", "decoy": "🎯"}
+	var exploit_icons: Dictionary = {"bypass": "[+]", "escalate": "[^]", "persist": "[*]", "decoy": "[#]"}
 	var exploit_names: Dictionary = {"bypass": "Infiltrar", "escalate": "Escalar", "persist": "Mantener", "decoy": "Señuelo"}
 
 	for i in exploit_types.size():
@@ -313,7 +313,7 @@ func draw_defender_hud(
 	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
 	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), Color(1.0, 0.5, 0.0, 0.6))
 
-	draw_string(Vector2(16, 22), "🛡️ DEFENSOR — Protege la red", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, Color(1.0, 0.5, 0.0))
+	draw_string(Vector2(16, 22), "DEFENSOR — Protege la red", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, Color(1.0, 0.5, 0.0))
 	draw_string(Vector2(16, 42), "TURNO %d  |  FASE: %s" % [turn, "BLOQUEO" if blocks_placed < blocks_per_turn or blocks_per_turn == 0 else "LISTO"], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 	var center_x: float = vp_size.x / 2.0
@@ -826,8 +826,8 @@ func draw_nodes(
 			draw_circle(pos, shield_radius + 4.0, Color(0.0, 0.5, 1.0, pulse * 0.25), false, 3.0)
 			draw_circle(pos, shield_radius, Color(0.02, 0.12, 0.25, 0.7))
 			draw_circle(pos, shield_radius, shield_color, false, 2.5)
-			# Icono de escudo
-			draw_string(Vector2(pos.x - 7, pos.y + 5), "🛡", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, Color(0.3, 0.8, 1.0))
+			# Icono de firewall
+			draw_string(Vector2(pos.x - 7, pos.y + 5), "FW", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.3, 0.8, 1.0))
 
 		# Bonus node marker (E3): rombo pequeño flotando arriba-izquierda —
 		# WARNING mientras pendiente, TEXT_DIM cuando ya fue visitado.
@@ -1061,9 +1061,9 @@ func draw_status_bar(
 	# Keybinds (izquierda)
 	var kb_text: String
 	if defender_mode:
-		kb_text = "[Click arista] Bloquear  [F] Firewall  [Enter] Resolver  [R] Reset  [Q] Menu"
+		kb_text = "[Click arista] Bloquear  [F] Firewall  [Enter] Resolver  [ESC] Pausa"
 	else:
-		kb_text = "[Click] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [R] Reset  [Q] Menu"
+		kb_text = "[Click/WASD] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [ESC] Pausa"
 	draw_string(Vector2(16, vp_size.y - 10), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 	# Estado (centro-derecha)

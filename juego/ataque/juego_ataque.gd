@@ -22,6 +22,7 @@ const LevelManagerClass = preload("res://juego/system/level_manager.gd")
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 const BrandClass = preload("res://juego/ui/brand.gd")
 const GameOverOverlayClass = preload("res://juego/ataque/game_over_overlay.gd")
+const PauseOverlayClass = preload("res://juego/ataque/pause_overlay.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -153,6 +154,7 @@ var _game_state  # GameState
 var _hacker_logic  # HackerLogic
 var _game_logic  # GameLogic
 var _game_over_overlay  # GameOverOverlay (capa 2: botones de mouse)
+var _pause_overlay  # PauseOverlay (in-game-pause-and-ui-immersion)
 
 # Un solo show por transición a game_over (ganar/perder/defensor won/lost
 # confluyen en el flag); el hide vive en reset_state().
@@ -201,6 +203,15 @@ func _ready() -> void:
 	_game_over_overlay.select_pressed.connect(_on_level_select)
 	_game_over_overlay.menu_pressed.connect(_on_return_to_menu)
 
+	# Overlay modal de pausa dentro de la partida (in-game-pause-and-ui-immersion)
+	_pause_overlay = PauseOverlayClass.new()
+	add_child(_pause_overlay)
+	_pause_overlay.resumed.connect(func(): _toggle_pause(false))
+	_pause_overlay.restart_confirmed.connect(_on_restart_confirmed)
+	_pause_overlay.level_select_requested.connect(_on_pause_level_select)
+	_pause_overlay.main_menu_requested.connect(_on_pause_main_menu)
+	_pause_overlay.input_scheme_changed.connect(_on_input_scheme_changed)
+
 	# IA bloqueadora, persecución y progreso ANTES de load_graph: reset_state()
 	# dispara el bloqueo inicial, limpia alertas y persiste resultados.
 	_ai_blocker = AIBlockerClass.new()
@@ -234,7 +245,15 @@ func _start_level_music() -> void:
 	else:
 		var loc_info: Dictionary = LevelRegistryClass.find_level(level_key)
 		world_id = loc_info.get("world", "heist")
-	am.play_world_music(world_id)
+
+	var is_boss_level: bool = level_key.ends_with("n5") or level_key.ends_with("_5")
+	if not is_boss_level:
+		var loc_info_boss: Dictionary = LevelRegistryClass.find_level(level_key)
+		if loc_info_boss.get("idx", -1) == 4 or loc_info_boss.get("config", {}).get("difficulty", 0) >= 5:
+			is_boss_level = true
+
+	var track_idx: int = 1 if is_boss_level else 0
+	am.play_world_music(world_id, track_idx)
 
 
 # ─── Delegates a módulos (duck-typing de servicios + tests) ────────
@@ -247,6 +266,8 @@ func reset_state() -> void:
 	_overlay_shown_for_game_over = false
 	if _game_over_overlay != null:
 		_game_over_overlay.hide_overlay()
+	if _pause_overlay != null:
+		_pause_overlay.hide_overlay()
 
 
 ## Muestra el overlay con la matriz de visibilidad del frame actual (frame_data
@@ -352,6 +373,8 @@ func _connect_input_signals() -> void:
 	_input_handler.next_level_requested.connect(_on_next_level)
 	_input_handler.level_select_requested.connect(_on_level_select)
 	_input_handler.quit_requested.connect(_on_quit)
+	_input_handler.pause_toggle_requested.connect(_on_pause_toggle_requested)
+	_input_handler.restart_prompt_requested.connect(_on_restart_prompt_requested)
 	_input_handler.toggle_optimal_route.connect(_on_toggle_optimal_route)
 	_input_handler.cycle_neighbor.connect(_on_cycle_neighbor)
 	_input_handler.directional_neighbor_requested.connect(_on_directional_neighbor_requested)
@@ -395,7 +418,69 @@ func _on_neighbor_hovered(node_id: StringName) -> void:
 func _on_defender_block_edge(edge_key: String) -> void: _game_logic.defender_block_edge(edge_key)
 func _on_defender_place_firewall(node_id: StringName) -> void: _game_logic.defender_place_firewall(node_id)
 func _on_return_to_menu() -> void: SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
-func _on_quit() -> void: get_tree().quit()
+func _on_quit() -> void: _toggle_pause()
+func _on_pause_toggle_requested() -> void: _toggle_pause()
+
+
+func _on_restart_prompt_requested() -> void:
+	if game_over:
+		return
+	get_tree().paused = true
+	if _pause_overlay != null:
+		_pause_overlay.show_overlay("confirm")
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _toggle_pause(force_state = null) -> void:
+	if game_over:
+		return
+	var should_pause: bool
+	if force_state != null:
+		should_pause = bool(force_state)
+	else:
+		should_pause = not get_tree().paused
+
+	get_tree().paused = should_pause
+	if _pause_overlay != null:
+		if should_pause:
+			_pause_overlay.show_overlay("main")
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		else:
+			_pause_overlay.hide_overlay()
+			if _input_handler != null:
+				_input_handler.apply_mouse_mode()
+
+
+func _on_restart_confirmed() -> void:
+	get_tree().paused = false
+	if _pause_overlay != null:
+		_pause_overlay.hide_overlay()
+	if _input_handler != null:
+		_input_handler.apply_mouse_mode()
+	AudioManager.play_sfx("reset")
+	if scene_file_path != "" and FileAccess.file_exists(scene_file_path):
+		SceneTransition.fade_to_scene(scene_file_path)
+	else:
+		reset_state()
+
+
+func _on_pause_level_select() -> void:
+	get_tree().paused = false
+	if _pause_overlay != null:
+		_pause_overlay.hide_overlay()
+	_on_level_select()
+
+
+func _on_pause_main_menu() -> void:
+	get_tree().paused = false
+	if _pause_overlay != null:
+		_pause_overlay.hide_overlay()
+	_on_return_to_menu()
+
+
+func _on_input_scheme_changed(scheme: int) -> void:
+	if _input_handler != null:
+		_input_handler.set_input_scheme(scheme)
 
 
 # ─── Navegación post-partida (slice 6; lógica en LevelManager) ────

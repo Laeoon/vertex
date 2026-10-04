@@ -14,6 +14,8 @@ signal node_targeted(clicked: StringName, first_step: StringName)
 signal scan_requested()
 signal exploit_used(exploit_type: String)
 signal reset_requested()
+signal pause_toggle_requested()
+signal restart_prompt_requested()
 signal return_to_menu_requested()
 signal next_level_requested()
 signal level_select_requested()
@@ -31,6 +33,14 @@ signal defender_hover_edge(edge_key: String)
 
 signal tutorial_skipped()
 
+enum Scheme {
+	HYBRID = 0,
+	KEYBOARD_ONLY = 1,
+	MOUSE_ONLY = 2,
+}
+
+var input_scheme: int = Scheme.HYBRID
+
 var game: Node:
 	set(value):
 		game = value
@@ -47,6 +57,36 @@ var hovered_edge: String = ""
 var player_pos: StringName = &""
 var is_moving: bool = false
 var _is_panning: bool = false
+
+
+func _ready() -> void:
+	load_input_scheme()
+
+
+func set_input_scheme(scheme: int) -> void:
+	input_scheme = scheme
+	apply_mouse_mode()
+
+
+func get_input_scheme() -> int:
+	return input_scheme
+
+
+func apply_mouse_mode() -> void:
+	if input_scheme == Scheme.KEYBOARD_ONLY:
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func load_input_scheme() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load("user://settings.cfg") == OK:
+		var saved = cfg.get_value("options", "input_scheme", Scheme.HYBRID)
+		if saved is int and saved >= 0 and saved <= 2:
+			set_input_scheme(saved)
+			return
+	set_input_scheme(Scheme.HYBRID)
 
 
 func _screen_to_world(pos: Vector2) -> Vector2:
@@ -122,10 +162,14 @@ func _input(event: InputEvent) -> void:
 				return_to_menu_requested.emit()
 				return
 			KEY_ESCAPE:
+				pause_toggle_requested.emit()
 				quit_requested.emit()
 				return
 			KEY_R:
-				reset_requested.emit()
+				if not game_over:
+					restart_prompt_requested.emit()
+				else:
+					reset_requested.emit()
 				return
 			KEY_N:
 				# Slice 6: siguiente nivel — sólo con la partida ganada (evita
@@ -146,16 +190,20 @@ func _input(event: InputEvent) -> void:
 					game.reset_pan_zoom()
 				return
 			KEY_UP, KEY_W:
-				directional_neighbor_requested.emit(Vector2.UP)
+				if input_scheme != Scheme.MOUSE_ONLY:
+					directional_neighbor_requested.emit(Vector2.UP)
 				return
 			KEY_DOWN, KEY_S:
-				directional_neighbor_requested.emit(Vector2.DOWN)
+				if input_scheme != Scheme.MOUSE_ONLY:
+					directional_neighbor_requested.emit(Vector2.DOWN)
 				return
 			KEY_LEFT, KEY_A:
-				directional_neighbor_requested.emit(Vector2.LEFT)
+				if input_scheme != Scheme.MOUSE_ONLY:
+					directional_neighbor_requested.emit(Vector2.LEFT)
 				return
 			KEY_RIGHT, KEY_D:
-				directional_neighbor_requested.emit(Vector2.RIGHT)
+				if input_scheme != Scheme.MOUSE_ONLY:
+					directional_neighbor_requested.emit(Vector2.RIGHT)
 				return
 			KEY_TAB:
 				cycle_neighbor.emit(1)
@@ -164,7 +212,7 @@ func _input(event: InputEvent) -> void:
 				# Slice 3.8 v2: si el tutorial exige OTRA acción (ej. escanear),
 				# bloquear el movimiento accidental (Tab+Enter por camino incorrecto).
 				if _tutorial_blocks("move"):
-					_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 					return
 				if not game_over and selected_neighbor != &"" and Time.get_ticks_msec() >= _turn_locked_until:
 					move_requested.emit(selected_neighbor)
@@ -172,35 +220,35 @@ func _input(event: InputEvent) -> void:
 			KEY_X:
 				if hacker_mode and not game_over:
 					if _tutorial_blocks("input"):
-						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
 					scan_requested.emit()
 					return
 			KEY_1:
 				if hacker_mode and not game_over:
 					if _tutorial_blocks("input"):
-						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
 					exploit_used.emit("bypass")
 					return
 			KEY_2:
 				if hacker_mode and not game_over:
 					if _tutorial_blocks("input"):
-						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
 					exploit_used.emit("escalate")
 					return
 			KEY_3:
 				if hacker_mode and not game_over:
 					if _tutorial_blocks("input"):
-						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
 					exploit_used.emit("persist")
 					return
 			KEY_4:
 				if hacker_mode and not game_over:
 					if _tutorial_blocks("input"):
-						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
 					exploit_used.emit("decoy")
 					return
@@ -228,13 +276,14 @@ func _input(event: InputEvent) -> void:
 
 	# ─── Modo defensor: mouse motion ──────────────────────────
 	if defender_mode and event is InputEventMouseMotion:
-		var edge: String = _find_edge_at_pos(event.position)
-		defender_hover_edge.emit(edge)
+		if input_scheme != Scheme.KEYBOARD_ONLY:
+			var edge: String = _find_edge_at_pos(event.position)
+			defender_hover_edge.emit(edge)
 		return
 
 	# ─── Modo atacante: mouse motion ──────────────────────────
 	if not defender_mode and event is InputEventMouseMotion:
-		if not game_over:
+		if input_scheme != Scheme.KEYBOARD_ONLY and not game_over:
 			var nid: StringName = _find_node_at_pos(event.position)
 			if nid != &"" and _es_vecino_valido(nid) and nid != selected_neighbor:
 				selected_neighbor = nid
@@ -253,6 +302,8 @@ func _input(event: InputEvent) -> void:
 
 	# ─── Click izquierdo ──────────────────────────────────────
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if input_scheme == Scheme.KEYBOARD_ONLY:
+			return
 		if game_over or Time.get_ticks_msec() < _turn_locked_until:
 			return
 		var click_pos: Vector2 = event.position
@@ -264,7 +315,7 @@ func _input(event: InputEvent) -> void:
 				if node_id != &"":
 					# Slice 3.8 v2: bloquear acciones que no son la requerida
 					if _tutorial_blocks("input"):
-						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
 					defender_place_firewall.emit(node_id)
 				else:
@@ -273,7 +324,7 @@ func _input(event: InputEvent) -> void:
 				var edge_key: String = _find_edge_at_pos(click_pos)
 				if edge_key != "":
 					if _tutorial_blocks("input"):
-						_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
 					defender_block_edge.emit(edge_key)
 			return
@@ -285,7 +336,7 @@ func _input(event: InputEvent) -> void:
 		if _es_vecino_valido(clicked_node):
 			# Slice 3.8 v2: clic = movimiento → respetar la acción requerida
 			if _tutorial_blocks("move"):
-				_mensaje_temp("⚠ Tutorial: completa la acción indicada en el recordatorio primero")
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 				return
 			move_requested.emit(clicked_node)
 		else:
