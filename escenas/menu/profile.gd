@@ -3,6 +3,7 @@ extends Control
 const BrandClass = preload("res://juego/ui/brand.gd")
 const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
+const BadgeRegistryClass = preload("res://juego/system/badge_registry.gd")
 const ProfileRendererClass = preload("res://escenas/menu/profile_renderer.gd")
 const ProgressUtilClass = preload("res://juego/utils/progress_util.gd")
 
@@ -39,6 +40,7 @@ var stats: Dictionary = {
 	"total_losses": 0,
 	"win_rate": 0.0,
 	"levels_detail": [],
+	"badges": [],
 }
 
 var world_progress: Dictionary = {
@@ -79,7 +81,10 @@ func _set_active_tab(idx: int) -> void:
 
 func _refresh_levels_detail() -> void:
 	var active_wid: String = ProfileRendererClass.TABS[_active_tab_idx]["id"]
-	stats["levels_detail"] = build_level_rows(active_wid, _progress_cfg, _stats_cfg)
+	if active_wid == "badges":
+		stats["levels_detail"] = []
+	else:
+		stats["levels_detail"] = build_level_rows(active_wid, _progress_cfg, _stats_cfg)
 
 
 func _input(event: InputEvent) -> void:
@@ -277,6 +282,8 @@ func _load_stats() -> void:
 		stats["total_losses"] = _stats_cfg.get_value("stats", "total_losses", 0)
 		var total: int = stats["total_wins"] + stats["total_losses"]
 		stats["win_rate"] = float(stats["total_wins"]) / float(total) * 100.0 if total > 0 else 0.0
+
+	stats["badges"] = BadgeRegistryClass.evaluate_badges(_progress_cfg, _stats_cfg)
 
 	_refresh_levels_detail()
 

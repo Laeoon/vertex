@@ -12,6 +12,7 @@ const TABS: Array[Dictionary] = [
 	{"id": "heist", "label": "HEIST", "color": BrandClass.SUCCESS},
 	{"id": "hacker", "label": "HACKER", "color": BrandClass.ACCENT},
 	{"id": "cybersecurity", "label": "CYBERSECURITY", "color": BrandClass.WARNING},
+	{"id": "badges", "label": "CONDECORACIONES", "color": Color("b388ff")},
 ]
 
 
@@ -335,11 +336,12 @@ func _draw_right_panel(
 	var h_rect := Rect2(rect.position.x, rect.position.y, rect.size.x, 34.0)
 	canvas.draw_rect(h_rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.12))
 	canvas.draw_line(Vector2(rect.position.x, rect.position.y + 34.0), Vector2(rect.position.x + rect.size.x, rect.position.y + 34.0), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.40), 1.0)
-	canvas.draw_string(font, Vector2(rect.position.x + 14.0, rect.position.y + 23.0), "[TELEMETRÍA DE SECTORES & HISTORIAL DE MISIÓN]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.ACCENT)
+	var header_title := "[REGISTRO DE CONDECORACIONES & MÉRITOS]" if active_tab_idx == 3 else "[TELEMETRÍA DE SECTORES & HISTORIAL DE MISIÓN]"
+	canvas.draw_string(font, Vector2(rect.position.x + 14.0, rect.position.y + 23.0), header_title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.ACCENT)
 
 	# World Selector Tabs
 	var top_tabs_y := rect.position.y + 44.0
-	var tab_w := clampf((rect.size.x - 40.0) / float(TABS.size()), 110.0, 180.0)
+	var tab_w := clampf((rect.size.x - 40.0) / float(TABS.size()), 100.0, 180.0)
 	var tab_h := 32.0
 
 	for i in range(TABS.size()):
@@ -358,8 +360,12 @@ func _draw_right_panel(
 
 		var tlabel: String = tab_item["label"]
 		var lpos := Vector2(tab_rect.position.x + tab_w * 0.5, tab_rect.position.y + 21.0)
-		var lsize := font.get_string_size(tlabel, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2)
-		canvas.draw_string(font, lpos - Vector2(lsize.x * 0.5, 0), tlabel, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2, BrandClass.TEXT if is_active else BrandClass.TEXT_DIM)
+		var lsize := font.get_string_size(tlabel, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 3)
+		canvas.draw_string(font, lpos - Vector2(lsize.x * 0.5, 0), tlabel, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 3, BrandClass.TEXT if is_active else BrandClass.TEXT_DIM)
+
+	if active_tab_idx == 3:
+		_draw_badges_view(canvas, rect, alpha, font, font_size, top_tabs_y + tab_h + 12.0, stats)
+		return
 
 	# Active World Telemetry Card
 	var active_tab: Dictionary = TABS[active_tab_idx]
@@ -497,6 +503,181 @@ func _draw_rank_glyph(
 			# Initiate: simple glowing ring & dot
 			canvas.draw_arc(pos, 10.0, 0, TAU, 16, BrandClass.with_alpha(col, alpha), 1.4)
 			canvas.draw_circle(pos, 2.5, BrandClass.with_alpha(col, alpha))
+
+
+func _draw_badges_view(
+	canvas: CanvasItem,
+	rect: Rect2,
+	alpha: float,
+	font: Font,
+	font_size: int,
+	start_y: float,
+	stats: Dictionary
+) -> void:
+	var badges: Array = stats.get("badges", [])
+	var unlocked_count: int = 0
+	for b in badges:
+		if b.get("unlocked", false):
+			unlocked_count += 1
+
+	# Telemetry summary card
+	var sum_h := 44.0
+	var sum_rect := Rect2(rect.position.x + 14.0, start_y, rect.size.x - 28.0, sum_h)
+	canvas.draw_rect(sum_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.85))
+	canvas.draw_rect(sum_rect, BrandClass.with_alpha(Color("b388ff"), alpha * 0.45), false, 1.0)
+
+	var title_text := "ESTADO DE MÉRITOS MILITARES // ACCESO CLASIFICADO"
+	canvas.draw_string(font, Vector2(sum_rect.position.x + 14.0, sum_rect.position.y + 20.0), title_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.TEXT)
+	var count_str := "%d / %d CONCEDIDAS" % [unlocked_count, badges.size()]
+	var count_sz := font.get_string_size(count_str, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size - 1)
+	canvas.draw_string(font, Vector2(sum_rect.position.x + sum_rect.size.x - count_sz.x - 14.0, sum_rect.position.y + 20.0), count_str, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size - 1, Color("b388ff"))
+
+	var desc_sub := "Condecoraciones evaluadas de forma retroactiva a partir del registro operativo."
+	canvas.draw_string(font, Vector2(sum_rect.position.x + 14.0, sum_rect.position.y + 36.0), desc_sub, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+
+	# 2-column Grid of Badges
+	var grid_y := start_y + sum_h + 12.0
+	var col_gap := 10.0
+	var row_gap := 8.0
+	var col_w := (rect.size.x - 28.0 - col_gap) * 0.5
+	var card_h := 62.0
+
+	for i in range(badges.size()):
+		var b: Dictionary = badges[i]
+		var col_idx := i % 2
+		var row_idx := i / 2
+		var cx := rect.position.x + 14.0 + float(col_idx) * (col_w + col_gap)
+		var cy := grid_y + float(row_idx) * (card_h + row_gap)
+		var c_rect := Rect2(cx, cy, col_w, card_h)
+
+		var is_unlocked: bool = b.get("unlocked", false)
+		var b_color: Color = Color("b388ff") if is_unlocked else BrandClass.PANEL_BORDER
+
+		# Card plate
+		canvas.draw_rect(c_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * (0.90 if is_unlocked else 0.50)))
+		canvas.draw_rect(c_rect, BrandClass.with_alpha(b_color, alpha * (0.80 if is_unlocked else 0.25)), false, 1.2 if is_unlocked else 1.0)
+
+		# Vector Glyph Disk
+		var g_center := Vector2(cx + 26.0, cy + card_h * 0.5)
+		var g_rad := 16.0
+		canvas.draw_circle(g_center, g_rad, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.95))
+		canvas.draw_circle(g_center, g_rad, BrandClass.with_alpha(b_color, alpha * (0.90 if is_unlocked else 0.35)), false, 1.2)
+		_draw_badge_glyph(canvas, g_center, b.get("icon", ""), b_color, alpha * (1.0 if is_unlocked else 0.40))
+
+		# Title & description
+		var tx := cx + 50.0
+		var title_col := BrandClass.TEXT if is_unlocked else BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.70)
+		canvas.draw_string(font, Vector2(tx, cy + 18.0), b.get("title", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, title_col)
+		canvas.draw_string(font, Vector2(tx, cy + 34.0), b.get("description", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+
+		# Progress bar or Granted Tag
+		if is_unlocked:
+			var tag := "[CONCEDIDA]"
+			var t_sz := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4)
+			canvas.draw_string(font, Vector2(cx + col_w - t_sz.x - 8.0, cy + 18.0), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.SUCCESS)
+		else:
+			var cur: int = b.get("current", 0)
+			var tgt: int = b.get("target", 1)
+			var prog_str := "%d/%d" % [cur, tgt]
+			var p_sz := font.get_string_size(prog_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4)
+			canvas.draw_string(font, Vector2(cx + col_w - p_sz.x - 8.0, cy + 18.0), prog_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+
+			# Small progress line
+			var bar_x := tx
+			var bar_y := cy + 44.0
+			var bar_w := col_w - 58.0
+			var bar_h := 3.0
+			canvas.draw_rect(Rect2(bar_x, bar_y, bar_w, bar_h), BrandClass.with_alpha(BrandClass.PANEL_BORDER, alpha * 0.30))
+			var ratio: float = b.get("progress_ratio", 0.0)
+			if ratio > 0.0:
+				canvas.draw_rect(Rect2(bar_x, bar_y, bar_w * ratio, bar_h), BrandClass.with_alpha(Color("b388ff"), alpha * 0.60))
+
+
+func _draw_badge_glyph(
+	canvas: CanvasItem,
+	pos: Vector2,
+	icon_type: String,
+	col: Color,
+	alpha: float
+) -> void:
+	match icon_type:
+		"glyph_breach":
+			# Prompt >_
+			canvas.draw_line(pos + Vector2(-6, -5), pos + Vector2(-1, 0), BrandClass.with_alpha(col, alpha), 1.5)
+			canvas.draw_line(pos + Vector2(-1, 0), pos + Vector2(-6, 5), BrandClass.with_alpha(col, alpha), 1.5)
+			canvas.draw_line(pos + Vector2(2, 5), pos + Vector2(7, 5), BrandClass.with_alpha(col, alpha), 1.5)
+		"glyph_ghost":
+			# Arc + center dot
+			canvas.draw_arc(pos, 8.0, PI * 0.2, PI * 0.8, 8, BrandClass.with_alpha(col, alpha), 1.5)
+			canvas.draw_arc(pos, 8.0, PI * 1.2, PI * 1.8, 8, BrandClass.with_alpha(col, alpha), 1.5)
+			canvas.draw_circle(pos, 2.5, BrandClass.with_alpha(col, alpha))
+		"glyph_vault":
+			# Hexagonal key
+			var pts := PackedVector2Array()
+			for s in range(7):
+				var a := float(s) * TAU / 6.0
+				pts.append(pos + Vector2(cos(a) * 7.0, sin(a) * 7.0))
+			canvas.draw_polyline(pts, BrandClass.with_alpha(col, alpha), 1.4)
+			canvas.draw_rect(Rect2(pos.x - 2, pos.y - 2, 4, 4), BrandClass.with_alpha(col, alpha))
+		"glyph_network":
+			# Diamond network
+			canvas.draw_line(pos + Vector2(0, -7), pos + Vector2(7, 0), BrandClass.with_alpha(col, alpha), 1.2)
+			canvas.draw_line(pos + Vector2(7, 0), pos + Vector2(0, 7), BrandClass.with_alpha(col, alpha), 1.2)
+			canvas.draw_line(pos + Vector2(0, 7), pos + Vector2(-7, 0), BrandClass.with_alpha(col, alpha), 1.2)
+			canvas.draw_line(pos + Vector2(-7, 0), pos + Vector2(0, -7), BrandClass.with_alpha(col, alpha), 1.2)
+			canvas.draw_circle(pos, 2.0, BrandClass.with_alpha(col, alpha))
+		"glyph_shield":
+			# Defense shield
+			var spts := PackedVector2Array([
+				pos + Vector2(-6, -6),
+				pos + Vector2(6, -6),
+				pos + Vector2(5, 2),
+				pos + Vector2(0, 7),
+				pos + Vector2(-5, 2),
+				pos + Vector2(-6, -6)
+			])
+			canvas.draw_polyline(spts, BrandClass.with_alpha(col, alpha), 1.4)
+		"glyph_streak":
+			# Lightning bolt
+			var lpts := PackedVector2Array([
+				pos + Vector2(1, -7),
+				pos + Vector2(-4, 0),
+				pos + Vector2(0, 0),
+				pos + Vector2(-1, 7),
+				pos + Vector2(4, -1),
+				pos + Vector2(0, -1),
+				pos + Vector2(1, -7)
+			])
+			canvas.draw_polyline(lpts, BrandClass.with_alpha(col, alpha), 1.3)
+		"glyph_stars":
+			# Star triad
+			canvas.draw_circle(pos + Vector2(0, -5), 2.0, BrandClass.with_alpha(col, alpha))
+			canvas.draw_circle(pos + Vector2(-5, 4), 2.0, BrandClass.with_alpha(col, alpha))
+			canvas.draw_circle(pos + Vector2(5, 4), 2.0, BrandClass.with_alpha(col, alpha))
+		"glyph_chip":
+			# Integrated circuit microchip
+			canvas.draw_rect(Rect2(pos.x - 5, pos.y - 5, 10, 10), BrandClass.with_alpha(col, alpha), false, 1.2)
+			canvas.draw_line(pos + Vector2(-8, 0), pos + Vector2(-5, 0), BrandClass.with_alpha(col, alpha), 1.2)
+			canvas.draw_line(pos + Vector2(5, 0), pos + Vector2(8, 0), BrandClass.with_alpha(col, alpha), 1.2)
+		"glyph_radar":
+			# Concentric sweep
+			canvas.draw_arc(pos, 7.0, 0, TAU, 14, BrandClass.with_alpha(col, alpha), 1.2)
+			canvas.draw_line(pos, pos + Vector2(5, -5), BrandClass.with_alpha(col, alpha), 1.4)
+		"glyph_crown":
+			# Crown chevron
+			var cpts := PackedVector2Array([
+				pos + Vector2(-7, 5),
+				pos + Vector2(-6, -4),
+				pos + Vector2(-2, 0),
+				pos + Vector2(0, -6),
+				pos + Vector2(2, 0),
+				pos + Vector2(6, -4),
+				pos + Vector2(7, 5),
+				pos + Vector2(-7, 5)
+			])
+			canvas.draw_polyline(cpts, BrandClass.with_alpha(col, alpha), 1.3)
+		_:
+			canvas.draw_arc(pos, 6.0, 0, TAU, 12, BrandClass.with_alpha(col, alpha), 1.2)
 
 
 func _format_time(seconds: int) -> String:

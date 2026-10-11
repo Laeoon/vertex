@@ -77,4 +77,10 @@ func test_profile_tab_switching() -> void:
 	_assert(profile._active_tab_idx == 2, "Active tab switched to 2 (Cybersecurity)")
 	_assert(profile.stats["levels_detail"].size() == 2, "Cybersecurity details loaded (2 rows)")
 
+	# Switch to Badges (tab 3)
+	profile._set_active_tab(3)
+	_assert(profile._active_tab_idx == 3, "Active tab switched to 3 (Badges)")
+	_assert(profile.stats["levels_detail"].size() == 0, "Badges tab levels_detail is empty (0 rows)")
+	_assert(profile.stats.has("badges") and profile.stats["badges"].size() == 10, "Badges tab contains 10 evaluated badges")
+
 	profile.queue_free()
