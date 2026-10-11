@@ -23,6 +23,7 @@ const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 const BrandClass = preload("res://juego/ui/brand.gd")
 const GameOverOverlayClass = preload("res://juego/ataque/game_over_overlay.gd")
 const PauseOverlayClass = preload("res://juego/ataque/pause_overlay.gd")
+const ProgressUtilClass = preload("res://juego/utils/progress_util.gd")
 
 var graph_path: String = ""
 var start_node: StringName = &""
@@ -224,6 +225,8 @@ func _ready() -> void:
 	_game_state.load_graph()
 	if tutorial_path != "":
 		_setup_tutorial()
+	if _pause_overlay != null and (tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player))):
+		_pause_overlay.set_tutorial_mode(true)
 	if defender_mode and not game_over:
 		_init_defender_mode()
 		GameLogger.info("JuegoAtaque", "MODO DEFENSOR activado")
@@ -286,6 +289,8 @@ func _show_game_over_overlay() -> void:
 	# (el modo defensor siempre usa "VICTORIA DEFENSIVA").
 	if d.game_won and not d.defender_mode and d.es_tutorial:
 		_game_over_overlay.set_tutorial_title()
+	if d.es_tutorial or tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player)):
+		_game_over_overlay.select_button.text = "[L] Tutoriales"
 func _target_actual() -> StringName: return _game_state.target_actual()
 func mostrar_ruta() -> void: _game_state.mostrar_ruta()
 func _find_node_resource(nid: StringName): return _game_state.find_node_resource(nid)
@@ -486,16 +491,25 @@ func _on_input_scheme_changed(scheme: int) -> void:
 # ─── Navegación post-partida (slice 6; lógica en LevelManager) ────
 
 func _on_next_level() -> void:
-	# Siguiente nivel del mismo mundo; si es el último (o el nivel no está
-	# registrado, p.ej. tutoriales), cae al selector de ese mundo.
+	# En tutoriales, volver al menú de tutoriales.
+	if tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player)):
+		SceneTransition.fade_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
+		return
+	# Siguiente nivel del mismo mundo; si es el último, cae al selector de ese mundo.
 	if not LevelManagerClass.launch_next(level_key):
 		_on_level_select()
 
 
 func _on_level_select() -> void:
-	# Mundo del nivel actual; si no está registrado (tutoriales), heist como
-	# fallback razonable del selector.
-	var world: String = LevelRegistryClass.find_level(level_key).get("world", "heist")
+	# En tutoriales, volver al menú de tutoriales.
+	if tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player)):
+		SceneTransition.fade_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
+		return
+	# Mundo del nivel actual; si no está registrado o está vacío, volver al menú principal.
+	var world: String = LevelRegistryClass.find_level(level_key).get("world", "")
+	if world == "":
+		SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+		return
 	LevelManagerClass.goto_level_select(world)
 
 
@@ -579,6 +593,11 @@ func _setup_tutorial() -> void:
 func _on_tutorial_step_changed(_step_index: int, _step_data: Dictionary) -> void: queue_redraw()
 func _on_tutorial_completed(_tutorial_id: String) -> void:
 	mensaje_estado = "Tutorial completado!"
+	var save_key: String = level_key
+	if save_key.is_empty():
+		save_key = _tutorial_id
+	if not save_key.is_empty():
+		ProgressUtilClass.guardar_progreso(save_key, 3)
 	queue_redraw()
 
 

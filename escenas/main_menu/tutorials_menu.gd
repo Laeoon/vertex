@@ -103,6 +103,37 @@ func _input(event: InputEvent) -> void:
 					selected_idx = mini(lessons.size() - 1, selected_idx + 1)
 					queue_redraw()
 
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var pos: Vector2 = event.position
+		# Click en pestañas
+		var tab_x: float = 60.0
+		var tab_y: float = 110.0
+		var tab_gap: float = 24.0
+		for t in Track.values():
+			var meta: Dictionary = TRACK_METADATA.get(t, {})
+			var t_title: String = meta.get("title", "")
+			var tab_text: String = "[ %s ]" % t_title
+			var tab_w: float = font.get_string_size(tab_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
+			var tab_rect := Rect2(tab_x - 8, tab_y - 18, tab_w + 16, 26)
+			if tab_rect.has_point(pos):
+				current_track = t as Track
+				selected_idx = 0
+				queue_redraw()
+				return
+			tab_x += tab_w + tab_gap
+
+		# Click en lecciones
+		if current_track != Track.DEFENDER:
+			var lessons: Array = _get_current_lessons()
+			var by: float = 190.0
+			for i in lessons.size():
+				var row_rect := Rect2(50, by - 16, get_viewport_rect().size.x - 110, 52)
+				if row_rect.has_point(pos):
+					selected_idx = i
+					_launch(lessons[i].key)
+					return
+				by += 58
+
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
@@ -112,6 +143,7 @@ func _process(delta: float) -> void:
 
 func _launch(key: StringName) -> void:
 	SceneParams.reset()
+	SceneParams.level_key = String(key)
 	if key == &"tutorial1":
 		SceneParams.graph_path = "res://juego/tutorial1/tut1_red.tres"
 		SceneParams.start_node = &"Inicio"
@@ -268,10 +300,10 @@ func _draw() -> void:
 		draw_rect(card_rect, BrandClass.with_alpha(BrandClass.WARNING, 0.4), false, 1.5)
 
 		var glow := 0.7 + sin(_pulse) * 0.3
-		draw_string(font, Vector2(85, 220), "🛡  MODO DEFENSOR — EN MANTENIMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, glow))
+		draw_string(font, Vector2(85, 220), "[!] MODO DEFENSOR — EN MANTENIMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, glow))
 		draw_string(font, Vector2(85, 255), "Las mecánicas de ciberdefensa perimetral y contramedidas activas", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.TEXT)
 		draw_string(font, Vector2(85, 280), "están actualmente en fase de reestructuración técnica y rebalanceo.", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.TEXT)
-		draw_string(font, Vector2(85, 320), "⚠ Los tutoriales de defensa se reactivarán en la próxima actualización.", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
+		draw_string(font, Vector2(85, 320), "[*] Los tutoriales de defensa se reactivarán en la próxima actualización.", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
 	else:
 		# Lista de lecciones del track activo
 		var lessons: Array = _get_current_lessons()
@@ -283,6 +315,11 @@ func _draw() -> void:
 			var color: Color
 			var prefix: String
 
+			var lk: StringName = b.get("key", &"")
+			var level_key: String = String(lk)
+			var stars: int = progress.get(level_key, 0)
+			var is_completed: bool = stars > 0
+
 			if is_sel:
 				var glow := 0.7 + sin(_pulse) * 0.3
 				color = BrandClass.with_alpha(BrandClass.ACCENT, glow)
@@ -292,21 +329,48 @@ func _draw() -> void:
 				color = BrandClass.TEXT_DIM
 				prefix = "  "
 
-			draw_string(font, Vector2(60, by), prefix + b.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, color)
+			# Indicador visual de check / estado a la izquierda
+			var check_x := 60.0
+			var check_y := by - 12.0
+			var check_size := 16.0
+			var check_rect := Rect2(check_x, check_y, check_size, check_size)
 
-			# Estrellas de progreso
-			var lk: StringName = b.get("key", &"")
-			if lk != &"":
-				var level_key: String = lk
-				var stars: int = progress.get(level_key, 0)
+			if is_completed:
+				draw_rect(check_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.20))
+				draw_rect(check_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.85), false, 1.2)
+				# Checkmark vectorial
+				draw_line(Vector2(check_x + 3.5, check_y + 8.5), Vector2(check_x + 6.5, check_y + 12.0), BrandClass.SUCCESS, 2.0)
+				draw_line(Vector2(check_x + 6.5, check_y + 12.0), Vector2(check_x + 12.5, check_y + 4.5), BrandClass.SUCCESS, 2.0)
+			else:
+				draw_rect(check_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.45), false, 1.0)
+
+			draw_string(font, Vector2(88.0, by), prefix + b.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, color)
+
+			# Badge táctico y estrellas a la derecha
+			var badge_w := 115.0
+			var badge_h := 20.0
+			var badge_x := vp_size.x - 265.0
+			var badge_y := by - 14.0
+			var badge_rect := Rect2(badge_x, badge_y, badge_w, badge_h)
+
+			if is_completed:
+				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.15))
+				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.60), false, 1.0)
+				draw_string(font, Vector2(badge_x + 8.0, badge_y + 14.0), "[COMPLETADO]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.SUCCESS)
+
 				var stars_str: String = ""
 				for si in range(3):
 					stars_str += "★" if si < stars else "☆"
-				var star_color: Color = BrandClass.WARNING if stars > 0 else BrandClass.TEXT_DIM
-				draw_string(font, Vector2(vp_size.x - 160, by), stars_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, star_color)
+				draw_string(font, Vector2(vp_size.x - 135.0, by), stars_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.WARNING)
+			else:
+				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.15))
+				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.40), false, 1.0)
+				draw_string(font, Vector2(badge_x + 14.0, badge_y + 14.0), "[PENDIENTE]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+
+				draw_string(font, Vector2(vp_size.x - 135.0, by), "☆☆☆", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, 0.40))
 
 			by += 22
-			draw_string(font, Vector2(78, by), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+			draw_string(font, Vector2(106.0, by), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 			by += 36
 
 	# Controles al pie

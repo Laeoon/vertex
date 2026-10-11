@@ -35,6 +35,18 @@ static func get_stars(level_key: String) -> int:
 	return cfg.get_value("estrellas", level_key, 0)
 
 
+## Guarda las estrellas de un nivel o tutorial si superan el registro previo.
+static func guardar_progreso(level_key: String, stars: int) -> void:
+	if level_key.is_empty() or stars <= 0:
+		return
+	var cfg := ConfigFile.new()
+	cfg.load("user://progress.cfg")
+	var prev: int = cfg.get_value("estrellas", level_key, 0)
+	if stars > prev:
+		cfg.set_value("estrellas", level_key, stars)
+		cfg.save("user://progress.cfg")
+
+
 ## Carga el progreso y pobla un array de misiones con stars/completed.
 ##
 ## `missions` es un Array[Dictionary] donde cada entrada tiene clave `"id"`.

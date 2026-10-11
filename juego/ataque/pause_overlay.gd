@@ -135,6 +135,11 @@ func get_input_scheme() -> int:
 	return 0
 
 
+func set_tutorial_mode(is_tut: bool) -> void:
+	if level_select_button != null:
+		level_select_button.text = "Menu de Tutoriales" if is_tut else "Selector de Niveles"
+
+
 func _layout_content() -> void:
 	if not is_inside_tree():
 		return

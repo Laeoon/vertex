@@ -4,6 +4,7 @@ class_name LevelManager
 ## Lee la configuración desde JSON y setea SceneParams antes de cargar.
 
 const _Registry = preload("res://juego/system/level_registry.gd")
+const _ProgressUtil = preload("res://juego/utils/progress_util.gd")
 
 
 static func launch_level(world_id: String, level_idx: int = 0) -> bool:
@@ -50,6 +51,11 @@ static func launch_next(level_id: String) -> bool:
 ## Vuelve al selector de niveles del mundo dado (mismo transporte que el menú
 ## principal: world_id viaja por SceneParams.titulo_nivel).
 static func goto_level_select(world_id: String) -> void:
+	var progress: Dictionary = _ProgressUtil.cargar_progreso()
+	if not _ProgressUtil.is_world_unlocked(world_id, progress):
+		push_warning("LevelManager: el mundo '%s' esta bloqueado. Redirigiendo a menu principal." % world_id)
+		SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+		return
 	SceneParams.titulo_nivel = world_id
 	SceneTransition.fade_to_scene("res://juego/system/level_select_screen.tscn")
 

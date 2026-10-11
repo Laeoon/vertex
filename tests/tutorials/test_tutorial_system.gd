@@ -224,6 +224,28 @@ func _run_tests() -> void:
 		print("FAIL: Defender stand-by no bloqueo launch")
 		failed += 1
 
+	# TEST 20: Tutorial launch sets SceneParams.level_key
+	menu.current_track = menu.Track.GENERAL
+	menu.selected_idx = 0
+	SceneParams.reset()
+	menu._launch(&"tutorial1")
+	if SceneParams.level_key == "tutorial1":
+		print("PASS: menu._launch sets SceneParams.level_key")
+		passed += 1
+	else:
+		print("FAIL: menu._launch level_key='%s'" % SceneParams.level_key)
+		failed += 1
+
+	# TEST 21: ProgressUtil.guardar_progreso and get_stars
+	var ProgressUtilClass = preload("res://juego/utils/progress_util.gd")
+	ProgressUtilClass.guardar_progreso("test_tutorial_demo", 3)
+	if ProgressUtilClass.get_stars("test_tutorial_demo") == 3:
+		print("PASS: ProgressUtil.guardar_progreso guarda y recupera 3 estrellas")
+		passed += 1
+	else:
+		print("FAIL: ProgressUtil.guardar_progreso fallo")
+		failed += 1
+
 	menu.queue_free()
 	_quit()
 

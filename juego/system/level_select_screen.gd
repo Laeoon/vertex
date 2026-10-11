@@ -26,6 +26,10 @@ func _ready() -> void:
 	if sp:
 		world_id = sp.titulo_nivel
 	progress = ProgressUtil.cargar_progreso()
+	if not ProgressUtil.is_world_unlocked(world_id, progress):
+		push_warning("LevelSelectScreen: el mundo '%s' esta bloqueado. Redirigiendo a menu principal." % world_id)
+		SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+		return
 	_load_world_data()
 	if get_node_or_null("/root/AudioManager") != null:
 		AudioManager.play_menu_music()
