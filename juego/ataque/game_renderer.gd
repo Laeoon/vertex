@@ -78,11 +78,11 @@ func draw_frame(d: Dictionary) -> void:
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
 	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
 	if d.defender_mode:
-		draw_nodes(d.graph, d.node_positions, d.brain_enemy_pos, d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes)
+		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, Vector2.ZERO, false, true, d.brain_enemy_pos)
 		if d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
-		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false))
+		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"")
 
 	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
 	if d.show_optimal_overlay:
@@ -633,7 +633,9 @@ func draw_nodes(
 	bonus_visitados: Array = [],
 	hidden_nodes: Array = [],
 	player_visual_pos: Vector2 = Vector2.ZERO,
-	is_moving: bool = false
+	is_moving: bool = false,
+	defender_mode: bool = false,
+	brain_enemy_pos: StringName = &""
 ) -> void:
 	# Identidad por tipo (E2): forma geométrica según NodeType.
 	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
@@ -784,12 +786,18 @@ func draw_nodes(
 		draw_rect(Rect2(label_x - 4, label_y - 14, text_w + 8, 18), border_color, false, 1.0)
 		draw_string(Vector2(label_x, label_y), label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 
-		if is_player and not is_moving:
-			draw_string(Vector2(pos.x - 8, pos.y + radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
-		elif is_target:
-			draw_string(Vector2(pos.x - 18, pos.y + radius + 16), "TARGET", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, BrandClass.DANGER)
-		elif es_vecino and not game_over:
-			draw_string(Vector2(pos.x - 8, pos.y + radius + 16), "→", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.3, 1.0, 0.4))
+		if defender_mode:
+			if nid_str == brain_enemy_pos:
+				draw_string(Vector2(pos.x - 22, pos.y + radius + 16), "ATACANTE", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(1.0, 0.3, 0.2))
+			elif is_target:
+				draw_string(Vector2(pos.x - 18, pos.y + radius + 16), "NÚCLEO", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, BrandClass.ACCENT)
+		else:
+			if is_player and not is_moving:
+				draw_string(Vector2(pos.x - 8, pos.y + radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
+			elif is_target:
+				draw_string(Vector2(pos.x - 18, pos.y + radius + 16), "TARGET", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, BrandClass.DANGER)
+			elif es_vecino and not game_over:
+				draw_string(Vector2(pos.x - 8, pos.y + radius + 16), "→", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.3, 1.0, 0.4))
 
 		# Scan indicator
 		if scan_results.has(str(nid_str)):
@@ -835,20 +843,29 @@ func draw_nodes(
 			var bonus_color: Color = BrandClass.TEXT_DIM if nid_str in bonus_visitados else BrandClass.WARNING
 			draw_polygon(_poligono(pos + Vector2(-(radius + 12.0), -(radius + 12.0)), 6.0, 4), bonus_color)
 
-	# Token visual del jugador interpolado (movimiento fluido)
-	var ppos: Vector2 = player_visual_pos if player_visual_pos != Vector2.ZERO else (node_positions.get(player_pos, Vector2.ZERO) as Vector2)
-	if ppos != Vector2.ZERO and not game_over and player_pos != &"":
-		var pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.007) * 0.25
-		# Anillo de energía exterior
-		var ring_r: float = (node_radius + 6.0) if is_moving else (node_radius + 4.0)
-		var ring_alpha: float = 0.9 if is_moving else (pulse * 0.6)
-		draw_circle(ppos, ring_r, Color(0.0, 0.95, 1.0, ring_alpha), false, 2.5 if is_moving else 2.0)
-		if is_moving:
-			draw_circle(ppos, node_radius + 11.0, Color(0.0, 0.8, 1.0, 0.4), false, 1.5)
-		# Núcleo del avatar
-		draw_circle(ppos, 8.0 if is_moving else 7.0, Color(0.0, 1.0, 1.0, 0.95))
-		draw_circle(ppos, 4.0 if is_moving else 3.5, Color.WHITE)
-		draw_string(Vector2(ppos.x - 8, ppos.y + node_radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
+	# Token visual del jugador interpolado (movimiento fluido) — omitido en modo defensor
+	if not defender_mode:
+		var ppos: Vector2 = player_visual_pos if player_visual_pos != Vector2.ZERO else (node_positions.get(player_pos, Vector2.ZERO) as Vector2)
+		if ppos != Vector2.ZERO and not game_over and player_pos != &"":
+			var pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.007) * 0.25
+			# Anillo de energía exterior
+			var ring_r: float = (node_radius + 6.0) if is_moving else (node_radius + 4.0)
+			var ring_alpha: float = 0.9 if is_moving else (pulse * 0.6)
+			draw_circle(ppos, ring_r, Color(0.0, 0.95, 1.0, ring_alpha), false, 2.5 if is_moving else 2.0)
+			if is_moving:
+				draw_circle(ppos, node_radius + 11.0, Color(0.0, 0.8, 1.0, 0.4), false, 1.5)
+			# Núcleo del avatar
+			draw_circle(ppos, 8.0 if is_moving else 7.0, Color(0.0, 1.0, 1.0, 0.95))
+			draw_circle(ppos, 4.0 if is_moving else 3.5, Color.WHITE)
+			draw_string(Vector2(ppos.x - 8, ppos.y + node_radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
+	else:
+		# En modo defensor, dibujamos el token táctico del atacante hostil en su posición actual
+		var epos: Vector2 = node_positions.get(brain_enemy_pos, Vector2.ZERO) as Vector2
+		if epos != Vector2.ZERO and not game_over and brain_enemy_pos != &"":
+			var e_pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.008) * 0.3
+			draw_circle(epos, node_radius + 6.0, Color(1.0, 0.2, 0.1, e_pulse * 0.7), false, 2.5)
+			draw_circle(epos, node_radius + 10.0, Color(1.0, 0.2, 0.1, e_pulse * 0.3), false, 1.5)
+			draw_circle(epos, 6.0, Color(1.0, 0.2, 0.1, 0.95))
 
 
 func draw_pursuers(pursuers: Array, node_positions: Dictionary, node_radius: float) -> void:
