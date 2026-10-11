@@ -1,83 +1,187 @@
 extends Control
 
+## Database Controller
+## Manages state machine, input routing, audio cues, and transitions for the Tactical Codex.
+## Delegates pure layout and rendering to DatabaseRenderer.
+
+const BrandClass = preload("res://juego/ui/brand.gd")
+const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
+const DatabaseRendererClass = preload("res://escenas/menu/database_renderer.gd")
+
 var font: Font
 var font_size: int = 14
 var big_font_size: int = 28
 var _pulse: float = 0.0
 
-const BrandClass = preload("res://juego/ui/brand.gd")
-const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
 var _cyber_bg := CyberBackgroundClass.new()
+var _renderer := DatabaseRendererClass.new()
 
-const CYAN: Color = BrandClass.ACCENT
-const GRIS: Color = BrandClass.TEXT_DIM
-const GRIS_OSCURO: Color = BrandClass.TEXT_DIM
-const BLANCO: Color = BrandClass.TEXT
-const AMARILLO: Color = BrandClass.WARNING
-
-enum Tab { MISSIONS, CONCEPTS, LORE }
-
-var _tab_idx: int = 0
+var _active_cat_idx: int = 0
+var _selected_entry_idx: int = 0
 var _scroll_y: float = 0.0
 
-var missions: Array[Dictionary] = [
-	{"id": "heist_n1", "world": "world.heist", "name": "database.heist_n1_name", "difficulty": 1, "completed": false, "stars": 0},
-	{"id": "heist_n2", "world": "world.heist", "name": "database.heist_n2_name", "difficulty": 2, "completed": false, "stars": 0},
-	{"id": "hacker_n1", "world": "world.hacker", "name": "database.hacker_n1_name", "difficulty": 2, "completed": false, "stars": 0},
-	{"id": "cyber_n1", "world": "world.cyber", "name": "database.cyber_n1_name", "difficulty": 3, "completed": false, "stars": 0},
-	{"id": "defense_n1", "world": "world.cyber", "name": "database.defense_n1_name", "difficulty": 2, "completed": false, "stars": 0},
-]
+var _hovered_back: bool = false
+var _hovered_cat_idx: int = -1
+var _hovered_entry_idx: int = -1
 
-var concepts: Array[Dictionary] = [
-	{"id": "graph_theory", "title": "concept.graph_theory", "description": "concept.graph_theory_desc"},
-	{"id": "dijkstra", "title": "concept.dijkstra", "description": "concept.dijkstra_desc"},
-	{"id": "edmonds_karp", "title": "concept.edmonds_karp", "description": "concept.edmonds_karp_desc"},
-	{"id": "mtd", "title": "concept.mtd", "description": "concept.mtd_desc"},
-	{"id": "attack_graphs", "title": "concept.attack_graphs", "description": "concept.attack_graphs_desc"},
-]
+# Backward-compatibility / semantic aliases
+var _category_idx: int:
+	get: return _active_cat_idx
+	set(val): _active_cat_idx = val
 
-var lore_entries: Array[Dictionary] = [
-	{"id": "about_vertex", "title": "lore.about_vertex", "text": "lore.about_vertex_text"},
-	{"id": "objective", "title": "lore.objective", "description": "lore.objective_text"},
-	{"id": "reference", "title": "lore.reference", "description": "lore.reference_text"},
-]
+var _entry_idx: int:
+	get: return _selected_entry_idx
+	set(val): _selected_entry_idx = val
+
+var _hovered_category_idx: int:
+	get: return _hovered_cat_idx
+	set(val): _hovered_cat_idx = val
 
 
 func _ready() -> void:
 	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
-	ProgressUtil.cargar_misiones(missions)
-	if get_node_or_null("/root/AudioManager") != null:
-		AudioManager.play_menu_music()
+	_cyber_bg.show_hologram = false
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_menu_music"):
+		am.play_menu_music()
 	queue_redraw()
 
 
-func loc(key: String) -> String:
-	return LocUtil.loc(self, key)
+func _play_click_sfx() -> void:
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("click")
+
+
+func _set_active_category(idx: int) -> void:
+	var total_cats := DatabaseRendererClass.CATEGORIES.size()
+	if total_cats == 0:
+		return
+	var new_cat := clampi(idx, 0, total_cats - 1)
+	if _active_cat_idx != new_cat:
+		_active_cat_idx = new_cat
+		_selected_entry_idx = 0
+		_scroll_y = 0.0
+		_play_click_sfx()
+		queue_redraw()
+
+
+func _select_entry(idx: int) -> void:
+	var entries := DatabaseRendererClass.get_entries_for_category(_active_cat_idx)
+	if entries.is_empty():
+		return
+	var new_idx := clampi(idx, 0, entries.size() - 1)
+	if _selected_entry_idx != new_idx:
+		_selected_entry_idx = new_idx
+		_scroll_y = 0.0
+		_play_click_sfx()
+		queue_redraw()
+
+
+func _scroll_by(amount: float) -> void:
+	var max_s: float = _get_max_scroll()
+	var prev_s := _scroll_y
+	_scroll_y = clampf(_scroll_y + amount, 0.0, max_s)
+	if not is_equal_approx(_scroll_y, prev_s):
+		queue_redraw()
+
+
+func _get_max_scroll() -> float:
+	var vp := get_viewport_rect().size
+	var right_rect := _renderer.get_right_panel_rect(vp)
+	var viewport_h := _renderer.get_dossier_viewport_height(right_rect)
+	var entries := DatabaseRendererClass.get_entries_for_category(_active_cat_idx)
+	if _selected_entry_idx < 0 or _selected_entry_idx >= entries.size():
+		return 0.0
+	var entry: Dictionary = entries[_selected_entry_idx]
+	var content_w := right_rect.size.x - 48.0
+	var total_h := DatabaseRendererClass.compute_dossier_height(entry, font, font_size, content_w)
+	return maxf(0.0, total_h - viewport_h)
+
+
+func _back_to_menu() -> void:
+	_play_click_sfx()
+	var st = get_node_or_null("/root/SceneTransition")
+	if st != null and st.has_method("fade_to_scene"):
+		st.fade_to_scene("res://escenas/main_menu.tscn")
+	elif get_tree() != null:
+		get_tree().change_scene_to_file("res://escenas/main_menu.tscn")
 
 
 func _input(event: InputEvent) -> void:
+	var vp := get_viewport_rect().size
+
 	if event is InputEventKey and event.pressed:
 		var k := event as InputEventKey
 		match k.keycode:
 			KEY_ESCAPE:
-				SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
-			KEY_LEFT:
-				_tab_idx = maxi(0, _tab_idx - 1)
-				_scroll_y = 0.0
-				queue_redraw()
-			KEY_RIGHT:
-				_tab_idx = mini(2, _tab_idx + 1)
-				_scroll_y = 0.0
-				queue_redraw()
-			KEY_UP:
-				_scroll_y = maxf(0.0, _scroll_y - 30.0)
-				queue_redraw()
-			KEY_DOWN:
-				var max_scroll: float = _get_max_scroll()
-				_scroll_y = minf(max_scroll, _scroll_y + 30.0)
-				queue_redraw()
+				_back_to_menu()
+			KEY_TAB:
+				var total_cats := DatabaseRendererClass.CATEGORIES.size()
+				_set_active_category((_active_cat_idx + 1) % total_cats)
+			KEY_D, KEY_RIGHT:
+				var total_cats := DatabaseRendererClass.CATEGORIES.size()
+				_set_active_category((_active_cat_idx + 1) % total_cats)
+			KEY_A, KEY_LEFT:
+				var total_cats := DatabaseRendererClass.CATEGORIES.size()
+				_set_active_category((_active_cat_idx - 1 + total_cats) % total_cats)
+			KEY_W, KEY_UP:
+				_select_entry(_selected_entry_idx - 1)
+			KEY_S, KEY_DOWN:
+				_select_entry(_selected_entry_idx + 1)
+			KEY_PAGEUP:
+				_scroll_by(-120.0)
+			KEY_PAGEDOWN:
+				_scroll_by(120.0)
+
+	elif event is InputEventMouseMotion:
+		var mpos := (event as InputEventMouseMotion).position
+		var prev_b := _hovered_back
+		_hovered_back = _renderer.get_back_button_rect(vp).has_point(mpos)
+
+		var prev_c := _hovered_cat_idx
+		_hovered_cat_idx = -1
+		for i in range(DatabaseRendererClass.CATEGORIES.size()):
+			if _renderer.get_category_tab_rect(i, vp).has_point(mpos):
+				_hovered_cat_idx = i
+				break
+
+		var prev_e := _hovered_entry_idx
+		_hovered_entry_idx = -1
+		var num_entries := DatabaseRendererClass.get_entry_count(_active_cat_idx)
+		for i in range(num_entries):
+			if _renderer.get_entry_row_rect(i, vp).has_point(mpos):
+				_hovered_entry_idx = i
+				break
+
+		if prev_b != _hovered_back or prev_c != _hovered_cat_idx or prev_e != _hovered_entry_idx:
+			queue_redraw()
+
+	elif event is InputEventMouseButton and event.pressed:
+		var mb := event as InputEventMouseButton
+		var mpos := mb.position
+		match mb.button_index:
+			MOUSE_BUTTON_WHEEL_UP:
+				_scroll_by(-40.0)
+			MOUSE_BUTTON_WHEEL_DOWN:
+				_scroll_by(40.0)
+			MOUSE_BUTTON_LEFT:
+				if _renderer.get_back_button_rect(vp).has_point(mpos):
+					_back_to_menu()
+					return
+
+				for i in range(DatabaseRendererClass.CATEGORIES.size()):
+					if _renderer.get_category_tab_rect(i, vp).has_point(mpos):
+						_set_active_category(i)
+						return
+
+				var num_entries := DatabaseRendererClass.get_entry_count(_active_cat_idx)
+				for i in range(num_entries):
+					if _renderer.get_entry_row_rect(i, vp).has_point(mpos):
+						_select_entry(i)
+						return
 
 
 func _process(delta: float) -> void:
@@ -86,160 +190,20 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
-func _get_max_scroll() -> float:
-	match _tab_idx:
-		0:
-			return maxf(0.0, missions.size() * 40.0 - 300.0)
-		1:
-			return maxf(0.0, concepts.size() * 70.0 - 300.0)
-		2:
-			var total: float = 0.0
-			for entry in lore_entries:
-				var text: String = loc(entry.get("text", ""))
-				if text == "":
-					text = loc(entry.get("description", ""))
-				var lines: Array = text.split("\n")
-				total += 40.0 + lines.size() * 20.0
-			return maxf(0.0, total - 300.0)
-	return 0.0
-
-
-
 func _draw() -> void:
 	var vp := get_viewport_rect().size
 	_cyber_bg.draw(self, vp)
-
-	# Title
-	draw_string(font, Vector2(60, 60), loc("menu.database"), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, CYAN)
-
-	# Tabs
-	var tabs: Array[String] = [
-		loc("database.tab_missions"),
-		loc("database.tab_concepts"),
-		loc("database.tab_lore"),
-	]
-	var tab_x: float = 80.0
-	for i in tabs.size():
-		var is_sel: bool = i == _tab_idx
-		var color: Color = CYAN if is_sel else GRIS
-		var tw: float = font.get_string_size(tabs[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4).x
-		draw_string(font, Vector2(tab_x, 100), tabs[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, color)
-		if is_sel:
-			draw_rect(Rect2(tab_x, 105, tw, 2), CYAN)
-		tab_x += tw + 40
-
-	# Content according to tab
-	match _tab_idx:
-		0:
-			_draw_missions()
-		1:
-			_draw_concepts()
-		2:
-			_draw_lore()
-
-	# Back hint
-	var vp_hint: float = vp.y - 20
-	draw_string(font, Vector2(60, vp_hint), loc("menu.back_hint"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.35, 0.38, 0.45))
-
-
-func _draw_missions() -> void:
-	var by: float = 150.0 - _scroll_y
-	for mission in missions:
-		var world_name: String = loc(mission.world)
-		var mission_name: String = loc(mission.name)
-		var completed: bool = mission.stars > 0
-		var color: Color = AMARILLO if completed else GRIS
-
-		# Status icon
-		if completed:
-			draw_string(font, Vector2(80, by), "★", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, AMARILLO)
-		else:
-			draw_string(font, Vector2(80, by), "○", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, GRIS_OSCURO)
-
-		# World — Name
-		var text: String = "%s — %s" % [world_name, mission_name]
-		draw_string(font, Vector2(105, by), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, color)
-
-		# Difficulty
-		var diff_text: String = loc("database.difficulty") + ": %d" % mission.difficulty
-		draw_string(font, Vector2(450, by), diff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, GRIS_OSCURO)
-
-		# Stars
-		if completed:
-			var star_text: String = ""
-			for s in range(3):
-				star_text += "★" if s < mission.stars else "☆"
-			draw_string(font, Vector2(560, by), star_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, AMARILLO)
-
-		by += 38
-
-
-func _draw_concepts() -> void:
-	var by: float = 150.0 - _scroll_y
-	for concept in concepts:
-		var title: String = loc(concept.title)
-		var desc: String = loc(concept.description)
-
-		# Title
-		draw_string(font, Vector2(80, by), title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, CYAN)
-		by += 24
-
-		# Description (word-wrap manually)
-		var max_w: float = 600.0
-		var words: PackedStringArray = desc.split(" ")
-		var line: String = ""
-		for word in words:
-			var test_line: String = (line + " " + word).strip_edges()
-			var tw: float = font.get_string_size(test_line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1).x
-			if tw > max_w and line.length() > 0:
-				draw_string(font, Vector2(100, by), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, GRIS)
-				by += 20
-				line = word
-			else:
-				line = test_line
-		if line.length() > 0:
-			draw_string(font, Vector2(100, by), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, GRIS)
-			by += 20
-
-		by += 16
-
-
-func _draw_lore() -> void:
-	var by: float = 150.0 - _scroll_y
-	for entry in lore_entries:
-		var title: String = loc(entry.title)
-		# Get text - it can be either "text" or "description"
-		var text_key: String = entry.get("text", "")
-		if text_key == "":
-			text_key = entry.get("description", "")
-		var text: String = loc(text_key)
-
-		# Title
-		draw_string(font, Vector2(80, by), title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, CYAN)
-		by += 24
-
-		# Multiline text
-		var paragraphs: PackedStringArray = text.split("\n")
-		for para in paragraphs:
-			if para.strip_edges().length() == 0:
-				by += 10
-				continue
-			# Word wrap
-			var max_w: float = 580.0
-			var words: PackedStringArray = para.split(" ")
-			var line: String = ""
-			for word in words:
-				var test_line: String = (line + " " + word).strip_edges()
-				var tw: float = font.get_string_size(test_line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1).x
-				if tw > max_w and line.length() > 0:
-					draw_string(font, Vector2(100, by), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, GRIS)
-					by += 20
-					line = word
-				else:
-					line = test_line
-			if line.length() > 0:
-				draw_string(font, Vector2(100, by), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, GRIS)
-				by += 20
-			by += 8
-
-		by += 16
+	_renderer.draw(
+		self,
+		vp,
+		font,
+		font_size,
+		big_font_size,
+		_pulse,
+		_active_cat_idx,
+		_selected_entry_idx,
+		_scroll_y,
+		_hovered_back,
+		_hovered_cat_idx,
+		_hovered_entry_idx
+	)

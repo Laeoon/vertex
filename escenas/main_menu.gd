@@ -58,9 +58,9 @@ func _ready() -> void:
 	_main_items = [
 		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play", "icon_path": "res://assets/icons/menu_play.png", "icon_tex": null, "vector_icon": "play"},
 		{"label": loc("menu.options"), "desc": loc("menu.options_desc"), "action": "options", "icon_path": "res://assets/icons/menu_options.png", "icon_tex": null, "vector_icon": "options"},
-		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon_path": "res://assets/icons/menu_profile.png", "icon_tex": null, "vector_icon": "profile"},
 		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database", "icon_path": "res://assets/icons/menu_database.png", "icon_tex": null, "vector_icon": "database"},
 		{"label": loc("menu.exit"), "desc": loc("menu.exit_desc") if loc("menu.exit_desc") != "menu.exit_desc" else "Terminar sesión", "action": "exit", "icon_path": "res://assets/icons/menu_exit.png", "icon_tex": null, "vector_icon": "exit"},
+		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon_path": "res://assets/icons/menu_profile.png", "icon_tex": null, "vector_icon": "profile"},
 	]
 
 	_world_items = [
@@ -482,11 +482,12 @@ func _refresh_texts() -> void:
 	_main_items[0].desc = loc("menu.play_desc")
 	_main_items[1].label = loc("menu.options")
 	_main_items[1].desc = loc("menu.options_desc")
-	_main_items[2].label = loc("menu.profile")
-	_main_items[2].desc = loc("menu.profile_desc")
-	_main_items[3].label = loc("menu.database")
-	_main_items[3].desc = loc("menu.database_desc")
-	_main_items[4].label = loc("menu.exit")
+	_main_items[2].label = loc("menu.database")
+	_main_items[2].desc = loc("menu.database_desc")
+	_main_items[3].label = loc("menu.exit")
+	_main_items[3].desc = loc("menu.exit_desc") if loc("menu.exit_desc") != "menu.exit_desc" else "Terminar sesión"
+	_main_items[4].label = loc("menu.profile")
+	_main_items[4].desc = loc("menu.profile_desc")
 
 	_world_items[0].label = loc("world.tutorials")
 	_world_items[0].desc = loc("world.tutorials_desc")
