@@ -209,6 +209,15 @@ func resolve_turn() -> void:
 	if _game.game_over:
 		return
 
+	# Si el atacante no puede alcanzar el objetivo Y no tiene aristas que atravesar, el asedio colapsa
+	var post_check: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
+	if not post_check.get("reachable", false) and enemy_bypasses <= 0:
+		# Aceleración por contención absoluta sin salida
+		forensics_trace = minf(100.0, forensics_trace + 25.0)
+		if forensics_trace >= 100.0:
+			_win("¡Atacante totalmente aislado! Rastreando y neutralizando enlace hostil.")
+			return
+
 	# Resetear estado del turno
 	defender_blocks_placed = 0
 	selected_edge = ""
@@ -277,6 +286,9 @@ func move_enemy() -> void:
 					last_exploit_used = "bypass"
 					next_step = e.to_id
 					enemy_path = [enemy_pos, e.to_id]
+					# Romper el bloqueo en el juego y restaurar costo para cruzar
+					if _game != null and _game.has_method("_unblock_edge"):
+						_game._unblock_edge(ek)
 					GameLogger.warn("DefenderBrain", "ATACANTE ejecuta EXPLOIT BYPASS en %s!" % ek)
 					break
 
