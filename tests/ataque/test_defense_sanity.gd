@@ -76,6 +76,14 @@ func _run_tests() -> void:
 		print("PASS: estado inicial: defensor en Internet (start_node real), turn 0, juego activo")
 		passed += 1
 
+	# Verificación Blue Team (Fase 2): EDR Trace inicializa en 0.0%
+	if inst._defender_brain != null and inst._defender_brain.forensics_trace == 0.0:
+		print("PASS: forensics_trace arranca en 0.0%")
+		passed += 1
+	else:
+		print("FAIL: forensics_trace no arranca en 0.0%")
+		failed += 1
+
 	_quit()
 
 

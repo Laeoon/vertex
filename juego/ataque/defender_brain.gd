@@ -28,6 +28,13 @@ var node_firewalls: Dictionary = {}  # node_id -> true
 var firewall_mode: bool = false
 var min_cut_analysis: Dictionary = {}
 
+# ─── Nuevas mecánicas Blue Team (Fase 2) ───────────────────────────
+var forensics_trace: float = 0.0          # 0.0 .. 100.0 (condición de victoria)
+var base_trace_per_turn: float = 20.0     # +20% por turno contenido
+var bonus_trace_on_divert: float = 10.0   # +10% si el atacante fue forzado a desvío o sondeo
+var quarantined_nodes: Dictionary = {}    # {StringName: true} nodos en cuarentena / aislados
+var quarantined_count: int = 0
+
 var _game: Node  # referencia a juego_ataque.gd
 var _graph = null
 var _runtime = null
@@ -55,9 +62,12 @@ func init() -> void:
 	selected_edge = ""
 	hovered_edge = ""
 	node_firewalls.clear()
+	quarantined_nodes.clear()
+	quarantined_count = 0
+	forensics_trace = 0.0
 	firewall_mode = false
 	calc_enemy_path()
-	message.emit("🛡️ DEFENSOR — Coloca bloqueos en las rutas del atacante")
+	message.emit("🛡️ DEFENSOR — Contén al intruso mientras se completa el rastreo forense EDR")
 	GameLogger.info("DefenderBrain", "Defensor iniciado. Enemigo en: %s, objetivo: %s" % [enemy_pos, enemy_target_node])
 
 	# Análisis estratégico — corte mínimo
@@ -132,12 +142,6 @@ func block_edge(edge_key: String) -> void:
 	defender_blocks_placed += 1
 	defender_blocks_total_used += 1
 
-	# Verificar aislamiento
-	var iso: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
-	if not iso["reachable"] or iso["path"].is_empty():
-		_win("¡Aislamiento total! Bloqueaste TODAS las rutas hacia %s" % str(target_check))
-		return
-
 	# Recalcular ruta
 	var old_path_size: int = enemy_path.size()
 	calc_enemy_path()
@@ -164,7 +168,7 @@ func block_edge(edge_key: String) -> void:
 
 
 func resolve_turn() -> void:
-	"""Finaliza el turno del defensor y mueve al atacante."""
+	"""Finaliza el turno del defensor, acumula trace EDR y mueve al atacante."""
 	var is_over: bool = _game.game_over
 	var cur_turn: int = _game.turn
 	if is_over:
@@ -177,6 +181,23 @@ func resolve_turn() -> void:
 	# Avanzar turno en el juego
 	_game.turn = cur_turn + 1
 	_limpiar_bloqueos_expirados()
+
+	# Acumular progreso de Trace Forense EDR
+	var trace_gain: float = base_trace_per_turn
+	var target_check: StringName = enemy_target_node if enemy_target_node != &"" else _game.target_node
+	var pre_path: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
+	if not pre_path.get("reachable", false) or pre_path.get("path", []).size() < 2:
+		# Si el atacante no tiene ruta directa libre, bonus por demorarlo/desviarlo
+		trace_gain += bonus_trace_on_divert
+
+	forensics_trace = minf(100.0, forensics_trace + trace_gain)
+	GameLogger.debug("DefenderBrain", "Turno %d: Forensics Trace +%.1f%% -> %.1f%%" % [_game.turn, trace_gain, forensics_trace])
+
+	# Chequeo de victoria por Trace Forense al 100%
+	if forensics_trace >= 100.0:
+		_win("¡Rastreo EDR completado! Origen del ataque neutralizado.")
+		return
+
 	move_enemy()
 	if _game.game_over:
 		return
@@ -191,7 +212,7 @@ func resolve_turn() -> void:
 	var max_turns: int = _game.max_turns
 	if max_turns > 0 and cur_turn >= max_turns:
 		if enemy_pos != enemy_target_node:
-			_win("Atacante no llegó a tiempo! %d turnos resistidos" % cur_turn)
+			_win("¡Asedio resistido! El atacante agotó sus recursos de intrusión.")
 		else:
 			_lose("Atacante alcanzó %s justo a tiempo" % str(enemy_target_node))
 		return
@@ -200,29 +221,54 @@ func resolve_turn() -> void:
 	var remaining_blocks: int = defender_max_blocks - defender_blocks_total_used
 	if remaining_blocks <= 5:
 		blocks_info = " (%d restantes)" % remaining_blocks
-	message.emit("🛡️ Turno %d — Coloca hasta %d bloqueo(s)%s. [Enter] para resolver" % [cur_turn, defender_blocks_per_turn, blocks_info])
+	message.emit("🛡️ Turno %d // TRACE EDR: %.0f%% — Coloca hasta %d bloqueo(s)%s." % [cur_turn, forensics_trace, defender_blocks_per_turn, blocks_info])
 	state_changed.emit()
 
 
 func move_enemy() -> void:
-	"""Mueve al atacante (enemigo) un paso hacia su objetivo."""
+	"""Mueve al atacante con movimiento lateral adaptativo."""
 	if enemy_pos == &"":
 		return
 	var target_check: StringName = enemy_target_node if enemy_target_node != &"" else _game.target_node
+
+	# 1. Intentar encontrar la mejor ruta hacia el objetivo
 	var result: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
-	if not result["reachable"] or result["path"].is_empty() or result["path"].size() < 2:
-		_win("Atacante sin ruta hacia %s!" % target_check)
-		return
-	enemy_path = result["path"]
-	var next_step: StringName = result["path"][1] as StringName
-	var edge_key: String = "%s→%s" % [enemy_pos, next_step]
-	if _is_blocked(edge_key):
-		result = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
-		if not result["reachable"] or result["path"].is_empty() or result["path"].size() < 2:
-			_win("Atacante sin ruta hacia %s!" % target_check)
-			return
+	var next_step: StringName = &""
+
+	if result.get("reachable", false) and result.get("path", []).size() >= 2:
 		next_step = result["path"][1] as StringName
 		enemy_path = result["path"]
+	else:
+		# 2. Movimiento Lateral (MITRE T1021): si no hay camino directo, buscar un vecino accesible no bloqueado
+		var best_neighbor: StringName = &""
+		var min_h_cost: float = INF
+
+		for e in _graph.edges:
+			if e == null or e.from_id != enemy_pos:
+				continue
+			var ek: String = "%s→%s" % [e.from_id, e.to_id]
+			if _is_blocked(ek) or quarantined_nodes.has(e.to_id):
+				continue
+			if _runtime != null and is_inf(_runtime.get_transit_cost(e.from_id, e.to_id)):
+				continue
+
+			# Evaluar heurística desde ese vecino hacia el target
+			var test_p: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, e.to_id, target_check, _runtime)
+			var h_cost: float = test_p.get("cost", 99.0) if test_p.get("reachable", false) else 999.0
+			if h_cost < min_h_cost:
+				min_h_cost = h_cost
+				best_neighbor = e.to_id
+
+		if best_neighbor != &"":
+			next_step = best_neighbor
+			enemy_path = [enemy_pos, best_neighbor]
+		else:
+			# El atacante está totalmente cercado este turno: se queda sondeando y gana tiempo
+			GameLogger.debug("DefenderBrain", "ATACANTE contenido en %s. Sondeando puertos..." % enemy_pos)
+			message.emit("¡ATACANTE contenido temporalmente en %s! Sondeando alternativas..." % str(enemy_pos))
+			state_changed.emit()
+			return
+
 	GameLogger.debug("DefenderBrain", "ATACANTE: %s → %s (hacia %s)" % [enemy_pos, next_step, target_check])
 	enemy_pos = next_step
 	# Notificar al juego para flash visual
@@ -230,10 +276,46 @@ func move_enemy() -> void:
 		_game._on_enemy_moved()
 	path_calculated.emit(enemy_pos, enemy_target_node, enemy_path, result.get("cost", 0.0))
 	state_changed.emit()
+
 	if enemy_pos == target_check:
-		_lose("Atacante llegó a %s!" % target_check)
+		_lose("¡Brecha crítica! El atacante vulneró %s" % target_check)
 		return
 	message.emit("ATACANTE avanzó a %s — Bloquea rutas!" % str(enemy_pos))
+
+
+func quarantine_node(node_id: StringName) -> void:
+	"""Aisla de emergencia un nodo (Host Quarantine), cortando todas sus conexiones."""
+	if _game.game_over:
+		return
+	if node_id == enemy_start_node or node_id == enemy_target_node:
+		message.emit("⚠ No puedes aislar la entrada perimetral ni el Núcleo")
+		return
+	if quarantined_nodes.has(node_id):
+		message.emit("⚠ Ese nodo ya está en cuarentena")
+		return
+
+	quarantined_nodes[node_id] = true
+	quarantined_count += 1
+
+	# Cortar todas las aristas entrantes y salientes en el runtime
+	var severed: int = 0
+	for e in _graph.edges:
+		if e == null:
+			continue
+		if e.from_id == node_id or e.to_id == node_id:
+			if _runtime != null:
+				_runtime.set_transit_cost(e.from_id, e.to_id, INF)
+			severed += 1
+
+	calc_enemy_path()
+	var feedback: String = "☣ NODO EN CUARENTENA: %s aislado de la red (%d aristas desconectadas)" % [str(node_id), severed]
+	GameLogger.info("DefenderBrain", "CUARENTENA en %s: %d aristas desconectadas" % [node_id, severed])
+	message.emit(feedback)
+	state_changed.emit()
+
+
+func is_node_quarantined(node_id: StringName) -> bool:
+	return quarantined_nodes.has(node_id)
 
 
 func place_firewall(node_id: StringName) -> void:
@@ -316,10 +398,11 @@ func calcular_estrellas() -> int:
 	var turnos_ratio: float = 1.0 - (float(turn) / float(max_turns)) if max_turns > 0 else 1.0
 	var max_blocks_est: int = defender_max_blocks if defender_max_blocks > 0 else (defender_blocks_per_turn * max_turns + 2)
 	var eficiencia: float = 1.0 - (float(defender_blocks_total_used) / float(max_blocks_est)) if max_blocks_est > 0 else 1.0
-	var score: float = (eficiencia * 0.5) + (turnos_ratio * 0.5)
-	if score >= 0.7:
+	var penalizacion_cuarentena: float = float(quarantined_count) * 0.15
+	var score: float = (eficiencia * 0.5) + (turnos_ratio * 0.5) - penalizacion_cuarentena
+	if score >= 0.65:
 		return 3
-	if score >= 0.4:
+	if score >= 0.35:
 		return 2
 	return 1
 

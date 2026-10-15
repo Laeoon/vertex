@@ -243,6 +243,8 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"brain_firewall_mode": (b.firewall_mode if def else false),
 		"brain_hovered_edge": (b.hovered_edge if def else ""),
 		"brain_enemy_path": (b.enemy_path if def else []),
+		"brain_forensics_trace": (b.forensics_trace if def else 0.0),
+		"brain_quarantined_nodes": (b.quarantined_nodes if def else {}),
 	}
 
 

@@ -78,11 +78,11 @@ func draw_frame(d: Dictionary) -> void:
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
 	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
 	if d.defender_mode:
-		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, Vector2.ZERO, false, true, d.brain_enemy_pos)
+		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, Vector2.ZERO, false, true, d.brain_enemy_pos, d.get("brain_quarantined_nodes", {}))
 		if d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
-		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"")
+		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"", {})
 
 	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
 	if d.show_optimal_overlay:
@@ -96,7 +96,7 @@ func draw_frame(d: Dictionary) -> void:
 		_canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if d.defender_mode:
-		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode)
+		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}))
 	else:
 		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
 	if d.hacker_mode:
@@ -307,45 +307,54 @@ func draw_defender_hud(
 	min_cut_analysis: Dictionary = {},
 	blocked_edges: Dictionary = {},
 	node_firewalls: Dictionary = {},
-	firewall_mode: bool = false
+	firewall_mode: bool = false,
+	forensics_trace: float = 0.0,
+	quarantined_nodes: Dictionary = {}
 ) -> void:
 	var bar_h: float = 52.0
 	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
-	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), Color(1.0, 0.5, 0.0, 0.6))
+	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), Color(0.2, 0.7, 1.0, 0.6))
 
-	draw_string(Vector2(16, 22), "DEFENSOR — Protege la red", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, Color(1.0, 0.5, 0.0))
-	draw_string(Vector2(16, 42), "TURNO %d  |  FASE: %s" % [turn, "BLOQUEO" if blocks_placed < blocks_per_turn or blocks_per_turn == 0 else "LISTO"], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	draw_string(Vector2(16, 22), "BLUE TEAM // DEFENSA PERIMETRAL", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.ACCENT)
+	draw_string(Vector2(16, 42), "TURNO %d  |  FASE: %s" % [turn, "CONTENCIÓN" if blocks_placed < blocks_per_turn or blocks_per_turn == 0 else "LISTO"], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 	var center_x: float = vp_size.x / 2.0
+
+	# ─── Barra de progreso EDR Forensics Trace (0..100%) ───
+	var trace_box_w := 240.0
+	var trace_box_x := center_x - (trace_box_w * 0.5)
+	draw_string(Vector2(trace_box_x, 19), "RASTREO FORENSE EDR: %.0f%%" % forensics_trace, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color("b388ff"))
+	var tb_bg := Rect2(trace_box_x, 25, trace_box_w, 10.0)
+	draw_rect(tb_bg, Color(0.1, 0.1, 0.18, 0.8))
+	draw_rect(tb_bg, Color(0.4, 0.3, 0.7, 0.5), false, 1.0)
+	var tb_fill_w := trace_box_w * clampf(forensics_trace / 100.0, 0.0, 1.0)
+	if tb_fill_w > 0:
+		draw_rect(Rect2(trace_box_x, 25, tb_fill_w, 10.0), Color("b388ff"))
+	draw_string(Vector2(trace_box_x, 46), "Meta: 100% para neutralizar intruso", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+
+	# Info de bloqueos a la derecha del trace
+	var right_telemetry_x := center_x + 140.0
 	var blocks_remaining: int = blocks_per_turn - blocks_placed
 	var block_color: Color = Color(1.0, 0.5, 0.0) if blocks_remaining > 0 else Color(0.5, 0.8, 0.5)
-	draw_string(Vector2(center_x - 100, 22), "BLOQUEOS: %d/%d" % [blocks_placed, blocks_per_turn], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, block_color)
-	
+	draw_string(Vector2(right_telemetry_x, 22), "BLOQUEOS: %d/%d" % [blocks_placed, blocks_per_turn], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, block_color)
 	if blocks_remaining > 0:
-		draw_string(Vector2(center_x - 100, 42), "Restan: %d" % blocks_remaining, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.8, 0.5, 0.2))
+		draw_string(Vector2(right_telemetry_x, 42), "Restan: %d" % blocks_remaining, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.8, 0.5, 0.2))
 	else:
-		draw_string(Vector2(center_x - 100, 42), "[Enter] para resolver", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.SUCCESS)
+		draw_string(Vector2(right_telemetry_x, 42), "[Enter] resolver", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.SUCCESS)
 
 	if enemy_pos != &"":
-		var enemy_color: Color = BrandClass.DANGER
-		if enemy_pos == enemy_target:
-			enemy_color = BrandClass.ENEMY
-		draw_string(Vector2(center_x + 40, 22), "👾 ATACANTE: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, enemy_color)
+		draw_string(Vector2(vp_size.x - 240, 22), "👾 INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(1.0, 0.3, 0.2))
 	if enemy_target != &"":
-		draw_string(Vector2(center_x + 40, 42), "🎯 OBJETIVO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.6, 0.2))
-	if max_turns > 0:
-		var turns_left: int = max_turns - turn
-		var turn_color: Color = Color(0.5, 0.8, 1.0) if turns_left > 5 else (Color(1.0, 0.8, 0.0) if turns_left > 2 else BrandClass.DANGER)
-		draw_string(Vector2(vp_size.x - 160, 22), "⏱ %d" % turns_left, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, turn_color)
+		draw_string(Vector2(vp_size.x - 240, 42), "🎯 NÚCLEO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.2, 0.8, 1.0))
 
-	# Indicador de modo firewall (en la barra principal)
+	# Modo firewall / cuarentena activo
 	if firewall_mode:
-		var fw_text: String = "🔥 CORTAFUEGOS ACTIVO"
+		var fw_text: String = "🔥 CORTAFUEGOS"
 		var fw_w: float = font.get_string_size(fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
 		var fw_x: float = vp_size.x - fw_w - 16.0
-		draw_rect(Rect2(fw_x - 4, 30, fw_w + 8, 16), Color(1.0, 0.3, 0.0, 0.2))
-		draw_rect(Rect2(fw_x - 4, 30, fw_w + 8, 16), Color(1.0, 0.4, 0.0, 0.6), false, 1.0)
-		draw_string(Vector2(fw_x, 42), fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.4, 0.0))
+		draw_rect(Rect2(fw_x - 4, 14, fw_w + 8, 16), Color(1.0, 0.3, 0.0, 0.2))
+		draw_rect(Rect2(fw_x - 4, 14, fw_w + 8, 16), Color(1.0, 0.4, 0.0, 0.6), false, 1.0)
+		draw_string(Vector2(fw_x, 26), fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.4, 0.0))
 
 	# Indicador de estado de rutas del atacante
 	var has_path: bool = enemy_pos != &"" and enemy_pos != enemy_target
@@ -635,7 +644,8 @@ func draw_nodes(
 	player_visual_pos: Vector2 = Vector2.ZERO,
 	is_moving: bool = false,
 	defender_mode: bool = false,
-	brain_enemy_pos: StringName = &""
+	brain_enemy_pos: StringName = &"",
+	quarantined_nodes: Dictionary = {}
 ) -> void:
 	# Identidad por tipo (E2): forma geométrica según NodeType.
 	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
@@ -836,6 +846,12 @@ func draw_nodes(
 			draw_circle(pos, shield_radius, shield_color, false, 2.5)
 			# Icono de firewall
 			draw_string(Vector2(pos.x - 7, pos.y + 5), "FW", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.3, 0.8, 1.0))
+
+		# Quarantined node indicator (Fase 2 Blue Team)
+		if quarantined_nodes.has(nid_str):
+			var q_color: Color = Color(1.0, 0.7, 0.0, 0.9)
+			draw_rect(Rect2(pos.x - radius - 6.0, pos.y - radius - 6.0, (radius + 6.0) * 2.0, (radius + 6.0) * 2.0), q_color, false, 2.0)
+			draw_string(Vector2(pos.x - 14, pos.y + 4), "AISLADO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, q_color)
 
 		# Bonus node marker (E3): rombo pequeño flotando arriba-izquierda —
 		# WARNING mientras pendiente, TEXT_DIM cuando ya fue visitado.
