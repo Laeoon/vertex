@@ -298,6 +298,9 @@ func _input(event: InputEvent) -> void:
 		if k.keycode == KEY_F and not game_over:
 			defender_toggle_firewall.emit()
 			return
+		if k.keycode == KEY_P and not game_over:
+			toggle_optimal_route.emit()
+			return
 
 	# ─── Click izquierdo ──────────────────────────────────────
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:

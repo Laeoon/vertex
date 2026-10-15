@@ -245,6 +245,9 @@ func frame_data(vp_size: Vector2) -> Dictionary:
 		"brain_enemy_path": (b.enemy_path if def else []),
 		"brain_forensics_trace": (b.forensics_trace if def else 0.0),
 		"brain_quarantined_nodes": (b.quarantined_nodes if def else {}),
+		"brain_fog_of_war": (b.fog_of_war if def else false),
+		"brain_path_revealed": (b.is_enemy_path_revealed() if def else true),
+		"brain_telemetry_intercepted": (b.telemetry_intercepted if def else false),
 	}
 
 

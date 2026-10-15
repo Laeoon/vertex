@@ -287,6 +287,10 @@ func select_neighbor_directional(dir_vector: Vector2) -> void:
 ## Puerto del viejo juego_ataque._reveal_optimal_route() (P5): toggle [P] de
 ## la pista de ruta más corta.
 func reveal_optimal_route() -> void:
+	if _game.defender_mode:
+		if _game._defender_brain != null:
+			_game._defender_brain.toggle_fog_path()
+		return
 	_game.show_optimal_overlay = not _game.show_optimal_overlay
 	if _game.show_optimal_overlay:
 		var target: StringName = _game._target_actual()

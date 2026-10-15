@@ -348,6 +348,13 @@ func _init_defender_mode() -> void:
 	"""Inicializa el estado del modo defensor usando DefenderBrain."""
 	if graph == null:
 		return
+	var is_fog: bool = false
+	var loc_entry: Dictionary = LevelRegistryClass.find_level(level_key)
+	if not loc_entry.is_empty() and loc_entry.get("world", "") == "cybersecurity":
+		# Nivel 2 en adelante activa Niebla de Guerra (idx >= 1)
+		if loc_entry.get("idx", 0) >= 1:
+			is_fog = true
+
 	_defender_brain = DefenderBrainClass.new()
 	_defender_brain.setup(self, {
 		"enemy_start": enemy_start_node,
@@ -355,6 +362,7 @@ func _init_defender_mode() -> void:
 		"blocks_per_turn": defender_blocks_per_turn,
 		"block_duration": defender_block_duration,
 		"firewall_cost": firewall_cost,
+		"fog_of_war": is_fog,
 	})
 	_defender_brain.defender_won.connect(_on_brain_defender_won)
 	_defender_brain.defender_lost.connect(_on_brain_defender_lost)

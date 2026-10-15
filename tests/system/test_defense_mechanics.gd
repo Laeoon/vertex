@@ -52,6 +52,7 @@ func _ready() -> void:
 	test_forensics_trace_progression()
 	test_attacker_lateral_movement()
 	test_quarantine_node_severing()
+	test_fog_of_war_and_star_penalty()
 
 	print("---")
 	print("Results: %d passed, %d failed" % [_passed, _failed])
@@ -203,3 +204,33 @@ func test_quarantine_node_severing() -> void:
 	var cost_from: float = game.runtime.get_transit_cost(&"RouterB", &"DataCenter")
 	_assert(is_inf(cost_to), "Incoming transit cost to quarantined node is INF")
 	_assert(is_inf(cost_from), "Outgoing transit cost from quarantined node is INF")
+
+
+func test_fog_of_war_and_star_penalty() -> void:
+	var fixtures := _build_diamond_graph()
+	var game := MockDefenseGame.new()
+	game.graph = fixtures["graph"]
+	game.runtime = fixtures["runtime"]
+
+	var brain = DefenderBrainClass.new()
+	brain.setup(game, {
+		"enemy_start": &"Internet",
+		"enemy_target": &"DataCenter",
+		"blocks_per_turn": 1,
+		"block_duration": 4,
+		"fog_of_war": true
+	})
+	brain.init()
+
+	_assert(brain.fog_of_war == true, "fog_of_war is active on level 2+")
+	_assert(brain.is_enemy_path_revealed() == false, "Enemy path is hidden by default under fog of war")
+
+	# Revelar ruta con intercepción táctica (tecla P)
+	brain.reveal_enemy_path()
+	_assert(brain.is_enemy_path_revealed() == true, "Enemy path is revealed after manual intercept")
+	_assert(brain.telemetry_intercepted == true, "telemetry_intercepted flag is set")
+
+	# Verificar que el cálculo de estrellas esté topado a 2 estrellas máximo
+	var stars: int = brain.calcular_estrellas()
+	_assert(stars <= 2, "Star rating is capped at maximum 2 stars when telemetry is intercepted (got %d)" % stars)
+

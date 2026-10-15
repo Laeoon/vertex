@@ -76,10 +76,11 @@ func draw_frame(d: Dictionary) -> void:
 	draw_background_grid(d.vp_size, pan, zoom)
 
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
-	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if d.defender_mode else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
+	var should_draw_enemy_path: bool = d.get("brain_path_revealed", true) if d.defender_mode else false
+	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if should_draw_enemy_path else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
 	if d.defender_mode:
 		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, Vector2.ZERO, false, true, d.brain_enemy_pos, d.get("brain_quarantined_nodes", {}))
-		if d.brain_enemy_path.size() >= 2:
+		if should_draw_enemy_path and d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
 		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"", {})
@@ -96,7 +97,7 @@ func draw_frame(d: Dictionary) -> void:
 		_canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if d.defender_mode:
-		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}))
+		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}), d.get("brain_fog_of_war", false), d.get("brain_telemetry_intercepted", false))
 	else:
 		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
 	if d.hacker_mode:
@@ -309,7 +310,9 @@ func draw_defender_hud(
 	node_firewalls: Dictionary = {},
 	firewall_mode: bool = false,
 	forensics_trace: float = 0.0,
-	quarantined_nodes: Dictionary = {}
+	quarantined_nodes: Dictionary = {},
+	fog_of_war: bool = false,
+	telemetry_intercepted: bool = false
 ) -> void:
 	var bar_h: float = 52.0
 	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
@@ -335,7 +338,12 @@ func draw_defender_hud(
 	# Info del ciclo reactivo ping-pong a la derecha del trace
 	var right_telemetry_x := center_x + 150.0
 	draw_string(Vector2(right_telemetry_x, 22), "CICLO: REACTIVO 1:1", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.SUCCESS)
-	draw_string(Vector2(right_telemetry_x, 42), "Tu bloqueo activa al intruso", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	if telemetry_intercepted:
+		draw_string(Vector2(right_telemetry_x, 42), "TELEMETRÍA EXPUESTA (MÁX 2★)", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WARNING)
+	elif fog_of_war:
+		draw_string(Vector2(right_telemetry_x, 42), "[P] Interceptar ruta (-1★)", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color("80d8ff"))
+	else:
+		draw_string(Vector2(right_telemetry_x, 42), "Tu bloqueo activa al intruso", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 	if enemy_pos != &"":
 		draw_string(Vector2(vp_size.x - 240, 22), "👾 INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(1.0, 0.3, 0.2))
@@ -1089,7 +1097,7 @@ func draw_status_bar(
 	# Keybinds (izquierda)
 	var kb_text: String
 	if defender_mode:
-		kb_text = "[Click arista] Bloquear  [F] Firewall permanente  [ESC / M] Pausa"
+		kb_text = "[Click arista] Bloquear  [F] Firewall permanente  [P] Revelar ruta  [ESC / M] Pausa"
 	else:
 		kb_text = "[Click/WASD] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [ESC / M] Pausa"
 	draw_string(Vector2(16, vp_size.y - 10), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)

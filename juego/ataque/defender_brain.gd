@@ -38,6 +38,11 @@ var ping_pong_mode: bool = true           # 1 acción defensiva = 1 respuesta in
 var enemy_bypasses: int = 1               # Stock de exploits del atacante hostil (Bypass)
 var last_exploit_used: String = ""        # Telemetría del último exploit ejecutado por la IA
 
+# ─── Niebla de Guerra y Telemetría Oculta (Nivel 2+) ───────────────
+var fog_of_war: bool = false              # Si true, la ruta roja del enemigo está oculta
+var enemy_path_revealed: bool = false     # Si true, el defensor activó intercepción manual [P]
+var telemetry_intercepted: bool = false   # Flag permanente: limita la partida a 2 estrellas máx
+
 var _game: Node  # referencia a juego_ataque.gd
 var _graph = null
 var _runtime = null
@@ -53,6 +58,7 @@ func setup(game: Node, params: Dictionary) -> void:
 	defender_blocks_per_turn = params.get("blocks_per_turn", 2)
 	defender_block_duration = params.get("block_duration", 4)
 	firewall_cost = params.get("firewall_cost", 2)
+	fog_of_war = params.get("fog_of_war", false)
 
 
 func init() -> void:
@@ -71,6 +77,8 @@ func init() -> void:
 	firewall_mode = false
 	enemy_bypasses = 1
 	last_exploit_used = ""
+	enemy_path_revealed = false
+	telemetry_intercepted = false
 	calc_enemy_path()
 	message.emit("🛡️ DEFENSOR — Contén al intruso. Cada bloqueo avanza el turno y el rastreo.")
 	GameLogger.info("DefenderBrain", "Defensor iniciado. Enemigo en: %s, objetivo: %s" % [enemy_pos, enemy_target_node])
@@ -239,21 +247,59 @@ func resolve_turn() -> void:
 
 
 func move_enemy() -> void:
-	"""Mueve al atacante con movimiento lateral adaptativo y exploits reactivos."""
+	"""Mueve al atacante con movimiento lateral adaptativo, bifurcación aleatoria y exploits reactivos."""
 	if enemy_pos == &"":
 		return
 	var target_check: StringName = enemy_target_node if enemy_target_node != &"" else _game.target_node
 	last_exploit_used = ""
 
-	# 1. Intentar encontrar la mejor ruta libre hacia el objetivo
-	var result: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
+	# 1. Encontrar todos los vecinos salientes viables hacia el objetivo
+	var candidate_moves: Array[Dictionary] = [] # [{to_id, cost, path}]
+	for e in _graph.edges:
+		if e == null or e.from_id != enemy_pos or quarantined_nodes.has(e.to_id):
+			continue
+		var ek: String = "%s→%s" % [e.from_id, e.to_id]
+		if _is_blocked(ek):
+			continue
+		if _runtime != null and is_inf(_runtime.get_transit_cost(e.from_id, e.to_id)):
+			continue
+
+		var test_p: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, e.to_id, target_check, _runtime)
+		if test_p.get("reachable", false) and not test_p.get("path", []).is_empty():
+			var total_cost: float = e.transit_cost + test_p.get("cost", 0.0)
+			var sub_path: Array[StringName] = []
+			sub_path.append(enemy_pos)
+			for p_nid in test_p.get("path", []):
+				sub_path.append(p_nid as StringName)
+			candidate_moves.append({
+				"to_id": e.to_id,
+				"cost": total_cost,
+				"path": sub_path
+			})
+
 	var next_step: StringName = &""
 
-	if result.get("reachable", false) and result.get("path", []).size() >= 2:
-		next_step = result["path"][1] as StringName
-		enemy_path = result["path"]
+	if not candidate_moves.is_empty():
+		# Ordenar candidatos por menor coste
+		candidate_moves.sort_custom(func(a, b): return a["cost"] < b["cost"])
+		var best_cost: float = candidate_moves[0]["cost"]
+
+		if fog_of_war:
+			# Si hay niebla de guerra (nivel 2+): el atacante varía aleatoriamente entre
+			# los caminos viables dentro de un margen competitivo (dentro de un 25% del óptimo)
+			var viable_ties: Array[Dictionary] = []
+			for c in candidate_moves:
+				if c["cost"] <= best_cost * 1.25 or is_equal_approx(c["cost"], best_cost):
+					viable_ties.append(c)
+			var chosen: Dictionary = viable_ties[randi() % viable_ties.size()]
+			next_step = chosen["to_id"]
+			enemy_path = chosen["path"]
+		else:
+			# Nivel 1: comportamiento determinista directo
+			next_step = candidate_moves[0]["to_id"]
+			enemy_path = candidate_moves[0]["path"]
 	else:
-		# 2. Movimiento Lateral (MITRE T1021): buscar vecino libre hacia el objetivo
+		# 2. Movimiento Lateral (MITRE T1021): no hay ruta completa al objetivo; buscar vecino libre accesible
 		var best_neighbor: StringName = &""
 		var min_h_cost: float = INF
 
@@ -286,7 +332,6 @@ func move_enemy() -> void:
 					last_exploit_used = "bypass"
 					next_step = e.to_id
 					enemy_path = [enemy_pos, e.to_id]
-					# Romper el bloqueo en el juego y restaurar costo para cruzar
 					if _game != null and _game.has_method("_unblock_edge"):
 						_game._unblock_edge(ek)
 					GameLogger.warn("DefenderBrain", "ATACANTE ejecuta EXPLOIT BYPASS en %s!" % ek)
@@ -303,7 +348,7 @@ func move_enemy() -> void:
 	enemy_pos = next_step
 	if _game.has_method("_on_enemy_moved"):
 		_game._on_enemy_moved()
-	path_calculated.emit(enemy_pos, enemy_target_node, enemy_path, result.get("cost", 0.0))
+	path_calculated.emit(enemy_pos, enemy_target_node, enemy_path, 0.0)
 	state_changed.emit()
 
 	if enemy_pos == target_check:
@@ -413,6 +458,31 @@ func place_firewall(node_id: StringName) -> void:
 	state_changed.emit()
 
 
+func reveal_enemy_path() -> void:
+	"""Permite al jugador interceptar la ruta enemiga a costa de perder la 3ra estrella."""
+	enemy_path_revealed = true
+	telemetry_intercepted = true
+	message.emit("📡 TELEMETRÍA INTERCEPTADA: Ruta enemiga expuesta [MÁXIMO 2 ESTRELLAS]")
+	state_changed.emit()
+
+
+func is_enemy_path_revealed() -> bool:
+	if not fog_of_war:
+		return true
+	return enemy_path_revealed
+
+
+func toggle_fog_path() -> void:
+	if not fog_of_war:
+		return
+	if not enemy_path_revealed:
+		reveal_enemy_path()
+	else:
+		enemy_path_revealed = false
+		message.emit("🛡️ Modo discreto reanudado")
+		state_changed.emit()
+
+
 func toggle_firewall_mode() -> void:
 	firewall_mode = not firewall_mode
 	if firewall_mode:
@@ -435,11 +505,16 @@ func calcular_estrellas() -> int:
 	var eficiencia: float = 1.0 - (float(defender_blocks_total_used) / float(max_blocks_est)) if max_blocks_est > 0 else 1.0
 	var penalizacion_cuarentena: float = float(quarantined_count) * 0.15
 	var score: float = (eficiencia * 0.5) + (turnos_ratio * 0.5) - penalizacion_cuarentena
+	var res: int = 1
 	if score >= 0.65:
-		return 3
-	if score >= 0.35:
-		return 2
-	return 1
+		res = 3
+	elif score >= 0.35:
+		res = 2
+
+	# Si se interceptó la telemetría bajo niebla de guerra, el tope es 2 estrellas
+	if telemetry_intercepted:
+		res = mini(res, 2)
+	return res
 
 
 # ─── Helpers internos ─────────────────────────────────────────────
