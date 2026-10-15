@@ -34,6 +34,9 @@ var base_trace_per_turn: float = 20.0     # +20% por turno contenido
 var bonus_trace_on_divert: float = 10.0   # +10% si el atacante fue forzado a desvío o sondeo
 var quarantined_nodes: Dictionary = {}    # {StringName: true} nodos en cuarentena / aislados
 var quarantined_count: int = 0
+var ping_pong_mode: bool = true           # 1 acción defensiva = 1 respuesta inmediata del atacante
+var enemy_bypasses: int = 1               # Stock de exploits del atacante hostil (Bypass)
+var last_exploit_used: String = ""        # Telemetría del último exploit ejecutado por la IA
 
 var _game: Node  # referencia a juego_ataque.gd
 var _graph = null
@@ -66,8 +69,10 @@ func init() -> void:
 	quarantined_count = 0
 	forensics_trace = 0.0
 	firewall_mode = false
+	enemy_bypasses = 1
+	last_exploit_used = ""
 	calc_enemy_path()
-	message.emit("🛡️ DEFENSOR — Contén al intruso mientras se completa el rastreo forense EDR")
+	message.emit("🛡️ DEFENSOR — Contén al intruso. Cada bloqueo avanza el turno y el rastreo.")
 	GameLogger.info("DefenderBrain", "Defensor iniciado. Enemigo en: %s, objetivo: %s" % [enemy_pos, enemy_target_node])
 
 	# Análisis estratégico — corte mínimo
@@ -146,25 +151,27 @@ func block_edge(edge_key: String) -> void:
 	var old_path_size: int = enemy_path.size()
 	calc_enemy_path()
 
-	var remaining: int = defender_blocks_per_turn - defender_blocks_placed
-	var blocks_left: int = defender_max_blocks - defender_blocks_total_used
-	var feedback: String = "✅ Arista bloqueada"
-	if is_in_path:
-		feedback += " (ruta principal cortada!)"
-	elif old_path_size >= 2 and (enemy_path.is_empty() or enemy_path.size() < old_path_size):
-		feedback += " (ruta forzada a desvío!)"
-	else:
-		feedback += " (ruta alternativa)"
-	if remaining > 0:
-		feedback += " — Quedan %d bloqueo(s). [Enter] para resolver" % remaining
-	else:
-		feedback += " — [Enter] para resolver"
-	if blocks_left <= 5:
-		feedback += " (%d restantes)" % blocks_left
-	GameLogger.debug("DefenderBrain", "DEFENSOR bloquea: %s (%d/%d turno, %d totales)" % [edge_key, defender_blocks_placed, defender_blocks_per_turn, defender_blocks_total_used])
 	selected_edge = edge_key
-	message.emit(feedback)
-	state_changed.emit()
+	GameLogger.debug("DefenderBrain", "DEFENSOR bloquea: %s (%d totales)" % [edge_key, defender_blocks_total_used])
+
+	if ping_pong_mode:
+		# En modo Ping-Pong, cada bloqueo resuelve inmediatamente el turno y activa al atacante
+		resolve_turn()
+	else:
+		var remaining: int = defender_blocks_per_turn - defender_blocks_placed
+		var feedback: String = "✅ Arista bloqueada"
+		if is_in_path:
+			feedback += " (ruta principal cortada!)"
+		elif old_path_size >= 2 and (enemy_path.is_empty() or enemy_path.size() < old_path_size):
+			feedback += " (ruta forzada a desvío!)"
+		else:
+			feedback += " (ruta alternativa)"
+		if remaining > 0:
+			feedback += " — Quedan %d bloqueo(s). [Enter] para resolver" % remaining
+		else:
+			feedback += " — [Enter] para resolver"
+		message.emit(feedback)
+		state_changed.emit()
 
 
 func resolve_turn() -> void:
@@ -173,7 +180,7 @@ func resolve_turn() -> void:
 	var cur_turn: int = _game.turn
 	if is_over:
 		return
-	if defender_blocks_placed == 0:
+	if not ping_pong_mode and defender_blocks_placed == 0:
 		message.emit("⚠ Coloca al menos 1 bloqueo antes de resolver el turno")
 		state_changed.emit()
 		return
@@ -217,21 +224,19 @@ func resolve_turn() -> void:
 			_lose("Atacante alcanzó %s justo a tiempo" % str(enemy_target_node))
 		return
 
-	var blocks_info: String = ""
-	var remaining_blocks: int = defender_max_blocks - defender_blocks_total_used
-	if remaining_blocks <= 5:
-		blocks_info = " (%d restantes)" % remaining_blocks
-	message.emit("🛡️ Turno %d // TRACE EDR: %.0f%% — Coloca hasta %d bloqueo(s)%s." % [cur_turn, forensics_trace, defender_blocks_per_turn, blocks_info])
+	var exploit_hint: String = " [!] ALERTA: Intruso usó BYPASS" if last_exploit_used == "bypass" else ""
+	message.emit("🛡️ Turno %d // TRACE EDR: %.0f%%%s — Selecciona arista para bloquear." % [cur_turn, forensics_trace, exploit_hint])
 	state_changed.emit()
 
 
 func move_enemy() -> void:
-	"""Mueve al atacante con movimiento lateral adaptativo."""
+	"""Mueve al atacante con movimiento lateral adaptativo y exploits reactivos."""
 	if enemy_pos == &"":
 		return
 	var target_check: StringName = enemy_target_node if enemy_target_node != &"" else _game.target_node
+	last_exploit_used = ""
 
-	# 1. Intentar encontrar la mejor ruta hacia el objetivo
+	# 1. Intentar encontrar la mejor ruta libre hacia el objetivo
 	var result: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, enemy_pos, target_check, _runtime)
 	var next_step: StringName = &""
 
@@ -239,7 +244,7 @@ func move_enemy() -> void:
 		next_step = result["path"][1] as StringName
 		enemy_path = result["path"]
 	else:
-		# 2. Movimiento Lateral (MITRE T1021): si no hay camino directo, buscar un vecino accesible no bloqueado
+		# 2. Movimiento Lateral (MITRE T1021): buscar vecino libre hacia el objetivo
 		var best_neighbor: StringName = &""
 		var min_h_cost: float = INF
 
@@ -252,7 +257,6 @@ func move_enemy() -> void:
 			if _runtime != null and is_inf(_runtime.get_transit_cost(e.from_id, e.to_id)):
 				continue
 
-			# Evaluar heurística desde ese vecino hacia el target
 			var test_p: Dictionary = DefensivePathfinder.find_path_with_cost(_graph, e.to_id, target_check, _runtime)
 			var h_cost: float = test_p.get("cost", 99.0) if test_p.get("reachable", false) else 999.0
 			if h_cost < min_h_cost:
@@ -262,8 +266,22 @@ func move_enemy() -> void:
 		if best_neighbor != &"":
 			next_step = best_neighbor
 			enemy_path = [enemy_pos, best_neighbor]
-		else:
-			# El atacante está totalmente cercado este turno: se queda sondeando y gana tiempo
+		elif enemy_bypasses > 0:
+			# 3. Exploit Reactivo: si está totalmente bloqueado, usar BYPASS para romper el bloqueo más crítico
+			for e in _graph.edges:
+				if e == null or e.from_id != enemy_pos or quarantined_nodes.has(e.to_id):
+					continue
+				var ek: String = "%s→%s" % [e.from_id, e.to_id]
+				if _is_blocked(ek):
+					enemy_bypasses -= 1
+					last_exploit_used = "bypass"
+					next_step = e.to_id
+					enemy_path = [enemy_pos, e.to_id]
+					GameLogger.warn("DefenderBrain", "ATACANTE ejecuta EXPLOIT BYPASS en %s!" % ek)
+					break
+
+		if next_step == &"":
+			# Atacante totalmente cercado y sin exploits disponibles este turno: sondea puertos
 			GameLogger.debug("DefenderBrain", "ATACANTE contenido en %s. Sondeando puertos..." % enemy_pos)
 			message.emit("¡ATACANTE contenido temporalmente en %s! Sondeando alternativas..." % str(enemy_pos))
 			state_changed.emit()
@@ -271,7 +289,6 @@ func move_enemy() -> void:
 
 	GameLogger.debug("DefenderBrain", "ATACANTE: %s → %s (hacia %s)" % [enemy_pos, next_step, target_check])
 	enemy_pos = next_step
-	# Notificar al juego para flash visual
 	if _game.has_method("_on_enemy_moved"):
 		_game._on_enemy_moved()
 	path_calculated.emit(enemy_pos, enemy_target_node, enemy_path, result.get("cost", 0.0))
@@ -280,7 +297,10 @@ func move_enemy() -> void:
 	if enemy_pos == target_check:
 		_lose("¡Brecha crítica! El atacante vulneró %s" % target_check)
 		return
-	message.emit("ATACANTE avanzó a %s — Bloquea rutas!" % str(enemy_pos))
+	if last_exploit_used == "bypass":
+		message.emit("⚡ ¡ALERTA! Intruso usó BYPASS hacia %s" % str(enemy_pos))
+	else:
+		message.emit("ATACANTE avanzó a %s — Bloquea rutas!" % str(enemy_pos))
 
 
 func quarantine_node(node_id: StringName) -> void:
@@ -312,6 +332,9 @@ func quarantine_node(node_id: StringName) -> void:
 	GameLogger.info("DefenderBrain", "CUARENTENA en %s: %d aristas desconectadas" % [node_id, severed])
 	message.emit(feedback)
 	state_changed.emit()
+
+	if ping_pong_mode:
+		resolve_turn()
 
 
 func is_node_quarantined(node_id: StringName) -> bool:

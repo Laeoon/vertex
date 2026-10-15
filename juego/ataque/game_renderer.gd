@@ -316,12 +316,12 @@ func draw_defender_hud(
 	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), Color(0.2, 0.7, 1.0, 0.6))
 
 	draw_string(Vector2(16, 22), "BLUE TEAM // DEFENSA PERIMETRAL", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.ACCENT)
-	draw_string(Vector2(16, 42), "TURNO %d  |  FASE: %s" % [turn, "CONTENCIÓN" if blocks_placed < blocks_per_turn or blocks_per_turn == 0 else "LISTO"], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	draw_string(Vector2(16, 42), "TURNO %d  |  RESPUESTA EN VIVO" % turn, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 	var center_x: float = vp_size.x / 2.0
 
 	# ─── Barra de progreso EDR Forensics Trace (0..100%) ───
-	var trace_box_w := 240.0
+	var trace_box_w := 260.0
 	var trace_box_x := center_x - (trace_box_w * 0.5)
 	draw_string(Vector2(trace_box_x, 19), "RASTREO FORENSE EDR: %.0f%%" % forensics_trace, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color("b388ff"))
 	var tb_bg := Rect2(trace_box_x, 25, trace_box_w, 10.0)
@@ -330,17 +330,12 @@ func draw_defender_hud(
 	var tb_fill_w := trace_box_w * clampf(forensics_trace / 100.0, 0.0, 1.0)
 	if tb_fill_w > 0:
 		draw_rect(Rect2(trace_box_x, 25, tb_fill_w, 10.0), Color("b388ff"))
-	draw_string(Vector2(trace_box_x, 46), "Meta: 100% para neutralizar intruso", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+	draw_string(Vector2(trace_box_x, 46), "Al 100% neutraliza al atacante", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
 
-	# Info de bloqueos a la derecha del trace
-	var right_telemetry_x := center_x + 140.0
-	var blocks_remaining: int = blocks_per_turn - blocks_placed
-	var block_color: Color = Color(1.0, 0.5, 0.0) if blocks_remaining > 0 else Color(0.5, 0.8, 0.5)
-	draw_string(Vector2(right_telemetry_x, 22), "BLOQUEOS: %d/%d" % [blocks_placed, blocks_per_turn], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, block_color)
-	if blocks_remaining > 0:
-		draw_string(Vector2(right_telemetry_x, 42), "Restan: %d" % blocks_remaining, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.8, 0.5, 0.2))
-	else:
-		draw_string(Vector2(right_telemetry_x, 42), "[Enter] resolver", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.SUCCESS)
+	# Info del ciclo reactivo ping-pong a la derecha del trace
+	var right_telemetry_x := center_x + 150.0
+	draw_string(Vector2(right_telemetry_x, 22), "CICLO: REACTIVO 1:1", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.SUCCESS)
+	draw_string(Vector2(right_telemetry_x, 42), "Tu bloqueo activa al intruso", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
 	if enemy_pos != &"":
 		draw_string(Vector2(vp_size.x - 240, 22), "👾 INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(1.0, 0.3, 0.2))
@@ -1094,7 +1089,7 @@ func draw_status_bar(
 	# Keybinds (izquierda)
 	var kb_text: String
 	if defender_mode:
-		kb_text = "[Click arista] Bloquear  [F] Firewall  [Enter] Resolver  [ESC / M] Pausa"
+		kb_text = "[Click arista] Bloquear  [F] Firewall permanente  [ESC / M] Pausa"
 	else:
 		kb_text = "[Click/WASD] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [ESC / M] Pausa"
 	draw_string(Vector2(16, vp_size.y - 10), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)

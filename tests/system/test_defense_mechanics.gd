@@ -128,7 +128,7 @@ func test_forensics_trace_progression() -> void:
 	brain.setup(game, {
 		"enemy_start": &"Internet",
 		"enemy_target": &"DataCenter",
-		"blocks_per_turn": 2,
+		"blocks_per_turn": 1,
 		"block_duration": 4
 	})
 	brain.init()
@@ -136,23 +136,24 @@ func test_forensics_trace_progression() -> void:
 	var win_fired: Array = [false]
 	brain.defender_won.connect(func(_r, _s): win_fired[0] = true)
 
-	# Bloquear Internet->RouterA para que el atacante no llegue a DataCenter en 2 pasos
+	# Ciclo Ping-Pong reactivo: CADA bloqueo ejecuta automáticamente el turno
+	# Turno 1: bloqueamos Internet->RouterA. El atacante inmediatamente responde y se mueve a RouterB.
 	brain.block_edge("Internet→RouterA")
-	brain.resolve_turn() # Turno 1: atacante se desvía a RouterB. Trace sube 20%
+	_assert(brain.enemy_pos == &"RouterB", "Ping-pong: Attacker immediately reacts and moves to RouterB")
+	_assert(game.turn == 1, "Turn automatically advanced to 1 upon block")
 	_assert(brain.forensics_trace >= 20.0, "forensics_trace reaches >= 20%% on turn 1")
 
-	# Bloquear RouterB->DataCenter para seguir conteniéndolo
+	# Turno 2: bloqueamos RouterB->DataCenter. El atacante queda contenido sondeando.
 	brain.block_edge("RouterB→DataCenter")
-	brain.resolve_turn() # Turno 2
-	_assert(brain.forensics_trace >= 50.0, "forensics_trace reaches >= 50%% on turn 2")
+	_assert(game.turn == 2, "Turn automatically advanced to 2 upon block")
+	_assert(brain.forensics_trace >= 50.0, "forensics_trace reaches >= 50%% on turn 2 (contained bonus)")
 
-	brain.defender_blocks_placed = 1
-	brain.resolve_turn() # Turno 3
-	brain.defender_blocks_placed = 1
-	brain.resolve_turn() # Turno 4: alcanza 100%
+	# Turno 3 y 4: bloqueos adicionales para acumular el 100% de Trace
+	brain.block_edge("Internet→RouterB")
+	brain.block_edge("RouterA→DataCenter")
 
 	_assert(brain.forensics_trace >= 100.0, "forensics_trace reaches 100.0%")
-	_assert(win_fired[0], "EDR Trace 100% triggers defender_won")
+	_assert(win_fired[0], "EDR Trace 100% triggers defender_won in ping-pong loop")
 
 
 func test_attacker_lateral_movement() -> void:
@@ -165,7 +166,7 @@ func test_attacker_lateral_movement() -> void:
 	brain.setup(game, {
 		"enemy_start": &"Internet",
 		"enemy_target": &"DataCenter",
-		"blocks_per_turn": 2,
+		"blocks_per_turn": 1,
 		"block_duration": 4
 	})
 	brain.init()
@@ -173,13 +174,9 @@ func test_attacker_lateral_movement() -> void:
 	# El camino más corto original es Internet -> RouterA -> DataCenter
 	_assert(brain.enemy_path[1] == &"RouterA", "Original shortest path heads to RouterA")
 
-	# Bloquear la arista principal Internet->RouterA
+	# Ping-pong: Al bloquear la arista principal Internet->RouterA, el atacante busca ruta y avanza hacia RouterB
 	brain.block_edge("Internet→RouterA")
-	_assert(brain.enemy_path[1] == &"RouterB", "Attacker immediately finds alternative route to RouterB")
-
-	# Resolver turno: atacante debe avanzar hacia RouterB en vez de rendirse
-	brain.resolve_turn()
-	_assert(brain.enemy_pos == &"RouterB", "Attacker lateral movement advances to RouterB (got %s)" % brain.enemy_pos)
+	_assert(brain.enemy_pos == &"RouterB", "Attacker lateral movement advances to RouterB upon block (got %s)" % brain.enemy_pos)
 
 
 func test_quarantine_node_severing() -> void:
