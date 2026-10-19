@@ -349,6 +349,17 @@ func defender_place_firewall(node_id: StringName) -> void:
 		_game._notify_tutorial_input()
 
 
+## Puerto para la acción de Cuarentena (Host Isolation):
+func defender_quarantine_node(node_id: StringName) -> void:
+	if _game._defender_brain == null:
+		return
+	var antes: int = _game._defender_brain.quarantined_count
+	_game._defender_brain.quarantine_node(node_id)
+	if _game._defender_brain.quarantined_count > antes:
+		AudioManager.play_sfx("alert")
+		_game._notify_tutorial_input()
+
+
 # ─── Escalada de alarma (E1) ────────────────────────────────────────
 
 ## Dispara los eventos vencidos tras completar un turno. La cola vive en

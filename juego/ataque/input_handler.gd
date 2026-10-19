@@ -27,8 +27,10 @@ signal neighbor_hovered(node_id: StringName)
 
 signal defender_resolve_turn()
 signal defender_toggle_firewall()
+signal defender_toggle_quarantine()
 signal defender_block_edge(edge_key: String)
 signal defender_place_firewall(node_id: StringName)
+signal defender_quarantine_node(node_id: StringName)
 signal defender_hover_edge(edge_key: String)
 
 signal tutorial_skipped()
@@ -51,6 +53,7 @@ var game_won: bool = false
 var defender_mode: bool = false
 var hacker_mode: bool = false
 var firewall_mode: bool = false
+var quarantine_mode: bool = false
 var _turn_locked_until: float = 0.0
 var selected_neighbor: StringName = &""
 var hovered_edge: String = ""
@@ -296,7 +299,13 @@ func _input(event: InputEvent) -> void:
 			defender_resolve_turn.emit()
 			return
 		if k.keycode == KEY_F and not game_over:
+			quarantine_mode = false
 			defender_toggle_firewall.emit()
+			return
+		if k.keycode == KEY_C and not game_over:
+			firewall_mode = false
+			quarantine_mode = not quarantine_mode
+			defender_toggle_quarantine.emit()
 			return
 		if k.keycode == KEY_P and not game_over:
 			toggle_optimal_route.emit()
@@ -316,7 +325,16 @@ func _input(event: InputEvent) -> void:
 
 		# Defender mode: clics
 		if defender_mode:
-			if firewall_mode and not game_over:
+			if quarantine_mode and not game_over:
+				var node_id: StringName = _find_node_at_pos_firewall(click_pos)
+				if node_id != &"":
+					if _tutorial_blocks("input"):
+						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+						return
+					defender_quarantine_node.emit(node_id)
+				else:
+					_mensaje_temp("Haz clic en un NODO para declarar CUARENTENA, o presiona [C] para cancelar")
+			elif firewall_mode and not game_over:
 				var node_id: StringName = _find_node_at_pos_firewall(click_pos)
 				if node_id != &"":
 					# Slice 3.8 v2: bloquear acciones que no son la requerida

@@ -54,15 +54,29 @@ func test_general_tutorials_unlock_cybersecurity_only() -> void:
 		"tutorial1": 3,
 		"tutorial3": 3
 	}
-	_assert(ProgressUtilClass.is_world_unlocked("cybersecurity", prog), "Cybersecurity unlocks after general tutorials (Defender in standby)")
+	_assert(not ProgressUtilClass.is_world_unlocked("cybersecurity", prog), "Cybersecurity remains locked without defense tutorials")
 	_assert(not ProgressUtilClass.is_world_unlocked("heist", prog), "Heist remains locked without heist tutorials")
 	_assert(not ProgressUtilClass.is_world_unlocked("hacker", prog), "Hacker remains locked without hacker tutorials")
+
+	var reason_def := ProgressUtilClass.get_world_lock_reason("cybersecurity", prog)
+	_assert(reason_def.contains("DEFENSOR"), "Cybersecurity lock reason requires defense tutorials: %s" % reason_def)
 
 	var reason_heist := ProgressUtilClass.get_world_lock_reason("heist", prog)
 	_assert(reason_heist.contains("HEIST"), "Heist lock reason requires heist tutorials: %s" % reason_heist)
 
 	var reason_hacker := ProgressUtilClass.get_world_lock_reason("hacker", prog)
 	_assert(reason_hacker.contains("HACKER"), "Hacker lock reason requires hacker tutorials: %s" % reason_hacker)
+
+
+func test_cybersecurity_world_unlock() -> void:
+	var prog := {
+		"tutorial1": 3,
+		"tutorial3": 3,
+		"tut_defensa_1": 3,
+		"tut_defensa_2": 3
+	}
+	_assert(ProgressUtilClass.is_world_unlocked("cybersecurity", prog), "Cybersecurity unlocks when general and defense tutorials are completed")
+	_assert(ProgressUtilClass.get_world_lock_reason("cybersecurity", prog) == "", "Cybersecurity lock reason is empty when unlocked")
 
 
 func test_heist_world_unlock() -> void:

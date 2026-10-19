@@ -78,7 +78,7 @@ static func cargar_misiones(missions: Array[Dictionary]) -> void:
 ## - General: Requiere tutorial1 y tutorial3 (fundamentos de redes y defensa).
 ## - "heist": Requiere General + tutorial2 y tutorial6 (sensores y presupuesto).
 ## - "hacker": Requiere General + tut_hacker_1..tut_hacker_4.
-## - "cybersecurity": Requiere General (modo defender en standby).
+## - "cybersecurity": Requiere General + tut_defensa_1 y tut_defensa_2.
 static func is_world_unlocked(world_id: String, progress: Dictionary) -> bool:
 	if world_id == "tutorials":
 		return true
@@ -96,7 +96,7 @@ static func is_world_unlocked(world_id: String, progress: Dictionary) -> bool:
 				and progress.get("tut_hacker_3", 0) > 0 \
 				and progress.get("tut_hacker_4", 0) > 0
 		"cybersecurity":
-			return true
+			return progress.get("tut_defensa_1", 0) > 0 and progress.get("tut_defensa_2", 0) > 0
 		_:
 			return true
 
@@ -121,5 +121,6 @@ static func get_world_lock_reason(world_id: String, progress: Dictionary) -> Str
 				or progress.get("tut_hacker_4", 0) <= 0:
 				return "REQ: TUTORIAL HACKER (MODULOS 1-4)"
 		"cybersecurity":
-			return ""
+			if progress.get("tut_defensa_1", 0) <= 0 or progress.get("tut_defensa_2", 0) <= 0:
+				return "REQ: TUTORIAL DEFENSOR (MODULOS 1 Y 2)"
 	return ""

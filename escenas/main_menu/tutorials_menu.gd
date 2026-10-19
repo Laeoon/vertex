@@ -21,8 +21,7 @@ const TRACK_METADATA: Dictionary = {
 	},
 	Track.DEFENDER: {
 		"title": "DEFENDER",
-		"desc": "Defensa Activa y Contramedidas",
-		"is_standby": true,
+		"desc": "Defensa Perimetral y Contramedidas Blue Team",
 	},
 }
 
@@ -57,7 +56,10 @@ func _ready() -> void:
 			{"label": "Módulo 3: Persistencia y Refugio", "key": &"tut_hacker_3", "desc": "Persist [3], 0 ruido de movimiento y doble enfriamiento."},
 			{"label": "Módulo 4: Señuelos y Contramedidas", "key": &"tut_hacker_4", "desc": "Decoy [4], absorción de bloqueos de IA y desvío de patrullas."},
 		],
-		Track.DEFENDER: [],
+		Track.DEFENDER: [
+			{"label": "Módulo 1: Contención y Ciclo Reactivo", "key": &"tut_defensa_1", "desc": "Defensa perimetral, ciclo Ping-Pong 1:1 y rastreo forense EDR."},
+			{"label": "Módulo 2: Amenazas Avanzadas y Cuarentena", "key": &"tut_defensa_2", "desc": "Gestión de exploits (Bypass), aislamiento de host [C] y victoria EDR al 100%."},
+		],
 	}
 
 	progress = ProgressUtil.cargar_progreso()
@@ -80,8 +82,6 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				_go_back()
 			KEY_ENTER, KEY_SPACE:
-				if current_track == Track.DEFENDER:
-					return
 				var lessons := _get_current_lessons()
 				if selected_idx >= 0 and selected_idx < lessons.size():
 					_launch(lessons[selected_idx].key)
@@ -129,16 +129,15 @@ func _input(event: InputEvent) -> void:
 			tab_x += tab_w + tab_gap
 
 		# Click en lecciones
-		if current_track != Track.DEFENDER:
-			var lessons: Array = _get_current_lessons()
-			var by: float = 190.0
-			for i in lessons.size():
-				var row_rect := Rect2(50, by - 16, get_viewport_rect().size.x - 110, 52)
-				if row_rect.has_point(pos):
-					selected_idx = i
-					_launch(lessons[i].key)
-					return
-				by += 58
+		var lessons: Array = _get_current_lessons()
+		var by: float = 190.0
+		for i in lessons.size():
+			var row_rect := Rect2(50, by - 16, get_viewport_rect().size.x - 110, 52)
+			if row_rect.has_point(pos):
+				selected_idx = i
+				_launch(lessons[i].key)
+				return
+			by += 58
 
 
 func _go_back() -> void:
@@ -251,6 +250,34 @@ func _launch(key: StringName) -> void:
 		_launch(&"tut_hacker_1")
 		return
 
+	elif key == &"tut_defensa_1":
+		SceneParams.graph_path = "res://juego/defense/defense_n1.tres"
+		SceneParams.start_node = &"Internet"
+		SceneParams.target_node = &"DataCenter"
+		SceneParams.waypoints = []
+		SceneParams.defender_mode = true
+		SceneParams.defender_blocks_per_turn = 1
+		SceneParams.defender_block_duration = 4
+		SceneParams.enemy_start_node = &"Internet"
+		SceneParams.enemy_target_node = &"DataCenter"
+		SceneParams.titulo_nivel = "Defensa Módulo 1: Contención"
+		SceneParams.mensaje_tutorial = ""
+		SceneParams.tutorial_path = "res://juego/tutorials/data/tut_defensa_1.json"
+
+	elif key == &"tut_defensa_2":
+		SceneParams.graph_path = "res://juego/defense/defense_n1.tres"
+		SceneParams.start_node = &"Internet"
+		SceneParams.target_node = &"DataCenter"
+		SceneParams.waypoints = []
+		SceneParams.defender_mode = true
+		SceneParams.defender_blocks_per_turn = 1
+		SceneParams.defender_block_duration = 4
+		SceneParams.enemy_start_node = &"Internet"
+		SceneParams.enemy_target_node = &"DataCenter"
+		SceneParams.titulo_nivel = "Defensa Módulo 2: Contramedidas"
+		SceneParams.mensaje_tutorial = ""
+		SceneParams.tutorial_path = "res://juego/tutorials/data/tut_defensa_2.json"
+
 	elif key == &"tutorial6":
 		SceneParams.graph_path = "res://juego/tutorial6/tut6_red.tres"
 		SceneParams.start_node = &"Exterior"
@@ -306,24 +333,11 @@ func _draw() -> void:
 	var track_desc: String = active_meta.get("desc", "")
 	draw_string(font, Vector2(60, 142), track_desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT, 0.8))
 
-	# Contenido del track
-	if current_track == Track.DEFENDER:
-		# Vista Stand-by de Mantenimiento
-		var card_rect := Rect2(60, 175, vp_size.x - 120, 200)
-		draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL, 0.6))
-		draw_rect(card_rect, BrandClass.with_alpha(BrandClass.WARNING, 0.4), false, 1.5)
+	# Lista de lecciones del track activo
+	var lessons: Array = _get_current_lessons()
+	var by: float = 190.0
 
-		var glow := 0.7 + sin(_pulse) * 0.3
-		draw_string(font, Vector2(85, 220), "[!] MODO DEFENSOR — EN MANTENIMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.with_alpha(BrandClass.WARNING, glow))
-		draw_string(font, Vector2(85, 255), "Las mecánicas de ciberdefensa perimetral y contramedidas activas", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.TEXT)
-		draw_string(font, Vector2(85, 280), "están actualmente en fase de reestructuración técnica y rebalanceo.", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.TEXT)
-		draw_string(font, Vector2(85, 320), "[*] Los tutoriales de defensa se reactivarán en la próxima actualización.", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
-	else:
-		# Lista de lecciones del track activo
-		var lessons: Array = _get_current_lessons()
-		var by: float = 190.0
-
-		for i in lessons.size():
+	for i in lessons.size():
 			var b: Dictionary = lessons[i]
 			var is_sel: bool = (i == selected_idx)
 			var color: Color

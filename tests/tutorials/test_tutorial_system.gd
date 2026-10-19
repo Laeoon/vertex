@@ -211,17 +211,13 @@ func _run_tests() -> void:
 		failed += 1
 
 	menu._input(ev_right) # DEFENDER
-	# TEST 19: Defender stand-by blocks launch
-	SceneParams.reset()
-	var ev_enter := InputEventKey.new()
-	ev_enter.pressed = true
-	ev_enter.keycode = KEY_ENTER
-	menu._input(ev_enter)
-	if menu.current_track == menu.Track.DEFENDER and SceneParams.tutorial_path == "":
-		print("PASS: Defender stand-by bloquea launch")
+	# TEST 19: Defender track is active and exposes 2 lessons
+	var def_lessons = menu._get_current_lessons()
+	if menu.current_track == menu.Track.DEFENDER and def_lessons.size() == 2:
+		print("PASS: menu cambia a DEFENDER con 2 módulos interactivos")
 		passed += 1
 	else:
-		print("FAIL: Defender stand-by no bloqueo launch")
+		print("FAIL: menu DEFENDER fallo (size=%d)" % def_lessons.size())
 		failed += 1
 
 	# TEST 20: Tutorial launch sets SceneParams.level_key

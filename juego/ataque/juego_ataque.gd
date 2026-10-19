@@ -394,8 +394,10 @@ func _connect_input_signals() -> void:
 	_input_handler.neighbor_hovered.connect(_on_neighbor_hovered)
 	_input_handler.defender_resolve_turn.connect(_on_defender_resolve_turn)
 	_input_handler.defender_toggle_firewall.connect(_on_defender_toggle_firewall)
+	_input_handler.defender_toggle_quarantine.connect(_on_defender_toggle_quarantine)
 	_input_handler.defender_block_edge.connect(_on_defender_block_edge)
 	_input_handler.defender_place_firewall.connect(_on_defender_place_firewall)
+	_input_handler.defender_quarantine_node.connect(_on_defender_quarantine_node)
 	_input_handler.defender_hover_edge.connect(_on_defender_hover_edge)
 	_input_handler.tutorial_skipped.connect(_on_tutorial_skipped_input)
 
@@ -430,6 +432,7 @@ func _on_neighbor_hovered(node_id: StringName) -> void:
 		queue_redraw()
 func _on_defender_block_edge(edge_key: String) -> void: _game_logic.defender_block_edge(edge_key)
 func _on_defender_place_firewall(node_id: StringName) -> void: _game_logic.defender_place_firewall(node_id)
+func _on_defender_quarantine_node(node_id: StringName) -> void: _game_logic.defender_quarantine_node(node_id)
 func _on_return_to_menu() -> void: SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
 func _on_quit() -> void: _toggle_pause()
 func _on_pause_toggle_requested() -> void: _toggle_pause()
@@ -540,6 +543,12 @@ func _on_defender_toggle_firewall() -> void:
 	if _defender_brain != null:
 		_defender_brain.toggle_firewall_mode()
 		firewall_mode = _defender_brain.firewall_mode
+
+
+func _on_defender_toggle_quarantine() -> void:
+	if _defender_brain != null:
+		mensaje_estado = "☣ MODO CUARENTENA: Haz clic en un NODO para aislarlo de la red [C para cancelar]"
+		queue_redraw()
 
 
 func _on_defender_hover_edge(edge_key: String) -> void:
