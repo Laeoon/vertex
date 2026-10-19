@@ -80,6 +80,12 @@ func _ready() -> void:
 	_load_lang_setting()
 	progress = ProgressUtil.cargar_progreso()
 	_operator_advisor.reload_settings_and_profile()
+
+	# Breadcrumb de retorno: si volvemos desde un nivel/tutorial, restaurar WORLD_SELECT
+	if SceneParams.menu_target_state == "world_select":
+		current_state = State.WORLD_SELECT
+		SceneParams.menu_target_state = ""
+
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null and am.has_method("play_menu_music"):
 		am.play_menu_music()

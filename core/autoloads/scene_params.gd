@@ -42,6 +42,8 @@ var tutorial_path: String = ""  # Puede ser vacío (opcional)
 
 var mensaje_tutorial: String = ""
 
+var menu_target_state: String = ""  # Breadcrumb de navegación ("world_select", etc.)
+
 # ──────────────────────────────────────────────────────────────────────────────
 # IA y bloqueos
 # ──────────────────────────────────────────────────────────────────────────────
@@ -202,6 +204,7 @@ func reset() -> void:
 	_level_key = ""
 	tutorial_path = ""
 	mensaje_tutorial = ""
+	menu_target_state = ""
 
 	# IA y bloqueos
 	ai_block_per_turn = 1

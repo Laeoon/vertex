@@ -137,6 +137,7 @@ func _generate_sounds() -> void:
 	_sounds["exploit"] = _make_tone(698.46, 0.25, sr)
 	_sounds["firewall"] = _make_tone(130.81, 0.4, sr)
 	_sounds["reset"] = _make_tone(350.0, 0.12, sr)
+	_sounds["error"] = _make_tone(146.83, 0.22, sr)
 
 
 func _make_tone(freq: float, dur: float, sr: float) -> AudioStreamWAV:

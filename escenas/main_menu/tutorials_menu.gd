@@ -71,11 +71,14 @@ func _get_current_lessons() -> Array:
 
 
 func _input(event: InputEvent) -> void:
+	var vp_size: Vector2 = get_viewport_rect().size
+	var back_rect := Rect2(40.0, vp_size.y - 48.0, 180.0, 32.0)
+
 	if event is InputEventKey and event.pressed:
 		var k := event as InputEventKey
 		match k.keycode:
 			KEY_ESCAPE:
-				SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+				_go_back()
 			KEY_ENTER, KEY_SPACE:
 				if current_track == Track.DEFENDER:
 					return
@@ -105,6 +108,9 @@ func _input(event: InputEvent) -> void:
 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var pos: Vector2 = event.position
+		if back_rect.has_point(pos):
+			_go_back()
+			return
 		# Click en pestañas
 		var tab_x: float = 60.0
 		var tab_y: float = 110.0
@@ -133,6 +139,14 @@ func _input(event: InputEvent) -> void:
 					_launch(lessons[i].key)
 					return
 				by += 58
+
+
+func _go_back() -> void:
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("click")
+	SceneParams.menu_target_state = "world_select"
+	SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
 
 
 func _process(delta: float) -> void:
@@ -374,7 +388,11 @@ func _draw() -> void:
 			by += 36
 
 	# Controles al pie
-	var foot_y: float = vp_size.y - 45
-	draw_line(Vector2(60, foot_y - 15), Vector2(vp_size.x - 60, foot_y - 15), BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.4), 1.0)
-	var controls_hint: String = "[← / → / A / D] Cambiar Sección   |   [↑ / ↓ / W / S] Elegir Lección   |   [Enter] Iniciar   |   [Esc] Volver"
-	draw_string(font, Vector2(60, foot_y + 8), controls_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.TEXT_DIM)
+	var foot_y: float = vp_size.y - 48.0
+	var back_rect := Rect2(40.0, foot_y, 180.0, 32.0)
+	draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.85))
+	draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.5), false, 1.2)
+	draw_string(font, Vector2(back_rect.position.x + 14.0, back_rect.position.y + 21.0), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.ACCENT)
+
+	var controls_hint: String = "[Enter / Clic] Iniciar lección    [A / D] Cambiar sección"
+	draw_string(font, Vector2(240.0, foot_y + 21.0), controls_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.TEXT_DIM)

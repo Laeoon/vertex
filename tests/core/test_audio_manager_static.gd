@@ -31,14 +31,14 @@ func _run_tests() -> void:
 	var sonidos: Dictionary = am.get("_sounds")
 	var esperados: Array = [
 		"move", "block", "win", "lose", "click",
-		"alert", "scan", "exploit", "firewall", "reset",
+		"alert", "scan", "exploit", "firewall", "reset", "error",
 	]
 	var faltantes: Array = []
 	for clave in esperados:
 		if not sonidos.has(clave):
 			faltantes.append(clave)
 	_afirmar(faltantes.is_empty(),
-		"_ready() genera los 10 sonidos procedurales (faltan: %s)" % str(faltantes))
+		"_ready() genera los 11 sonidos procedurales (faltan: %s)" % str(faltantes))
 
 	var todos_wav: bool = true
 	for clave in sonidos:

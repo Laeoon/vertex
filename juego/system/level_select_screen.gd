@@ -51,17 +51,23 @@ func setup(p_world_id: String) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	var vp: Vector2 = get_viewport_rect().size
+	var back_rect := Rect2(40.0, vp.y - 48.0, 200.0, 34.0)
+
 	if event is InputEventKey and event.pressed:
 		var k := event as InputEventKey
 		match k.keycode:
 			KEY_ESCAPE:
-				SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+				_go_back()
 			KEY_ENTER, KEY_SPACE:
 				if _selected_node != "":
 					_play_level(_selected_node)
 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var click_pos: Vector2 = event.position
+		if back_rect.has_point(click_pos):
+			_go_back()
+			return
 		for i in level_nodes.size():
 			var node_data: Dictionary = level_nodes[i]
 			var node_pos: Vector2 = _get_node_position(node_data, i)
@@ -71,6 +77,14 @@ func _input(event: InputEvent) -> void:
 					_selected_node = node_id
 					_play_level(node_id)
 					return
+
+
+func _go_back() -> void:
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("click")
+	SceneParams.menu_target_state = "world_select"
+	SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
 
 
 func _get_node_position(node_data: Dictionary, index: int) -> Vector2:
@@ -181,4 +195,9 @@ func _draw_nodes(vp: Vector2) -> void:
 
 
 func _draw_back_hint(vp: Vector2) -> void:
-	draw_string(font, Vector2(60, vp.y - 30), "[ESC] Volver al menú  |  [Enter] Jugar nivel seleccionado", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.45, 0.5, 0.6))
+	var back_rect := Rect2(40.0, vp.y - 48.0, 200.0, 34.0)
+	draw_rect(back_rect, Color(0.08, 0.1, 0.15, 0.85))
+	draw_rect(back_rect, Color(0.2, 0.35, 0.45, 0.6), false, 1.2)
+	draw_string(font, Vector2(back_rect.position.x + 14.0, back_rect.position.y + 22.0), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.0, 0.85, 0.75))
+
+	draw_string(font, Vector2(260.0, vp.y - 26.0), "[Enter / Clic] Jugar nivel seleccionado", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.45, 0.5, 0.6))

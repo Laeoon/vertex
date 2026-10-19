@@ -10,13 +10,21 @@ class_name ProgressUtil extends RefCounted
 ## Todas las funciones son estáticas — no requieren instancia.
 
 
+const SlotManagerClass = preload("res://juego/system/slot_manager.gd")
+
+
+## Resuelve dinámicamente la ruta al archivo progress.cfg según el slot activo.
+static func get_progress_file_path() -> String:
+	return SlotManagerClass.get_progress_path()
+
+
 ## Carga todo el progreso guardado como `{level_key: estrellas}`.
 ##
-## Lee `user://progress.cfg` sección `"estrellas"`. Excluye claves que
+## Lee la sección `"estrellas"` del slot activo. Excluye claves que
 ## terminan en `_mejor_coste` (metadatos internos de ProgressService).
 static func cargar_progreso() -> Dictionary:
 	var cfg := ConfigFile.new()
-	var err: int = cfg.load("user://progress.cfg")
+	var err: int = cfg.load(get_progress_file_path())
 	if err != OK:
 		return {}
 	var result: Dictionary = {}
@@ -30,7 +38,7 @@ static func cargar_progreso() -> Dictionary:
 ## Devuelve las estrellas de un nivel específico (0 si no existe).
 static func get_stars(level_key: String) -> int:
 	var cfg := ConfigFile.new()
-	if cfg.load("user://progress.cfg") != OK:
+	if cfg.load(get_progress_file_path()) != OK:
 		return 0
 	return cfg.get_value("estrellas", level_key, 0)
 
@@ -39,12 +47,13 @@ static func get_stars(level_key: String) -> int:
 static func guardar_progreso(level_key: String, stars: int) -> void:
 	if level_key.is_empty() or stars <= 0:
 		return
+	var path := get_progress_file_path()
 	var cfg := ConfigFile.new()
-	cfg.load("user://progress.cfg")
+	cfg.load(path)
 	var prev: int = cfg.get_value("estrellas", level_key, 0)
 	if stars > prev:
 		cfg.set_value("estrellas", level_key, stars)
-		cfg.save("user://progress.cfg")
+		cfg.save(path)
 
 
 ## Carga el progreso y pobla un array de misiones con stars/completed.
@@ -54,7 +63,7 @@ static func guardar_progreso(level_key: String, stars: int) -> void:
 ## Usado por `database.gd`.
 static func cargar_misiones(missions: Array[Dictionary]) -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load("user://progress.cfg") != OK:
+	if cfg.load(get_progress_file_path()) != OK:
 		return
 	for i in missions.size():
 		var key: String = missions[i]["id"]
