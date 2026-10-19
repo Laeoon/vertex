@@ -335,6 +335,7 @@ func draw_defender_hud(
 	draw_rect(Rect2(0, bar_h, vp_size.x, 1.5), Color(0.15, 0.65, 0.95, 0.7))
 
 	# Izquierda: Título y turno
+
 	draw_string(Vector2(16, 24), "BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.ACCENT)
 	var turn_txt := " // TURNO %d" % turn
 	var t_sz := font.get_string_size("BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)

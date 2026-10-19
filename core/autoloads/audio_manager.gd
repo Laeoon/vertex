@@ -67,11 +67,32 @@ var _world_music_playlists: Dictionary = {
 
 func _ready() -> void:
 	_ensure_audio_buses()
+	_load_saved_volumes()
 	_generate_sounds()
 	_load_disk_sounds()
 	_setup_music_player()
 	_setup_sfx_pool()
 	_initialized = true
+
+
+func _load_saved_volumes() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load("user://settings.cfg") == OK:
+		var v_master = cfg.get_value("options", "volume_master", 80)
+		var v_music = cfg.get_value("options", "volume_music", 80)
+		var v_sfx = cfg.get_value("options", "volume_sfx", 80)
+
+		var m_idx := AudioServer.get_bus_index("Master")
+		if m_idx != -1:
+			AudioServer.set_bus_volume_db(m_idx, linear_to_db(float(v_master) / 100.0))
+
+		var mu_idx := AudioServer.get_bus_index("Music")
+		if mu_idx != -1:
+			AudioServer.set_bus_volume_db(mu_idx, linear_to_db(float(v_music) / 100.0))
+
+		var s_idx := AudioServer.get_bus_index("SFX")
+		if s_idx != -1:
+			AudioServer.set_bus_volume_db(s_idx, linear_to_db(float(v_sfx) / 100.0))
 
 
 func _ensure_audio_buses() -> void:
