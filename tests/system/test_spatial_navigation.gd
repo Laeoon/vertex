@@ -192,49 +192,26 @@ func _test_input_handler_keys() -> void:
 	handler.directional_neighbor_requested.connect(func(d: Vector2): emitted_dirs.append(d))
 	handler.cycle_neighbor.connect(func(_step: int): cycle_counts[0] += 1)
 
-	# UP / W
+	# Flechas direccionales exclusivas para selección de nodos
 	var ev_up = InputEventKey.new()
 	ev_up.keycode = KEY_UP
 	ev_up.pressed = true
 	handler._input(ev_up)
 
-	var ev_w = InputEventKey.new()
-	ev_w.keycode = KEY_W
-	ev_w.pressed = true
-	handler._input(ev_w)
-
-	# DOWN / S
 	var ev_down = InputEventKey.new()
 	ev_down.keycode = KEY_DOWN
 	ev_down.pressed = true
 	handler._input(ev_down)
 
-	var ev_s = InputEventKey.new()
-	ev_s.keycode = KEY_S
-	ev_s.pressed = true
-	handler._input(ev_s)
-
-	# LEFT / A
 	var ev_left = InputEventKey.new()
 	ev_left.keycode = KEY_LEFT
 	ev_left.pressed = true
 	handler._input(ev_left)
 
-	var ev_a = InputEventKey.new()
-	ev_a.keycode = KEY_A
-	ev_a.pressed = true
-	handler._input(ev_a)
-
-	# RIGHT / D
 	var ev_right = InputEventKey.new()
 	ev_right.keycode = KEY_RIGHT
 	ev_right.pressed = true
 	handler._input(ev_right)
-
-	var ev_d = InputEventKey.new()
-	ev_d.keycode = KEY_D
-	ev_d.pressed = true
-	handler._input(ev_d)
 
 	# TAB
 	var ev_tab = InputEventKey.new()
@@ -242,11 +219,11 @@ func _test_input_handler_keys() -> void:
 	ev_tab.pressed = true
 	handler._input(ev_tab)
 
-	_assert(emitted_dirs.size() == 8, "All 8 directional key inputs emitted directional signals (got %d)" % emitted_dirs.size())
-	_assert(emitted_dirs[0] == Vector2.UP and emitted_dirs[1] == Vector2.UP, "KEY_UP and KEY_W emit Vector2.UP")
-	_assert(emitted_dirs[2] == Vector2.DOWN and emitted_dirs[3] == Vector2.DOWN, "KEY_DOWN and KEY_S emit Vector2.DOWN")
-	_assert(emitted_dirs[4] == Vector2.LEFT and emitted_dirs[5] == Vector2.LEFT, "KEY_LEFT and KEY_A emit Vector2.LEFT")
-	_assert(emitted_dirs[6] == Vector2.RIGHT and emitted_dirs[7] == Vector2.RIGHT, "KEY_RIGHT and KEY_D emit Vector2.RIGHT")
+	_assert(emitted_dirs.size() == 4, "All 4 directional arrow key inputs emitted directional signals (got %d)" % emitted_dirs.size())
+	_assert(emitted_dirs[0] == Vector2.UP, "KEY_UP emits Vector2.UP")
+	_assert(emitted_dirs[1] == Vector2.DOWN, "KEY_DOWN emits Vector2.DOWN")
+	_assert(emitted_dirs[2] == Vector2.LEFT, "KEY_LEFT emits Vector2.LEFT")
+	_assert(emitted_dirs[3] == Vector2.RIGHT, "KEY_RIGHT emits Vector2.RIGHT")
 	_assert(cycle_counts[0] == 1, "KEY_TAB emits cycle_neighbor fallback")
 
 	handler.queue_free()

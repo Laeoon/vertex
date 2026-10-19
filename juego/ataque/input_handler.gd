@@ -191,19 +191,37 @@ func _input(event: InputEvent) -> void:
 				if game != null and game.has_method("reset_pan_zoom"):
 					game.reset_pan_zoom()
 				return
-			KEY_UP, KEY_W:
+			# ─── Cámara: WASD para mover el viewport (Pan) ───
+			KEY_W:
+				if game != null and game.has_method("pan_by"):
+					game.pan_by(Vector2(0, 45))
+				return
+			KEY_S:
+				if game != null and game.has_method("pan_by"):
+					game.pan_by(Vector2(0, -45))
+				return
+			KEY_A:
+				if game != null and game.has_method("pan_by"):
+					game.pan_by(Vector2(45, 0))
+				return
+			KEY_D:
+				if game != null and game.has_method("pan_by"):
+					game.pan_by(Vector2(-45, 0))
+				return
+			# ─── Selección de nodos: Flechas direccionales exclusivas ───
+			KEY_UP:
 				if input_scheme != Scheme.MOUSE_ONLY:
 					directional_neighbor_requested.emit(Vector2.UP)
 				return
-			KEY_DOWN, KEY_S:
+			KEY_DOWN:
 				if input_scheme != Scheme.MOUSE_ONLY:
 					directional_neighbor_requested.emit(Vector2.DOWN)
 				return
-			KEY_LEFT, KEY_A:
+			KEY_LEFT:
 				if input_scheme != Scheme.MOUSE_ONLY:
 					directional_neighbor_requested.emit(Vector2.LEFT)
 				return
-			KEY_RIGHT, KEY_D:
+			KEY_RIGHT:
 				if input_scheme != Scheme.MOUSE_ONLY:
 					directional_neighbor_requested.emit(Vector2.RIGHT)
 				return

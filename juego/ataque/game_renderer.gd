@@ -112,14 +112,18 @@ func draw_frame(d: Dictionary) -> void:
 
 
 func draw_background_grid(vp_size: Vector2, pan: Vector2 = Vector2.ZERO, zoom: float = 1.0) -> void:
-	var spacing: float = 50.0
-	var grid_color: Color = Color(0.12, 0.14, 0.2, 0.3)
+	# Fondo táctico blueprint cyberpunk (plano militar con cruces e iluminación focal)
+	var spacing: float = 60.0
+	var grid_color: Color = Color(0.04, 0.12, 0.22, 0.40)
+	var cross_color: Color = Color(0.10, 0.35, 0.55, 0.35)
 	var z := zoom if zoom > 0.0 else 1.0
+
 	var x_start: float = floor((-pan.x / z) / spacing) * spacing
 	var x_end: float = ceil(((vp_size.x - pan.x) / z) / spacing) * spacing
 	var y_start: float = floor((-pan.y / z) / spacing) * spacing
 	var y_end: float = ceil(((vp_size.y - pan.y) / z) / spacing) * spacing
 
+	# 1. Líneas de cuadrícula sutiles
 	var x: float = x_start
 	while x <= x_end:
 		draw_line(Vector2(x, y_start), Vector2(x, y_end), grid_color, 1.0)
@@ -128,6 +132,17 @@ func draw_background_grid(vp_size: Vector2, pan: Vector2 = Vector2.ZERO, zoom: f
 	while y <= y_end:
 		draw_line(Vector2(x_start, y), Vector2(x_end, y), grid_color, 1.0)
 		y += spacing
+
+	# 2. Cruces tácticas en las intersecciones (estilo blueprint CAD/militar)
+	var cross_sz: float = 3.5
+	var cy: float = y_start
+	while cy <= y_end:
+		var cx: float = x_start
+		while cx <= x_end:
+			draw_line(Vector2(cx - cross_sz, cy), Vector2(cx + cross_sz, cy), cross_color, 1.0)
+			draw_line(Vector2(cx, cy - cross_sz), Vector2(cx, cy + cross_sz), cross_color, 1.0)
+			cx += spacing
+		cy += spacing
 
 
 func draw_hud(
@@ -300,145 +315,69 @@ func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: D
 func draw_defender_hud(
 	vp_size: Vector2,
 	turn: int,
-	blocks_placed: int,
-	blocks_per_turn: int,
+	_blocks_placed: int,
+	_blocks_per_turn: int,
 	enemy_pos: StringName,
 	enemy_target: StringName,
-	max_turns: int,
-	min_cut_analysis: Dictionary = {},
-	blocked_edges: Dictionary = {},
-	node_firewalls: Dictionary = {},
+	_max_turns: int,
+	_min_cut_analysis: Dictionary = {},
+	_blocked_edges: Dictionary = {},
+	_node_firewalls: Dictionary = {},
 	firewall_mode: bool = false,
 	forensics_trace: float = 0.0,
-	quarantined_nodes: Dictionary = {},
+	_quarantined_nodes: Dictionary = {},
 	fog_of_war: bool = false,
 	telemetry_intercepted: bool = false
 ) -> void:
-	var bar_h: float = 52.0
-	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
-	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), Color(0.2, 0.7, 1.0, 0.6))
+	# Barra única compacta (38px de alto) estilo consola táctica militar
+	var bar_h: float = 38.0
+	draw_rect(Rect2(0, 0, vp_size.x, bar_h), Color(0.02, 0.03, 0.07, 0.92))
+	draw_rect(Rect2(0, bar_h, vp_size.x, 1.5), Color(0.15, 0.65, 0.95, 0.7))
 
-	draw_string(Vector2(16, 22), "BLUE TEAM // DEFENSA PERIMETRAL", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, BrandClass.ACCENT)
-	draw_string(Vector2(16, 42), "TURNO %d  |  RESPUESTA EN VIVO" % turn, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	# Izquierda: Título y turno
+	draw_string(Vector2(16, 24), "BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.ACCENT)
+	var turn_txt := " // TURNO %d" % turn
+	var t_sz := font.get_string_size("BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	draw_string(Vector2(16 + t_sz.x, 24), turn_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
-	var center_x: float = vp_size.x / 2.0
-
-	# ─── Barra de progreso EDR Forensics Trace (0..100%) ───
+	# Centro: Barra de progreso EDR Forensics Trace (0..100%)
+	var center_x: float = vp_size.x * 0.5
 	var trace_box_w := 260.0
 	var trace_box_x := center_x - (trace_box_w * 0.5)
-	draw_string(Vector2(trace_box_x, 19), "RASTREO FORENSE EDR: %.0f%%" % forensics_trace, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color("b388ff"))
-	var tb_bg := Rect2(trace_box_x, 25, trace_box_w, 10.0)
-	draw_rect(tb_bg, Color(0.1, 0.1, 0.18, 0.8))
-	draw_rect(tb_bg, Color(0.4, 0.3, 0.7, 0.5), false, 1.0)
+
+	var trace_label := "RASTREO EDR: %.0f%%" % forensics_trace
+	draw_string(Vector2(trace_box_x, 16), trace_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color("b388ff"))
+
+	var tb_bg := Rect2(trace_box_x, 21, trace_box_w, 8.0)
+	draw_rect(tb_bg, Color(0.08, 0.08, 0.15, 0.8))
+	draw_rect(tb_bg, Color(0.4, 0.3, 0.7, 0.4), false, 1.0)
 	var tb_fill_w := trace_box_w * clampf(forensics_trace / 100.0, 0.0, 1.0)
 	if tb_fill_w > 0:
-		draw_rect(Rect2(trace_box_x, 25, tb_fill_w, 10.0), Color("b388ff"))
-	draw_string(Vector2(trace_box_x, 46), "Al 100% neutraliza al atacante", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+		draw_rect(Rect2(trace_box_x, 21, tb_fill_w, 8.0), Color("b388ff"))
 
-	# Info del ciclo reactivo ping-pong a la derecha del trace
-	var right_telemetry_x := center_x + 150.0
-	draw_string(Vector2(right_telemetry_x, 22), "CICLO: REACTIVO 1:1", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.SUCCESS)
+	# A la derecha del Trace: Estado de telemetría de niebla o ciclo
+	var sub_x := center_x + 145.0
 	if telemetry_intercepted:
-		draw_string(Vector2(right_telemetry_x, 42), "TELEMETRÍA EXPUESTA (MÁX 2★)", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WARNING)
+		draw_string(Vector2(sub_x, 24), "RUTA EXPUESTA (MÁX 2★)", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.WARNING)
 	elif fog_of_war:
-		draw_string(Vector2(right_telemetry_x, 42), "[P] Interceptar ruta (-1★)", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color("80d8ff"))
+		draw_string(Vector2(sub_x, 24), "[P] REVELAR RUTA", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color("80d8ff"))
 	else:
-		draw_string(Vector2(right_telemetry_x, 42), "Tu bloqueo activa al intruso", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+		draw_string(Vector2(sub_x, 24), "RESPUESTA EN VIVO 1:1", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.2, 0.9, 0.5))
 
+	# Derecha extrema: Posición del Intruso y Núcleo objetivo
+	var targets_x := vp_size.x - 260.0
 	if enemy_pos != &"":
-		draw_string(Vector2(vp_size.x - 240, 22), "👾 INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(1.0, 0.3, 0.2))
+		draw_string(Vector2(targets_x, 16), "INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.35, 0.25))
 	if enemy_target != &"":
-		draw_string(Vector2(vp_size.x - 240, 42), "🎯 NÚCLEO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.2, 0.8, 1.0))
+		draw_string(Vector2(targets_x, 30), "NÚCLEO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.1, 0.85, 0.95))
 
-	# Modo firewall / cuarentena activo
+	# Tag de modo firewall/cuarentena
 	if firewall_mode:
-		var fw_text: String = "🔥 CORTAFUEGOS"
-		var fw_w: float = font.get_string_size(fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
-		var fw_x: float = vp_size.x - fw_w - 16.0
-		draw_rect(Rect2(fw_x - 4, 14, fw_w + 8, 16), Color(1.0, 0.3, 0.0, 0.2))
-		draw_rect(Rect2(fw_x - 4, 14, fw_w + 8, 16), Color(1.0, 0.4, 0.0, 0.6), false, 1.0)
-		draw_string(Vector2(fw_x, 26), fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.4, 0.0))
-
-	# Indicador de estado de rutas del atacante
-	var has_path: bool = enemy_pos != &"" and enemy_pos != enemy_target
-	if has_path and enemy_target != &"":
-		var route_status_y: float = 42.0 if not firewall_mode else 56.0
-		# Se muestra integrado en la info del atacante
-
-	# ═══ ZONA 1b: Análisis de corte mínimo (TAREA 1) ═══
-	var analysis_y: float = 56.0
-	draw_rect(Rect2(0, analysis_y, vp_size.x, 22.0), BrandClass.PANEL_SOLID)
-	draw_rect(Rect2(0, analysis_y + 22.0, vp_size.x, 1.0), BrandClass.with_alpha(BrandClass.WARNING, 0.3))
-
-	var has_analysis: bool = not min_cut_analysis.is_empty() and min_cut_analysis.get("cut_edges", []).size() > 0
-	if has_analysis:
-		var cut_edges: Array = min_cut_analysis["cut_edges"]
-		var max_flow: float = min_cut_analysis.get("max_flow", 0.0)
-
-		# Texto de cabecera
-		var flow_text: String = "✂ CORTE MÍNIMO — Flujo máx: %.1f" % max_flow
-		draw_string(Vector2(16, analysis_y + 16), flow_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WARNING)
-
-		# Aristas sugeridas (hasta 4) con icono dorado
-		var x_offset: float = vp_size.x - 12.0
-		var max_show: int = mini(cut_edges.size(), 4)
-		for i in range(max_show):
-			var edge: Dictionary = cut_edges[i]
-			var edge_text: String = "■ %s→%s (%.1f)" % [edge["from_id"], edge["to_id"], edge.get("capacity", 0.0)]
-			var tw: float = font.get_string_size(edge_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size).x
-			x_offset -= tw + 10.0
-			draw_rect(Rect2(x_offset - 2, analysis_y + 4, tw + 6, 14), Color(0.85, 0.65, 0.0, 0.12))
-			draw_rect(Rect2(x_offset - 2, analysis_y + 4, tw + 6, 14), BrandClass.with_alpha(BrandClass.WARNING, 0.3), false, 1.0)
-			draw_string(Vector2(x_offset, analysis_y + 16), edge_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, BrandClass.WARNING)
-		if cut_edges.size() > 4:
-			var extra_text: String = "... (+%d)" % (cut_edges.size() - 4)
-			x_offset -= font.get_string_size(extra_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size).x + 6
-			draw_string(Vector2(x_offset, analysis_y + 16), extra_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.7, 0.6, 0.3))
-	else:
-		draw_string(Vector2(16, analysis_y + 16), "✂ CORTE MÍNIMO: Sin sugerencias", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.5, 0.5, 0.5))
-
-	# ═══ ZONA 1c: Duración de bloqueos activos (TAREA 3) ═══
-	var active_blocks: int = blocked_edges.size()
-	if active_blocks > 0:
-		var blocks_y: float = analysis_y + 24.0
-		draw_rect(Rect2(0, blocks_y, vp_size.x, 18.0), BrandClass.PANEL_SOLID)
-
-		var blocks_text: String = "🔒 Bloqueos activos: %d  |  " % active_blocks
-		var bx: float = 16.0
-		draw_string(Vector2(bx, blocks_y + 14), blocks_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.8, 0.8, 0.9))
-		bx += font.get_string_size(blocks_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 4.0
-
-		# Mostrar hasta 5 bloqueos con su duración
-		var count: int = 0
-		for edge_key in blocked_edges.keys():
-			if count >= 5:
-				break
-			var block_data: Dictionary = blocked_edges[edge_key]
-			var remaining: int = int(block_data.get("expires_at", 0)) - turn
-			if remaining < 0:
-				remaining = 0
-
-			var dur_color: Color
-			if remaining >= 4:
-				dur_color = Color(0.2, 1.0, 0.5)
-			elif remaining >= 2:
-				dur_color = Color(1.0, 0.8, 0.0)
-			else:
-				dur_color = BrandClass.DANGER
-
-			var label: String = "%s:%dt" % [edge_key, remaining]
-			var lw: float = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size).x
-			if bx + lw + 10 > vp_size.x:
-				# Salto de línea virtual — cortamos
-				break
-			draw_rect(Rect2(bx - 2, blocks_y + 2, lw + 4, 14), Color(dur_color.r, dur_color.g, dur_color.b, 0.12))
-			draw_string(Vector2(bx, blocks_y + 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, dur_color)
-			bx += lw + 12.0
-			count += 1
-
-		if blocked_edges.size() > 5:
-			var more: String = "... (+%d)" % (blocked_edges.size() - 5)
-			draw_string(Vector2(bx, blocks_y + 14), more, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.5, 0.5, 0.6))
+		var fw_text := "MODO FW"
+		var fw_w := font.get_string_size(fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
+		draw_rect(Rect2(vp_size.x - fw_w - 20.0, 11, fw_w + 10, 16), Color(1.0, 0.4, 0.0, 0.2))
+		draw_rect(Rect2(vp_size.x - fw_w - 20.0, 11, fw_w + 10, 16), Color(1.0, 0.4, 0.0, 0.6), false, 1.0)
+		draw_string(Vector2(vp_size.x - fw_w - 15.0, 23), fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.5, 0.0))
 
 
 func draw_edges(
@@ -1097,9 +1036,9 @@ func draw_status_bar(
 	# Keybinds (izquierda)
 	var kb_text: String
 	if defender_mode:
-		kb_text = "[Click arista] Bloquear  [F] Firewall permanente  [P] Revelar ruta  [ESC / M] Pausa"
+		kb_text = "[Click arista] Bloquear  [C] Cuarentena  [WASD] Cámara  [Rueda] Zoom  [ESC / M] Pausa"
 	else:
-		kb_text = "[Click/WASD] Mover  [Tab] Sel  [Enter] Ir  [P] Ruta  [ESC / M] Pausa"
+		kb_text = "[Flechas] Sel  [Enter/Clic] Mover  [WASD] Cámara  [Rueda] Zoom  [P] Ruta  [ESC / M] Pausa"
 	draw_string(Vector2(16, vp_size.y - 10), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 	# Estado (centro-derecha)

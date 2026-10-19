@@ -501,9 +501,20 @@ func _on_input_scheme_changed(scheme: int) -> void:
 
 # ─── Navegación post-partida (slice 6; lógica en LevelManager) ────
 
+func _deduce_tutorial_track() -> String:
+	if level_key.begins_with("tut_defensa"):
+		return "defender"
+	elif level_key.begins_with("tut_hacker"):
+		return "hacker"
+	elif level_key in ["tutorial2", "tutorial6"]:
+		return "heist"
+	return "general"
+
+
 func _on_next_level() -> void:
-	# En tutoriales, volver al menú de tutoriales.
+	# En tutoriales, volver al menú de tutoriales en el track jugado
 	if tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player)):
+		SceneParams.tutorial_track = _deduce_tutorial_track()
 		SceneTransition.fade_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
 		return
 	# Siguiente nivel del mismo mundo; si es el último, cae al selector de ese mundo.
@@ -512,8 +523,9 @@ func _on_next_level() -> void:
 
 
 func _on_level_select() -> void:
-	# En tutoriales, volver al menú de tutoriales.
+	# En tutoriales, volver al menú de tutoriales en el track jugado
 	if tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player)):
+		SceneParams.tutorial_track = _deduce_tutorial_track()
 		SceneTransition.fade_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
 		return
 	# Mundo del nivel actual; si no está registrado o está vacío, volver al menú principal.

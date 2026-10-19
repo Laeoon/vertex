@@ -105,12 +105,12 @@ func _test_keyboard_only_suppression() -> void:
 	handler._input(mb)
 	_assert(not ("click_move" in emitted), "KEYBOARD_ONLY suppresses left mouse click movement")
 
-	# Keyboard directional keys should work
+	# Keyboard directional keys (Arrows) should work
 	var key_ev = InputEventKey.new()
-	key_ev.keycode = KEY_W
+	key_ev.keycode = KEY_UP
 	key_ev.pressed = true
 	handler._input(key_ev)
-	_assert("dir" in emitted, "KEYBOARD_ONLY processes keyboard directional movement")
+	_assert("dir" in emitted, "KEYBOARD_ONLY processes keyboard directional movement (Arrow UP)")
 
 	handler.queue_free()
 

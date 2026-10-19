@@ -62,6 +62,15 @@ func _ready() -> void:
 		],
 	}
 
+	# Restaurar track jugado previamente si existe
+	if SceneParams.tutorial_track != "":
+		match SceneParams.tutorial_track:
+			"general": current_track = Track.GENERAL
+			"heist": current_track = Track.HEIST
+			"hacker": current_track = Track.HACKER
+			"defender": current_track = Track.DEFENDER
+		SceneParams.tutorial_track = ""
+
 	progress = ProgressUtil.cargar_progreso()
 	if get_node_or_null("/root/AudioManager") != null:
 		AudioManager.play_menu_music()

@@ -43,6 +43,7 @@ var tutorial_path: String = ""  # Puede ser vacío (opcional)
 var mensaje_tutorial: String = ""
 
 var menu_target_state: String = ""  # Breadcrumb de navegación ("world_select", etc.)
+var tutorial_track: String = ""     # Recordar track activo al volver a tutorials_menu ("general", "heist", "hacker", "defender")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # IA y bloqueos
@@ -205,6 +206,7 @@ func reset() -> void:
 	tutorial_path = ""
 	mensaje_tutorial = ""
 	menu_target_state = ""
+	tutorial_track = ""
 
 	# IA y bloqueos
 	ai_block_per_turn = 1
