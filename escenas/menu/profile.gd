@@ -216,7 +216,7 @@ func _process(delta: float) -> void:
 
 func _load_profile() -> void:
 	var cfg := ConfigFile.new()
-	var err := cfg.load("user://profile.cfg")
+	var err := cfg.load(SlotManager.get_profile_path())
 	if err == OK:
 		player_name = cfg.get_value("profile", "player_name", "Jugador")
 	else:
@@ -225,9 +225,10 @@ func _load_profile() -> void:
 
 func _save_profile() -> void:
 	var cfg := ConfigFile.new()
-	cfg.load("user://profile.cfg")
+	cfg.load(SlotManager.get_profile_path())
 	cfg.set_value("profile", "player_name", player_name)
-	cfg.save("user://profile.cfg")
+	cfg.save(SlotManager.get_profile_path())
+	SlotManager.invalidate_cache()
 
 
 func _load_stats() -> void:
@@ -249,7 +250,7 @@ func _load_stats() -> void:
 	progress = ProgressUtilClass.cargar_progreso()
 
 	_progress_cfg = ConfigFile.new()
-	var err_p := _progress_cfg.load("user://progress.cfg")
+	var err_p := _progress_cfg.load(ProgressUtilClass.get_progress_file_path())
 	if err_p == OK:
 		var total_stars: int = 0
 		var completed_levels: int = 0
@@ -274,7 +275,7 @@ func _load_stats() -> void:
 		stats["total_stars"] = total_stars
 
 	_stats_cfg = ConfigFile.new()
-	if _stats_cfg.load("user://stats.cfg") == OK:
+	if _stats_cfg.load(SlotManager.get_stats_path()) == OK:
 		stats["play_time_seconds"] = _stats_cfg.get_value("stats", "play_time", 0)
 		stats["best_streak"] = _stats_cfg.get_value("stats", "best_streak", 0)
 		stats["total_attempts"] = _stats_cfg.get_value("stats", "total_attempts", 0)

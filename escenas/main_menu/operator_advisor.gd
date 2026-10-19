@@ -28,7 +28,7 @@ func reload_settings_and_profile() -> void:
 
 	# Load profile player name
 	var pcfg := ConfigFile.new()
-	if pcfg.load("user://profile.cfg") == OK:
+	if pcfg.load(SlotManager.get_profile_path()) == OK:
 		_player_name = pcfg.get_value("profile", "player_name", "Jugador")
 	else:
 		_player_name = "Jugador"

@@ -35,6 +35,7 @@ static func set_active_slot(slot_id: int) -> void:
 	if not _initialized:
 		init_slots()
 	_active_slot = slot_id
+	_cache_dirty = true
 
 	var cfg := ConfigFile.new()
 	cfg.load(SLOTS_META_PATH)
@@ -61,13 +62,27 @@ static func get_stats_path(slot_id: int = -1) -> String:
 	return "%s/stats.cfg" % get_slot_dir(sid)
 
 
+# Cache de resúmenes de slots para evitar lecturas de disco por frame
+static var _cached_summaries: Array[Dictionary] = []
+static var _cache_dirty: bool = true
+
+
+static func invalidate_cache() -> void:
+	_cache_dirty = true
+
+
 ## Returns an array of dictionaries summarizing each of the 3 slots.
 static func get_all_slots_summary() -> Array[Dictionary]:
 	if not _initialized:
 		init_slots()
+	if not _cache_dirty and not _cached_summaries.is_empty():
+		return _cached_summaries
+
 	var list: Array[Dictionary] = []
 	for sid in range(1, TOTAL_SLOTS + 1):
 		list.append(get_slot_summary(sid))
+	_cached_summaries = list
+	_cache_dirty = false
 	return list
 
 

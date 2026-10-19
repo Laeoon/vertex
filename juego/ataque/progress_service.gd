@@ -129,21 +129,23 @@ func save(nuevas_estrellas: int) -> void:
 
 	# Progreso (estrellas)
 	var cfg: ConfigFile = ConfigFile.new()
-	var err: int = cfg.load("user://progress.cfg")
+	var prog_path := ProgressUtil.get_progress_file_path()
+	var err: int = cfg.load(prog_path)
 	if err != OK and err != ERR_FILE_NOT_FOUND:
 		GameLogger.error("ProgressService", "Error cargando progress: %d" % err)
 	var prev: int = cfg.get_value("estrellas", key, 0)
 	if nuevas_estrellas > prev:
 		cfg.set_value("estrellas", key, nuevas_estrellas)
 		cfg.set_value("estrellas", key + "_mejor_coste", _game.player_total_cost)
-		cfg.save("user://progress.cfg")
+		cfg.save(prog_path)
 		GameLogger.info("ProgressService", "Progreso guardado: %s → %d estrellas" % [key, nuevas_estrellas])
 		if prev > 0:
 			_game.mensaje_estado += " (nuevo record!)"
 
 	# Estadísticas extendidas
 	var stats_cfg := ConfigFile.new()
-	stats_cfg.load("user://stats.cfg")
+	var stats_path := SlotManager.get_stats_path()
+	stats_cfg.load(stats_path)
 	var wins: int = stats_cfg.get_value("stats", "total_wins", 0)
 	stats_cfg.set_value("stats", "total_wins", wins + 1)
 
@@ -152,7 +154,7 @@ func save(nuevas_estrellas: int) -> void:
 	stats_cfg.set_value("levels", key + "_wins", level_wins + 1)
 
 	stats_cfg.set_value("stats", "best_streak", maxi(stats_cfg.get_value("stats", "best_streak", 0), 1))
-	stats_cfg.save("user://stats.cfg")
+	stats_cfg.save(stats_path)
 
 
 func record_loss() -> void:
@@ -160,30 +162,22 @@ func record_loss() -> void:
 	if _game == null:
 		return
 	var stats_cfg := ConfigFile.new()
-	stats_cfg.load("user://stats.cfg")
+	var stats_path := SlotManager.get_stats_path()
+	stats_cfg.load(stats_path)
 	var losses: int = stats_cfg.get_value("stats", "total_losses", 0)
 	stats_cfg.set_value("stats", "total_losses", losses + 1)
 	var key: String = _level_key()
 	var level_losses: int = stats_cfg.get_value("levels", key + "_losses", 0)
 	stats_cfg.set_value("levels", key + "_losses", level_losses + 1)
 	stats_cfg.set_value("stats", "total_attempts", stats_cfg.get_value("stats", "total_attempts", 0) + 1)
-	stats_cfg.save("user://stats.cfg")
+	stats_cfg.save(stats_path)
 
 
 static func load_all() -> Dictionary:
 	"""Carga todo el progreso guardado (portado de `_cargar_progreso`).
 
 	Devuelve `{level_key: estrellas}` excluyendo las claves `_mejor_coste`."""
-	var cfg: ConfigFile = ConfigFile.new()
-	var err: int = cfg.load("user://progress.cfg")
-	if err != OK:
-		return {}
-	var result: Dictionary = {}
-	for k in cfg.get_section_keys("estrellas"):
-		if k.ends_with("_mejor_coste"):
-			continue
-		result[k] = cfg.get_value("estrellas", k, 0)
-	return result
+	return ProgressUtil.cargar_progreso()
 
 
 # ─── Helpers internos ───────────────────────────────────────────────
