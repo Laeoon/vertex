@@ -62,6 +62,28 @@ static func get_stats_path(slot_id: int = -1) -> String:
 	return "%s/stats.cfg" % get_slot_dir(sid)
 
 
+## Resetea y borra por completo los datos de una ranura de guardado.
+static func delete_slot(slot_id: int) -> bool:
+	if slot_id < 1 or slot_id > TOTAL_SLOTS:
+		push_error("SlotManager: ID de slot inválido para borrar: %d" % slot_id)
+		return false
+
+	var sdir := get_slot_dir(slot_id)
+	var p_path := get_progress_path(slot_id)
+	var prof_path := get_profile_path(slot_id)
+	var st_path := get_stats_path(slot_id)
+
+	if FileAccess.file_exists(p_path):
+		DirAccess.remove_absolute(p_path)
+	if FileAccess.file_exists(prof_path):
+		DirAccess.remove_absolute(prof_path)
+	if FileAccess.file_exists(st_path):
+		DirAccess.remove_absolute(st_path)
+
+	invalidate_cache()
+	return true
+
+
 # Cache de resúmenes de slots para evitar lecturas de disco por frame
 static var _cached_summaries: Array[Dictionary] = []
 static var _cache_dirty: bool = true

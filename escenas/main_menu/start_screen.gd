@@ -25,6 +25,7 @@ var _state: State = State.PRESS_START
 var _slots_data: Array[Dictionary] = []
 var _selected_slot_idx: int = 0
 var _hovered_slot_idx: int = -1
+var _confirm_delete_slot: int = 0 # 0 = inactivo, 1..3 = confirmando borrado
 
 
 func _ready() -> void:
@@ -68,6 +69,22 @@ func _input(event: InputEvent) -> void:
 			return
 
 	elif _state == State.SELECT_SLOT:
+		if _confirm_delete_slot > 0:
+			if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
+				var k := event as InputEventKey
+				if k.keycode in [KEY_Y, KEY_ENTER]:
+					_execute_delete_slot(_confirm_delete_slot)
+				elif k.keycode in [KEY_N, KEY_ESCAPE]:
+					_confirm_delete_slot = 0
+					_play_sfx("click")
+					queue_redraw()
+			elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+				# Clic fuera cancela
+				_confirm_delete_slot = 0
+				_play_sfx("click")
+				queue_redraw()
+			return
+
 		if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
 			var k := event as InputEventKey
 			match k.keycode:
@@ -81,6 +98,13 @@ func _input(event: InputEvent) -> void:
 					queue_redraw()
 				KEY_ENTER, KEY_SPACE:
 					_confirm_slot(_selected_slot_idx + 1)
+				KEY_DELETE, KEY_BACKSPACE:
+					var slot_id := _selected_slot_idx + 1
+					var s_data: Dictionary = _slots_data[_selected_slot_idx]
+					if not s_data.get("is_empty", true):
+						_confirm_delete_slot = slot_id
+						_play_sfx("alert")
+						queue_redraw()
 				KEY_ESCAPE:
 					_state = State.PRESS_START
 					_play_sfx("click")
@@ -104,6 +128,14 @@ func _input(event: InputEvent) -> void:
 				if _get_slot_rect(i, vp).has_point(mpos):
 					_confirm_slot(i + 1)
 					return
+
+
+func _execute_delete_slot(slot_id: int) -> void:
+	SlotManagerClass.delete_slot(slot_id)
+	_confirm_delete_slot = 0
+	_play_sfx("reset")
+	_refresh_slots()
+	queue_redraw()
 
 
 func _advance_to_slots() -> void:
@@ -253,10 +285,37 @@ func _draw_select_slot_view(vp: Vector2) -> void:
 		var a_sz := font.get_string_size(action_label, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2)
 		draw_string(font, Vector2(btn_rect.position.x + (btn_rect.size.x - a_sz.x) * 0.5, btn_rect.position.y + 23.0), action_label, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2, BrandClass.ACCENT if is_selected else BrandClass.TEXT_DIM)
 
+		# Pista de borrado si la ranura está ocupada
+		if not is_empty and is_selected:
+			var del_hint := "[SUPR / BACKSPACE] Borrar partida"
+			var dh_sz := font.get_string_size(del_hint, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 4)
+			draw_string(font, Vector2(rect.position.x + (rect.size.x - dh_sz.x) * 0.5, rect.position.y + rect.size.y + 16.0), del_hint, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 4, Color(1.0, 0.4, 0.3, 0.85))
+
+	# Modal de confirmación de borrado
+	if _confirm_delete_slot > 0:
+		var modal_w := 460.0
+		var modal_h := 160.0
+		var m_rect := Rect2((vp.x - modal_w) * 0.5, (vp.y - modal_h) * 0.5, modal_w, modal_h)
+		draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.0, 0.0, 0.0, 0.7)) # Backdrop
+		draw_rect(m_rect, BrandClass.PANEL_SOLID)
+		draw_rect(m_rect, Color(1.0, 0.25, 0.2, 0.9), false, 1.8)
+
+		var warn_title := "¿ELIMINAR PERFIL DE RANURA 0%d?" % _confirm_delete_slot
+		var wt_sz := font.get_string_size(warn_title, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 1)
+		draw_string(font, Vector2(m_rect.position.x + (modal_w - wt_sz.x) * 0.5, m_rect.position.y + 38.0), warn_title, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 1, Color(1.0, 0.35, 0.3))
+
+		var warn_desc := "Esta acción destruirá todo el progreso, estrellas y registros de este slot de forma permanente."
+		var wd_sz := font.get_string_size(warn_desc, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 3)
+		draw_string(font, Vector2(m_rect.position.x + 20.0, m_rect.position.y + 70.0), warn_desc, HORIZONTAL_ALIGNMENT_LEFT, modal_w - 40.0, font_size - 3, BrandClass.TEXT_DIM)
+
+		var prompt_btn := "[ Y / ENTER ] Confirmar eliminación        [ N / ESC ] Cancelar"
+		var pb_sz := font.get_string_size(prompt_btn, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2)
+		draw_string(font, Vector2(m_rect.position.x + (modal_w - pb_sz.x) * 0.5, m_rect.position.y + 125.0), prompt_btn, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2, BrandClass.TEXT)
+
 	# Footer / Teclas
-	var ft_text := "[ENTER / CLIC] Seleccionar ranura    [A / D] Navegar    [ESC] Volver"
+	var ft_text := "[ENTER / CLIC] Seleccionar ranura    [A / D] Navegar    [SUPR] Borrar slot    [ESC] Volver"
 	var ft_sz := font.get_string_size(ft_text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 3)
-	draw_string(font, Vector2((vp.x - ft_sz.x) * 0.5, vp.y - 30.0), ft_text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 3, BrandClass.TEXT_DIM)
+	draw_string(font, Vector2((vp.x - ft_sz.x) * 0.5, vp.y - 25.0), ft_text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 
 func _draw_card_metric(x: float, w: float, y: float, label: String, value: String, val_col: Color) -> void:

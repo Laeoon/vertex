@@ -1,0 +1,116 @@
+<svg width="860" height="700" viewBox="0 0 860 700" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 9 5 L 0 9 z" fill="#111827"/>
+        </marker>
+      </defs>
+
+      <!-- 1. NODO INICIAL (Círculo sólido negro) -->
+      <circle cx="430" cy="30" r="12" fill="#111827"/>
+      <line x1="430" y1="42" x2="430" y2="70" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- 2. ACTIVIDAD: Inicializar Sesión y Topología -->
+      <g transform="translate(320, 70)">
+        <rect x="0" y="0" width="220" height="38" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="110" y="24" text-anchor="middle" font-size="11.5" font-weight="600" fill="#111827">Cargar Grafo y Estado Inicial</text>
+      </g>
+      <line x1="430" y1="108" x2="430" y2="135" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- 3. ROMBO DE DECISIÓN: Tipo de Acción Defensiva -->
+      <g transform="translate(385, 135)">
+        <polygon points="45,0 90,22 45,44 0,22" fill="#f8fafc" stroke="#111827" stroke-width="1.4"/>
+        <text x="45" y="26" text-anchor="middle" font-size="9" font-weight="700" fill="#4b5563">¿Acción?</text>
+      </g>
+
+      <!-- Ramas de Decisión -->
+      <!-- A. Bloqueo de arista (Izquierda) -->
+      <path d="M 385 157 H 230 V 205" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="280" y="150" font-size="9.5" fill="#374151">[Arista]</text>
+      <g transform="translate(140, 205)">
+        <rect x="0" y="0" width="180" height="42" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="90" y="26" text-anchor="middle" font-size="11" fill="#111827">Bloquear Arista Perimetral</text>
+      </g>
+
+      <!-- B. Cuarentena de Host (Centro) -->
+      <path d="M 430 179 V 205" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="435" y="196" font-size="9.5" fill="#374151">[Tecla C]</text>
+      <g transform="translate(340, 205)">
+        <rect x="0" y="0" width="180" height="42" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="90" y="26" text-anchor="middle" font-size="11" fill="#111827">Aislar Host en Cuarentena</text>
+      </g>
+
+      <!-- C. Firewall Permanente (Derecha) -->
+      <path d="M 475 157 H 630 V 205" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="540" y="150" font-size="9.5" fill="#374151">[Tecla F]</text>
+      <g transform="translate(540, 205)">
+        <rect x="0" y="0" width="180" height="42" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="90" y="26" text-anchor="middle" fill="#111827">Plantar Firewall en Nodo</text>
+      </g>
+
+      <!-- 4. BARRA DE UNIÓN (Fork/Join) -->
+      <line x1="230" y1="247" x2="230" y2="280" stroke="#111827" stroke-width="1.3"/>
+      <line x1="430" y1="247" x2="430" y2="280" stroke="#111827" stroke-width="1.3"/>
+      <line x1="630" y1="247" x2="630" y2="280" stroke="#111827" stroke-width="1.3"/>
+      <rect x="180" y="280" width="500" height="6" fill="#111827" rx="2"/>
+
+      <line x1="430" y1="286" x2="430" y2="315" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- 5. ACTIVIDAD: Resolver Turno Reactivo y Avanzar Trace EDR -->
+      <g transform="translate(310, 315)">
+        <rect x="0" y="0" width="240" height="42" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <text x="120" y="21" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">Resolver Turno Reactivo 1:1</text>
+        <text x="120" y="34" text-anchor="middle" font-size="9.5" fill="#4b5563">Rastreo Forense EDR += 20%</text>
+      </g>
+      <line x1="430" y1="357" x2="430" y2="385" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- 6. ACTIVIDAD: Movimiento Lateral de IA Atacante -->
+      <g transform="translate(310, 385)">
+        <rect x="0" y="0" width="240" height="42" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <text x="120" y="21" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">Movimiento Lateral del Adversario</text>
+        <text x="120" y="34" text-anchor="middle" font-size="9.5" fill="#4b5563">Dijkstra / Selección Estocástica</text>
+      </g>
+      <line x1="430" y1="427" x2="430" y2="455" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- 7. ROMBO DE DECISIÓN: Evaluación de Condición de Fin -->
+      <g transform="translate(375, 455)">
+        <polygon points="55,0 110,25 55,50 0,25" fill="#f8fafc" stroke="#111827" stroke-width="1.4"/>
+        <text x="55" y="29" text-anchor="middle" font-size="9" font-weight="700" fill="#4b5563">¿Estado Fin?</text>
+      </g>
+
+      <!-- Rama Derrota: Intruso en Núcleo -->
+      <path d="M 485 480 H 680 V 535" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="510" y="472" font-size="9.5" fill="#b91c1c">[Núcleo Vulnerado]</text>
+      <g transform="translate(590, 535)">
+        <rect x="0" y="0" width="180" height="40" rx="8" fill="#ffffff" stroke="#b91c1c" stroke-width="1.4"/>
+        <text x="90" y="25" text-anchor="middle" font-size="11" font-weight="600" fill="#b91c1c">Declarar Derrota (Brecha)</text>
+      </g>
+
+      <!-- Rama Victoria: Trace EDR >= 100% -->
+      <path d="M 375 480 H 180 V 535" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="210" y="472" font-size="9.5" fill="#15803d">[Trace EDR &gt;= 100%]</text>
+      <g transform="translate(90, 535)">
+        <rect x="0" y="0" width="180" height="40" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.4"/>
+        <text x="90" y="25" text-anchor="middle" font-size="11" font-weight="600" fill="#15803d">Declarar Victoria (Trace 100%)</text>
+      </g>
+
+      <!-- Rama Bucle: Partida en curso (Trace < 100% y Núcleo a salvo) -->
+      <path d="M 430 505 V 530 H 330 V 157 H 385" stroke="#111827" stroke-width="1.3" stroke-dasharray="4,4" fill="none" marker-end="url(#arr)"/>
+      <text x="345" y="522" font-size="9" fill="#4b5563">[En Curso: Siguiente Turno]</text>
+
+      <!-- 8. NODOS FINALES (Círculo con borde concéntrico) -->
+      <!-- Final Victoria -->
+      <line x1="180" y1="575" x2="180" y2="615" stroke="#111827" stroke-width="1.3" marker-end="url(#arr)"/>
+      <g transform="translate(180, 630)">
+        <circle cx="0" cy="0" r="14" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <circle cx="0" cy="0" r="9" fill="#111827"/>
+      </g>
+      <text x="180" y="658" text-anchor="middle" font-size="10" font-weight="600" fill="#15803d">Fin (Éxito / Mitigado)</text>
+
+      <!-- Final Derrota -->
+      <line x1="680" y1="575" x2="680" y2="615" stroke="#111827" stroke-width="1.3" marker-end="url(#arr)"/>
+      <g transform="translate(680, 630)">
+        <circle cx="0" cy="0" r="14" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <circle cx="0" cy="0" r="9" fill="#111827"/>
+      </g>
+      <text x="680" y="658" text-anchor="middle" font-size="10" font-weight="600" fill="#b91c1c">Fin (Fallo / Brecha)</text>
+    </svg>

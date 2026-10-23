@@ -15,6 +15,7 @@ func _ready() -> void:
 	test_slot_resolution_and_defaults()
 	test_slot_switching_and_isolation()
 	test_slot_metadata_summaries()
+	test_slot_deletion()
 
 	print("---")
 	print("Results: %d passed, %d failed" % [_passed, _failed])
@@ -59,3 +60,23 @@ func test_slot_metadata_summaries() -> void:
 	_assert(slots_info.size() == 3, "SlotManager exposes exactly 3 slot summaries")
 	for s in slots_info:
 		_assert(s.has("slot_id") and s.has("player_name") and s.has("stars") and s.has("is_empty"), "Slot summary contains required fields")
+
+
+func test_slot_deletion() -> void:
+	# Escribir datos dummy en slot 3
+	var p_path := SlotManagerClass.get_progress_path(3)
+	var cfg := ConfigFile.new()
+	cfg.set_value("estrellas", "test_level", 3)
+	cfg.save(p_path)
+
+	var s3_before: Dictionary = SlotManagerClass.get_slot_summary(3)
+	_assert(s3_before.get("is_empty", true) == false, "Slot 3 has data before deletion")
+
+	# Borrar slot 3
+	var ok: bool = SlotManagerClass.delete_slot(3)
+	_assert(ok, "SlotManager.delete_slot(3) returned true")
+	_assert(not FileAccess.file_exists(p_path), "progress.cfg of slot 3 was removed from disk")
+
+	var s3_after: Dictionary = SlotManagerClass.get_slot_summary(3)
+	_assert(s3_after.get("is_empty", false) == true, "Slot 3 reports empty after deletion")
+

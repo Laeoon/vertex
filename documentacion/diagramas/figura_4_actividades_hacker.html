@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Figura 4. Diagrama de Actividades de Operaciones Red Team - Sistema VERTEX</title>
+<style>
+  body {
+    margin: 0;
+    padding: 50px 20px;
+    background: #ffffff;
+    color: #111827;
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .article-container {
+    max-width: 900px;
+    width: 100%;
+    line-height: 1.6;
+    font-size: 15px;
+    text-align: justify;
+  }
+  .figure-caption {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    text-align: center;
+    margin-top: 15px;
+    font-style: italic;
+  }
+  .figure-caption strong {
+    font-style: normal;
+    font-weight: 700;
+    color: #111827;
+  }
+  .diagram-box {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    background: #fafafa;
+    border-radius: 4px;
+    padding: 25px 15px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+  <p>
+    La <strong>Figura 4</strong> presenta el <strong>diagrama de actividades</strong> del proceso de infiltración ofensiva del modo Hacker (Red Team). Describe la secuencia de decisiones que gobierna el reconocimiento pasivo con <code>Nmap</code>, el consumo de exploits (<code>Bypass</code>, <code>Escalate</code>, <code>Persist</code>, <code>Decoy</code>), el cálculo y acumulación del nivel de ruido en la red perimetral, la evaluación de umbrales de detección ante la IA centinela (despacho de perseguidores), y la finalización del escenario con persistencia de estrellas de maestría por sigilo.
+  </p>
+
+  <div class="diagram-box">
+    <svg width="860" height="710" viewBox="0 0 860 710" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 9 5 L 0 9 z" fill="#111827"/>
+        </marker>
+      </defs>
+
+      <!-- Nodo Inicial -->
+      <circle cx="430" cy="30" r="12" fill="#111827"/>
+      <line x1="430" y1="42" x2="430" y2="70" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- Actividad 1: Iniciar Infiltración DMZ -->
+      <g transform="translate(320, 70)">
+        <rect x="0" y="0" width="220" height="38" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="110" y="24" text-anchor="middle" font-size="11.5" font-weight="600" fill="#111827">Entrada a DMZ y Stock de Exploits</text>
+      </g>
+      <line x1="430" y1="108" x2="430" y2="135" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- Rombo de Decisión: Tipo de Maniobra Ofensiva -->
+      <g transform="translate(385, 135)">
+        <polygon points="45,0 90,22 45,44 0,22" fill="#f8fafc" stroke="#111827" stroke-width="1.4"/>
+        <text x="45" y="26" text-anchor="middle" font-size="9" font-weight="700" fill="#4b5563">¿Maniobra?</text>
+      </g>
+
+      <!-- Ramificaciones de acción -->
+      <path d="M 385 157 H 220 V 205" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="260" y="150" font-size="9.5" fill="#374151">[Scan X]</text>
+      <g transform="translate(130, 205)">
+        <rect x="0" y="0" width="180" height="40" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="90" y="25" text-anchor="middle" font-size="11" fill="#111827">Escanear Nodo (+2 Ruido)</text>
+      </g>
+
+      <path d="M 430 179 V 205" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="435" y="196" font-size="9.5" fill="#374151">[Tránsito]</text>
+      <g transform="translate(340, 205)">
+        <rect x="0" y="0" width="180" height="40" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="90" y="25" text-anchor="middle" font-size="11" fill="#111827">Mover a Vecino (+5 Ruido)</text>
+      </g>
+
+      <path d="M 475 157 H 640 V 205" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="545" y="150" font-size="9.5" fill="#374151">[Exploit 1..4]</text>
+      <g transform="translate(550, 205)">
+        <rect x="0" y="0" width="180" height="40" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.3"/>
+        <text x="90" y="25" text-anchor="middle" font-size="11" fill="#111827">Ejecutar Bypass / Decoy</text>
+      </g>
+
+      <!-- Barra de Unión (Join) -->
+      <line x1="220" y1="245" x2="220" y2="275" stroke="#111827" stroke-width="1.3"/>
+      <line x1="430" y1="245" x2="430" y2="275" stroke="#111827" stroke-width="1.3"/>
+      <line x1="640" y1="245" x2="640" y2="275" stroke="#111827" stroke-width="1.3"/>
+      <rect x="180" y="275" width="500" height="6" fill="#111827" rx="2"/>
+
+      <line x1="430" y1="281" x2="430" y2="310" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- Actividad: Calcular Telemetría y Enfriamiento -->
+      <g transform="translate(310, 310)">
+        <rect x="0" y="0" width="240" height="42" rx="8" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <text x="120" y="21" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">Actualizar Nivel de Ruido</text>
+        <text x="120" y="34" text-anchor="middle" font-size="9.5" fill="#4b5563">Enfriamiento pasivo: -3 por turno</text>
+      </g>
+      <line x1="430" y1="352" x2="430" y2="380" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- Rombo de Decisión: Evaluación de Alerta SOC -->
+      <g transform="translate(375, 380)">
+        <polygon points="55,0 110,24 55,48 0,24" fill="#f8fafc" stroke="#111827" stroke-width="1.4"/>
+        <text x="55" y="28" text-anchor="middle" font-size="9" font-weight="700" fill="#4b5563">¿Ruido &gt;= 60?</text>
+      </g>
+
+      <!-- Rama Alerta: Despacho de Centinela -->
+      <path d="M 485 404 H 660 V 450" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="520" y="396" font-size="9.5" fill="#b91c1c">[Alerta Crítica]</text>
+      <g transform="translate(560, 450)">
+        <rect x="0" y="0" width="200" height="40" rx="8" fill="#ffffff" stroke="#b91c1c" stroke-width="1.4"/>
+        <text x="100" y="25" text-anchor="middle" font-size="11" font-weight="600" fill="#b91c1c">Despachar Patrulla Hostil</text>
+      </g>
+
+      <!-- Rama Sigilosa: Continuar -->
+      <path d="M 375 404 H 200 V 450" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="240" y="396" font-size="9.5" fill="#15803d">[Bajo Umbral]</text>
+      <g transform="translate(110, 450)">
+        <rect x="0" y="0" width="180" height="40" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.4"/>
+        <text x="90" y="25" text-anchor="middle" font-size="11" font-weight="600" fill="#15803d">Preservar Sigilo (0 Alertas)</text>
+      </g>
+
+      <!-- Barra de Unión 2 -->
+      <line x1="200" y1="490" x2="200" y2="520" stroke="#111827" stroke-width="1.3"/>
+      <line x1="660" y1="490" x2="660" y2="520" stroke="#111827" stroke-width="1.3"/>
+      <rect x="160" y="520" width="540" height="6" fill="#111827" rx="2"/>
+
+      <line x1="430" y1="526" x2="430" y2="555" stroke="#111827" stroke-width="1.4" marker-end="url(#arr)"/>
+
+      <!-- Rombo de Decisión: ¿Alcanzó el Core Vault? -->
+      <g transform="translate(375, 555)">
+        <polygon points="55,0 110,22 55,44 0,22" fill="#f8fafc" stroke="#111827" stroke-width="1.4"/>
+        <text x="55" y="26" text-anchor="middle" font-size="9" font-weight="700" fill="#4b5563">¿En Core?</text>
+      </g>
+
+      <!-- Rama Victoria -->
+      <path d="M 430 599 V 640" stroke="#111827" stroke-width="1.4" fill="none" marker-end="url(#arr)"/>
+      <text x="435" y="622" font-size="9.5" fill="#15803d">[Meta Cumplida]</text>
+      
+      <!-- Nodo Final Éxito -->
+      <g transform="translate(430, 655)">
+        <circle cx="0" cy="0" r="14" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <circle cx="0" cy="0" r="9" fill="#111827"/>
+      </g>
+      <text x="430" y="683" text-anchor="middle" font-size="10" font-weight="600" fill="#15803d">Fin (Exfiltración 3★)</text>
+
+      <!-- Bucle a siguiente turno si no está en Core -->
+      <path d="M 485 577 H 790 V 157 H 475" stroke="#111827" stroke-width="1.3" stroke-dasharray="4,4" fill="none" marker-end="url(#arr)"/>
+      <text x="735" y="360" font-size="9" fill="#4b5563">[En Ruta: Siguiente Turno]</text>
+    </svg>
+  </div>
+
+  <p class="figure-caption">
+    <strong>Figura 4.</strong> Diagrama de actividades del ciclo de infiltración y balance de ruido en modo Hacker.
+  </p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Figura 6. Modelo de Datos y Persistencia - Sistema VERTEX</title>
+<style>
+  body {
+    margin: 0;
+    padding: 50px 20px;
+    background: #ffffff;
+    color: #111827;
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .article-container {
+    max-width: 960px;
+    width: 100%;
+    line-height: 1.6;
+    font-size: 15px;
+    text-align: justify;
+  }
+  .figure-caption {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    text-align: center;
+    margin-top: 15px;
+    font-style: italic;
+  }
+  .figure-caption strong {
+    font-style: normal;
+    font-weight: 700;
+    color: #111827;
+  }
+  .diagram-box {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    background: #fafafa;
+    border-radius: 4px;
+    padding: 25px 15px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+  <p>
+    La <strong>Figura 6</strong> presenta el <strong>diagrama de modelo de datos entidad-relación (ER / Esquema Lógico de Persistencia)</strong> de <strong>VERTEX</strong>. Modela la estructura transaccional de archivos de configuración alojados en <code>user://</code>. El meta-registro <code>SlotMeta</code> gobierna el puntero de sesión activa sobre las tres ranuras independientes (<code>SaveSlot</code>). Cada ranura aísla la entidad de identidad del agente (<code>Profile</code>), el registro de maestría por escenario (<code>LevelProgress</code>), las métricas históricas de rendimiento (<code>GlobalStats</code> y <code>LevelStats</code>) y el catálogo de méritos desbloqueados (<code>BadgeRecord</code>).
+  </p>
+
+  <div class="diagram-box">
+    <svg width="900" height="660" viewBox="0 0 900 660" xmlns="http://www.w3.org/2000/svg" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
+      
+      <!-- ENTIDAD 1: SlotMeta (user://slots.cfg) -->
+      <g transform="translate(340, 20)">
+        <rect x="0" y="0" width="220" height="90" fill="#ffffff" stroke="#111827" stroke-width="1.5"/>
+        <rect x="0" y="0" width="220" height="24" fill="#f3f4f6" stroke="#111827" stroke-width="1.5"/>
+        <text x="110" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">SlotMeta [slots.cfg]</text>
+        <text x="8" y="40" font-size="9" fill="#111827"><tspan font-weight="700">PK</tspan>  config_id: String</text>
+        <text x="8" y="56" font-size="9" fill="#111827">    active_slot: int (1..3)</text>
+        <text x="8" y="72" font-size="9" fill="#111827">    migrated_legacy: bool</text>
+      </g>
+
+      <!-- ENTIDAD 2: SaveSlot (user://slots/slot_X) -->
+      <g transform="translate(340, 160)">
+        <rect x="0" y="0" width="220" height="100" fill="#f8fafc" stroke="#111827" stroke-width="1.8"/>
+        <rect x="0" y="0" width="220" height="24" fill="#e5e7eb" stroke="#111827" stroke-width="1.8"/>
+        <text x="110" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">SaveSlot [Directorio]</text>
+        <text x="8" y="40" font-size="9" fill="#111827"><tspan font-weight="700">PK</tspan>  slot_id: int (1..3)</text>
+        <text x="8" y="56" font-size="9" fill="#111827">    is_empty: bool</text>
+        <text x="8" y="72" font-size="9" fill="#111827">    updated_at: int (timestamp)</text>
+        <text x="8" y="88" font-size="9" fill="#111827">    cached_stars: int</text>
+      </g>
+
+      <!-- ENTIDAD 3: Profile (profile.cfg) -->
+      <g transform="translate(40, 320)">
+        <rect x="0" y="0" width="230" height="110" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <rect x="0" y="0" width="230" height="24" fill="#f3f4f6" stroke="#111827" stroke-width="1.4"/>
+        <text x="115" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">Profile [profile.cfg]</text>
+        <text x="8" y="40" font-size="9" fill="#111827"><tspan font-weight="700">PK</tspan>  profile_id: String</text>
+        <text x="8" y="56" font-size="9" fill="#111827"><tspan font-weight="700">FK</tspan>  slot_id: int</text>
+        <text x="8" y="72" font-size="9" fill="#111827">    player_name: String</text>
+        <text x="8" y="88" font-size="9" fill="#111827">    avatar_icon: String</text>
+        <text x="8" y="102" font-size="9" fill="#111827">    theme_color: String</text>
+      </g>
+
+      <!-- ENTIDAD 4: LevelProgress (progress.cfg [estrellas]) -->
+      <g transform="translate(330, 320)">
+        <rect x="0" y="0" width="240" height="120" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <rect x="0" y="0" width="240" height="24" fill="#f3f4f6" stroke="#111827" stroke-width="1.4"/>
+        <text x="120" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">LevelProgress [progress.cfg]</text>
+        <text x="8" y="40" font-size="9" fill="#111827"><tspan font-weight="700">PK</tspan>  level_key: String</text>
+        <text x="8" y="56" font-size="9" fill="#111827"><tspan font-weight="700">FK</tspan>  slot_id: int</text>
+        <text x="8" y="72" font-size="9" fill="#111827">    stars: int (1..3)</text>
+        <text x="8" y="88" font-size="9" fill="#111827">    mejor_coste: float</text>
+        <text x="8" y="104" font-size="9" fill="#111827">    completed: bool</text>
+      </g>
+
+      <!-- ENTIDAD 5: GlobalStats (stats.cfg [stats]) -->
+      <g transform="translate(630, 320)">
+        <rect x="0" y="0" width="230" height="135" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <rect x="0" y="0" width="230" height="24" fill="#f3f4f6" stroke="#111827" stroke-width="1.4"/>
+        <text x="115" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">GlobalStats [stats.cfg]</text>
+        <text x="8" y="40" font-size="9" fill="#111827"><tspan font-weight="700">PK</tspan>  stats_id: String</text>
+        <text x="8" y="56" font-size="9" fill="#111827"><tspan font-weight="700">FK</tspan>  slot_id: int</text>
+        <text x="8" y="72" font-size="9" fill="#111827">    total_wins: int</text>
+        <text x="8" y="88" font-size="9" fill="#111827">    total_losses: int</text>
+        <text x="8" y="104" font-size="9" fill="#111827">    best_streak: int</text>
+        <text x="8" y="120" font-size="9" fill="#111827">    play_time: int (seg)</text>
+      </g>
+
+      <!-- ENTIDAD 6: BadgeRecord (Evaluada en BadgeRegistry) -->
+      <g transform="translate(40, 490)">
+        <rect x="0" y="0" width="230" height="120" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <rect x="0" y="0" width="230" height="24" fill="#f3f4f6" stroke="#111827" stroke-width="1.4"/>
+        <text x="115" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">BadgeRecord [Memoria]</text>
+        <text x="8" y="40" font-size="9" fill="#111827"><tspan font-weight="700">PK</tspan>  badge_id: String</text>
+        <text x="8" y="56" font-size="9" fill="#111827"><tspan font-weight="700">FK</tspan>  slot_id: int</text>
+        <text x="8" y="72" font-size="9" fill="#111827">    unlocked: bool</text>
+        <text x="8" y="88" font-size="9" fill="#111827">    current_metric: int</text>
+        <text x="8" y="104" font-size="9" fill="#111827">    target_metric: int</text>
+      </g>
+
+      <!-- ENTIDAD 7: LevelStats (stats.cfg [levels]) -->
+      <g transform="translate(630, 490)">
+        <rect x="0" y="0" width="230" height="110" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <rect x="0" y="0" width="230" height="24" fill="#f3f4f6" stroke="#111827" stroke-width="1.4"/>
+        <text x="115" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">LevelStats [stats.cfg]</text>
+        <text x="8" y="40" font-size="9" fill="#111827"><tspan font-weight="700">PK</tspan>  level_key: String</text>
+        <text x="8" y="56" font-size="9" fill="#111827"><tspan font-weight="700">FK</tspan>  slot_id: int</text>
+        <text x="8" y="72" font-size="9" fill="#111827">    wins: int</text>
+        <text x="8" y="88" font-size="9" fill="#111827">    losses: int</text>
+      </g>
+
+      <!-- LÍNEAS DE RELACIÓN Y CARDINALIDADES (Crow's Foot / 1:N) -->
+
+      <!-- SlotMeta -> SaveSlot (1 : 1..3) -->
+      <line x1="450" y1="110" x2="450" y2="160" stroke="#111827" stroke-width="1.4"/>
+      <text x="458" y="125" font-size="10" font-weight="700" fill="#111827">1</text>
+      <text x="458" y="150" font-size="10" font-weight="700" fill="#111827">1..3</text>
+
+      <!-- SaveSlot -> Profile (1 : 1) -->
+      <path d="M 340 210 H 155 V 320" stroke="#111827" stroke-width="1.3" fill="none"/>
+      <text x="315" y="202" font-size="10" font-weight="700" fill="#111827">1</text>
+      <text x="162" y="305" font-size="10" font-weight="700" fill="#111827">1..1</text>
+
+      <!-- SaveSlot -> LevelProgress (1 : N) -->
+      <line x1="450" y1="260" x2="450" y2="320" stroke="#111827" stroke-width="1.4"/>
+      <text x="458" y="278" font-size="10" font-weight="700" fill="#111827">1</text>
+      <text x="458" y="310" font-size="10" font-weight="700" fill="#111827">1..N</text>
+
+      <!-- SaveSlot -> GlobalStats (1 : 1) -->
+      <path d="M 560 210 H 745 V 320" stroke="#111827" stroke-width="1.3" fill="none"/>
+      <text x="575" y="202" font-size="10" font-weight="700" fill="#111827">1</text>
+      <text x="752" y="305" font-size="10" font-weight="700" fill="#111827">1..1</text>
+
+      <!-- Profile -> BadgeRecord (1 : N) -->
+      <line x1="155" y1="430" x2="155" y2="490" stroke="#111827" stroke-width="1.3"/>
+      <text x="162" y="448" font-size="10" font-weight="700" fill="#111827">1</text>
+      <text x="162" y="478" font-size="10" font-weight="700" fill="#111827">1..N</text>
+
+      <!-- GlobalStats -> LevelStats (1 : N) -->
+      <line x1="745" y1="455" x2="745" y2="490" stroke="#111827" stroke-width="1.3"/>
+      <text x="752" y="468" font-size="10" font-weight="700" fill="#111827">1</text>
+      <text x="752" y="482" font-size="10" font-weight="700" fill="#111827">1..N</text>
+    </svg>
+  </div>
+
+  <p class="figure-caption">
+    <strong>Figura 6.</strong> Modelo relacional de entidades y esquema lógico de almacenamiento transaccional en disco.
+  </p>
+</div>
+
+</body>
+</html>

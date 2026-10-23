@@ -8,9 +8,9 @@
 
 ![Godot](https://img.shields.io/badge/Godot-4.7-478CBF?logo=godotengine&logoColor=white)
 ![Lenguaje](https://img.shields.io/badge/GDScript-100%25-478CBF)
-![Tests](https://img.shields.io/badge/tests-52%20suites%20pass-39FF88)
+![Tests](https://img.shields.io/badge/tests-43%20suites%20pass-39FF88)
 ![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-0078D6)
-![Versión](https://img.shields.io/badge/versión-0.4.0-00e5ff)
+![Versión](https://img.shields.io/badge/versión-0.5.0-00e5ff)
 
 [📥 Descargar](#-descargar-el-juego-windows) · [🎮 Características](#-características) · [🕹 Controles](#-controles) · [🧰 Código Fuente](#-descargar-el-código-fuente) · [🛠 Desarrollo y Motor](#-para-desarrolladores-y-uso-del-motor)
 
@@ -31,7 +31,17 @@ VERTEX es un videojuego de estrategia y educación donde navegas redes corporati
 - **💻 Hacker (Guerra Cibernética)** — Campaña completa de 5 niveles de movimiento lateral en redes corporativas con doctrina de corte mínimo $\ge 2$:
   - *Mecánicas:* Escaneo de vulnerabilidades (`Scan [X]`), evasión de aristas bloqueadas (`Bypass [1]`), elevación con telemetría de 2 saltos (`Escalate [2]`), zonas de sigilo seguras (`Persist [3]`) y despliegue activo de señuelos (`Decoy [4]`) para absorber bloqueos y desviar rastreadores.
   - *Niveles:* N1 Lateral Movement, N2 Brecha Corporativa, N3 Persistencia de Red, N4 Guerra de Señuelos, N5 Operación Root Compromise.
-- **🛡 Defensa (Ciberseguridad)** — *(En desarrollo)*: Modo invertido donde administras la seguridad de la red colocando firewalls y bloqueos estratégicos para aislar al atacante.
+- **🛡 Ciberdefensa (Blue Team)** — Simulación de respuesta a incidentes en tiempo real:
+  - *Ciclo Reactivo 1:1 (Ping-Pong):* Cada bloqueo de arista o contramedida defensiva resuelve el turno y activa de inmediato al adversario.
+  - *Rastreo Forense EDR (0..100%):* Neutraliza el origen del ataque mediante contención metódica (+20% base, +10% bonus por desvíos).
+  - *IA Adversaria Activa:* Movimiento lateral adaptativo (MITRE T1021), rutas estocásticas en bifurcaciones y uso de exploits `Bypass` al quedar acorralado.
+  - *Aislamiento de Host (Cuarentena `[C]`):* Corta de raíz todas las conexiones de un nodo comprometido sacrificando disponibilidad por contención crítica.
+  - *Niebla de Guerra & Intercepción `[P]`):* Telemetría oculta por defecto en niveles avanzados; revelarla topa la calificación a un máximo de 2 estrellas.
+- **🎖 Metajuego & Condecoraciones:**
+  - Sistema data-driven de 10 condecoraciones militares y retos tácticos en español en el expediente del operador.
+  - Gestión de 3 ranuras de guardado independientes (`Slot 1`, `Slot 2`, `Slot 3`) con borrado seguro (`[Supr]`) y migración transparente de partidas previas.
+- **📐 Documentación Formal y Modelado UML:**
+  - Set integral de 7 diagramas de ingeniería de software (Casos de Uso, Secuencia, Actividades, Clases, Modelo de Datos ER y Máquina de Estados FSM) disponibles en HTML/SVG y en PDF consolidado (`documentacion/diagramas/`).
 
 **Interfaz, Inmersión & Experiencia Visual:**
 - 🔊 **Paisaje Sonoro & SFX Tácticos:** Motor de audio multicanal con buses dedicados (Master, Music, SFX), prioridad dinámica de sonidos para eventos críticos y bandas sonoras temáticas (packs Cyberpunk y Synth de DavidKBD).
@@ -50,14 +60,14 @@ VERTEX es un videojuego de estrategia y educación donde navegas redes corporati
 
 Binario precompilado para Windows 10/11 (x64), autocontenido y listo para jugar sin instalación previa.
 
-**Última versión:** [VERtex 0.4.0](https://github.com/Laeoon/vertex/releases/latest)
+**Última versión:** [VERtex 0.5.0](https://github.com/Laeoon/vertex/releases/latest)
 
 ```bash
 # Descarga directa vía curl
-curl -L -o VERtex-0.4.0.exe https://github.com/Laeoon/vertex/releases/download/v0.4.0/VERtex-0.4.0.exe
+curl -L -o VERtex-0.5.0.exe https://github.com/Laeoon/vertex/releases/download/v0.5.0/VERtex-0.5.0.exe
 
 # O con wget
-wget https://github.com/Laeoon/vertex/releases/download/v0.4.0/VERtex-0.4.0.exe
+wget https://github.com/Laeoon/vertex/releases/download/v0.5.0/VERtex-0.5.0.exe
 ```
 
 *Requisitos:* Windows 10/11 x64, GPU compatible con Vulkan / DirectX 12.
@@ -70,19 +80,21 @@ wget https://github.com/Laeoon/vertex/releases/download/v0.4.0/VERtex-0.4.0.exe
 |---|---|---|
 | **Moverse al nodo seleccionado** | `Enter` / `Espacio` | Avanza hacia el vecino activo en el turno. |
 | **Moverse / Seleccionar con Mouse** | `Clic Izquierdo` en nodo | Moverse directo o calcular primer paso. |
-| **Selección por Hover** | `Pasar cursor` sobre vecino | Enfoca instantáneamente el nodo adyacente. |
-| **Navegación Espacial** | `WASD` / `Flechas` | Selecciona el vecino en esa dirección angular. |
+| **Selección de Vecinos** | `Flechas Direccionales` | Selecciona el nodo adyacente en esa dirección angular. |
+| **Control de Cámara (Pan)** | `WASD` | Mueve el viewport y desplaza la vista por redes complejas. |
+| **Recentrar Cámara** | `Home` | Restaura la vista y el zoom al centro del mapa. |
+| **Zoom de Topología** | `Rueda del Ratón` / `+` / `-` | Acerca o aleja la visualización centrado en el cursor. |
 | **Ciclo Secuencial** | `Tab` | Cicla entre vecinos disponibles. |
-| **Zoom de Topología** | `+` / `-` (o Numpad) | Acerca o aleja la visualización de la red. |
-| **Paneo de Grafo** | `Clic + Arrastrar` | Desplaza la vista por redes complejas. |
-| **Pista de Ruta Óptima** | `P` | Alterna la visualización del camino más corto. |
+| **Bloquear Arista** | `Clic Izquierdo` en arista | *(Defensa)* Sella la conexión y avanza turno en ciclo 1:1. |
+| **Aislar Nodo (Cuarentena)** | `C` + `Clic` en nodo | *(Defensa)* Desconecta un host comprometido de la red. |
+| **Pista / Revelar Ruta** | `P` | Alterna la visualización del camino del atacante (-1★ bajo niebla). |
 | **Escanear Nodo** | `X` | *(Hacker)* Revela tipo y reduce probabilidad de alerta. |
 | **Bypass de Bloqueo** | `1` | *(Hacker)* Atraviesa arista bloqueada sin detección. |
 | **Escalar Privilegios** | `2` | *(Hacker)* Telemetría de red a 2 saltos de distancia. |
 | **Persistir en Nodo** | `3` | *(Hacker)* Crea zona segura sin ruido y con doble disipación. |
 | **Desplegar Señuelo** | `4` | *(Hacker)* Coloca señuelo adyacente que absorbe bloqueos. |
-| **Reiniciar Nivel** | `R` | Reinicia la partida en curso. |
-| **Menú Principal** | `Q` / `Esc` | Vuelve a la pantalla de inicio. |
+| **Pausa / Opciones** | `Esc` / `M` | Abre el menú modal de pausa y configuración. |
+| **Borrar Slot de Guardado** | `Supr` / `Backspace` | *(StartScreen)* Elimina de forma permanente el perfil seleccionado. |
 
 *Navegación post-partida:* `[R]` Reintentar · `[N]` Siguiente nivel · `[L]` Selector de niveles · `[Q]` Menú.
 
@@ -95,8 +107,8 @@ wget https://github.com/Laeoon/vertex/releases/download/v0.4.0/VERtex-0.4.0.exe
 git clone https://github.com/Laeoon/vertex.git
 
 # O descargar el tarball de la versión más reciente
-curl -L -o vertex-0.4.0.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.4.0.tar.gz
-tar -xzf vertex-0.4.0.tar.gz
+curl -L -o vertex-0.5.0.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.5.0.tar.gz
+tar -xzf vertex-0.5.0.tar.gz
 ```
 
 ---

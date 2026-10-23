@@ -1,0 +1,145 @@
+<svg width="900" height="660" viewBox="0 0 900 660" xmlns="http://www.w3.org/2000/svg" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 9 5 L 0 9 z" fill="#111827"/>
+        </marker>
+      </defs>
+
+      <!-- SECCIÓN A: FSM DEL NODO DE RED (TOP REGION) -->
+      <rect x="20" y="20" width="860" height="280" rx="4" fill="#ffffff" stroke="#9ca3af" stroke-dasharray="4,4"/>
+      <rect x="35" y="10" width="220" height="20" rx="3" fill="#f3f4f6"/>
+      <text x="145" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#111827">FSM: CICLO DE VIDA DE NODO</text>
+
+      <!-- Nodo Inicial A -->
+      <circle cx="70" cy="80" r="10" fill="#111827"/>
+      <line x1="80" y1="80" x2="120" y2="80" stroke="#111827" stroke-width="1.3" marker-end="url(#arr)"/>
+
+      <!-- Estado: OPERATIVO_NORMAL -->
+      <g transform="translate(120, 55)">
+        <rect x="0" y="0" width="160" height="50" rx="10" fill="#ffffff" stroke="#111827" stroke-width="1.5"/>
+        <text x="80" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">OPERATIVO</text>
+        <text x="80" y="38" text-anchor="middle" font-size="8.5" fill="#4b5563">Tráfico TCP/IP Normal</text>
+      </g>
+
+      <!-- Transición: Normal -> Bloqueado Temporal -->
+      <path d="M 280 70 H 420" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="350" y="62" text-anchor="middle" font-size="8.5" fill="#111827">block_edge() [Arista]</text>
+
+      <!-- Estado: SEGMENTADO_TEMPORAL -->
+      <g transform="translate(420, 55)">
+        <rect x="0" y="0" width="170" height="50" rx="10" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <text x="85" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">SEGMENTADO</text>
+        <text x="85" y="38" text-anchor="middle" font-size="8.5" fill="#4b5563">Arista Bloqueada (X 4t)</text>
+      </g>
+
+      <!-- Retorno: Expiración de Turnos -> Operativo -->
+      <path d="M 460 105 V 135 H 200 V 105" stroke="#4b5563" stroke-width="1.1" stroke-dasharray="3,3" fill="none" marker-end="url(#arr)"/>
+      <text x="330" y="148" text-anchor="middle" font-size="8" fill="#4b5563">after(duration) / Costo Restaurado</text>
+
+      <!-- Transición: Normal -> Cuarentena Permanente -->
+      <path d="M 200 55 V 35 H 710 V 55" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="450" y="30" text-anchor="middle" font-size="8.5" fill="#111827">quarantine_node(id) [Tecla C]</text>
+
+      <!-- Estado: CUARENTENA_HOST -->
+      <g transform="translate(670, 55)">
+        <rect x="0" y="0" width="180" height="50" rx="10" fill="#f8fafc" stroke="#111827" stroke-width="1.6"/>
+        <text x="90" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">CUARENTENA</text>
+        <text x="90" y="38" text-anchor="middle" font-size="8.5" fill="#b91c1c">[AISLADO] Costo INF</text>
+      </g>
+
+      <!-- Transición: Normal -> Comprometido / Infectado -->
+      <path d="M 200 105 V 200 H 330" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="210" y="190" font-size="8.5" fill="#111827">intruso_arriba()</text>
+
+      <!-- Estado: COMPROMETIDO -->
+      <g transform="translate(330, 180)">
+        <rect x="0" y="0" width="180" height="50" rx="10" fill="#ffffff" stroke="#b91c1c" stroke-width="1.5"/>
+        <text x="90" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">COMPROMETIDO</text>
+        <text x="90" y="38" text-anchor="middle" font-size="8.5" fill="#4b5563">Infección Activa / Hostil</text>
+      </g>
+
+      <!-- Transición: Comprometido -> Cuarentena -->
+      <path d="M 510 205 H 760 V 105" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="640" y="195" text-anchor="middle" font-size="8.5" fill="#111827">quarantine_node() [Aislamiento EDR]</text>
+
+
+      <!-- SECCIÓN B: FSM DE LA INTELIGENCIA ARTIFICIAL (BOTTOM REGION) -->
+      <rect x="20" y="330" width="860" height="310" rx="4" fill="#ffffff" stroke="#9ca3af" stroke-dasharray="4,4"/>
+      <rect x="35" y="320" width="230" height="20" rx="3" fill="#f3f4f6"/>
+      <text x="150" y="334" text-anchor="middle" font-size="10.5" font-weight="700" fill="#111827">FSM: COMPORTAMIENTO IA ATACANTE</text>
+
+      <!-- Nodo Inicial B -->
+      <circle cx="70" cy="390" r="10" fill="#111827"/>
+      <line x1="80" y1="390" x2="120" y2="390" stroke="#111827" stroke-width="1.3" marker-end="url(#arr)"/>
+
+      <!-- Estado IA 1: ENLACE_INICIAL -->
+      <g transform="translate(120, 365)">
+        <rect x="0" y="0" width="160" height="50" rx="10" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <text x="80" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">ENLACE_INICIAL</text>
+        <text x="80" y="38" text-anchor="middle" font-size="8.5" fill="#4b5563">Posición: Internet</text>
+      </g>
+
+      <!-- Transición: Iniciar Asedio -> Ruta Óptima -->
+      <path d="M 280 390 H 350" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="315" y="382" text-anchor="middle" font-size="8.5" fill="#111827">Turno 1</text>
+
+      <!-- Estado IA 2: AVANZANDO_OPTIMO -->
+      <g transform="translate(350, 365)">
+        <rect x="0" y="0" width="180" height="50" rx="10" fill="#ffffff" stroke="#111827" stroke-width="1.5"/>
+        <text x="90" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">AVANCE_ÓPTIMO</text>
+        <text x="90" y="38" text-anchor="middle" font-size="8.5" fill="#4b5563">Ruta Dijkstra Primaria</text>
+      </g>
+
+      <!-- Transición: Arista Bloqueada -> Movimiento Lateral -->
+      <path d="M 440 415 V 470" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="445" y="445" font-size="8.5" fill="#111827">[Ruta bloqueada]</text>
+
+      <!-- Estado IA 3: MOVIMIENTO_LATERAL -->
+      <g transform="translate(350, 470)">
+        <rect x="0" y="0" width="180" height="50" rx="10" fill="#ffffff" stroke="#111827" stroke-width="1.5"/>
+        <text x="90" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">MOVIMIENTO_LATERAL</text>
+        <text x="90" y="38" text-anchor="middle" font-size="8.5" fill="#4b5563">Heurística / Estocástico</text>
+      </g>
+
+      <!-- Transición: Sin Salidas y con Exploit -> BYPASS -->
+      <path d="M 530 495 H 630" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="580" y="486" text-anchor="middle" font-size="8" fill="#111827">[Cercado &amp; stock &gt; 0]</text>
+
+      <!-- Estado IA 4: EJECUTANDO_BYPASS -->
+      <g transform="translate(630, 470)">
+        <rect x="0" y="0" width="170" height="50" rx="10" fill="#ffffff" stroke="#111827" stroke-width="1.4"/>
+        <text x="85" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">EJECUTAR_BYPASS</text>
+        <text x="85" y="38" text-anchor="middle" font-size="8.5" fill="#b91c1c">Rompe Bloqueo (-1 stock)</text>
+      </g>
+      <!-- Retorno Bypass a Avance -->
+      <path d="M 715 470 V 390 H 530" stroke="#111827" stroke-width="1.2" fill="none" marker-end="url(#arr)"/>
+
+      <!-- Transición: Sin Salidas y sin Exploits -> SONDEANDO -->
+      <path d="M 440 520 V 565" stroke="#111827" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
+      <text x="445" y="545" font-size="8" fill="#111827">[Sin aristas libres]</text>
+
+      <!-- Estado IA 5: SONDEANDO_PUERTOS -->
+      <g transform="translate(350, 565)">
+        <rect x="0" y="0" width="180" height="50" rx="10" fill="#f8fafc" stroke="#111827" stroke-width="1.4"/>
+        <text x="90" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#111827">SONDEO_PUERTOS</text>
+        <text x="90" y="38" text-anchor="middle" font-size="8.5" fill="#4b5563">Trace Bonus += 25%</text>
+      </g>
+
+      <!-- Transición: Llega a Database -> BRECHA_EXITOSA -->
+      <path d="M 530 380 H 760" stroke="#b91c1c" stroke-width="1.4" fill="none" marker-end="url(#arr)"/>
+      <text x="640" y="372" text-anchor="middle" font-size="8.5" fill="#b91c1c">[pos == Database]</text>
+      <g transform="translate(760, 365)">
+        <circle cx="20" cy="20" r="15" fill="#ffffff" stroke="#b91c1c" stroke-width="1.5"/>
+        <circle cx="20" cy="20" r="10" fill="#b91c1c"/>
+      </g>
+      <text x="780" y="415" text-anchor="middle" font-size="9" font-weight="700" fill="#b91c1c">BRECHA (DERROTA)</text>
+
+      <!-- Transición: Trace >= 100% -> MITIGADO -->
+      <path d="M 350 590 H 150" stroke="#15803d" stroke-width="1.4" fill="none" marker-end="url(#arr)"/>
+      <text x="240" y="582" text-anchor="middle" font-size="8.5" fill="#15803d">[Trace &gt;= 100%]</text>
+      <g transform="translate(110, 575)">
+        <circle cx="20" cy="20" r="15" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+        <circle cx="20" cy="20" r="10" fill="#15803d"/>
+      </g>
+      <text x="130" y="625" text-anchor="middle" font-size="9" font-weight="700" fill="#15803d">NEUTRALIZADO (VICTORIA)</text>
+    </svg>
