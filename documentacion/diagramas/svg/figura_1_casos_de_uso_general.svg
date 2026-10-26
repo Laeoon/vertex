@@ -1,16 +1,16 @@
-<svg width="860" height="620" viewBox="0 0 860 620" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<svg width="860" height="580" viewBox="0 0 860 580" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
           <path d="M 0 1 L 9 5 L 0 9 z" fill="#374151"/>
         </marker>
       </defs>
 
-      <!-- System Boundary -->
-      <rect x="220" y="20" width="440" height="580" fill="#ffffff" stroke="#111827" stroke-width="1.5" />
-      <text x="440" y="42" text-anchor="middle" font-size="13" font-weight="700" fill="#111827" letter-spacing="0.5">Sistema VERTEX</text>
+      <!-- Límite del Sistema (System Boundary) -->
+      <rect x="230" y="25" width="410" height="530" fill="#ffffff" stroke="#111827" stroke-width="1.5" />
+      <text x="435" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#111827" letter-spacing="0.5">Sistema VERTEX</text>
 
-      <!-- ACTOR 1: OPERADOR (Actor Humano Estándar UML) -->
-      <g transform="translate(60, 230)">
+      <!-- ACTOR 1: OPERADOR (Humano) -->
+      <g transform="translate(60, 210)">
         <circle cx="30" cy="18" r="12" fill="#ffffff" stroke="#111827" stroke-width="1.8" />
         <line x1="30" y1="30" x2="30" y2="70" stroke="#111827" stroke-width="1.8" />
         <line x1="30" y1="42" x2="8" y2="54" stroke="#111827" stroke-width="1.8" />
@@ -21,8 +21,8 @@
         <text x="30" y="142" text-anchor="middle" font-size="11" fill="#4b5563">(Usuario / Alumno)</text>
       </g>
 
-      <!-- ACTOR 2: ADVERSARIO (Actor Sistema / IA) -->
-      <g transform="translate(730, 230)">
+      <!-- ACTOR 2: ADVERSARIO (IA Hostil) -->
+      <g transform="translate(720, 210)">
         <circle cx="30" cy="18" r="12" fill="#ffffff" stroke="#111827" stroke-width="1.8" />
         <line x1="30" y1="30" x2="30" y2="70" stroke="#111827" stroke-width="1.8" />
         <line x1="30" y1="42" x2="8" y2="54" stroke="#111827" stroke-width="1.8" />
@@ -30,11 +30,11 @@
         <line x1="30" y1="70" x2="14" y2="108" stroke="#111827" stroke-width="1.8" />
         <line x1="30" y1="70" x2="46" y2="108" stroke="#111827" stroke-width="1.8" />
         <text x="30" y="128" text-anchor="middle" font-size="13" font-weight="700" fill="#111827">Adversario</text>
-        <text x="30" y="142" text-anchor="middle" font-size="11" fill="#4b5563">(IA Hostil)</text>
+        <text x="30" y="142" text-anchor="middle" font-size="11" fill="#4b5563">(IA del Sistema)</text>
       </g>
 
       <!-- ACTOR 3: SERVICIO DE PERSISTENCIA -->
-      <g transform="translate(730, 440)">
+      <g transform="translate(720, 420)">
         <rect x="10" y="10" width="42" height="48" fill="#ffffff" stroke="#111827" stroke-width="1.6" />
         <line x1="18" y1="22" x2="44" y2="22" stroke="#111827" stroke-width="1.2" />
         <line x1="18" y1="32" x2="44" y2="32" stroke="#111827" stroke-width="1.2" />
@@ -43,96 +43,81 @@
         <text x="30" y="88" text-anchor="middle" font-size="10.5" fill="#4b5563">(Sistema I/O)</text>
       </g>
 
-      <!-- CASOS DE USO (Elipses formales UML) -->
+      <!-- CASOS DE USO CON VERBOS EN INFINITIVO (Sin prefijo "CU-") -->
       
-      <!-- CU-01: Administrar Ranuras de Guardado -->
+      <!-- 1. Administrar Ranuras de Guardado -->
       <g transform="translate(305, 65)">
-        <ellipse cx="135" cy="20" rx="120" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
-        <text x="135" y="24" text-anchor="middle" font-size="11" fill="#111827">CU-01: Administrar Ranuras de Guardado</text>
+        <ellipse cx="130" cy="20" rx="125" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
+        <text x="130" y="24" text-anchor="middle" font-size="11.5" fill="#111827">Administrar Ranuras de Guardado</text>
       </g>
 
-      <!-- CU-02: Completar Módulos de Entrenamiento -->
-      <g transform="translate(305, 120)">
-        <ellipse cx="135" cy="20" rx="120" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
-        <text x="135" y="24" text-anchor="middle" font-size="11" fill="#111827">CU-02: Completar Entrenamiento</text>
+      <!-- 2. Realizar Módulos de Entrenamiento -->
+      <g transform="translate(305, 125)">
+        <ellipse cx="130" cy="20" rx="125" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
+        <text x="130" y="24" text-anchor="middle" font-size="11.5" fill="#111827">Realizar Entrenamiento en Academia</text>
       </g>
 
-      <!-- CU-03: Ejecutar Modo Heist -->
-      <g transform="translate(245, 180)">
-        <ellipse cx="85" cy="19" rx="80" ry="19" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
-        <text x="85" y="23" text-anchor="middle" font-size="11" fill="#111827">CU-03: Modo Heist</text>
+      <!-- 3. Seleccionar y Ejecutar Modo de Juego (UNIFICADO) -->
+      <g transform="translate(305, 195)">
+        <ellipse cx="130" cy="24" rx="130" ry="24" fill="#f3f4f6" stroke="#111827" stroke-width="1.7"/>
+        <text x="130" y="24" text-anchor="middle" font-size="11.5" font-weight="600" fill="#111827">Seleccionar y Ejecutar Modo de Juego</text>
+        <text x="130" y="38" text-anchor="middle" font-size="9" fill="#4b5563">(Heist / Hacker / Ciberdefensa)</text>
       </g>
 
-      <!-- CU-04: Ejecutar Modo Hacker -->
-      <g transform="translate(460, 180)">
-        <ellipse cx="85" cy="19" rx="80" ry="19" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
-        <text x="85" y="23" text-anchor="middle" font-size="11" fill="#111827">CU-04: Modo Hacker</text>
-      </g>
-
-      <!-- CU-05: Ejecutar Modo Ciberdefensa -->
-      <g transform="translate(305, 240)">
-        <ellipse cx="135" cy="22" rx="125" ry="22" fill="#f3f4f6" stroke="#111827" stroke-width="1.6"/>
-        <text x="135" y="26" text-anchor="middle" font-size="11.5" font-weight="600" fill="#111827">CU-05: Modo Ciberdefensa</text>
-      </g>
-
-      <!-- CU-06: Declarar Cuarentena (Extend de Ciberdefensa) -->
-      <g transform="translate(460, 315)">
+      <!-- 4. Declarar Cuarentena de Host (Extend) -->
+      <g transform="translate(435, 275)">
         <ellipse cx="95" cy="18" rx="90" ry="18" fill="#ffffff" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="3,3"/>
-        <text x="95" y="22" text-anchor="middle" font-size="10" fill="#374151">CU-06: Declarar Cuarentena</text>
+        <text x="95" y="22" text-anchor="middle" font-size="10" fill="#374151">Aislar Host en Cuarentena</text>
       </g>
 
-      <!-- CU-07: Revelar Ruta Oculta (Extend de Ciberdefensa) -->
-      <g transform="translate(235, 315)">
-        <ellipse cx="90" cy="18" rx="85" ry="18" fill="#ffffff" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="3,3"/>
-        <text x="90" y="22" text-anchor="middle" font-size="10" fill="#374151">CU-07: Revelar Ruta [P]</text>
+      <!-- 5. Revelar Ruta Oculta (Extend) -->
+      <g transform="translate(245, 275)">
+        <ellipse cx="85" cy="18" rx="80" ry="18" fill="#ffffff" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <text x="85" y="22" text-anchor="middle" font-size="10" fill="#374151">Revelar Ruta Táctica [P]</text>
       </g>
 
-      <!-- CU-08: Consultar Base de Datos (Codex) -->
-      <g transform="translate(305, 385)">
-        <ellipse cx="135" cy="20" rx="120" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
-        <text x="135" y="24" text-anchor="middle" font-size="11" fill="#111827">CU-08: Consultar Base de Datos</text>
+      <!-- 6. Consultar Base de Conocimiento (Codex) -->
+      <g transform="translate(305, 345)">
+        <ellipse cx="130" cy="20" rx="125" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
+        <text x="130" y="24" text-anchor="middle" font-size="11.5" fill="#111827">Consultar Base de Conocimiento</text>
       </g>
 
-      <!-- CU-09: Consultar Perfil y Condecoraciones -->
-      <g transform="translate(305, 450)">
-        <ellipse cx="135" cy="20" rx="120" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
-        <text x="135" y="24" text-anchor="middle" font-size="11" fill="#111827">CU-09: Ver Perfil y Méritos</text>
+      <!-- 7. Visualizar Perfil y Condecoraciones -->
+      <g transform="translate(305, 410)">
+        <ellipse cx="130" cy="20" rx="125" ry="20" fill="#f9fafb" stroke="#1f2937" stroke-width="1.2"/>
+        <text x="130" y="24" text-anchor="middle" font-size="11.5" fill="#111827">Visualizar Perfil y Condecoraciones</text>
       </g>
 
-      <!-- CU-10: Persistir Registro de Partida (Include) -->
-      <g transform="translate(305, 525)">
-        <ellipse cx="135" cy="20" rx="120" ry="20" fill="#f9fafb" stroke="#111827" stroke-width="1.5"/>
-        <text x="135" y="24" text-anchor="middle" font-size="11" fill="#111827">CU-10: Guardar Progreso y Stats</text>
+      <!-- 8. Persistir Progreso y Calificación (Include) -->
+      <g transform="translate(305, 485)">
+        <ellipse cx="130" cy="20" rx="125" ry="20" fill="#f9fafb" stroke="#111827" stroke-width="1.5"/>
+        <text x="130" y="24" text-anchor="middle" font-size="11.5" fill="#111827">Persistir Progreso y Calificación</text>
       </g>
 
       <!-- LÍNEAS DE ASOCIACIÓN DEL OPERADOR -->
-      <line x1="120" y1="270" x2="305" y2="85" stroke="#1f2937" stroke-width="1.1"/>
-      <line x1="120" y1="275" x2="305" y2="140" stroke="#1f2937" stroke-width="1.1"/>
-      <line x1="120" y1="285" x2="245" y2="200" stroke="#1f2937" stroke-width="1.1"/>
-      <line x1="120" y1="290" x2="460" y2="200" stroke="#1f2937" stroke-width="1.1"/>
-      <line x1="120" y1="300" x2="305" y2="262" stroke="#111827" stroke-width="1.5"/>
-      <line x1="120" y1="315" x2="305" y2="405" stroke="#1f2937" stroke-width="1.1"/>
-      <line x1="120" y1="325" x2="305" y2="470" stroke="#1f2937" stroke-width="1.1"/>
+      <line x1="120" y1="250" x2="305" y2="85" stroke="#1f2937" stroke-width="1.1"/>
+      <line x1="120" y1="255" x2="305" y2="145" stroke="#1f2937" stroke-width="1.1"/>
+      <line x1="120" y1="265" x2="305" y2="219" stroke="#111827" stroke-width="1.6"/>
+      <line x1="120" y1="280" x2="305" y2="365" stroke="#1f2937" stroke-width="1.1"/>
+      <line x1="120" y1="290" x2="305" y2="430" stroke="#1f2937" stroke-width="1.1"/>
 
-      <!-- LÍNEAS DE ASOCIACIÓN DE LA IA (ADVERSARIO) -->
-      <line x1="730" y1="270" x2="415" y2="200" stroke="#1f2937" stroke-width="1.1"/>
-      <line x1="730" y1="280" x2="630" y2="200" stroke="#1f2937" stroke-width="1.1"/>
-      <line x1="730" y1="295" x2="575" y2="262" stroke="#111827" stroke-width="1.5"/>
+      <!-- LÍNEA DE ASOCIACIÓN DEL ADVERSARIO (IA) AL MODO DE JUEGO -->
+      <line x1="720" y1="265" x2="565" y2="219" stroke="#111827" stroke-width="1.6"/>
 
       <!-- ASOCIACIÓN DE PERSISTENCIA -->
-      <line x1="730" y1="480" x2="575" y2="545" stroke="#111827" stroke-width="1.3"/>
+      <line x1="720" y1="460" x2="565" y2="505" stroke="#111827" stroke-width="1.3"/>
 
       <!-- RELACIONES EXTEND -->
-      <!-- CU-05 -> CU-06 -->
-      <path d="M 485 284 L 525 315" stroke="#4b5563" stroke-width="1.1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-      <text x="525" y="300" fill="#4b5563" font-size="9.5" font-style="italic">«extend»</text>
+      <!-- Seleccionar Modo -> Aislar Host -->
+      <path d="M 475 243 L 505 275" stroke="#4b5563" stroke-width="1.1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <text x="502" y="260" fill="#4b5563" font-size="9" font-style="italic">«extend»</text>
 
-      <!-- CU-05 -> CU-07 -->
-      <path d="M 395 284 L 355 315" stroke="#4b5563" stroke-width="1.1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-      <text x="335" y="300" fill="#4b5563" font-size="9.5" font-style="italic">«extend»</text>
+      <!-- Seleccionar Modo -> Revelar Ruta -->
+      <path d="M 390 243 L 350 275" stroke="#4b5563" stroke-width="1.1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <text x="330" y="260" fill="#4b5563" font-size="9" font-style="italic">«extend»</text>
 
       <!-- RELACIÓN INCLUDE -->
-      <!-- CU-05 -> CU-10 -->
-      <path d="M 440 284 L 440 525" stroke="#111827" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-      <text x="446" y="420" fill="#111827" font-size="9.5" font-style="italic">«include»</text>
+      <!-- Seleccionar Modo -> Persistir Progreso -->
+      <path d="M 435 243 L 435 485" stroke="#111827" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <text x="441" y="380" fill="#111827" font-size="9.5" font-style="italic">«include»</text>
     </svg>
