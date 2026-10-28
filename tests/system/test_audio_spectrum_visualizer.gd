@@ -85,9 +85,10 @@ func test_draw_safe_headless() -> void:
 	# Probar dibujo legítimo dentro del ciclo NOTIFICATION_DRAW
 	dummy.draw.connect(func():
 		viz.draw(dummy, Rect2(40.0, 500.0, 800.0, 160.0), Color.CYAN, null, true)
+		viz.draw_track_waveform(dummy, Vector2(100.0, 300.0), Vector2(700.0, 300.0), Color.CYAN, 80.0, 64)
 	)
 	dummy.notification(CanvasItem.NOTIFICATION_DRAW)
-	_assert(true, "Draw inside NOTIFICATION_DRAW succeeds cleanly without engine error")
+	_assert(true, "Draw and draw_track_waveform inside NOTIFICATION_DRAW succeed cleanly without engine error")
 
 	dummy.queue_free()
 

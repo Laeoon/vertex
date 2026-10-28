@@ -112,32 +112,39 @@ func _ensure_audio_buses() -> void:
 
 
 func _ensure_spectrum_analyzer() -> void:
-	var m_idx := AudioServer.get_bus_index("Music")
-	if m_idx == -1:
-		return
-	for i in range(AudioServer.get_bus_effect_count(m_idx)):
-		if AudioServer.get_bus_effect(m_idx, i) is AudioEffectSpectrumAnalyzer:
-			return
-	var spectrum := AudioEffectSpectrumAnalyzer.new()
-	spectrum.buffer_length = 0.15
-	spectrum.fft_size = AudioEffectSpectrumAnalyzer.FFT_SIZE_1024
-	AudioServer.add_bus_effect(m_idx, spectrum)
+	for bus_name in ["Music", "Master"]:
+		var b_idx := AudioServer.get_bus_index(bus_name)
+		if b_idx == -1:
+			continue
+		var has_spectrum := false
+		for i in range(AudioServer.get_bus_effect_count(b_idx)):
+			if AudioServer.get_bus_effect(b_idx, i) is AudioEffectSpectrumAnalyzer:
+				has_spectrum = true
+				break
+		if not has_spectrum:
+			var spectrum := AudioEffectSpectrumAnalyzer.new()
+			spectrum.buffer_length = 0.15
+			spectrum.fft_size = AudioEffectSpectrumAnalyzer.FFT_SIZE_1024
+			AudioServer.add_bus_effect(b_idx, spectrum)
 
 
-## Retorna la instancia activa del analizador de espectro en el bus Music, o null si no está disponible.
+## Retorna la instancia activa del analizador de espectro (Music o Master), o null si no está disponible.
 func get_spectrum_instance() -> AudioEffectSpectrumAnalyzerInstance:
-	var m_idx := AudioServer.get_bus_index("Music")
-	if m_idx == -1:
-		return null
-	for i in range(AudioServer.get_bus_effect_count(m_idx)):
-		if AudioServer.get_bus_effect(m_idx, i) is AudioEffectSpectrumAnalyzer:
-			return AudioServer.get_bus_effect_instance(m_idx, i)
+	for bus_name in ["Music", "Master"]:
+		var b_idx := AudioServer.get_bus_index(bus_name)
+		if b_idx == -1:
+			continue
+		for i in range(AudioServer.get_bus_effect_count(b_idx)):
+			if AudioServer.get_bus_effect(b_idx, i) is AudioEffectSpectrumAnalyzer:
+				var inst = AudioServer.get_bus_effect_instance(b_idx, i)
+				if inst != null:
+					return inst
 	return null
 
 
-## Retorna un array con las magnitudes (0.0..1.0) para N bandas de frecuencia.
+## Retorna un array con las magnitudes en escala decibélica (0.0..1.0) para N bandas de frecuencia.
 ## Si corre en headless o con driver dummy, retorna ceros sin crashear.
-func get_spectrum_magnitudes(bands: int = 16, min_freq: float = 20.0, max_freq: float = 10000.0) -> PackedFloat32Array:
+func get_spectrum_magnitudes(bands: int = 16, min_freq: float = 24.0, max_freq: float = 11000.0) -> PackedFloat32Array:
 	var result := PackedFloat32Array()
 	result.resize(bands)
 	var spectrum := get_spectrum_instance()
@@ -150,8 +157,14 @@ func get_spectrum_magnitudes(bands: int = 16, min_freq: float = 20.0, max_freq: 
 		var f_low := f_min * pow(f_max / f_min, float(b) / float(bands))
 		var f_high := f_min * pow(f_max / f_min, float(b + 1) / float(bands))
 		var mag_vec: Vector2 = spectrum.get_magnitude_for_frequency_range(f_low, f_high)
-		var val := clampf((mag_vec.x + mag_vec.y) * 0.5 * 3.5, 0.0, 1.0)
-		result[b] = val
+		var mag_len := mag_vec.length()
+		if mag_len < 0.00005:
+			result[b] = 0.0
+		else:
+			var db := linear_to_db(mag_len)
+			# Rango dinámico sensible: de -50 dB (silencio) a 0 dB (pico)
+			var energy := clampf((db + 50.0) / 50.0, 0.0, 1.0)
+			result[b] = energy
 	return result
 
 

@@ -129,18 +129,21 @@ func _draw() -> void:
 	var vp: Vector2 = get_viewport_rect().size
 	_cyber_bg.draw(self, vp)
 
-	var theme_col: Color
-	match world_id:
-		"heist":
-			theme_col = Color("00e676")
-		"hacker":
-			theme_col = Color("00e5ff")
-		"cybersecurity":
-			theme_col = Color("ffb300")
-		_:
-			theme_col = Color("00e5ff")
-	var viz_rect := Rect2(60.0, vp.y - 105.0, vp.x - 120.0, 50.0)
-	_spectrum_viz.draw(self, viz_rect, theme_col, font, true, 0.6)
+	# 1. Onda de audio reactiva y simétrica a lo largo del riel de nodos (estilo pizarra)
+	if level_nodes.size() > 0:
+		var first_pos := _get_node_position(level_nodes[0], 0)
+		var last_pos := _get_node_position(level_nodes[level_nodes.size() - 1], level_nodes.size() - 1)
+		var theme_col := Color("00f5d4")
+		match world_id:
+			"heist":
+				theme_col = Color("00f5d4")
+			"hacker":
+				theme_col = Color("00e5ff")
+			"cybersecurity":
+				theme_col = Color("ffb300")
+			_:
+				theme_col = Color("00f5d4")
+		_spectrum_viz.draw_track_waveform(self, first_pos, last_pos, theme_col, 85.0, 110, 0.85)
 
 	draw_string(font, Vector2(60, 50), world_title, HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, Color(0.0, 1.0, 0.83))
 	draw_string(font, Vector2(60, 75), "Selecciona un nivel", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.7, 0.75, 0.85))
