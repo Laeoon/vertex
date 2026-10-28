@@ -15,6 +15,9 @@ extends SceneTree
 ## Este archivo empieza con `_` de manera que `run_all.gd` no lo descubre.
 
 const OPCION_RUTA := "--test-path"
+const OPCION_TIMEOUT := "--timeout"
+const TIMEOUT_DEFAULT := 12.0
+const CODIGO_TIMEOUT := 124
 
 
 func _init() -> void:
@@ -41,6 +44,22 @@ func _init() -> void:
 		push_error("RUN_ONE: error de parseo en %s: %s" % [ruta, error_string(err_parseo)])
 		quit(3)
 		return
+
+	# Watchdog de seguridad interno: si la prueba queda colgada (esperando inputs,
+	# señales no emitidas, diálogos o awaits infinitos), el SceneTree aborta automáticamente
+	# con código 124 (timeout estándar de POSIX) evitando congelamientos en subprocesos.
+	var segundos_timeout := _obtener_timeout()
+	var watchdog := Timer.new()
+	watchdog.name = "WatchdogTimeout"
+	watchdog.wait_time = segundos_timeout
+	watchdog.one_shot = true
+	watchdog.autostart = true
+	watchdog.timeout.connect(func() -> void:
+		push_error("RUN_ONE: TIMEOUT interno (>%.1fs) en prueba: %s — abortando SceneTree." % [segundos_timeout, ruta])
+		quit(CODIGO_TIMEOUT)
+	)
+	root.add_child(watchdog)
+
 	var nodo := Node.new()
 	nodo.name = "Prueba"
 	nodo.set_script(script)
@@ -58,3 +77,15 @@ func _obtener_ruta_prueba() -> String:
 			return args[i + 1]
 		i += 1
 	return ""
+
+
+func _obtener_timeout() -> float:
+	var args := OS.get_cmdline_args()
+	var i := 0
+	while i < args.size():
+		if args[i] == OPCION_TIMEOUT and i + 1 < args.size():
+			var val := args[i + 1].to_float()
+			if val > 0.0:
+				return val
+		i += 1
+	return TIMEOUT_DEFAULT
