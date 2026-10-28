@@ -6,8 +6,10 @@ class_name WorldSelectRenderer extends RefCounted
 
 const BrandClass = preload("res://juego/ui/brand.gd")
 const ProgressUtilClass = preload("res://juego/utils/progress_util.gd")
+const AudioSpectrumVisualizerClass = preload("res://juego/ui/audio_spectrum_visualizer.gd")
 
 var _vertical_pulses: Array[Dictionary] = []
+var _spectrum_viz := AudioSpectrumVisualizerClass.new(24)
 var _time: float = 0.0
 
 
@@ -29,6 +31,7 @@ func _init_vertical_pulses() -> void:
 
 func update(delta: float, vp: Vector2) -> void:
 	_time += delta
+	_spectrum_viz.update(delta)
 	for p in _vertical_pulses:
 		p.y += p.speed * delta
 		if p.y - p.length > vp.y:
@@ -89,6 +92,11 @@ func draw(
 
 	# 1. Ambient Vertical Matrix Code Pulses
 	_draw_matrix_pulses(canvas, vp, alpha)
+
+	# 1.5. Visualizador de espectro de audio reactivo en el fondo
+	var viz_w := clampf(vp.x * 0.65, 480.0, 800.0)
+	var viz_rect := Rect2((vp.x - viz_w) * 0.5 + ox, vp.y - 75.0, viz_w, 44.0)
+	_spectrum_viz.draw(canvas, viz_rect, active_color, font, true, alpha * 0.65)
 
 	# 2. Sector Telemetry Badges (Top Right & Left Overlays)
 	_draw_sector_telemetry(canvas, vp, alpha, ox, font, font_size, active_color)

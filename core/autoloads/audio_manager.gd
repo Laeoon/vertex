@@ -108,6 +108,52 @@ func _ensure_audio_buses() -> void:
 		AudioServer.set_bus_name(sfx_idx, "SFX")
 		AudioServer.set_bus_send(sfx_idx, "Master")
 
+	_ensure_spectrum_analyzer()
+
+
+func _ensure_spectrum_analyzer() -> void:
+	var m_idx := AudioServer.get_bus_index("Music")
+	if m_idx == -1:
+		return
+	for i in range(AudioServer.get_bus_effect_count(m_idx)):
+		if AudioServer.get_bus_effect(m_idx, i) is AudioEffectSpectrumAnalyzer:
+			return
+	var spectrum := AudioEffectSpectrumAnalyzer.new()
+	spectrum.buffer_length = 0.15
+	spectrum.fft_size = AudioEffectSpectrumAnalyzer.FFT_SIZE_1024
+	AudioServer.add_bus_effect(m_idx, spectrum)
+
+
+## Retorna la instancia activa del analizador de espectro en el bus Music, o null si no está disponible.
+func get_spectrum_instance() -> AudioEffectSpectrumAnalyzerInstance:
+	var m_idx := AudioServer.get_bus_index("Music")
+	if m_idx == -1:
+		return null
+	for i in range(AudioServer.get_bus_effect_count(m_idx)):
+		if AudioServer.get_bus_effect(m_idx, i) is AudioEffectSpectrumAnalyzer:
+			return AudioServer.get_bus_effect_instance(m_idx, i)
+	return null
+
+
+## Retorna un array con las magnitudes (0.0..1.0) para N bandas de frecuencia.
+## Si corre en headless o con driver dummy, retorna ceros sin crashear.
+func get_spectrum_magnitudes(bands: int = 16, min_freq: float = 20.0, max_freq: float = 10000.0) -> PackedFloat32Array:
+	var result := PackedFloat32Array()
+	result.resize(bands)
+	var spectrum := get_spectrum_instance()
+	if spectrum == null:
+		return result
+
+	var f_min := maxf(20.0, min_freq)
+	var f_max := maxf(f_min + 10.0, max_freq)
+	for b in range(bands):
+		var f_low := f_min * pow(f_max / f_min, float(b) / float(bands))
+		var f_high := f_min * pow(f_max / f_min, float(b + 1) / float(bands))
+		var mag_vec: Vector2 = spectrum.get_magnitude_for_frequency_range(f_low, f_high)
+		var val := clampf((mag_vec.x + mag_vec.y) * 0.5 * 3.5, 0.0, 1.0)
+		result[b] = val
+	return result
+
 
 func _setup_music_player() -> void:
 	_music_player = AudioStreamPlayer.new()
