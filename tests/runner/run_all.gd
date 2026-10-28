@@ -35,7 +35,7 @@ const RAIZ_PRUEBAS := "res://tests"
 const NOMBRE_RUNNER := "run_all.gd"
 const RUTA_LANZADOR := "res://tests/runner/_run_one.gd"
 const OPCION_RUTA := "--test-path"
-const TIMEOUT_SEGUNDOS := 30
+const TIMEOUT_SEGUNDOS := 10
 const BIN_GODOT_RESERVA := "godot"
 const CODIGO_TIMEOUT := 124
 

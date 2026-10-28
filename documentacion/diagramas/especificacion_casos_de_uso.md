@@ -53,6 +53,7 @@ Documento formal de especificación de requerimientos funcionales y descomposici
 | **Base de Conocimiento**| `CU-08` | Consultar Base de Datos (Codex) | Operador |
 | **Expediente** | `CU-09` | Consultar Perfil y Condecoraciones | Operador, Sistema I/O |
 | **Persistencia** | `CU-10` | Guardar Progreso y Calificación | Sistema I/O |
+| **Gestión de Sesión** | `CU-11` | Respaldar, Exportar e Importar Ranuras de Guardado | Operador, Sistema I/O |
 
 ---
 
@@ -92,6 +93,51 @@ Documento formal de especificación de requerimientos funcionales y descomposici
 
 #### Postcondiciones
 - El slot activo queda registrado y todos los módulos (`ProgressUtil`, `Profile`, `ProgressService`) resuelven dinámicamente sus rutas apuntando a la carpeta de dicho slot.
+
+---
+
+### Ficha Técnica: `CU-11` — Respaldar, Exportar e Importar Ranuras de Guardado
+
+- **Identificador:** `CU-11`
+- **Nombre:** Respaldar, Exportar e Importar Ranuras de Guardado (.bak)
+- **Actores:** Operador (Iniciador), Sistema I/O (Secundario).
+- **Precondiciones:**
+  1. La pantalla de selección de ranuras (`StartScreen`) está activa.
+  2. El sistema I/O cuenta con permisos de lectura y escritura en `user://slots/` y `user://backups/`.
+
+#### Flujo Principal (Happy Path) — Exportación
+1. El operador navega hacia una ranura ocupada y acciona `[E]` (o hace clic en `[E] Exportar`).
+2. El sistema invoca `SlotManager.export_slot_to_bak()`.
+3. El sistema valida los datos de la ranura y serializa `progress.cfg`, `profile.cfg` y `stats.cfg` en formato JSON atómico.
+4. El sistema calcula la suma de verificación SHA-256 de la carga útil.
+5. El sistema escribe en disco el archivo en `user://backups/` con cabecera `VERTEX_SAVE_BAK_v1`.
+6. El sistema emite feedback auditivo y despliega un toast visual de confirmación (`[OK] EXPORTADO: ...`).
+
+#### Flujos Alternativos
+- **FA-1: Importación de Partida con Reemplazo Seguro (`«extend»`)**:
+  1. El operador pulsa `[I]` sobre una ranura.
+  2. El sistema lista los archivos `.bak` disponibles. Si la ranura no está vacía, despliega un modal de advertencia.
+  3. El operador confirma la importación (`[Y]` / `[ENTER]`).
+  4. El sistema genera de forma autónoma un snapshot preventivo de contingencia de la ranura (`tag: pre_import`) en `user://slots/slot_X/backups/`.
+  5. El sistema valida la cabecera mágica y el checksum SHA-256 del archivo `.bak`.
+  6. Si la verificación es exitosa, el sistema escribe los archivos, invalida la caché de resúmenes y emite una notificación verde.
+- **FA-2: Rechazo por Corrupción o Alteración de Archivo**:
+  - En el paso 5 de FA-1, si el hash computado no coincide con el checksum de la cabecera:
+    1. El sistema aborta la escritura atómica.
+    2. El sistema no modifica los archivos de la ranura destino.
+    3. El sistema emite un toast de alerta de seguridad: `[ERROR] FALLO DE IMPORTACIÓN: CHECKSUM O ARCHIVO INVÁLIDO`.
+- **FA-3: Restauración de Snapshot Preventivo Automático (`«extend»`)**:
+  1. El operador pulsa `[R]` sobre una ranura.
+  2. El sistema comprueba la existencia de snapshots previos en `user://slots/slot_X/backups/`.
+  3. Si existen, el sistema muestra un modal de confirmación.
+  4. Al confirmar, el sistema restaura los archivos del último snapshot e invalida la caché.
+- **FA-4: Intento de Exportación en Ranura Vacía**:
+  - Si el operador intenta exportar una ranura sin progreso:
+    1. El sistema bloquea la operación.
+    2. El sistema emite un toast de advertencia.
+
+#### Postcondiciones
+- El archivo `.bak` queda generado con integridad criptográfica verificable, o la ranura destino queda actualizada o restaurada con un snapshot de resguardo previo.
 
 ---
 
