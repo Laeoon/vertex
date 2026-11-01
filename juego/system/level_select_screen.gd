@@ -131,10 +131,11 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var vp: Vector2 = get_viewport_rect().size
-	_cyber_bg.draw(self, vp)
+	var theme_col: Color = Brand.get_world_color(world_id)
+	var bg_col: Color = Brand.get_world_bg_color(world_id)
+	_cyber_bg.draw(self, vp, 0.0, theme_col, bg_col)
 
 	# 1. Onda de audio reactiva y simétrica a lo largo del riel de nodos (estilo pizarra)
-	var theme_col: Color = Brand.get_world_color(world_id)
 	if level_nodes.size() > 0:
 		var first_pos := _get_node_position(level_nodes[0], 0)
 		var last_pos := _get_node_position(level_nodes[level_nodes.size() - 1], level_nodes.size() - 1)
@@ -143,21 +144,22 @@ func _draw() -> void:
 	draw_string(font, Vector2(60, 50), world_title, HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, theme_col)
 	draw_string(font, Vector2(60, 75), "Selecciona un nivel", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.7, 0.75, 0.85))
 
-	_draw_connections()
-	_draw_nodes(vp)
-	_draw_back_hint(vp)
+	_draw_connections(theme_col)
+	_draw_nodes(vp, theme_col)
+	_draw_back_hint(vp, theme_col)
 
 
-func _draw_connections() -> void:
+func _draw_connections(theme_col: Color) -> void:
+	var rail_color: Color = Brand.with_alpha(theme_col.lightened(0.2), 0.45)
 	for i in level_nodes.size() - 1:
 		var from_data: Dictionary = level_nodes[i]
 		var to_data: Dictionary = level_nodes[i + 1]
 		var from_pos: Vector2 = _get_node_position(from_data, i)
 		var to_pos: Vector2 = _get_node_position(to_data, i + 1)
-		draw_line(from_pos, to_pos, Color(0.4, 0.45, 0.55, 0.7), 3.0)
+		draw_line(from_pos, to_pos, rail_color, 3.0)
 
 
-func _draw_nodes(vp: Vector2) -> void:
+func _draw_nodes(vp: Vector2, theme_col: Color = Brand.ACCENT) -> void:
 	for i in level_nodes.size():
 		var node_data: Dictionary = level_nodes[i]
 		var pos: Vector2 = _get_node_position(node_data, i)
@@ -178,16 +180,15 @@ func _draw_nodes(vp: Vector2) -> void:
 			border_color = Color(1.0, 0.95, 0.3)
 		elif unlocked:
 			var glow: float = 0.8 + sin(_pulse) * 0.2
-			var world_color: Color = Brand.get_world_color(world_id)
-			node_color = Brand.with_alpha(world_color.darkened(0.2), glow)
-			border_color = Brand.with_alpha(world_color, glow)
+			node_color = Brand.with_alpha(theme_col.darkened(0.25), glow)
+			border_color = Brand.with_alpha(theme_col, glow)
 		else:
 			node_color = Color(0.15, 0.17, 0.22, 0.6)
 			border_color = Color(0.25, 0.27, 0.32, 0.5)
 
 		if is_selected and unlocked:
 			radius += 6.0
-			draw_circle(pos, radius + 8.0, Color(1.0, 0.4, 0.8, 0.3), false, 3.0)
+			draw_circle(pos, radius + 8.0, Brand.with_alpha(theme_col, 0.4), false, 3.0)
 
 		draw_circle(pos + Vector2(2, 3), radius, Color(0, 0, 0, 0.4))
 		draw_circle(pos, radius, node_color)
@@ -209,10 +210,10 @@ func _draw_nodes(vp: Vector2) -> void:
 			draw_string(font, Vector2(pos.x - 5, pos.y + 6), "X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.5, 0.5, 0.55))
 
 
-func _draw_back_hint(vp: Vector2) -> void:
+func _draw_back_hint(vp: Vector2, theme_col: Color = Brand.ACCENT) -> void:
 	var back_rect := Rect2(40.0, vp.y - 48.0, 200.0, 34.0)
-	draw_rect(back_rect, Color(0.08, 0.1, 0.15, 0.85))
-	draw_rect(back_rect, Color(0.2, 0.35, 0.45, 0.6), false, 1.2)
-	draw_string(font, Vector2(back_rect.position.x + 14.0, back_rect.position.y + 22.0), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.0, 0.85, 0.75))
+	draw_rect(back_rect, Brand.with_alpha(Brand.PANEL_SOLID, 0.90))
+	draw_rect(back_rect, Brand.with_alpha(theme_col, 0.5), false, 1.2)
+	draw_string(font, Vector2(back_rect.position.x + 14.0, back_rect.position.y + 22.0), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, theme_col)
 
-	draw_string(font, Vector2(260.0, vp.y - 26.0), "[Enter / Clic] Jugar nivel seleccionado", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.45, 0.5, 0.6))
+	draw_string(font, Vector2(260.0, vp.y - 26.0), "[Enter / Clic] Jugar nivel seleccionado", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.55, 0.6, 0.7))

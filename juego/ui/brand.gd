@@ -26,6 +26,12 @@ const WORLD_CYBER := Color("00d2ff")         # Azul acuarela / cian ciberdefensa
 const WORLD_HEIST := Color("bf5af2")         # Morado / púrpura synthwave
 const WORLD_TUTORIALS := Color("64b5f6")     # Azul formativo neutro
 
+## Fondos oscuros profundos con tinte armónico según el modo
+const BG_HACKER := Color("09120e")           # Tinte negro-verdoso terminal
+const BG_CYBER := Color("081018")            # Tinte azul noche acuarela profundo
+const BG_HEIST := Color("120918")            # Tinte púrpura oscuro synthwave
+const BG_TUTORIALS := Color("0a1018")        # Tinte azul acero formativo
+
 ## Retorna el color insignia asociado a cada mundo
 static func get_world_color(world_id: String) -> Color:
 	match world_id.to_lower().strip_edges():
@@ -39,6 +45,21 @@ static func get_world_color(world_id: String) -> Color:
 			return WORLD_TUTORIALS
 		_:
 			return ACCENT
+
+
+## Retorna el fondo atmosférico profundo para el mundo dado
+static func get_world_bg_color(world_id: String) -> Color:
+	match world_id.to_lower().strip_edges():
+		"hacker":
+			return BG_HACKER
+		"cybersecurity", "cyber", "defensa":
+			return BG_CYBER
+		"heist":
+			return BG_HEIST
+		"tutorials":
+			return BG_TUTORIALS
+		_:
+			return BG
 
 ## Versión tenue del acento (bordes/subrayados discretos).
 static func accent_dim(alpha: float = 0.35) -> Color:

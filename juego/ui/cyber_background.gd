@@ -127,45 +127,45 @@ func update(delta: float, vp_size: Vector2 = Vector2(1280.0, 720.0)) -> void:
 
 
 ## Draws the full cybernetic background onto the provided canvas.
-func draw(canvas: CanvasItem, vp: Vector2, delta: float = 0.0) -> void:
+func draw(canvas: CanvasItem, vp: Vector2, delta: float = 0.0, theme_color: Color = Brand.ACCENT, bg_color: Color = Brand.BG) -> void:
 	if delta > 0.0:
 		update(delta, vp)
 
 	# 1. Base deep background
-	canvas.draw_rect(Rect2(0, 0, vp.x, vp.y), Brand.BG)
+	canvas.draw_rect(Rect2(0, 0, vp.x, vp.y), bg_color)
 
 	# 2. Tactical grid lines & intersections
 	if show_grid:
-		_draw_grid(canvas, vp)
-		_draw_intersections(canvas, vp)
-		_draw_data_pulses(canvas, vp)
+		_draw_grid(canvas, vp, theme_color)
+		_draw_intersections(canvas, vp, theme_color)
+		_draw_data_pulses(canvas, vp, theme_color)
 
 	# 3. Constellation / Plexus graph network
 	if show_plexus:
-		_draw_plexus(canvas)
+		_draw_plexus(canvas, theme_color)
 
 	# 4. 3D Holographic Gyro-Sphere
 	if show_hologram:
 		var holo_center := Vector2(vp.x * 0.80, vp.y * 0.48)
 		var holo_radius := minf(vp.y * 0.28, 160.0)
-		_draw_hologram(canvas, holo_center, holo_radius)
+		_draw_hologram(canvas, holo_center, holo_radius, theme_color)
 
 	# 5. Top-right tactical hex badge
 	if show_badge:
-		_draw_hex_badge(canvas, Vector2(vp.x - 65.0, 65.0), 32.0)
+		_draw_hex_badge(canvas, Vector2(vp.x - 65.0, 65.0), 32.0, theme_color)
 
 	# 6. Floating digital dust
-	_draw_particles(canvas)
+	_draw_particles(canvas, theme_color)
 
 	# 7. Ambient scanline beam sweep
-	_draw_scanbeam(canvas, vp)
+	_draw_scanbeam(canvas, vp, theme_color)
 
 	# 8. Subtle viewport border
-	_draw_border(canvas, vp)
+	_draw_border(canvas, vp, theme_color)
 
 
-func _draw_grid(canvas: CanvasItem, vp: Vector2) -> void:
-	var grid_color: Color = Brand.with_alpha(Brand.PANEL_BORDER, 0.16)
+func _draw_grid(canvas: CanvasItem, vp: Vector2, theme_color: Color = Brand.ACCENT) -> void:
+	var grid_color: Color = Brand.with_alpha(theme_color.darkened(0.55), 0.14)
 	var x: float = 0.0
 	while x < vp.x:
 		canvas.draw_line(Vector2(x, 0), Vector2(x, vp.y), grid_color, 1.0)
@@ -176,7 +176,7 @@ func _draw_grid(canvas: CanvasItem, vp: Vector2) -> void:
 		y += GRID_SPACING
 
 
-func _draw_intersections(canvas: CanvasItem, vp: Vector2) -> void:
+func _draw_intersections(canvas: CanvasItem, vp: Vector2, theme_color: Color = Brand.ACCENT) -> void:
 	var cross_size: float = 2.0
 	var x: float = GRID_SPACING
 	var col_idx: int = 1
@@ -191,7 +191,7 @@ func _draw_intersections(canvas: CanvasItem, vp: Vector2) -> void:
 
 			if pulse > 0.7:
 				var intensity: float = (pulse - 0.7) / 0.3
-				var cross_color: Color = Brand.with_alpha(Brand.ACCENT, intensity * 0.30)
+				var cross_color: Color = Brand.with_alpha(theme_color, intensity * 0.30)
 				canvas.draw_line(Vector2(x - cross_size, y), Vector2(x + cross_size, y), cross_color, 1.0)
 				canvas.draw_line(Vector2(x, y - cross_size), Vector2(x, y + cross_size), cross_color, 1.0)
 
@@ -201,10 +201,10 @@ func _draw_intersections(canvas: CanvasItem, vp: Vector2) -> void:
 		col_idx += 1
 
 
-func _draw_data_pulses(canvas: CanvasItem, vp: Vector2) -> void:
+func _draw_data_pulses(canvas: CanvasItem, vp: Vector2, theme_color: Color = Brand.ACCENT) -> void:
 	for pulse in _pulses:
 		var alpha: float = pulse.alpha * (0.8 + sin(_time * 4.0) * 0.2)
-		var pcolor: Color = Brand.with_alpha(Brand.ACCENT, alpha * 0.6)
+		var pcolor: Color = Brand.with_alpha(theme_color, alpha * 0.6)
 		var phead: Color = Brand.with_alpha(Color.WHITE, alpha * 0.8)
 
 		if pulse.horizontal:
@@ -225,7 +225,7 @@ func _draw_data_pulses(canvas: CanvasItem, vp: Vector2) -> void:
 					canvas.draw_circle(Vector2(px, y_end), 1.2, phead)
 
 
-func _draw_plexus(canvas: CanvasItem) -> void:
+func _draw_plexus(canvas: CanvasItem, theme_color: Color = Brand.ACCENT) -> void:
 	var n_count := _plexus_nodes.size()
 
 	# Draw edges between nodes within threshold
@@ -240,7 +240,7 @@ func _draw_plexus(canvas: CanvasItem) -> void:
 				var dist: float = sqrt(d_sq)
 				var frac: float = 1.0 - (dist / PLEXUS_MAX_DIST)
 				var edge_alpha: float = frac * frac * 0.28
-				var edge_color: Color = Brand.with_alpha(Brand.ACCENT, edge_alpha)
+				var edge_color: Color = Brand.with_alpha(theme_color, edge_alpha)
 				canvas.draw_line(p1, p2, edge_color, 1.0)
 
 	# Draw nodes
@@ -251,55 +251,55 @@ func _draw_plexus(canvas: CanvasItem) -> void:
 		var n_alpha: float = node.alpha * (0.6 + pulse * 0.4)
 
 		# Outer glow
-		canvas.draw_circle(p, r + 2.5, Brand.with_alpha(Brand.ACCENT, n_alpha * 0.2))
+		canvas.draw_circle(p, r + 2.5, Brand.with_alpha(theme_color, n_alpha * 0.2))
 		# Core node
-		canvas.draw_circle(p, r, Brand.with_alpha(Brand.ACCENT, n_alpha))
+		canvas.draw_circle(p, r, Brand.with_alpha(theme_color, n_alpha))
 		canvas.draw_circle(p, r * 0.4, Brand.with_alpha(Color.WHITE, n_alpha * 0.9))
 
 
 ## Draws a 3D projected wireframe rotating holographic sphere with cylindrical rings.
-func _draw_hologram(canvas: CanvasItem, center: Vector2, radius: float) -> void:
+func _draw_hologram(canvas: CanvasItem, center: Vector2, radius: float, theme_color: Color = Brand.ACCENT) -> void:
 	var rot_y: float = _time * 0.45
 	var rot_x: float = 0.38 + sin(_time * 0.25) * 0.12
 	var base_alpha: float = 0.75 + sin(_time * 1.5) * 0.15
 
 	# 1. Outer tactical framing ring
 	var outer_r := radius * 1.18
-	canvas.draw_arc(center, outer_r, 0.0, TAU, 48, Brand.with_alpha(Brand.ACCENT, base_alpha * 0.20), 1.0)
+	canvas.draw_arc(center, outer_r, 0.0, TAU, 48, Brand.with_alpha(theme_color, base_alpha * 0.20), 1.0)
 
 	# 4 Corner brackets on outer framing ring
 	var bracket_len := 12.0
 	for angle_idx in range(4):
 		var b_angle := angle_idx * (PI * 0.5) + PI * 0.25 + _time * 0.08
 		var bp := center + Vector2(cos(b_angle), sin(b_angle)) * outer_r
-		canvas.draw_circle(bp, 2.5, Brand.with_alpha(Brand.ACCENT, base_alpha * 0.8))
+		canvas.draw_circle(bp, 2.5, Brand.with_alpha(theme_color, base_alpha * 0.8))
 
 	# 2. Concentric cylindrical core rings (tilted along rot_x and rotating)
 	var ring_heights: Array[float] = [-0.45, -0.15, 0.15, 0.45]
 	for h_ratio in ring_heights:
 		var r_level := radius * cos(asin(clampf(h_ratio, -0.99, 0.99))) * 0.92
 		var y_off := h_ratio * radius * 0.85
-		_draw_projected_ring(canvas, center + Vector2(0, y_off), r_level, rot_x, rot_y, base_alpha)
+		_draw_projected_ring(canvas, center + Vector2(0, y_off), r_level, rot_x, rot_y, base_alpha, theme_color)
 
 	# 3. Sphere 3D Wireframe Longitudes (meridians rotated around Y)
 	var meridian_count := 6
 	for m in range(meridian_count):
 		var m_angle := rot_y + (m * PI / meridian_count)
-		_draw_projected_meridian(canvas, center, radius, m_angle, rot_x, base_alpha)
+		_draw_projected_meridian(canvas, center, radius, m_angle, rot_x, base_alpha, theme_color)
 
 	# 4. Central energy core & rotating orbital point
 	var core_pulse := 0.7 + sin(_time * 3.0) * 0.3
-	canvas.draw_circle(center, 9.0, Brand.with_alpha(Brand.ACCENT, base_alpha * 0.35 * core_pulse))
+	canvas.draw_circle(center, 9.0, Brand.with_alpha(theme_color, base_alpha * 0.35 * core_pulse))
 	canvas.draw_circle(center, 4.0, Brand.with_alpha(Color.WHITE, base_alpha * 0.9))
 
 	# Orbital satellites
 	var sat_angle := _time * 1.8
 	var sat_pos := center + Vector2(cos(sat_angle) * radius * 0.75, sin(sat_angle) * radius * 0.32)
 	canvas.draw_circle(sat_pos, 3.0, Brand.with_alpha(Color.WHITE, 0.9))
-	canvas.draw_circle(sat_pos, 6.0, Brand.with_alpha(Brand.ACCENT, 0.35))
+	canvas.draw_circle(sat_pos, 6.0, Brand.with_alpha(theme_color, 0.35))
 
 
-func _draw_projected_ring(canvas: CanvasItem, center: Vector2, r: float, tilt_x: float, rot_y: float, base_alpha: float) -> void:
+func _draw_projected_ring(canvas: CanvasItem, center: Vector2, r: float, tilt_x: float, rot_y: float, base_alpha: float, theme_color: Color = Brand.ACCENT) -> void:
 	var points := PackedVector2Array()
 	var segments := 32
 	var cos_tilt := cos(tilt_x)
@@ -312,11 +312,11 @@ func _draw_projected_ring(canvas: CanvasItem, center: Vector2, r: float, tilt_x:
 		var y := z * sin_tilt
 		points.append(center + Vector2(x, y))
 
-	var ring_col := Brand.with_alpha(Brand.ACCENT, base_alpha * 0.38)
+	var ring_col := Brand.with_alpha(theme_color, base_alpha * 0.38)
 	canvas.draw_polyline(points, ring_col, 1.2)
 
 
-func _draw_projected_meridian(canvas: CanvasItem, center: Vector2, r: float, meridian_y_rot: float, tilt_x: float, base_alpha: float) -> void:
+func _draw_projected_meridian(canvas: CanvasItem, center: Vector2, r: float, meridian_y_rot: float, tilt_x: float, base_alpha: float, theme_color: Color = Brand.ACCENT) -> void:
 	var points := PackedVector2Array()
 	var segments := 28
 	var cos_tilt := cos(tilt_x)
@@ -335,12 +335,12 @@ func _draw_projected_meridian(canvas: CanvasItem, center: Vector2, r: float, mer
 		var x_proj := x3
 		points.append(center + Vector2(x_proj, y_proj))
 
-	var arc_col := Brand.with_alpha(Brand.ACCENT, base_alpha * 0.22)
+	var arc_col := Brand.with_alpha(theme_color, base_alpha * 0.22)
 	canvas.draw_polyline(points, arc_col, 1.0)
 
 
 ## Draws the top-right tactical hexagonal badge.
-func _draw_hex_badge(canvas: CanvasItem, center: Vector2, radius: float) -> void:
+func _draw_hex_badge(canvas: CanvasItem, center: Vector2, radius: float, theme_color: Color = Brand.ACCENT) -> void:
 	var points_outer := PackedVector2Array()
 	var points_inner := PackedVector2Array()
 
@@ -355,38 +355,38 @@ func _draw_hex_badge(canvas: CanvasItem, center: Vector2, radius: float) -> void
 	# Subtle filled background
 	canvas.draw_colored_polygon(points_inner, Brand.with_alpha(Brand.PANEL_SOLID, 0.75))
 	# Outer border
-	canvas.draw_polyline(points_outer, Brand.with_alpha(Brand.ACCENT, 0.35), 1.5)
+	canvas.draw_polyline(points_outer, Brand.with_alpha(theme_color, 0.35), 1.5)
 	# Inner glowing border
-	canvas.draw_polyline(points_inner, Brand.with_alpha(Brand.ACCENT, 0.65), 1.2)
+	canvas.draw_polyline(points_inner, Brand.with_alpha(theme_color, 0.65), 1.2)
 	# Central glowing core node
 	var pulse: float = 0.7 + sin(_time * 2.0) * 0.3
-	canvas.draw_circle(center, 4.0, Brand.with_alpha(Brand.ACCENT, pulse * 0.8))
+	canvas.draw_circle(center, 4.0, Brand.with_alpha(theme_color, pulse * 0.8))
 	canvas.draw_circle(center, 1.5, Color.WHITE)
 
 
-func _draw_particles(canvas: CanvasItem) -> void:
+func _draw_particles(canvas: CanvasItem, theme_color: Color = Brand.ACCENT) -> void:
 	for p in _particles:
 		var color: Color
 		if p.color_type == 0:
-			color = Brand.with_alpha(Brand.ACCENT, p.alpha)
+			color = Brand.with_alpha(theme_color, p.alpha)
 		else:
-			color = Brand.with_alpha(Brand.WARNING, p.alpha * 0.8)
+			color = Brand.with_alpha(theme_color.lightened(0.35), p.alpha * 0.8)
 
 		var sz: float = p.size
 		canvas.draw_rect(Rect2(p.pos.x, p.pos.y, sz, sz), color)
 
 
-func _draw_scanbeam(canvas: CanvasItem, vp: Vector2) -> void:
+func _draw_scanbeam(canvas: CanvasItem, vp: Vector2, theme_color: Color = Brand.ACCENT) -> void:
 	var scan_y: float = fmod(_time * SCAN_SPEED, vp.y)
-	var beam_color := Brand.with_alpha(Brand.ACCENT, 0.05)
-	var glow_color := Brand.with_alpha(Brand.ACCENT, 0.015)
+	var beam_color := Brand.with_alpha(theme_color, 0.05)
+	var glow_color := Brand.with_alpha(theme_color, 0.015)
 
 	canvas.draw_rect(Rect2(0, scan_y - 6.0, vp.x, 12.0), glow_color)
 	canvas.draw_rect(Rect2(0, scan_y, vp.x, 1.5), beam_color)
 
 
-func _draw_border(canvas: CanvasItem, vp: Vector2) -> void:
-	var border_color := Brand.with_alpha(Brand.PANEL_BORDER, 0.45)
+func _draw_border(canvas: CanvasItem, vp: Vector2, theme_color: Color = Brand.ACCENT) -> void:
+	var border_color := Brand.with_alpha(theme_color.darkened(0.3), 0.35)
 	canvas.draw_rect(Rect2(0, 0, vp.x, 2), border_color)
 	canvas.draw_rect(Rect2(0, vp.y - 2, vp.x, 2), border_color)
 	canvas.draw_rect(Rect2(0, 0, 2, vp.y), border_color)
