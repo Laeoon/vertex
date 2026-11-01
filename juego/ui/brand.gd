@@ -20,6 +20,26 @@ const DANGER := Color("ff4757")
 const TEXT := Color("eaecf5")
 const TEXT_DIM := Color("8a90b8")
 
+## Branding de Modos de Juego (World Branding)
+const WORLD_HACKER := Color("39ff88")        # Verde terminal / infiltración
+const WORLD_CYBER := Color("00d2ff")         # Azul acuarela / cian ciberdefensa
+const WORLD_HEIST := Color("bf5af2")         # Morado / púrpura synthwave
+const WORLD_TUTORIALS := Color("64b5f6")     # Azul formativo neutro
+
+## Retorna el color insignia asociado a cada mundo
+static func get_world_color(world_id: String) -> Color:
+	match world_id.to_lower().strip_edges():
+		"hacker":
+			return WORLD_HACKER
+		"cybersecurity", "cyber", "defensa":
+			return WORLD_CYBER
+		"heist":
+			return WORLD_HEIST
+		"tutorials":
+			return WORLD_TUTORIALS
+		_:
+			return ACCENT
+
 ## Versión tenue del acento (bordes/subrayados discretos).
 static func accent_dim(alpha: float = 0.35) -> Color:
 	return Color(ACCENT.r, ACCENT.g, ACCENT.b, alpha)

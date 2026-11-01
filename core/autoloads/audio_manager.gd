@@ -48,6 +48,7 @@ var _world_music_playlists: Dictionary = {
 		"res://assets/audio/music/heist/DavidKBD - Pink Bloom Pack - 09 - Lightyear City.ogg",
 	],
 	"hacker": [
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 01 - Underbeat.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 06 - Electric Inferno-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 07 - Binary Chaos-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 02 - Behind the Darkness-loop.ogg",
@@ -60,7 +61,14 @@ var _world_music_playlists: Dictionary = {
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 12 - Faceless Crowd-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 13 - Between Everyone and Anyone-loop.ogg",
 		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 14 - There's Someone Here-loop.ogg",
-		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 01 - Underbeat.ogg",
+	],
+	"cybersecurity": [
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 08 - Sentinel Cloud-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 10 - Space Echoes-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 09 - Ghost Steps-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 12 - Faceless Crowd-loop.ogg",
+		"res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 13 - Between Everyone and Anyone-loop.ogg",
+		"res://assets/audio/music/heist/DavidKBD - Pink Bloom Pack - 05 - Western Cyberhorse.ogg",
 	],
 }
 
@@ -386,11 +394,7 @@ func play_world_music(world_id: String, track_index: int = -1, volume_db: float 
 	var normalized_world := world_id.to_lower().strip_edges()
 
 	if not _world_music_playlists.has(normalized_world):
-		# Fallback para mundos sin playlist específica (ej: cybersecurity usa pistas hacker/cyber)
-		if normalized_world == "cybersecurity":
-			normalized_world = "hacker"
-		else:
-			return
+		return
 
 	var playlist: Array = _world_music_playlists.get(normalized_world, [])
 	if playlist.is_empty():

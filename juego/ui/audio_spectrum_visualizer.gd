@@ -93,7 +93,7 @@ func _fetch_magnitudes_from_audio_server() -> PackedFloat32Array:
 	return result
 
 
-## Dibuja la onda simétrica centrada a lo largo del riel horizontal de nodos (idéntica a la referencia de pizarrón).
+## Dibuja la onda simétrica centrada a lo largo del riel horizontal de nodos (estilo pizarra).
 func draw_track_waveform(
 	canvas: CanvasItem,
 	from_pos: Vector2,
@@ -116,28 +116,62 @@ func draw_track_waveform(
 
 	var dx := total_span / float(slice_count - 1)
 
+	# Calcular métricas globales de energía del audio para propagación homogénea
+	var total_energy: float = 0.0
+	var bass_energy: float = 0.0
+	var mid_energy: float = 0.0
+	var high_energy: float = 0.0
+
+	var n_mags := _current_mags.size()
+	if n_mags > 0:
+		for b in range(n_mags):
+			var v := _current_mags[b]
+			total_energy += v
+			if b < n_mags / 4:
+				bass_energy += v
+			elif b < (n_mags * 3) / 4:
+				mid_energy += v
+			else:
+				high_energy += v
+
+		total_energy /= float(n_mags)
+		bass_energy /= maxf(1.0, float(n_mags / 4))
+		mid_energy /= maxf(1.0, float(n_mags / 2))
+		high_energy /= maxf(1.0, float(n_mags / 4))
+
 	# 1. Dibujar barras verticales simétricas densas
 	for i in range(slice_count):
 		var t := float(i) / float(slice_count - 1)
 		var x := start_x + float(i) * dx
 
-		# Mapear al espectro de frecuencias interpolado
-		var band_f := t * float(band_count - 1)
+		# Distribución homogénea: envolvente simétrica con centro en 0.5 (distancia al centro)
+		var dist_to_center := absf(t - 0.5) * 2.0  # 0.0 en el centro, 1.0 en los bordes
+
+		# Muestrear el espectro de frecuencias con espejado simétrico desde el centro
+		# para que ambos lados del riel respiren con la misma armonía
+		var sym_t := 1.0 - dist_to_center
+		var band_f := sym_t * float(band_count - 1)
 		var b_idx0 := clampi(int(floor(band_f)), 0, band_count - 1)
 		var b_idx1 := clampi(b_idx0 + 1, 0, band_count - 1)
 		var frac := band_f - float(b_idx0)
 
-		var m0 := _current_mags[b_idx0] if b_idx0 < _current_mags.size() else 0.0
-		var m1 := _current_mags[b_idx1] if b_idx1 < _current_mags.size() else 0.0
-		var mag := lerpf(m0, m1, frac)
+		var m0 := _current_mags[b_idx0] if b_idx0 < n_mags else 0.0
+		var m1 := _current_mags[b_idx1] if b_idx1 < n_mags else 0.0
+		var local_spec := lerpf(m0, m1, frac)
 
-		# Modular con armónicos viajeros de alta frecuencia
-		var ripple := sin(_time * 3.6 + t * 16.0) * 0.08 + cos(_time * 2.2 - t * 24.0) * 0.05
-		var energy := clampf(mag + ripple, 0.04, 1.0)
+		# Fusión homogénea:
+		# 40% espectro local simétrico + 35% bajo envolvente general + 25% medios/altos
+		var audio_envelope := local_spec * 0.40 + bass_energy * 0.35 + (mid_energy + high_energy) * 0.25
+
+		# Armónicos tácticos viajeros continuos para vibración homogénea sin saltos
+		var ripple := sin(_time * 3.2 + t * 18.0) * 0.07 + cos(_time * 2.1 - t * 26.0) * 0.05
+		var pulse_wave := sin(_time * 4.5 + t * 32.0) * (0.04 + high_energy * 0.08)
+
+		var energy := clampf(audio_envelope + ripple + pulse_wave, 0.05, 1.0)
 
 		# Suavizar caída en los extremos izquierdo y derecho
 		var edge_fade := sin(t * PI)
-		edge_fade = pow(edge_fade, 0.6) # Curva suave
+		edge_fade = pow(edge_fade, 0.55) # Transición natural en bordes
 		var h := energy * max_amplitude * edge_fade
 		h = maxf(h, 2.0)
 
@@ -151,12 +185,12 @@ func draw_track_waveform(
 		inner_bot_pts.append(Vector2(x, center_y + h * 0.45))
 
 		# Líneas verticales del ecualizador
-		var bar_alpha := clampf((0.20 + energy * 0.55) * alpha_mult * edge_fade, 0.05, 0.85)
+		var bar_alpha := clampf((0.18 + energy * 0.58) * alpha_mult * edge_fade, 0.05, 0.88)
 		var bar_col := BrandClass.with_alpha(theme_color, bar_alpha)
 		canvas.draw_line(Vector2(x, top_y), Vector2(x, bot_y), bar_col, 1.6)
 
 	# 2. Contorno superior e inferior brillante (líneas de envolvente)
-	var glow_col := BrandClass.with_alpha(Color("7bf1ff") if theme_color.g > 0.8 else theme_color.lightened(0.35), 0.85 * alpha_mult)
+	var glow_col := BrandClass.with_alpha(theme_color.lightened(0.40), 0.85 * alpha_mult)
 	var inner_col := BrandClass.with_alpha(theme_color, 0.40 * alpha_mult)
 
 	for j in range(top_pts.size() - 1):

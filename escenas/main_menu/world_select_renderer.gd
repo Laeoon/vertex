@@ -56,17 +56,7 @@ func get_card_rect(idx: int, vp: Vector2) -> Rect2:
 
 
 func get_world_color(world_id: String) -> Color:
-	match world_id:
-		"heist":
-			return BrandClass.SUCCESS
-		"hacker":
-			return BrandClass.ACCENT
-		"cybersecurity":
-			return BrandClass.WARNING
-		"tutorials":
-			return Color("64b5f6")
-		_:
-			return BrandClass.ACCENT
+	return BrandClass.get_world_color(world_id)
 
 
 func draw(

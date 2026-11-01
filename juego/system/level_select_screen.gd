@@ -33,8 +33,12 @@ func _ready() -> void:
 		SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
 		return
 	_load_world_data()
-	if get_node_or_null("/root/AudioManager") != null:
-		AudioManager.play_menu_music()
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null:
+		if am.has_method("play_world_music"):
+			am.play_world_music(world_id, 0)
+		elif am.has_method("play_menu_music"):
+			am.play_menu_music()
 	queue_redraw()
 
 
@@ -130,22 +134,13 @@ func _draw() -> void:
 	_cyber_bg.draw(self, vp)
 
 	# 1. Onda de audio reactiva y simétrica a lo largo del riel de nodos (estilo pizarra)
+	var theme_col: Color = Brand.get_world_color(world_id)
 	if level_nodes.size() > 0:
 		var first_pos := _get_node_position(level_nodes[0], 0)
 		var last_pos := _get_node_position(level_nodes[level_nodes.size() - 1], level_nodes.size() - 1)
-		var theme_col := Color("00f5d4")
-		match world_id:
-			"heist":
-				theme_col = Color("00f5d4")
-			"hacker":
-				theme_col = Color("00e5ff")
-			"cybersecurity":
-				theme_col = Color("ffb300")
-			_:
-				theme_col = Color("00f5d4")
 		_spectrum_viz.draw_track_waveform(self, first_pos, last_pos, theme_col, 85.0, 110, 0.85)
 
-	draw_string(font, Vector2(60, 50), world_title, HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, Color(0.0, 1.0, 0.83))
+	draw_string(font, Vector2(60, 50), world_title, HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, theme_col)
 	draw_string(font, Vector2(60, 75), "Selecciona un nivel", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.7, 0.75, 0.85))
 
 	_draw_connections()
@@ -183,8 +178,9 @@ func _draw_nodes(vp: Vector2) -> void:
 			border_color = Color(1.0, 0.95, 0.3)
 		elif unlocked:
 			var glow: float = 0.8 + sin(_pulse) * 0.2
-			node_color = Color(0.0, 0.9, 0.6, glow)
-			border_color = Color(0.0, 1.0, 0.83, glow)
+			var world_color: Color = Brand.get_world_color(world_id)
+			node_color = Brand.with_alpha(world_color.darkened(0.2), glow)
+			border_color = Brand.with_alpha(world_color, glow)
 		else:
 			node_color = Color(0.15, 0.17, 0.22, 0.6)
 			border_color = Color(0.25, 0.27, 0.32, 0.5)
