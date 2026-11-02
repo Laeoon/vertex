@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suite de Diagramas y Persistencia — VERTEX</title>
+<style>
+  :root {
+    --primary: #0f172a;
+    --primary-light: #1e3a8a;
+    --accent: #2563eb;
+    --bg-main: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.5;
+  }
+  header {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  }
+  .header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header-left h1 {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .header-left p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--primary-light);
+    color: #ffffff;
+    padding: 7px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover {
+    background: #172554;
+  }
+  .btn-outline {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid var(--border);
+    padding: 7px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .btn-outline:hover {
+    background: #f1f5f9;
+  }
+
+  /* Navigation Bar / Tabs */
+  .nav-tabs-wrapper {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .nav-tabs {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    padding: 0 24px;
+    list-style: none;
+    gap: 4px;
+  }
+  .nav-tabs button {
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .nav-tabs button:hover {
+    color: var(--primary);
+  }
+  .nav-tabs button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Main Layout */
+  main {
+    max-width: 1400px;
+    margin: 20px auto 40px auto;
+    padding: 0 24px;
+  }
+  .diagram-card {
+    display: none;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  }
+  .diagram-card.active {
+    display: block;
+  }
+  .card-header {
+    margin-bottom: 14px;
+  }
+  .card-header .figure-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .card-header h2 {
+    font-size: 19px;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+  .card-header p {
+    font-size: 13.5px;
+    color: var(--text-muted);
+  }
+  .desc-box {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: justify;
+    color: #1e293b;
+    margin-bottom: 18px;
+    padding: 14px 18px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-light);
+  }
+  .svg-viewport {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    margin-bottom: 14px;
+  }
+  .diagram-img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .card-links {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .card-footer a {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .card-footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="header-left">
+      <h1>VERTEX — Suite de Diagramas</h1>
+      <p>Modelado de Arquitectura, Flujos de Ciberseguridad y Persistencia (Figuras 1 a 7)</p>
+    </div>
+    <div class="header-actions">
+      <a href="VERTEX_Diagramas_Arquitectura_UML.pdf" class="btn-primary" download>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar Suite en PDF
+      </a>
+      <a href="diccionario_de_datos.html" class="btn-outline">
+        Diccionario de Datos
+      </a>
+      <a href="especificacion_casos_de_uso.md" class="btn-outline">
+        Requerimientos y Casos de Uso (.MD)
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="nav-tabs-wrapper">
+  <ul class="nav-tabs">
+    <li><button class="active" onclick="showTab(0)">Fig 1: CU General</button></li>
+    <li><button class="" onclick="showTab(1)">Fig 2: Secuencia Blue Team</button></li>
+    <li><button class="" onclick="showTab(2)">Fig 3: Actividades Defensa</button></li>
+    <li><button class="" onclick="showTab(3)">Fig 4: Actividades Hacker</button></li>
+    <li><button class="" onclick="showTab(4)">Fig 5: Clases Arquitectura</button></li>
+    <li><button class="" onclick="showTab(5)">Fig 6: Modelo ERD (Persistencia)</button></li>
+    <li><button class="" onclick="showTab(6)">Fig 7: FSM Dual (Estados)</button></li>
+  </ul>
+</div>
+
+<main id="tab-container">
+
+  <div class="diagram-card active" id="card-0">
+    <div class="card-header">
+      <span class="figure-badge">Figura 1 • Casos de Uso General</span>
+      <h2>Diagrama de Casos de Uso General del Sistema</h2>
+      <p>Delimitación Perimetral, Actores del Dominio y Orquestación Táctica (UML 2.5)</p>
+    </div>
+    <div class="desc-box">
+      <p>Delimita el perímetro del sistema frente al actor principal (Operador) y los servicios secundarios (Adversario IA y Persistencia I/O). Modela la gestión de ranuras, la academia táctica, los tres modos operacionales (Heist, Hacker y Ciberdefensa) y las extensiones funcionales de contramedidas.</p>
+    </div>
+    <div class="svg-viewport">
+      <img src="svg/figura_1_casos_de_uso_general.svg" alt="Diagrama de Casos de Uso General del Sistema" class="diagram-img">
+    </div>
+    <div class="card-footer">
+      <span>Vista interactiva vectorial • Sistema VERTEX</span>
+      <div class="card-links">
+        <a href="figura_1_casos_de_uso_general.html" target="_blank">Abrir en Pestaña Independiente &nearr;</a>
+        <a href="figura_1_casos_de_uso_general.pdf" download>Descargar PDF Individual &darr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card" id="card-1">
+    <div class="card-header">
+      <span class="figure-badge">Figura 2 • Dinámica Temporal</span>
+      <h2>Diagrama de Secuencia del Ciclo Reactivo de Ciberdefensa</h2>
+      <p>Interacción Temporal, Concurrencia y Resolución Heurística Blue Team</p>
+    </div>
+    <div class="desc-box">
+      <p>Modela el ciclo reactivo: evento de bloqueo en InputHandler, delegación a GameLogic, sellado de aristas en NetworkRuntime, resolución adversaria en DefenderBrain con rastreo EDR, respuesta de la IA (movimiento lateral o Bypass) y actualización visual en GameRenderer.</p>
+    </div>
+    <div class="svg-viewport">
+      <img src="svg/figura_2_secuencia_ciberdefensa.svg" alt="Diagrama de Secuencia del Ciclo Reactivo de Ciberdefensa" class="diagram-img">
+    </div>
+    <div class="card-footer">
+      <span>Vista interactiva vectorial • Sistema VERTEX</span>
+      <div class="card-links">
+        <a href="figura_2_secuencia_ciberdefensa.html" target="_blank">Abrir en Pestaña Independiente &nearr;</a>
+        <a href="figura_2_secuencia_ciberdefensa.pdf" download>Descargar PDF Individual &darr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card" id="card-2">
+    <div class="card-header">
+      <span class="figure-badge">Figura 3 • Comportamiento y Procesos</span>
+      <h2>Diagrama de Actividades de Ciberdefensa (Procesos)</h2>
+      <p>Flujo de Control, Evaluación de Contramedidas y Mitigación de Brechas</p>
+    </div>
+    <div class="desc-box">
+      <p>Ilustra el proceso de defensa perimetral: inicio de asedio, ramificación condicional de acciones (bloqueo, firewall o cuarentena), búsqueda de caminos de la IA, contingencia ante Bypass, umbral de rastreo forense (Trace EDR >= 100%) y nodos finales de victoria o brecha.</p>
+    </div>
+    <div class="svg-viewport">
+      <img src="svg/figura_3_actividades_ciberdefensa.svg" alt="Diagrama de Actividades de Ciberdefensa (Procesos)" class="diagram-img">
+    </div>
+    <div class="card-footer">
+      <span>Vista interactiva vectorial • Sistema VERTEX</span>
+      <div class="card-links">
+        <a href="figura_3_actividades_ciberdefensa.html" target="_blank">Abrir en Pestaña Independiente &nearr;</a>
+        <a href="figura_3_actividades_ciberdefensa.pdf" download>Descargar PDF Individual &darr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card" id="card-3">
+    <div class="card-header">
+      <span class="figure-badge">Figura 4 • Operaciones Red Team</span>
+      <h2>Diagrama de Actividades de Infiltración Ofensiva (Modo Hacker)</h2>
+      <p>Ciclo Operacional Red Team, Telemetría de Ruido y Balance de Sigilo</p>
+    </div>
+    <div class="desc-box">
+      <p>Describe la secuencia de infiltración ofensiva: reconocimiento pasivo Nmap, consumo de exploits tácticos (Bypass, Escalate, Persist, Decoy), acumulación de ruido en la red perimetral, despacho de perseguidores centinela y finalización con calificación por estrellas.</p>
+    </div>
+    <div class="svg-viewport">
+      <img src="svg/figura_4_actividades_hacker.svg" alt="Diagrama de Actividades de Infiltración Ofensiva (Modo Hacker)" class="diagram-img">
+    </div>
+    <div class="card-footer">
+      <span>Vista interactiva vectorial • Sistema VERTEX</span>
+      <div class="card-links">
+        <a href="figura_4_actividades_hacker.html" target="_blank">Abrir en Pestaña Independiente &nearr;</a>
+        <a href="figura_4_actividades_hacker.pdf" download>Descargar PDF Individual &darr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card" id="card-4">
+    <div class="card-header">
+      <span class="figure-badge">Figura 5 • Estructura de Software</span>
+      <h2>Diagrama de Clases de Arquitectura (UML 2.5)</h2>
+      <p>Diseño Data-Driven, Separación de Capas y Acoplamiento Unidireccional</p>
+    </div>
+    <div class="desc-box">
+      <p>Modela la separación de responsabilidades entre recursos inmutables del grafo (.tres), capa de mutación en memoria (NetworkRuntime), algoritmos deterministas independientes (DefensivePathfinder con Dijkstra y StrategicAnalyzer con Edmonds-Karp), y controladores de dominio y presentación.</p>
+    </div>
+    <div class="svg-viewport">
+      <img src="svg/figura_5_clases_arquitectura.svg" alt="Diagrama de Clases de Arquitectura (UML 2.5)" class="diagram-img">
+    </div>
+    <div class="card-footer">
+      <span>Vista interactiva vectorial • Sistema VERTEX</span>
+      <div class="card-links">
+        <a href="figura_5_clases_arquitectura.html" target="_blank">Abrir en Pestaña Independiente &nearr;</a>
+        <a href="figura_5_clases_arquitectura.pdf" download>Descargar PDF Individual &darr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card" id="card-5">
+    <div class="card-header">
+      <span class="figure-badge">Figura 6 • Persistencia y Modelo ERD</span>
+      <h2>Diagrama Entidad-Relación y Modelo de Persistencia (Crow's Foot)</h2>
+      <p>Esquema Transaccional, Aislamiento Multi-Slot y Rotación de Instantáneas</p>
+    </div>
+    <div class="desc-box">
+      <p>Estructura el modelo de persistencia jerárquico y desacoplado en user://: meta-registro SlotMeta, aislamiento de ranuras 1..3 en SaveSlot, perfil del analista Profile, progresión por escenario LevelProgress, métricas históricas GlobalStats y LevelStats, condecoraciones BadgeRecord y políticas de snapshots rotativos SlotSnapshot.</p>
+    </div>
+    <div class="svg-viewport">
+      <img src="svg/figura_6_modelo_datos_persistencia.svg" alt="Diagrama Entidad-Relación y Modelo de Persistencia (Crow's Foot)" class="diagram-img">
+    </div>
+    <div class="card-footer">
+      <span>Vista interactiva vectorial • Sistema VERTEX</span>
+      <div class="card-links">
+        <a href="figura_6_modelo_datos_persistencia.html" target="_blank">Abrir en Pestaña Independiente &nearr;</a>
+        <a href="figura_6_modelo_datos_persistencia.pdf" download>Descargar PDF Individual &darr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card" id="card-6">
+    <div class="card-header">
+      <span class="figure-badge">Figura 7 • Autómata de Estados</span>
+      <h2>Diagrama de Máquina de Estados FSM (Dual)</h2>
+      <p>Ciclo de Vida de Nodos de Red y Autómata Reactivo del Adversario</p>
+    </div>
+    <div class="desc-box">
+      <p>Modela la dinámica dual de autómatas finitos: en la partición superior, el ciclo de vida del nodo de red (Normal, Bloqueado, Infectado y Cuarentena); en la partición inferior, el motor de decisiones del adversario IA gobernado por detección de aristas y contención hacia estados terminales.</p>
+    </div>
+    <div class="svg-viewport">
+      <img src="svg/figura_7_estados_fsm.svg" alt="Diagrama de Máquina de Estados FSM (Dual)" class="diagram-img">
+    </div>
+    <div class="card-footer">
+      <span>Vista interactiva vectorial • Sistema VERTEX</span>
+      <div class="card-links">
+        <a href="figura_7_estados_fsm.html" target="_blank">Abrir en Pestaña Independiente &nearr;</a>
+        <a href="figura_7_estados_fsm.pdf" download>Descargar PDF Individual &darr;</a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function showTab(idx) {
+    const tabs = document.querySelectorAll('.nav-tabs button');
+    const cards = document.querySelectorAll('.diagram-card');
+    tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+    cards.forEach((c, i) => c.classList.toggle('active', i === idx));
+  }
+</script>
+
+</body>
+</html>

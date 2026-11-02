@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diccionario de Datos — Sistema VERTEX</title>
+<style>
+  :root {
+    --primary: #0f172a;
+    --primary-light: #1e3a8a;
+    --accent: #2563eb;
+    --bg-main: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .article-container {
+    max-width: 1100px;
+    width: 100%;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    line-height: 1.65;
+    font-size: 15.5px;
+    text-align: justify;
+    box-sizing: border-box;
+  }
+  .header-tag {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--primary-light);
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 24px;
+    color: var(--primary);
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+  }
+  .subtitle {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+  h2 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 18px;
+    color: var(--primary);
+    margin: 32px 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--border);
+  }
+  .entity-meta {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .entity-meta code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 28px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+  }
+  th {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-top: 1px solid #0f172a;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: #334155;
+    vertical-align: middle;
+  }
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-pk {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .badge-fk {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .badge-notnull {
+    background: #f1f5f9;
+    color: #475569;
+  }
+  .code-col {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .btn-bar {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .btn:hover {
+    background: #1e293b;
+  }
+  .btn-secondary {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+  }
+  .btn-secondary:hover {
+    background: #f1f5f9;
+  }
+</style>
+</head>
+<body>
+
+<div class="article-container">
+  <h1>Diccionario de Datos del Sistema VERTEX</h1>
+  <div class="subtitle">Especificación Exhaustiva del Subsistema de Persistencia y Aislamiento Multi-Slot (user://)</div>
+
+  <p>
+    El presente <strong>Diccionario de Datos</strong> describe de manera formal la arquitectura de persistencia jerárquica y desacoplada del sistema <strong>VERTEX</strong>. La estructura está compuesta por ocho entidades maestras gobernadas por el administrador de ranuras <code>SlotManager</code> mediante archivos <code>ConfigFile</code> en <code>user://</code>, garantizando aislamiento total entre perfiles de usuario, integridad de registros históricos, resiliencia transaccional y rotación de copias de seguridad.
+  </p>
+
+  <!-- 1. SlotMeta -->
+  <h2>1. Entidad: SlotMeta (Metadatos Globales de Ranuras)</h2>
+  <div class="entity-meta"><strong>Archivo Físico:</strong> <code>user://slots.cfg</code> | <strong>Sección:</strong> <code>[slots]</code> | <strong>Ámbito:</strong> Global del Sistema</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">config_id</td>
+        <td>String</td>
+        <td>32 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK</span></td>
+        <td><code>"meta_global"</code></td>
+        <td>Identificador único del archivo maestro de metadatos.</td>
+      </tr>
+      <tr>
+        <td class="code-col">active_slot</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>1</code></td>
+        <td>Puntero al índice de la ranura actualmente activa. Restringido a [1, 3].</td>
+      </tr>
+      <tr>
+        <td class="code-col">migrated_legacy</td>
+        <td>bool</td>
+        <td>Boolean (0/1)</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>false</code></td>
+        <td>Flag que certifica la migración atómica de saves planos anteriores a la versión multi-slot.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 2. SaveSlot -->
+  <h2>2. Entidad: SaveSlot (Contenedor de Ranura de Guardado)</h2>
+  <div class="entity-meta"><strong>Ubicación Física:</strong> <code>user://slots/slot_X/</code> | <strong>Ámbito:</strong> Ranura Aislada (1..3)</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">slot_id</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK</span></td>
+        <td>N/A</td>
+        <td>Número ordinal que identifica inequívocamente la ranura.</td>
+      </tr>
+      <tr>
+        <td class="code-col">is_empty</td>
+        <td>bool</td>
+        <td>Boolean (0/1)</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>true</code></td>
+        <td>Indica si la ranura está vacía o contiene un perfil activo en uso.</td>
+      </tr>
+      <tr>
+        <td class="code-col">updated_at</td>
+        <td>int</td>
+        <td>Unix Epoch (seg)</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Marca de tiempo de la última operación de escritura atómica sobre la ranura.</td>
+      </tr>
+      <tr>
+        <td class="code-col">cached_stars</td>
+        <td>int</td>
+        <td><code>0 .. 45</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Caché rápida del total acumulado de estrellas obtenidas, para lectura ágil sin I/O pesado.</td>
+      </tr>
+      <tr>
+        <td class="code-col">slot_path</td>
+        <td>String</td>
+        <td>128 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>"user://slots/slot_X"</code></td>
+        <td>Ruta física normalizada del directorio de la ranura.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 3. Profile -->
+  <h2>3. Entidad: Profile (Identidad del Operador / Analista)</h2>
+  <div class="entity-meta"><strong>Archivo Físico:</strong> <code>user://slots/slot_X/profile.cfg</code> | <strong>Sección:</strong> <code>[profile]</code></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">profile_id</td>
+        <td>String</td>
+        <td>36 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK</span></td>
+        <td>UUID v4</td>
+        <td>Identificador único del expediente del operador.</td>
+      </tr>
+      <tr>
+        <td class="code-col">slot_id</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-fk">FK</span></td>
+        <td>N/A</td>
+        <td>Clave foránea hacia <code>SaveSlot.slot_id</code>.</td>
+      </tr>
+      <tr>
+        <td class="code-col">player_name</td>
+        <td>String</td>
+        <td>1 a 32 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>"Operador"</code></td>
+        <td>Alias táctico del usuario. Se valida contra inyecciones y caracteres no imprimibles.</td>
+      </tr>
+      <tr>
+        <td class="code-col">avatar_icon</td>
+        <td>String</td>
+        <td>32 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>"agent_blue"</code></td>
+        <td>Clave de textura para renderizado del avatar en el HUD y menús.</td>
+      </tr>
+      <tr>
+        <td class="code-col">theme_color</td>
+        <td>String</td>
+        <td>7 caracteres (#HEX)</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>"#00E5FF"</code></td>
+        <td>Color hexadecimal utilizado para personalizar el HUD y trazos del grafo.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 4. LevelProgress -->
+  <h2>4. Entidad: LevelProgress (Progresión de Niveles y Calificación)</h2>
+  <div class="entity-meta"><strong>Archivo Físico:</strong> <code>user://slots/slot_X/progress.cfg</code> | <strong>Sección:</strong> <code>[estrellas]</code></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">level_key</td>
+        <td>String</td>
+        <td>32 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK Comp.</span></td>
+        <td>N/A</td>
+        <td>Identificador canónico del nivel táctico (ej. <code>"sector_0_1"</code>).</td>
+      </tr>
+      <tr>
+        <td class="code-col">slot_id</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-fk">FK Comp.</span></td>
+        <td>N/A</td>
+        <td>Clave foránea hacia <code>SaveSlot.slot_id</code>.</td>
+      </tr>
+      <tr>
+        <td class="code-col">stars</td>
+        <td>int</td>
+        <td><code>0 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Estrellas de maestría obtenidas según la optimización del coste de aristas.</td>
+      </tr>
+      <tr>
+        <td class="code-col">mejor_coste</td>
+        <td>float</td>
+        <td>Flotante $\ge 0.0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0.0</code></td>
+        <td>Mejor coste computado por el algoritmo Dijkstra para resolver el escenario.</td>
+      </tr>
+      <tr>
+        <td class="code-col">completed</td>
+        <td>bool</td>
+        <td>Boolean (0/1)</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>false</code></td>
+        <td>Indica si el escenario ha sido superado (<code>stars > 0</code>), desbloqueando los subsiguientes.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 5. GlobalStats -->
+  <h2>5. Entidad: GlobalStats (Métricas Globales de Rendimiento)</h2>
+  <div class="entity-meta"><strong>Archivo Físico:</strong> <code>user://slots/slot_X/stats.cfg</code> | <strong>Sección:</strong> <code>[stats]</code></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">stats_id</td>
+        <td>String</td>
+        <td>32 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK</span></td>
+        <td><code>"stats_main"</code></td>
+        <td>Identificador único del registro de estadísticas de la ranura.</td>
+      </tr>
+      <tr>
+        <td class="code-col">slot_id</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-fk">FK</span></td>
+        <td>N/A</td>
+        <td>Clave foránea hacia <code>SaveSlot.slot_id</code>.</td>
+      </tr>
+      <tr>
+        <td class="code-col">total_wins</td>
+        <td>int</td>
+        <td>$\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Total acumulado de victorias conseguidas en cualquiera de los modos de juego.</td>
+      </tr>
+      <tr>
+        <td class="code-col">total_losses</td>
+        <td>int</td>
+        <td>$\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Total acumulado de derrotas (infección total de núcleo o captura hostil).</td>
+      </tr>
+      <tr>
+        <td class="code-col">best_streak</td>
+        <td>int</td>
+        <td>$\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Racha máxima de victorias consecutivas sin interrupción de derrotas.</td>
+      </tr>
+      <tr>
+        <td class="code-col">total_attempts</td>
+        <td>int</td>
+        <td>$\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Cantidad total de intentos de partida iniciados por el operador.</td>
+      </tr>
+      <tr>
+        <td class="code-col">play_time</td>
+        <td>int</td>
+        <td>Segundos $\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Tiempo neto de simulación activa en segundos transcurridos.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 6. LevelStats -->
+  <h2>6. Entidad: LevelStats (Métricas Discretas por Nivel)</h2>
+  <div class="entity-meta"><strong>Archivo Físico:</strong> <code>user://slots/slot_X/stats.cfg</code> | <strong>Sección:</strong> <code>[levels]</code></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">level_key</td>
+        <td>String</td>
+        <td>32 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK Comp.</span></td>
+        <td>N/A</td>
+        <td>Identificador canónico del nivel evaluado.</td>
+      </tr>
+      <tr>
+        <td class="code-col">slot_id</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-fk">FK Comp.</span></td>
+        <td>N/A</td>
+        <td>Clave foránea hacia <code>SaveSlot.slot_id</code>.</td>
+      </tr>
+      <tr>
+        <td class="code-col">wins</td>
+        <td>int</td>
+        <td>$\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Conteo de victorias en este escenario específico.</td>
+      </tr>
+      <tr>
+        <td class="code-col">losses</td>
+        <td>int</td>
+        <td>$\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Conteo de derrotas en este escenario específico.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 7. BadgeRecord -->
+  <h2>7. Entidad: BadgeRecord (Registro de Méritos e Insignias)</h2>
+  <div class="entity-meta"><strong>Subsistema:</strong> <code>BadgeRegistry</code> | <strong>Ámbito:</strong> Sincronizada en Perfil</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">badge_id</td>
+        <td>String</td>
+        <td>32 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK Comp.</span></td>
+        <td>N/A</td>
+        <td>Clave única de la condecoración (ej. <code>"first_clear"</code>, <code>"speed_demon"</code>).</td>
+      </tr>
+      <tr>
+        <td class="code-col">slot_id</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-fk">FK Comp.</span></td>
+        <td>N/A</td>
+        <td>Clave foránea hacia <code>SaveSlot.slot_id</code>.</td>
+      </tr>
+      <tr>
+        <td class="code-col">unlocked</td>
+        <td>bool</td>
+        <td>Boolean (0/1)</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>false</code></td>
+        <td>Estado del mérito (verdadero si se ha alcanzado la meta).</td>
+      </tr>
+      <tr>
+        <td class="code-col">current_metric</td>
+        <td>int</td>
+        <td>$\ge 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>0</code></td>
+        <td>Valor de avance registrado hacia la condición de adjudicación.</td>
+      </tr>
+      <tr>
+        <td class="code-col">target_metric</td>
+        <td>int</td>
+        <td>$> 0$</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>1</code></td>
+        <td>Meta cuantitativa que dispara el desbloqueo del mérito.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 8. SlotSnapshot -->
+  <h2>8. Entidad: SlotSnapshot (Snapshots Atómicos Rotativos)</h2>
+  <div class="entity-meta"><strong>Ubicación Física:</strong> <code>user://slots/slot_X/backups/</code> | <strong>Ámbito:</strong> Ranura Aislada</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Campo / Clave</th>
+        <th>Tipo Físico</th>
+        <th>Rango / Dominio</th>
+        <th>Restricción</th>
+        <th>Clave</th>
+        <th>Default</th>
+        <th>Descripción y Reglas de Integridad</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="code-col">snapshot_name</td>
+        <td>String</td>
+        <td>64 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-pk">PK</span></td>
+        <td>N/A</td>
+        <td>Identificador de carpeta con patrón <code>snapshot_&lt;timestamp&gt;_&lt;tag&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td class="code-col">slot_id</td>
+        <td>int</td>
+        <td><code>1 .. 3</code></td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td><span class="badge badge-fk">FK</span></td>
+        <td>N/A</td>
+        <td>Clave foránea hacia <code>SaveSlot.slot_id</code>.</td>
+      </tr>
+      <tr>
+        <td class="code-col">tag</td>
+        <td>String</td>
+        <td>16 caracteres</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>"auto"</code></td>
+        <td>Etiqueta funcional del respaldo (<code>"auto"</code>, <code>"pre_delete"</code>, <code>"manual"</code>).</td>
+      </tr>
+      <tr>
+        <td class="code-col">timestamp</td>
+        <td>int</td>
+        <td>Unix Epoch (seg)</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td>N/A</td>
+        <td>Marca de tiempo exacta de generación del snapshot.</td>
+      </tr>
+      <tr>
+        <td class="code-col">files_archived</td>
+        <td>Array[String]</td>
+        <td>3 elementos</td>
+        <td><span class="badge badge-notnull">NOT NULL</span></td>
+        <td>Atributo</td>
+        <td><code>[3 files]</code></td>
+        <td>Copia atómica de los tres archivos maestros (<code>progress.cfg</code>, <code>profile.cfg</code>, <code>stats.cfg</code>).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="btn-bar">
+    <div class="nav-group">
+      <a href="index.html" class="btn btn-secondary">&larr; Volver al Índice General</a>
+      <a href="figura_6_modelo_datos_persistencia.html" class="btn btn-secondary">Ver Diagrama E-R (Figura 6)</a>
+    </div>
+    <div class="nav-group">
+      <a href="especificacion_casos_de_uso.html" class="btn">Ver Especificación de Requerimientos &rarr;</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

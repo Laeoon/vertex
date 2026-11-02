@@ -2,54 +2,141 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Figura 3. Diagrama de Actividades de Ciberdefensa - Sistema VERTEX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Figura 3. Diagrama de Actividades de Ciberdefensa — Sistema VERTEX</title>
 <style>
+  :root {
+    --primary: #0f172a;
+    --primary-light: #1e3a8a;
+    --accent: #2563eb;
+    --bg-main: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+  * {
+    box-sizing: border-box;
+  }
   body {
     margin: 0;
-    padding: 50px 20px;
-    background: #ffffff;
-    color: #111827;
+    padding: 40px 20px;
+    background: var(--bg-main);
+    color: var(--text-main);
     font-family: 'Times New Roman', Times, Georgia, serif;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
   .article-container {
-    max-width: 900px;
+    max-width: 980px;
     width: 100%;
-    line-height: 1.6;
-    font-size: 15px;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    line-height: 1.65;
+    font-size: 15.5px;
     text-align: justify;
+    box-sizing: border-box;
   }
-  .figure-caption {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: #374151;
-    text-align: center;
-    margin-top: 15px;
-    font-style: italic;
-  }
-  .figure-caption strong {
-    font-style: normal;
+  .header-tag {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 12px;
     font-weight: 700;
-    color: #111827;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--primary-light);
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 22px;
+    color: var(--primary);
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+  }
+  .subtitle {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
   }
   .diagram-box {
     width: 100%;
-    border: 1px solid #d1d5db;
-    background: #fafafa;
-    border-radius: 4px;
-    padding: 25px 15px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
     box-sizing: border-box;
     display: flex;
     justify-content: center;
+    overflow-x: auto;
+    margin: 24px 0 14px 0;
+  }
+  .diagram-box svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .figure-caption {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    color: #475569;
+    text-align: center;
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .figure-caption strong {
+    font-style: normal;
+    color: #0f172a;
+  }
+  .btn-bar {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+  }
+  .nav-group {
+    display: flex;
+    gap: 8px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .btn:hover {
+    background: #1e293b;
+  }
+  .btn-secondary {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+  }
+  .btn-secondary:hover {
+    background: #f1f5f9;
   }
 </style>
 </head>
 <body>
 
 <div class="article-container">
+  <h1>Figura 3. Diagrama de Actividades de Ciberdefensa (Procesos)</h1>
+  <div class="subtitle">Flujo de Control, Evaluación de Contramedidas y Mitigación de Brechas</div>
   <p>
     La <strong>Figura 3</strong> ilustra el <strong>diagrama de actividades (flujo de proceso)</strong> del ciclo de defensa perimetral según el estándar UML. El proceso modela el nodo inicial de inicio de asedio, la bifurcación condicional de acciones del operador (bloqueo de arista, colocación de firewall permanente o aislamiento de host en cuarentena), la resolución del turno de la Inteligencia Artificial mediante búsqueda de camino, la evaluación de contingencia por exploit <code>Bypass</code>, la ramificación de decisión por estado de rastreo forense (Trace EDR &ge; 100%) y los nodos finales de actividad correspondientes a la victoria por mitigación o la derrota por brecha en el Núcleo.
   </p>
@@ -173,9 +260,20 @@
     </svg>
   </div>
 
-  <p class="figure-caption">
+  <div class="figure-caption">
     <strong>Figura 3.</strong> Diagrama de actividades del ciclo de resolución de Ciberdefensa según estándar UML.
-  </p>
+  </div>
+
+  <div class="btn-bar">
+    <div class="nav-group">
+      <a href="figura_2_secuencia_ciberdefensa.html" class="btn btn-secondary">&larr; Anterior: Figura 2</a>
+      <a href="index.html" class="btn btn-secondary">Índice General</a>
+    </div>
+    <div class="nav-group">
+      <a href="figura_3_actividades_ciberdefensa.pdf" class="btn btn-secondary" download>Descargar PDF</a>
+      <a href="figura_4_actividades_hacker.html" class="btn">Siguiente: Figura 4 &rarr;</a>
+    </div>
+  </div>
 </div>
 
 </body>

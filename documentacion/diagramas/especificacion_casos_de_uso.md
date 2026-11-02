@@ -1,10 +1,65 @@
-# Especificación de Casos de Uso (UML 2.5) — Proyecto VERTEX
+# Especificación de Requerimientos y Casos de Uso (UML 2.5) — Proyecto VERTEX
 
-Documento formal de especificación de requerimientos funcionales y descomposición en Casos de Uso bajo estándares de ingeniería de software corporativa.
+Documento formal de especificación de ingeniería de software corporativa: catálogo de requerimientos del sistema, taxonomía de actores, matriz de trazabilidad y especificación detallada de Casos de Uso bajo el estándar UML 2.5.
 
 ---
 
-## 1. Identificación y Taxonomía de Actores
+## 1. Requerimientos del Sistema (Catálogo Formal)
+
+### 1.1 Requerimientos Funcionales (RF)
+
+| Código | Denominación del Requerimiento | Prioridad | Descripción Operativa y Criterios de Aceptación |
+|---|---|:---:|---|
+| **`RF-01`** | **Aislamiento Multi-Slot** | Alta | El sistema debe proveer tres ranuras independientes de guardado (`slot_1`, `slot_2`, `slot_3`) en `user://slots/`, garantizando que las modificaciones de un perfil no afecten el estado ni el historial de los demás. |
+| **`RF-02`** | **Gestión de Identidad de Operador** | Media | Permitir la captura, edición y persistencia del expediente de usuario: alias táctico (1 a 32 caracteres alfanuméricos), icono de avatar y paleta de color de interfaz en `profile.cfg`. |
+| **`RF-03`** | **Módulo de Capacitación y Academia** | Alta | Disponer de tutoriales interactivos que instruyan al analista en topología de redes, peso de aristas, cálculo de caminos mínimos y respuesta ante incidentes. |
+| **`RF-04`** | **Simulación Táctica Modo Heist** | Alta | Ejecutar misiones de infiltración física donde el operador navega nodos de red evitando patrullas estocásticas y optimizando el coste de paso. |
+| **`RF-05`** | **Simulación Ofensiva Modo Hacker** | Alta | Proveer un entorno de operaciones Red Team con consumo de exploits (`Bypass`, `Escalate`, `Persist`, `Decoy`) y balance en tiempo real del nivel de ruido acústico/digital perimetral. |
+| **`RF-06`** | **Defensa Reactiva Blue Team** | Crítica | Modelar el ciclo defensivo donde el analista bloquea aristas mientras el adversario (IA con algoritmo Dijkstra) busca vulnerar el nodo Core, computando simultáneamente el avance forense Trace EDR. |
+| **`RF-07`** | **Declaración de Cuarentena** | Media | Permitir aislar nodos de red sospechosos o infectados mediante comando táctico, anulando temporalmente su conectividad lógica. |
+| **`RF-08`** | **Intercepción de Rutas Críticas** | Media | Analizar y revelar caminos óptimos del atacante mediante teoría de flujo máximo y corte mínimo (algoritmo Edmonds-Karp). |
+| **`RF-09`** | **Códex Táctico de Ciberseguridad** | Baja | Ofrecer una base de datos de conocimiento consultable con definiciones formales de vectores de ataque, conceptos de grafos y glosario de ciberseguridad. |
+| **`RF-10`** | **Analítica y Progresión por Estrellas** | Alta | Evaluar y registrar automáticamente el desempeño del operador (1 a 3 estrellas, menor coste de camino, victorias y derrotas) en `progress.cfg` y `stats.cfg`. |
+| **`RF-11`** | **Registro de Méritos y Condecoraciones** | Media | Auditar métricas de partida contra el registro `BadgeRegistry` para adjudicar insignias operacionales al cumplir metas de carrera. |
+| **`RF-12`** | **Respaldo Atómico y Recuperación** | Alta | Ejecutar snapshots preventivos automáticos (máximo 5 rotativos) antes de operaciones destructivas de ranura, con soporte de restauración íntegra. |
+
+---
+
+### 1.2 Requerimientos No Funcionales (RNF)
+
+| Código | Atributo de Calidad | Categoría | Especificación Técnica y Métrica Verificable |
+|---|---|:---:|---|
+| **`RNF-01`** | **Rendimiento Algorítmico** | Eficiencia | Los algoritmos de búsqueda de caminos sobre el grafo (Dijkstra y Edmonds-Karp) deben resolver el turno de la IA en un tiempo inferior a **16 milisegundos** ($< 1$ cuadro a 60 FPS) para grafos de hasta 100 nodos. |
+| **`RNF-02`** | **Persistencia Transaccional** | Confiabilidad | El guardado en disco mediante `ConfigFile` debe ser atómico y resistente a cortes de energía, implementando validación de cabeceras mágicas y respaldo previo a la mutación. |
+| **`RNF-03`** | **Aislamiento en Sandboxing** | Seguridad | Todas las operaciones de I/O deben quedar confinadas estrictamente al directorio `user://` del sistema operativo, impidiendo cualquier acceso o lectura a directorios del sistema anfitrión. |
+| **`RNF-04`** | **Integridad de Datos** | Robustez | Los valores de configuración numérica (estrellas, ranuras activas, volumen) deben estar acotados por aserciones y restricciones de dominio (`slot_id \in [1, 3]`, `stars \in [0, 3]`). |
+| **`RNF-05`** | **Portabilidad del Sistema** | Portabilidad | La plataforma debe compilar y ejecutarse de manera homogénea en sistemas operativos GNU/Linux x86_64, Microsoft Windows 10/11 y exportación web HTML5/WebAssembly sin alterar la lógica central. |
+| **`RNF-06`** | **Diseño Data-Driven** | Mantenibilidad | Las topologías de red, escenarios y especificaciones de nodos deben residir como recursos inmutables desacoplados (`.tres`), separando la definición de datos de la lógica ejecutable. |
+| **`RNF-07`** | **Ergonomía y Accesibilidad** | Usabilidad | La interfaz de usuario debe implementar esquemas de control duales (ratón y atajos numéricos de teclado), soporte de internacionalización (i18n: ES/EN/PT) y temas de alto contraste. |
+| **`RNF-08`** | **Observabilidad y Auditoría** | Soporte | El subsistema `GameLogger` debe registrar eventos operacionales clasificados por canal (`INFO`, `WARN`, `ERROR`, `FSM`) con marcas de tiempo en milisegundos para depuración técnica. |
+
+---
+
+### 1.3 Matriz de Trazabilidad (Requerimientos $\leftrightarrow$ Casos de Uso $\leftrightarrow$ Persistencia)
+
+| Requerimiento Funcional | Requerimiento No Funcional | Caso de Uso UML | Entidad / Archivo de Persistencia |
+|:---:|:---:|:---:|---|
+| `RF-01` (Multi-Slot) | `RNF-02`, `RNF-03` | `CU-01` | `SlotMeta` (`slots.cfg`), `SaveSlot` (`slot_X/`) |
+| `RF-02` (Perfil) | `RNF-04`, `RNF-07` | `CU-09` | `Profile` (`profile.cfg`) |
+| `RF-03` (Academia) | `RNF-06`, `RNF-07` | `CU-02` | `LevelProgress` (`progress.cfg`) |
+| `RF-04` (Modo Heist) | `RNF-01`, `RNF-06` | `CU-03` | `LevelProgress`, `GlobalStats` (`stats.cfg`) |
+| `RF-05` (Modo Hacker) | `RNF-01`, `RNF-06` | `CU-04` | `LevelProgress`, `GlobalStats`, `LevelStats` |
+| `RF-06` (Ciberdefensa) | `RNF-01`, `RNF-08` | `CU-05` | `LevelProgress`, `GlobalStats`, `LevelStats` |
+| `RF-07` (Cuarentena) | `RNF-01`, `RNF-06` | `CU-06` | Estado volátil en memoria (`NetworkRuntime`) |
+| `RF-08` (Rutas Críticas) | `RNF-01`, `RNF-06` | `CU-07` | Estado volátil en memoria (`StrategicAnalyzer`) |
+| `RF-09` (Códex) | `RNF-06`, `RNF-07` | `CU-08` | Catálogo estático inmutable (`res://`) |
+| `RF-10` (Analítica) | `RNF-02`, `RNF-04` | `CU-10` | `LevelProgress`, `GlobalStats`, `LevelStats` |
+| `RF-11` (Insignias) | `RNF-04`, `RNF-07` | `CU-09` | `BadgeRecord` (`BadgeRegistry` / `profile.cfg`) |
+| `RF-12` (Snapshots) | `RNF-02`, `RNF-08` | `CU-11` | `SlotSnapshot` (`user://backups/`) |
+
+---
+
+## 2. Identificación y Taxonomía de Actores
 
 ```
                  ┌────────────────────────────────┐
@@ -24,12 +79,12 @@ Documento formal de especificación de requerimientos funcionales y descomposici
                  └────────────────────────────────┘  └───────────────┘
 ```
 
-### 1.1 Actores Primarios
+### 2.1 Actores Primarios
 - **Operador (Usuario / Alumno / Analista)**:
   - *Descripción*: Persona que interactúa con la terminal gráfica del sistema.
   - *Responsabilidades*: Iniciar sesión, seleccionar perfiles de operador, recorrer módulos de capacitación, ejecutar vectores de infiltración (Heist/Hacker), implementar contramedidas de red (Ciberdefensa) y consultar el expediente de méritos.
 
-### 1.2 Actores Secundarios
+### 2.2 Actores Secundarios
 - **Adversario (IA del Sistema / Motor Autónomo)**:
   - *Descripción*: Agente reactivo simulado que compite contra el operador.
   - *Responsabilidades*: En modos ofensivos actúa como red defensiva (bloqueo de aristas por `AIBlocker`, patrullas y persecución activa); en modo defensivo actúa como intruso hostil ejecutando movimiento lateral y exploits (`Bypass`).
@@ -39,7 +94,7 @@ Documento formal de especificación de requerimientos funcionales y descomposici
 
 ---
 
-## 2. Inventario de Casos de Uso por Paquete
+## 3. Inventario de Casos de Uso por Paquete
 
 | Paquete | Código | Nombre del Caso de Uso | Actores Asociados |
 |---|---|---|---|
@@ -57,7 +112,7 @@ Documento formal de especificación de requerimientos funcionales y descomposici
 
 ---
 
-## 3. Especificación Formal de Casos de Uso (Plantillas de Proceso)
+## 4. Especificación Formal de Casos de Uso (Plantillas de Proceso)
 
 ---
 
