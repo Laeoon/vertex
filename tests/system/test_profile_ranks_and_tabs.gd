@@ -57,7 +57,7 @@ func test_multi_world_level_rows() -> void:
 	_assert(rows_hacker.size() == 5, "Hacker has 5 mission rows")
 
 	var rows_cyber := ProfileScript.build_level_rows("cybersecurity", null, null)
-	_assert(rows_cyber.size() == 2, "Cybersecurity has 2 mission rows")
+	_assert(rows_cyber.size() == 5, "Cybersecurity has 5 mission rows")
 
 
 func test_profile_tab_switching() -> void:
@@ -75,7 +75,7 @@ func test_profile_tab_switching() -> void:
 	# Switch to Cybersecurity (tab 2)
 	profile._set_active_tab(2)
 	_assert(profile._active_tab_idx == 2, "Active tab switched to 2 (Cybersecurity)")
-	_assert(profile.stats["levels_detail"].size() == 2, "Cybersecurity details loaded (2 rows)")
+	_assert(profile.stats["levels_detail"].size() == 5, "Cybersecurity details loaded (5 rows)")
 
 	# Switch to Badges (tab 3)
 	profile._set_active_tab(3)

@@ -27,6 +27,10 @@ const GraphBuilder = preload("res://tests/core/_graph_builder.gd")
 
 const NIVELES: Array[String] = [
 	"res://juego/defense/defense_n1.json",
+	"res://juego/cyber/cyber_n1.json",
+	"res://juego/cyber/cyber_n2.json",
+	"res://juego/cyber/cyber_n3.json",
+	"res://juego/cyber/cyber_n4.json",
 	"res://juego/hacker/hacker_n1.json",
 	"res://juego/hacker/hacker_n2.json",
 	"res://juego/hacker/hacker_n3.json",
@@ -37,7 +41,6 @@ const NIVELES: Array[String] = [
 	"res://juego/heist/heist_n3.json",
 	"res://juego/heist/heist_n4.json",
 	"res://juego/heist/heist_n5.json",
-	"res://juego/cyber/cyber_n1.json",
 ]
 
 const CLAVES_MINIMAS: Array[String] = [

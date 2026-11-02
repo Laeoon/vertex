@@ -112,10 +112,11 @@ func test_rules_activation() -> void:
 	var si = _find_badge(res, "shadow_infiltrator")
 	_assert(si.get("unlocked", false) == true, "shadow_infiltrator unlocks when all 5 hacker levels completed")
 
-	# 9. perimeter_sentinel (all 2 cybersecurity levels completed)
+	# 9. perimeter_sentinel (all cybersecurity levels completed)
 	prog_cfg = ConfigFile.new()
-	prog_cfg.set_value("estrellas", "cyber_n1", 1)
-	prog_cfg.set_value("estrellas", "defense_n1", 1)
+	for l in LevelRegistryClass.WORLDS["cybersecurity"]["levels"]:
+		var key: String = l.get("path", "").get_file().trim_suffix(".json")
+		prog_cfg.set_value("estrellas", key, 1)
 	res = BadgeRegistryClass.evaluate_badges(prog_cfg, null)
 	var ps = _find_badge(res, "perimeter_sentinel")
 	_assert(ps.get("unlocked", false) == true, "perimeter_sentinel unlocks when all cybersecurity levels completed")

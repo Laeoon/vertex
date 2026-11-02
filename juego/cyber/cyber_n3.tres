@@ -1,0 +1,494 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=56 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Defensor"]
+script = ExtResource("2_node")
+id = &"Defensor"
+display_name = "Defensor SOC"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(100, 140)
+metadata = {
+"detection_chance": 0.0,
+"label": "Consola SOC / EDR"
+}
+
+[sub_resource type="Resource" id="Node_InfiltrationPoint"]
+script = ExtResource("2_node")
+id = &"InfiltrationPoint"
+display_name = "Punto de Infiltración"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(100, 380)
+metadata = {
+"detection_chance": 0.3,
+"label": "Vector de intrusión inicial"
+}
+
+[sub_resource type="Resource" id="Node_PerimeterFirewall"]
+script = ExtResource("2_node")
+id = &"PerimeterFirewall"
+display_name = "Firewall Perimetral"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(280, 230)
+metadata = {
+"detection_chance": 0.2,
+"has_firewall": true,
+"label": "Inspección perimetral"
+}
+
+[sub_resource type="Resource" id="Node_IngressController"]
+script = ExtResource("2_node")
+id = &"IngressController"
+display_name = "Ingress Controller"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(280, 390)
+metadata = {
+"detection_chance": 0.15,
+"label": "Balanceador Ingress K8s"
+}
+
+[sub_resource type="Resource" id="Node_Honeypot_Decoy"]
+script = ExtResource("2_node")
+id = &"Honeypot_Decoy"
+display_name = "Honeypot Trampa"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(280, 550)
+metadata = {
+"detection_chance": 0.85,
+"is_honeypot": true,
+"label": "Señuelo de telemetría forense"
+}
+
+[sub_resource type="Resource" id="Node_DMZ_WebService"]
+script = ExtResource("2_node")
+id = &"DMZ_WebService"
+display_name = "Web Service DMZ"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(480, 200)
+metadata = {
+"detection_chance": 0.15,
+"label": "Frontend público"
+}
+
+[sub_resource type="Resource" id="Node_K8s_ServiceMesh"]
+script = ExtResource("2_node")
+id = &"K8s_ServiceMesh"
+display_name = "Cluster Service Mesh"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(480, 370)
+metadata = {
+"detection_chance": 0.2,
+"label": "Malla Istio / Microservicios"
+}
+
+[sub_resource type="Resource" id="Node_EDR_Collector"]
+script = ExtResource("2_node")
+id = &"EDR_Collector"
+display_name = "Sensor EDR Central"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(480, 540)
+metadata = {
+"detection_chance": 0.4,
+"label": "Sonda Forense y Telemetría"
+}
+
+[sub_resource type="Resource" id="Node_Auth_Service"]
+script = ExtResource("2_node")
+id = &"Auth_Service"
+display_name = "Servidor Auth / IAM"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(690, 180)
+metadata = {
+"detection_chance": 0.25,
+"label": "Gestor de identidades OAuth/SAML"
+}
+
+[sub_resource type="Resource" id="Node_App_Microservice"]
+script = ExtResource("2_node")
+id = &"App_Microservice"
+display_name = "Microservicio Core"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(690, 350)
+metadata = {
+"detection_chance": 0.15,
+"label": "Lógica de negocio interna"
+}
+
+[sub_resource type="Resource" id="Node_Event_Broker"]
+script = ExtResource("2_node")
+id = &"Event_Broker"
+display_name = "Broker de Eventos"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(690, 520)
+metadata = {
+"detection_chance": 0.15,
+"label": "Bus Kafka / Mensajería"
+}
+
+[sub_resource type="Resource" id="Node_Internal_Firewall"]
+script = ExtResource("2_node")
+id = &"Internal_Firewall"
+display_name = "Firewall Interno"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(890, 200)
+metadata = {
+"detection_chance": 0.3,
+"has_firewall": true,
+"label": "Aislamiento de zona crítica"
+}
+
+[sub_resource type="Resource" id="Node_Worker_Node"]
+script = ExtResource("2_node")
+id = &"Worker_Node"
+display_name = "Nodo Worker K8s"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(890, 360)
+metadata = {
+"detection_chance": 0.2,
+"label": "Procesamiento de cargas de trabajo"
+}
+
+[sub_resource type="Resource" id="Node_Analytics_DB"]
+script = ExtResource("2_node")
+id = &"Analytics_DB"
+display_name = "Base de Datos Analítica"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(890, 530)
+metadata = {
+"detection_chance": 0.2,
+"label": "Data Warehouse y telemetría"
+}
+
+[sub_resource type="Resource" id="Node_Bastion_Host"]
+script = ExtResource("2_node")
+id = &"Bastion_Host"
+display_name = "Host Bastión"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(1090, 240)
+metadata = {
+"detection_chance": 0.35,
+"label": "Acceso privilegiado SSH/MFA"
+}
+
+[sub_resource type="Resource" id="Node_CrownJewels"]
+script = ExtResource("2_node")
+id = &"CrownJewels"
+display_name = "Crown Jewels Vault"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(1090, 430)
+metadata = {
+"detection_chance": 0.0,
+"label": "Bóveda de Secretos y Criptografía"
+}
+
+[sub_resource type="Resource" id="Edge_Infil_FWPer"]
+script = ExtResource("3_edge")
+from_id = &"InfiltrationPoint"
+to_id = &"PerimeterFirewall"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Infil_Ingress"]
+script = ExtResource("3_edge")
+from_id = &"InfiltrationPoint"
+to_id = &"IngressController"
+transit_cost = 1.0
+mitigation_capacity = 1.5
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Infil_Honeypot"]
+script = ExtResource("3_edge")
+from_id = &"InfiltrationPoint"
+to_id = &"Honeypot_Decoy"
+transit_cost = 1.0
+mitigation_capacity = 1.0
+protocol = &"SSH"
+
+[sub_resource type="Resource" id="Edge_FWPer_DMZWeb"]
+script = ExtResource("3_edge")
+from_id = &"PerimeterFirewall"
+to_id = &"DMZ_WebService"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"TLS"
+
+[sub_resource type="Resource" id="Edge_FWPer_K8sMesh"]
+script = ExtResource("3_edge")
+from_id = &"PerimeterFirewall"
+to_id = &"K8s_ServiceMesh"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"TCP"
+
+[sub_resource type="Resource" id="Edge_Ingress_DMZWeb"]
+script = ExtResource("3_edge")
+from_id = &"IngressController"
+to_id = &"DMZ_WebService"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"HTTP"
+
+[sub_resource type="Resource" id="Edge_Ingress_K8sMesh"]
+script = ExtResource("3_edge")
+from_id = &"IngressController"
+to_id = &"K8s_ServiceMesh"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"K8S_GRPC"
+
+[sub_resource type="Resource" id="Edge_Ingress_EDR"]
+script = ExtResource("3_edge")
+from_id = &"IngressController"
+to_id = &"EDR_Collector"
+transit_cost = 2.0
+mitigation_capacity = 1.5
+protocol = &"SYSLOG"
+
+[sub_resource type="Resource" id="Edge_Honeypot_EDR"]
+script = ExtResource("3_edge")
+from_id = &"Honeypot_Decoy"
+to_id = &"EDR_Collector"
+transit_cost = 2.5
+mitigation_capacity = 2.5
+protocol = &"SNMP"
+
+[sub_resource type="Resource" id="Edge_DMZWeb_K8sMesh"]
+script = ExtResource("3_edge")
+from_id = &"DMZ_WebService"
+to_id = &"K8s_ServiceMesh"
+transit_cost = 2.0
+mitigation_capacity = 1.5
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_DMZWeb_Auth"]
+script = ExtResource("3_edge")
+from_id = &"DMZ_WebService"
+to_id = &"Auth_Service"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"OIDC"
+
+[sub_resource type="Resource" id="Edge_DMZWeb_AppMicro"]
+script = ExtResource("3_edge")
+from_id = &"DMZ_WebService"
+to_id = &"App_Microservice"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_K8sMesh_Auth"]
+script = ExtResource("3_edge")
+from_id = &"K8s_ServiceMesh"
+to_id = &"Auth_Service"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"mTLS"
+
+[sub_resource type="Resource" id="Edge_K8sMesh_AppMicro"]
+script = ExtResource("3_edge")
+from_id = &"K8s_ServiceMesh"
+to_id = &"App_Microservice"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"K8S_GRPC"
+
+[sub_resource type="Resource" id="Edge_K8sMesh_EventBroker"]
+script = ExtResource("3_edge")
+from_id = &"K8s_ServiceMesh"
+to_id = &"Event_Broker"
+transit_cost = 2.0
+mitigation_capacity = 1.5
+protocol = &"KAFKA"
+
+[sub_resource type="Resource" id="Edge_EDR_EventBroker"]
+script = ExtResource("3_edge")
+from_id = &"EDR_Collector"
+to_id = &"Event_Broker"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"TLS"
+
+[sub_resource type="Resource" id="Edge_EDR_Analytics"]
+script = ExtResource("3_edge")
+from_id = &"EDR_Collector"
+to_id = &"Analytics_DB"
+transit_cost = 2.5
+mitigation_capacity = 2.0
+protocol = &"SQL"
+
+[sub_resource type="Resource" id="Edge_Auth_InternalFW"]
+script = ExtResource("3_edge")
+from_id = &"Auth_Service"
+to_id = &"Internal_Firewall"
+transit_cost = 1.5
+mitigation_capacity = 2.5
+protocol = &"SAML"
+
+[sub_resource type="Resource" id="Edge_Auth_AppMicro"]
+script = ExtResource("3_edge")
+from_id = &"Auth_Service"
+to_id = &"App_Microservice"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Auth_Bastion"]
+script = ExtResource("3_edge")
+from_id = &"Auth_Service"
+to_id = &"Bastion_Host"
+transit_cost = 2.5
+mitigation_capacity = 2.0
+protocol = &"SSH"
+
+[sub_resource type="Resource" id="Edge_AppMicro_Auth"]
+script = ExtResource("3_edge")
+from_id = &"App_Microservice"
+to_id = &"Auth_Service"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"OIDC"
+
+[sub_resource type="Resource" id="Edge_AppMicro_InternalFW"]
+script = ExtResource("3_edge")
+from_id = &"App_Microservice"
+to_id = &"Internal_Firewall"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_AppMicro_Worker"]
+script = ExtResource("3_edge")
+from_id = &"App_Microservice"
+to_id = &"Worker_Node"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"RPC"
+
+[sub_resource type="Resource" id="Edge_AppMicro_EventBroker"]
+script = ExtResource("3_edge")
+from_id = &"App_Microservice"
+to_id = &"Event_Broker"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"KAFKA"
+
+[sub_resource type="Resource" id="Edge_EventBroker_Worker"]
+script = ExtResource("3_edge")
+from_id = &"Event_Broker"
+to_id = &"Worker_Node"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"TCP"
+
+[sub_resource type="Resource" id="Edge_EventBroker_Analytics"]
+script = ExtResource("3_edge")
+from_id = &"Event_Broker"
+to_id = &"Analytics_DB"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"KAFKA"
+
+[sub_resource type="Resource" id="Edge_InternalFW_Bastion"]
+script = ExtResource("3_edge")
+from_id = &"Internal_Firewall"
+to_id = &"Bastion_Host"
+transit_cost = 2.0
+mitigation_capacity = 2.5
+protocol = &"SSH"
+
+[sub_resource type="Resource" id="Edge_InternalFW_Worker"]
+script = ExtResource("3_edge")
+from_id = &"Internal_Firewall"
+to_id = &"Worker_Node"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_InternalFW_Crown"]
+script = ExtResource("3_edge")
+from_id = &"Internal_Firewall"
+to_id = &"CrownJewels"
+transit_cost = 3.0
+mitigation_capacity = 3.0
+protocol = &"IPSEC"
+
+[sub_resource type="Resource" id="Edge_Worker_Bastion"]
+script = ExtResource("3_edge")
+from_id = &"Worker_Node"
+to_id = &"Bastion_Host"
+transit_cost = 2.5
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Worker_Crown"]
+script = ExtResource("3_edge")
+from_id = &"Worker_Node"
+to_id = &"CrownJewels"
+transit_cost = 2.5
+mitigation_capacity = 2.5
+protocol = &"TLS"
+
+[sub_resource type="Resource" id="Edge_Worker_Analytics"]
+script = ExtResource("3_edge")
+from_id = &"Worker_Node"
+to_id = &"Analytics_DB"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"SQL"
+
+[sub_resource type="Resource" id="Edge_Analytics_Crown"]
+script = ExtResource("3_edge")
+from_id = &"Analytics_DB"
+to_id = &"CrownJewels"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"BACKUP_RPC"
+
+[sub_resource type="Resource" id="Edge_Analytics_Worker"]
+script = ExtResource("3_edge")
+from_id = &"Analytics_DB"
+to_id = &"Worker_Node"
+transit_cost = 2.0
+mitigation_capacity = 1.5
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_Bastion_Crown"]
+script = ExtResource("3_edge")
+from_id = &"Bastion_Host"
+to_id = &"CrownJewels"
+transit_cost = 1.5
+mitigation_capacity = 3.0
+protocol = &"ADMIN_SSH"
+
+[sub_resource type="Resource" id="Edge_Bastion_InternalFW"]
+script = ExtResource("3_edge")
+from_id = &"Bastion_Host"
+to_id = &"Internal_Firewall"
+transit_cost = 2.5
+mitigation_capacity = 2.0
+protocol = &"SSH"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Defensor"), SubResource("Node_InfiltrationPoint"), SubResource("Node_PerimeterFirewall"), SubResource("Node_IngressController"), SubResource("Node_Honeypot_Decoy"), SubResource("Node_DMZ_WebService"), SubResource("Node_K8s_ServiceMesh"), SubResource("Node_EDR_Collector"), SubResource("Node_Auth_Service"), SubResource("Node_App_Microservice"), SubResource("Node_Event_Broker"), SubResource("Node_Internal_Firewall"), SubResource("Node_Worker_Node"), SubResource("Node_Analytics_DB"), SubResource("Node_Bastion_Host"), SubResource("Node_CrownJewels")])
+edges = Array[Resource]([SubResource("Edge_Infil_FWPer"), SubResource("Edge_Infil_Ingress"), SubResource("Edge_Infil_Honeypot"), SubResource("Edge_FWPer_DMZWeb"), SubResource("Edge_FWPer_K8sMesh"), SubResource("Edge_Ingress_DMZWeb"), SubResource("Edge_Ingress_K8sMesh"), SubResource("Edge_Ingress_EDR"), SubResource("Edge_Honeypot_EDR"), SubResource("Edge_DMZWeb_K8sMesh"), SubResource("Edge_DMZWeb_Auth"), SubResource("Edge_DMZWeb_AppMicro"), SubResource("Edge_K8sMesh_Auth"), SubResource("Edge_K8sMesh_AppMicro"), SubResource("Edge_K8sMesh_EventBroker"), SubResource("Edge_EDR_EventBroker"), SubResource("Edge_EDR_Analytics"), SubResource("Edge_Auth_InternalFW"), SubResource("Edge_Auth_AppMicro"), SubResource("Edge_Auth_Bastion"), SubResource("Edge_AppMicro_Auth"), SubResource("Edge_AppMicro_InternalFW"), SubResource("Edge_AppMicro_Worker"), SubResource("Edge_AppMicro_EventBroker"), SubResource("Edge_EventBroker_Worker"), SubResource("Edge_EventBroker_Analytics"), SubResource("Edge_InternalFW_Bastion"), SubResource("Edge_InternalFW_Worker"), SubResource("Edge_InternalFW_Crown"), SubResource("Edge_Worker_Bastion"), SubResource("Edge_Worker_Crown"), SubResource("Edge_Worker_Analytics"), SubResource("Edge_Analytics_Crown"), SubResource("Edge_Analytics_Worker"), SubResource("Edge_Bastion_Crown"), SubResource("Edge_Bastion_InternalFW")])
+directed = true

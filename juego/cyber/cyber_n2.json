@@ -1,0 +1,21 @@
+{
+  "id": "cyber_n2",
+  "world": "cybersecurity",
+  "graph_path": "res://juego/cyber/cyber_n2.tres",
+  "start_node": "Defensor",
+  "target_node": "ActiveDirectory",
+  "waypoints": [],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 0,
+  "max_turns": 14,
+  "titulo_nivel": "Cybersecurity — Movimiento Lateral",
+  "difficulty": 3,
+  "description": "El atacante intenta vulnerar el Directorio Activo mediante movimiento lateral. Segmenta y aísla la red.",
+  "defender_mode": true,
+  "defender_blocks_per_turn": 2,
+  "defender_block_duration": 4,
+  "enemy_start_node": "Internet",
+  "enemy_target_node": "ActiveDirectory"
+}

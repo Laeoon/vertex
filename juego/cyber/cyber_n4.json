@@ -1,0 +1,21 @@
+{
+  "id": "cyber_n4",
+  "world": "cybersecurity",
+  "graph_path": "res://juego/cyber/cyber_n4.tres",
+  "start_node": "Defensor",
+  "target_node": "QuantumCore",
+  "waypoints": [],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 0,
+  "max_turns": 18,
+  "titulo_nivel": "Cybersecurity — Operación Zero Trust",
+  "difficulty": 5,
+  "description": "Batalla final de ciberdefensa: el atacante desata múltiples vectores MTD y bypass. Aísla sectores críticos y protege el Quantum Core.",
+  "defender_mode": true,
+  "defender_blocks_per_turn": 3,
+  "defender_block_duration": 4,
+  "enemy_start_node": "AdvancedThreatActor",
+  "enemy_target_node": "QuantumCore"
+}

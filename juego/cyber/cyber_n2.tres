@@ -1,0 +1,389 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=44 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Defensor"]
+script = ExtResource("2_node")
+id = &"Defensor"
+display_name = "Defensor SOC"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(100, 140)
+metadata = {
+"detection_chance": 0.0,
+"label": "Puesto de control SOC"
+}
+
+[sub_resource type="Resource" id="Node_Internet"]
+script = ExtResource("2_node")
+id = &"Internet"
+display_name = "Internet"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(100, 370)
+metadata = {
+"detection_chance": 0.25,
+"label": "Vector de ataque externo"
+}
+
+[sub_resource type="Resource" id="Node_FirewallWeb"]
+script = ExtResource("2_node")
+id = &"FirewallWeb"
+display_name = "Firewall Web (WAF)"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(280, 200)
+metadata = {
+"detection_chance": 0.15,
+"has_firewall": true,
+"label": "WAF perimetral"
+}
+
+[sub_resource type="Resource" id="Node_API_Gateway"]
+script = ExtResource("2_node")
+id = &"API_Gateway"
+display_name = "API Gateway"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(280, 370)
+metadata = {
+"detection_chance": 0.12,
+"label": "Gateway de microservicios"
+}
+
+[sub_resource type="Resource" id="Node_MailServer"]
+script = ExtResource("2_node")
+id = &"MailServer"
+display_name = "Servidor de Correo"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(280, 540)
+metadata = {
+"detection_chance": 0.10,
+"label": "Servidor de correo corporativo"
+}
+
+[sub_resource type="Resource" id="Node_DMZ_Web"]
+script = ExtResource("2_node")
+id = &"DMZ_Web"
+display_name = "Servidor DMZ"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(480, 200)
+metadata = {
+"detection_chance": 0.15,
+"label": "Aplicación web DMZ"
+}
+
+[sub_resource type="Resource" id="Node_Workstation_Ventas"]
+script = ExtResource("2_node")
+id = &"Workstation_Ventas"
+display_name = "Workstation Ventas"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(480, 370)
+metadata = {
+"detection_chance": 0.10,
+"label": "Segmento usuario final"
+}
+
+[sub_resource type="Resource" id="Node_Workstation_IT"]
+script = ExtResource("2_node")
+id = &"Workstation_IT"
+display_name = "Workstation IT"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(480, 540)
+metadata = {
+"detection_chance": 0.20,
+"label": "Estación de administración IT"
+}
+
+[sub_resource type="Resource" id="Node_Firewall_Interno"]
+script = ExtResource("2_node")
+id = &"Firewall_Interno"
+display_name = "Firewall Interno"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(700, 200)
+metadata = {
+"detection_chance": 0.15,
+"has_firewall": true,
+"label": "Segmentación interna"
+}
+
+[sub_resource type="Resource" id="Node_Switch_Core"]
+script = ExtResource("2_node")
+id = &"Switch_Core"
+display_name = "Switch Core LAN"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(700, 370)
+metadata = {
+"detection_chance": 0.10,
+"label": "Distribución central LAN"
+}
+
+[sub_resource type="Resource" id="Node_Proxy_Salida"]
+script = ExtResource("2_node")
+id = &"Proxy_Salida"
+display_name = "Proxy / C2 Filter"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(700, 540)
+metadata = {
+"detection_chance": 0.18,
+"label": "Filtro de salida y telemetría"
+}
+
+[sub_resource type="Resource" id="Node_Servidor_Archivos"]
+script = ExtResource("2_node")
+id = &"Servidor_Archivos"
+display_name = "Servidor Archivos (SMB)"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(920, 270)
+metadata = {
+"detection_chance": 0.15,
+"label": "Recurso compartido de archivos"
+}
+
+[sub_resource type="Resource" id="Node_Servidor_Backup"]
+script = ExtResource("2_node")
+id = &"Servidor_Backup"
+display_name = "Servidor Backup"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(920, 470)
+metadata = {
+"detection_chance": 0.12,
+"label": "Servidor de copias de seguridad"
+}
+
+[sub_resource type="Resource" id="Node_ActiveDirectory"]
+script = ExtResource("2_node")
+id = &"ActiveDirectory"
+display_name = "Active Directory (DC)"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(1120, 370)
+metadata = {
+"detection_chance": 0.0,
+"label": "Controlador de Dominio — OBJETIVO CRÍTICO"
+}
+
+[sub_resource type="Resource" id="Edge_Internet_FWWeb"]
+script = ExtResource("3_edge")
+from_id = &"Internet"
+to_id = &"FirewallWeb"
+transit_cost = 2.0
+mitigation_capacity = 2.5
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Internet_APIGateway"]
+script = ExtResource("3_edge")
+from_id = &"Internet"
+to_id = &"API_Gateway"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_Internet_MailServer"]
+script = ExtResource("3_edge")
+from_id = &"Internet"
+to_id = &"MailServer"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"SMTP"
+
+[sub_resource type="Resource" id="Edge_FWWeb_DMZWeb"]
+script = ExtResource("3_edge")
+from_id = &"FirewallWeb"
+to_id = &"DMZ_Web"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_APIGateway_DMZWeb"]
+script = ExtResource("3_edge")
+from_id = &"API_Gateway"
+to_id = &"DMZ_Web"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"API"
+
+[sub_resource type="Resource" id="Edge_APIGateway_WorkstationVentas"]
+script = ExtResource("3_edge")
+from_id = &"API_Gateway"
+to_id = &"Workstation_Ventas"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_MailServer_WorkstationIT"]
+script = ExtResource("3_edge")
+from_id = &"MailServer"
+to_id = &"Workstation_IT"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"PHISHING"
+
+[sub_resource type="Resource" id="Edge_MailServer_WorkstationVentas"]
+script = ExtResource("3_edge")
+from_id = &"MailServer"
+to_id = &"Workstation_Ventas"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"PHISHING"
+
+[sub_resource type="Resource" id="Edge_DMZWeb_WorkstationVentas"]
+script = ExtResource("3_edge")
+from_id = &"DMZ_Web"
+to_id = &"Workstation_Ventas"
+transit_cost = 2.0
+mitigation_capacity = 1.5
+protocol = &"SMB"
+
+[sub_resource type="Resource" id="Edge_DMZWeb_FWInterno"]
+script = ExtResource("3_edge")
+from_id = &"DMZ_Web"
+to_id = &"Firewall_Interno"
+transit_cost = 2.5
+mitigation_capacity = 2.5
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_WorkstationVentas_WorkstationIT"]
+script = ExtResource("3_edge")
+from_id = &"Workstation_Ventas"
+to_id = &"Workstation_IT"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"SMB"
+
+[sub_resource type="Resource" id="Edge_WorkstationVentas_SwitchCore"]
+script = ExtResource("3_edge")
+from_id = &"Workstation_Ventas"
+to_id = &"Switch_Core"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"LAN"
+
+[sub_resource type="Resource" id="Edge_WorkstationIT_WorkstationVentas"]
+script = ExtResource("3_edge")
+from_id = &"Workstation_IT"
+to_id = &"Workstation_Ventas"
+transit_cost = 2.0
+mitigation_capacity = 1.5
+protocol = &"RPC"
+
+[sub_resource type="Resource" id="Edge_WorkstationIT_ProxySalida"]
+script = ExtResource("3_edge")
+from_id = &"Workstation_IT"
+to_id = &"Proxy_Salida"
+transit_cost = 1.5
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_WorkstationIT_SwitchCore"]
+script = ExtResource("3_edge")
+from_id = &"Workstation_IT"
+to_id = &"Switch_Core"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"RDP"
+
+[sub_resource type="Resource" id="Edge_FWInterno_SwitchCore"]
+script = ExtResource("3_edge")
+from_id = &"Firewall_Interno"
+to_id = &"Switch_Core"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_FWInterno_ServidorArchivos"]
+script = ExtResource("3_edge")
+from_id = &"Firewall_Interno"
+to_id = &"Servidor_Archivos"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"SMB"
+
+[sub_resource type="Resource" id="Edge_SwitchCore_ProxySalida"]
+script = ExtResource("3_edge")
+from_id = &"Switch_Core"
+to_id = &"Proxy_Salida"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_SwitchCore_ServidorArchivos"]
+script = ExtResource("3_edge")
+from_id = &"Switch_Core"
+to_id = &"Servidor_Archivos"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"NFS"
+
+[sub_resource type="Resource" id="Edge_SwitchCore_ServidorBackup"]
+script = ExtResource("3_edge")
+from_id = &"Switch_Core"
+to_id = &"Servidor_Backup"
+transit_cost = 2.5
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_SwitchCore_ActiveDirectory"]
+script = ExtResource("3_edge")
+from_id = &"Switch_Core"
+to_id = &"ActiveDirectory"
+transit_cost = 3.0
+mitigation_capacity = 2.5
+protocol = &"LDAP"
+
+[sub_resource type="Resource" id="Edge_ProxySalida_ServidorBackup"]
+script = ExtResource("3_edge")
+from_id = &"Proxy_Salida"
+to_id = &"Servidor_Backup"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"SSH"
+
+[sub_resource type="Resource" id="Edge_ServidorArchivos_ServidorBackup"]
+script = ExtResource("3_edge")
+from_id = &"Servidor_Archivos"
+to_id = &"Servidor_Backup"
+transit_cost = 1.5
+mitigation_capacity = 1.5
+protocol = &"RPC"
+
+[sub_resource type="Resource" id="Edge_ServidorArchivos_ActiveDirectory"]
+script = ExtResource("3_edge")
+from_id = &"Servidor_Archivos"
+to_id = &"ActiveDirectory"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"KERBEROS"
+
+[sub_resource type="Resource" id="Edge_ServidorBackup_ServidorArchivos"]
+script = ExtResource("3_edge")
+from_id = &"Servidor_Backup"
+to_id = &"Servidor_Archivos"
+transit_cost = 2.0
+mitigation_capacity = 1.5
+protocol = &"SMB"
+
+[sub_resource type="Resource" id="Edge_ServidorBackup_ActiveDirectory"]
+script = ExtResource("3_edge")
+from_id = &"Servidor_Backup"
+to_id = &"ActiveDirectory"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"RPC"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = Array[Resource]([SubResource("Node_Defensor"), SubResource("Node_Internet"), SubResource("Node_FirewallWeb"), SubResource("Node_API_Gateway"), SubResource("Node_MailServer"), SubResource("Node_DMZ_Web"), SubResource("Node_Workstation_Ventas"), SubResource("Node_Workstation_IT"), SubResource("Node_Firewall_Interno"), SubResource("Node_Switch_Core"), SubResource("Node_Proxy_Salida"), SubResource("Node_Servidor_Archivos"), SubResource("Node_Servidor_Backup"), SubResource("Node_ActiveDirectory")])
+edges = Array[Resource]([SubResource("Edge_Internet_FWWeb"), SubResource("Edge_Internet_APIGateway"), SubResource("Edge_Internet_MailServer"), SubResource("Edge_FWWeb_DMZWeb"), SubResource("Edge_APIGateway_DMZWeb"), SubResource("Edge_APIGateway_WorkstationVentas"), SubResource("Edge_MailServer_WorkstationIT"), SubResource("Edge_MailServer_WorkstationVentas"), SubResource("Edge_DMZWeb_WorkstationVentas"), SubResource("Edge_DMZWeb_FWInterno"), SubResource("Edge_WorkstationVentas_WorkstationIT"), SubResource("Edge_WorkstationVentas_SwitchCore"), SubResource("Edge_WorkstationIT_WorkstationVentas"), SubResource("Edge_WorkstationIT_ProxySalida"), SubResource("Edge_WorkstationIT_SwitchCore"), SubResource("Edge_FWInterno_SwitchCore"), SubResource("Edge_FWInterno_ServidorArchivos"), SubResource("Edge_SwitchCore_ProxySalida"), SubResource("Edge_SwitchCore_ServidorArchivos"), SubResource("Edge_SwitchCore_ServidorBackup"), SubResource("Edge_SwitchCore_ActiveDirectory"), SubResource("Edge_ProxySalida_ServidorBackup"), SubResource("Edge_ServidorArchivos_ServidorBackup"), SubResource("Edge_ServidorArchivos_ActiveDirectory"), SubResource("Edge_ServidorBackup_ServidorArchivos"), SubResource("Edge_ServidorBackup_ActiveDirectory")])
+directed = true

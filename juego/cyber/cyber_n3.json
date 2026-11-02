@@ -1,0 +1,21 @@
+{
+  "id": "cyber_n3",
+  "world": "cybersecurity",
+  "graph_path": "res://juego/cyber/cyber_n3.tres",
+  "start_node": "Defensor",
+  "target_node": "CrownJewels",
+  "waypoints": [],
+  "ai_enabled": false,
+  "ai_block_per_turn": 0,
+  "ai_bloquea_al_inicio": false,
+  "max_ai_blocks": 0,
+  "max_turns": 15,
+  "titulo_nivel": "Cybersecurity — Niebla de Guerra",
+  "difficulty": 4,
+  "description": "Rastrea la amenaza bajo niebla de guerra antes de que alcance la bóveda de secretos CrownJewels.",
+  "defender_mode": true,
+  "defender_blocks_per_turn": 2,
+  "defender_block_duration": 3,
+  "enemy_start_node": "InfiltrationPoint",
+  "enemy_target_node": "CrownJewels"
+}

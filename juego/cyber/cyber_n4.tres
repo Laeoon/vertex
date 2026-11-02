@@ -1,0 +1,415 @@
+[gd_resource type="Resource" script_class="NetworkGraphResource" load_steps=63 format=3]
+
+[ext_resource type="Script" path="res://core/network/network_graph_resource.gd" id="1_graph"]
+[ext_resource type="Script" path="res://core/network/network_node_resource.gd" id="2_node"]
+[ext_resource type="Script" path="res://core/network/network_edge_resource.gd" id="3_edge"]
+
+[sub_resource type="Resource" id="Node_Defensor"]
+script = ExtResource("2_node")
+id = &"Defensor"
+display_name = "SOC Central"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(80, 80)
+metadata = {
+"detection_chance": 0.0,
+"label": "Centro de Operaciones de Seguridad"
+}
+
+[sub_resource type="Resource" id="Node_ThreatActor"]
+script = ExtResource("2_node")
+id = &"AdvancedThreatActor"
+display_name = "APT Threat Actor"
+node_type = 1
+initial_state = &"disponible"
+position = Vector2(80, 360)
+metadata = {
+"detection_chance": 0.35,
+"label": "Vector de intrusión avanzada"
+}
+
+[sub_resource type="Resource" id="Node_EdgeFirewall"]
+script = ExtResource("2_node")
+id = &"EdgeFirewall"
+display_name = "NGFW Perimetral"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(240, 200)
+metadata = {
+"has_firewall": true,
+"label": "Firewall de nueva generación"
+}
+
+[sub_resource type="Resource" id="Node_BgpRouter"]
+script = ExtResource("2_node")
+id = &"BgpRouter"
+display_name = "Enlace BGP"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(240, 500)
+metadata = {
+"label": "Ruta exterior troncal"
+}
+
+[sub_resource type="Resource" id="Node_WAF"]
+script = ExtResource("2_node")
+id = &"WAF_Cluster"
+display_name = "Cluster WAF"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 160)
+metadata = {
+"has_firewall": true,
+"label": "Filtro de aplicaciones web"
+}
+
+[sub_resource type="Resource" id="Node_DMZ_Gateway"]
+script = ExtResource("2_node")
+id = &"DMZ_Gateway"
+display_name = "Gateway DMZ"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 360)
+metadata = {
+"label": "Pivote de zona desmilitarizada"
+}
+
+[sub_resource type="Resource" id="Node_VPN_Concentrator"]
+script = ExtResource("2_node")
+id = &"VPN_Concentrator"
+display_name = "Concentrador VPN"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(400, 540)
+metadata = {
+"label": "Túnel de acceso remoto"
+}
+
+[sub_resource type="Resource" id="Node_HoneypotTrap"]
+script = ExtResource("2_node")
+id = &"HoneypotTrap"
+display_name = "Honeypot Señuelo"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 100)
+metadata = {
+"is_decoy": true,
+"is_honeypot": true,
+"label": "Trampa reactiva de engaño"
+}
+
+[sub_resource type="Resource" id="Node_K8sIngress"]
+script = ExtResource("2_node")
+id = &"K8sIngress"
+display_name = "K8s Ingress"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 260)
+metadata = {
+"label": "Ingreso a microservicios"
+}
+
+[sub_resource type="Resource" id="Node_IdentityBroker"]
+script = ExtResource("2_node")
+id = &"IdentityBroker"
+display_name = "Broker Zero-Trust"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 440)
+metadata = {
+"has_firewall": true,
+"label": "Validación continua de identidad"
+}
+
+[sub_resource type="Resource" id="Node_BranchOffice"]
+script = ExtResource("2_node")
+id = &"BranchOffice"
+display_name = "Sucursal Lateral"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(580, 600)
+metadata = {
+"label": "Red secundaria corporativa"
+}
+
+[sub_resource type="Resource" id="Node_Microservices"]
+script = ExtResource("2_node")
+id = &"MicroservicesMesh"
+display_name = "Mesh de Servicios"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(760, 220)
+metadata = {
+"label": "Red interna de microservicios"
+}
+
+[sub_resource type="Resource" id="Node_PrivilegedBastion"]
+script = ExtResource("2_node")
+id = &"PrivilegedBastion"
+display_name = "Bastión PAM"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(760, 380)
+metadata = {
+"has_firewall": true,
+"label": "Gestor de accesos privilegiados"
+}
+
+[sub_resource type="Resource" id="Node_DataLakeRouter"]
+script = ExtResource("2_node")
+id = &"DataLakeRouter"
+display_name = "Router Data Lake"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(760, 540)
+metadata = {
+"label": "Segmento de almacenamiento masivo"
+}
+
+[sub_resource type="Resource" id="Node_VaultEnclave"]
+script = ExtResource("2_node")
+id = &"VaultEnclave"
+display_name = "Enclave de Claves"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(940, 300)
+metadata = {
+"has_firewall": true,
+"label": "Custodia HSM de alta seguridad"
+}
+
+[sub_resource type="Resource" id="Node_IsolationSwitch"]
+script = ExtResource("2_node")
+id = &"IsolationSwitch"
+display_name = "Switch Kill-Switch"
+node_type = 2
+initial_state = &"disponible"
+position = Vector2(940, 480)
+metadata = {
+"label": "Aislamiento de red física"
+}
+
+[sub_resource type="Resource" id="Node_QuantumCore"]
+script = ExtResource("2_node")
+id = &"QuantumCore"
+display_name = "Quantum Core Vault"
+node_type = 3
+initial_state = &"disponible"
+position = Vector2(1140, 360)
+metadata = {
+"has_firewall": true,
+"label": "Núcleo crítico cuántico"
+}
+
+[sub_resource type="Resource" id="Edge_1"]
+script = ExtResource("3_edge")
+from_id = &"AdvancedThreatActor"
+to_id = &"EdgeFirewall"
+transit_cost = 1.0
+mitigation_capacity = 2.0
+protocol = &"EXTERNAL"
+
+[sub_resource type="Resource" id="Edge_2"]
+script = ExtResource("3_edge")
+from_id = &"AdvancedThreatActor"
+to_id = &"BgpRouter"
+transit_cost = 1.0
+mitigation_capacity = 2.0
+protocol = &"BGP"
+
+[sub_resource type="Resource" id="Edge_3"]
+script = ExtResource("3_edge")
+from_id = &"AdvancedThreatActor"
+to_id = &"DMZ_Gateway"
+transit_cost = 2.0
+mitigation_capacity = 1.0
+protocol = &"SCAN"
+
+[sub_resource type="Resource" id="Edge_4"]
+script = ExtResource("3_edge")
+from_id = &"EdgeFirewall"
+to_id = &"WAF_Cluster"
+transit_cost = 1.0
+mitigation_capacity = 2.0
+protocol = &"HTTPS"
+
+[sub_resource type="Resource" id="Edge_5"]
+script = ExtResource("3_edge")
+from_id = &"EdgeFirewall"
+to_id = &"DMZ_Gateway"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_6"]
+script = ExtResource("3_edge")
+from_id = &"BgpRouter"
+to_id = &"VPN_Concentrator"
+transit_cost = 1.0
+mitigation_capacity = 2.0
+protocol = &"IPSEC"
+
+[sub_resource type="Resource" id="Edge_7"]
+script = ExtResource("3_edge")
+from_id = &"BgpRouter"
+to_id = &"DMZ_Gateway"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"ROUTED"
+
+[sub_resource type="Resource" id="Edge_8"]
+script = ExtResource("3_edge")
+from_id = &"WAF_Cluster"
+to_id = &"HoneypotTrap"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"HONEYNET"
+
+[sub_resource type="Resource" id="Edge_9"]
+script = ExtResource("3_edge")
+from_id = &"WAF_Cluster"
+to_id = &"K8sIngress"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"K8S_INGRESS"
+
+[sub_resource type="Resource" id="Edge_10"]
+script = ExtResource("3_edge")
+from_id = &"DMZ_Gateway"
+to_id = &"K8sIngress"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"GRPC"
+
+[sub_resource type="Resource" id="Edge_11"]
+script = ExtResource("3_edge")
+from_id = &"DMZ_Gateway"
+to_id = &"IdentityBroker"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"OIDC_SAML"
+
+[sub_resource type="Resource" id="Edge_12"]
+script = ExtResource("3_edge")
+from_id = &"VPN_Concentrator"
+to_id = &"IdentityBroker"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"RADIUS"
+
+[sub_resource type="Resource" id="Edge_13"]
+script = ExtResource("3_edge")
+from_id = &"VPN_Concentrator"
+to_id = &"BranchOffice"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"MPLS"
+
+[sub_resource type="Resource" id="Edge_14"]
+script = ExtResource("3_edge")
+from_id = &"HoneypotTrap"
+to_id = &"MicroservicesMesh"
+transit_cost = 3.0
+mitigation_capacity = 1.0
+protocol = &"TETHER"
+
+[sub_resource type="Resource" id="Edge_15"]
+script = ExtResource("3_edge")
+from_id = &"K8sIngress"
+to_id = &"MicroservicesMesh"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"ENVOY"
+
+[sub_resource type="Resource" id="Edge_16"]
+script = ExtResource("3_edge")
+from_id = &"K8sIngress"
+to_id = &"PrivilegedBastion"
+transit_cost = 3.0
+mitigation_capacity = 2.0
+protocol = &"SSH_RESTRICTED"
+
+[sub_resource type="Resource" id="Edge_17"]
+script = ExtResource("3_edge")
+from_id = &"IdentityBroker"
+to_id = &"PrivilegedBastion"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"PAM_TOKEN"
+
+[sub_resource type="Resource" id="Edge_18"]
+script = ExtResource("3_edge")
+from_id = &"IdentityBroker"
+to_id = &"DataLakeRouter"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"IAM"
+
+[sub_resource type="Resource" id="Edge_19"]
+script = ExtResource("3_edge")
+from_id = &"BranchOffice"
+to_id = &"DataLakeRouter"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"SMB"
+
+[sub_resource type="Resource" id="Edge_20"]
+script = ExtResource("3_edge")
+from_id = &"MicroservicesMesh"
+to_id = &"VaultEnclave"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"MTLS"
+
+[sub_resource type="Resource" id="Edge_21"]
+script = ExtResource("3_edge")
+from_id = &"MicroservicesMesh"
+to_id = &"PrivilegedBastion"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"AUDIT"
+
+[sub_resource type="Resource" id="Edge_22"]
+script = ExtResource("3_edge")
+from_id = &"PrivilegedBastion"
+to_id = &"VaultEnclave"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"HSM_API"
+
+[sub_resource type="Resource" id="Edge_23"]
+script = ExtResource("3_edge")
+from_id = &"PrivilegedBastion"
+to_id = &"IsolationSwitch"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"SNMP"
+
+[sub_resource type="Resource" id="Edge_24"]
+script = ExtResource("3_edge")
+from_id = &"DataLakeRouter"
+to_id = &"IsolationSwitch"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"INTERNAL"
+
+[sub_resource type="Resource" id="Edge_25"]
+script = ExtResource("3_edge")
+from_id = &"VaultEnclave"
+to_id = &"QuantumCore"
+transit_cost = 1.0
+mitigation_capacity = 3.0
+protocol = &"QUANTUM_BUS"
+
+[sub_resource type="Resource" id="Edge_26"]
+script = ExtResource("3_edge")
+from_id = &"IsolationSwitch"
+to_id = &"QuantumCore"
+transit_cost = 2.0
+mitigation_capacity = 2.0
+protocol = &"FIBER_DIRECT"
+
+[resource]
+script = ExtResource("1_graph")
+nodes = [SubResource("Node_Defensor"), SubResource("Node_ThreatActor"), SubResource("Node_EdgeFirewall"), SubResource("Node_BgpRouter"), SubResource("Node_WAF"), SubResource("Node_DMZ_Gateway"), SubResource("Node_VPN_Concentrator"), SubResource("Node_HoneypotTrap"), SubResource("Node_K8sIngress"), SubResource("Node_IdentityBroker"), SubResource("Node_BranchOffice"), SubResource("Node_Microservices"), SubResource("Node_PrivilegedBastion"), SubResource("Node_DataLakeRouter"), SubResource("Node_VaultEnclave"), SubResource("Node_IsolationSwitch"), SubResource("Node_QuantumCore")]
+edges = [SubResource("Edge_1"), SubResource("Edge_2"), SubResource("Edge_3"), SubResource("Edge_4"), SubResource("Edge_5"), SubResource("Edge_6"), SubResource("Edge_7"), SubResource("Edge_8"), SubResource("Edge_9"), SubResource("Edge_10"), SubResource("Edge_11"), SubResource("Edge_12"), SubResource("Edge_13"), SubResource("Edge_14"), SubResource("Edge_15"), SubResource("Edge_16"), SubResource("Edge_17"), SubResource("Edge_18"), SubResource("Edge_19"), SubResource("Edge_20"), SubResource("Edge_21"), SubResource("Edge_22"), SubResource("Edge_23"), SubResource("Edge_24"), SubResource("Edge_25"), SubResource("Edge_26")]

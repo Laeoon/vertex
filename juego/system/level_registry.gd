@@ -68,17 +68,32 @@ const WORLDS: Dictionary = {
 	},
 	"cybersecurity": {
 		"title": "Cybersecurity",
-		"description": "Defensa en capas de red",
+		"description": "Defensa en capas y operaciones Blue Team",
 		"levels": [
-			{
-				"path": "res://juego/cyber/cyber_n1.json",
-				"title": "Defensa en Capas",
-				"difficulty": 3,
-			},
 			{
 				"path": "res://juego/defense/defense_n1.json",
 				"title": "Defensa Perimetral",
+				"difficulty": 1,
+			},
+			{
+				"path": "res://juego/cyber/cyber_n1.json",
+				"title": "Defensa en Capas",
 				"difficulty": 2,
+			},
+			{
+				"path": "res://juego/cyber/cyber_n2.json",
+				"title": "Movimiento Lateral",
+				"difficulty": 3,
+			},
+			{
+				"path": "res://juego/cyber/cyber_n3.json",
+				"title": "Niebla de Guerra",
+				"difficulty": 4,
+			},
+			{
+				"path": "res://juego/cyber/cyber_n4.json",
+				"title": "Operación Zero Trust",
+				"difficulty": 5,
 			},
 		]
 	},
