@@ -358,23 +358,23 @@ func draw_defender_hud(
 		if is_ready:
 			draw_circle(pip_pos, 6.0, Color(0.0, 0.9, 0.6, 0.25), false, 1.2)
 
-	# 3. Pills interactivas / indicadores de acción táctica
+	# 3. Pills interactivas / indicadores de acción táctica (Atajos 1, 2, 3, 4)
 	var pills_start_x := pips_x + (blocks_per_turn * 14.0) + 28.0
 	
 	# Pill 1: Aristas (Modo por defecto)
 	var is_edges_active := not firewall_mode and not quarantine_mode
-	_draw_hud_pill(Vector2(pills_start_x, 8.0), "1: ARISTAS", is_edges_active, BrandClass.ACCENT)
+	_draw_hud_pill(Vector2(pills_start_x, 8.0), "[1] ARISTAS", is_edges_active, BrandClass.ACCENT)
 
-	# Pill 2: Firewall [F]
-	_draw_hud_pill(Vector2(pills_start_x + 90.0, 8.0), "[F] FIREWALL", firewall_mode, Color(0.2, 0.7, 1.0))
+	# Pill 2: Firewall [2] / [F]
+	_draw_hud_pill(Vector2(pills_start_x + 95.0, 8.0), "[2] FIREWALL", firewall_mode, Color(0.2, 0.7, 1.0))
 
-	# Pill 3: Cuarentena [C]
-	_draw_hud_pill(Vector2(pills_start_x + 195.0, 8.0), "[C] CUARENTENA", quarantine_mode, Color(1.0, 0.75, 0.0), true)
+	# Pill 3: Cuarentena [3] / [C]
+	_draw_hud_pill(Vector2(pills_start_x + 205.0, 8.0), "[3] CUARENTENA", quarantine_mode, Color(1.0, 0.75, 0.0), true)
 
-	# Pill 4: Niebla / Telemetría [P]
+	# Pill 4: Niebla / Telemetría [4] / [P]
 	if fog_of_war or telemetry_intercepted:
-		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[P] REVELAR"
-		_draw_hud_pill(Vector2(pills_start_x + 315.0, 8.0), p_label, telemetry_intercepted, BrandClass.WARNING if telemetry_intercepted else Color("80d8ff"))
+		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[4] RADAR"
+		_draw_hud_pill(Vector2(pills_start_x + 330.0, 8.0), p_label, telemetry_intercepted, BrandClass.WARNING if telemetry_intercepted else Color("80d8ff"))
 
 	# 4. Centro-Derecha: Barra de progreso EDR Forensics Trace (0..100%)
 	var trace_box_w := 200.0

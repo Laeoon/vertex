@@ -44,8 +44,8 @@
     },
     {
       "id": "host_isolation_intro",
-      "title": "CONTRAMEDIDA CRÍTICA: CUARENTENA DE HOST",
-      "text": "Si un servidor intermedio (como DMZ) está comprometido y a punto de saltar al DataCenter,\npuedes ejecutar la opción nuclear: AISLAMIENTO DE RED (Host Quarantine).\nAl presionar [C] y hacer clic en un nodo, cortas todas sus conexiones físicas de raíz.",
+      "title": "CONTRAMEDIDA CRÍTICA: CUARENTENA DE HOST [3]",
+      "text": "Si un servidor intermedio (como DMZ) está comprometido y a punto de saltar al DataCenter,\npuedes ejecutar la opción nuclear: AISLAMIENTO DE RED (Host Quarantine).\nPresiona [3] (o [C]), o haz clic en [3] CUARENTENA en el HUD superior, y selecciona un nodo con halo ámbar.\nEsto cortará todas sus conexiones de raíz para frenar el avance.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",

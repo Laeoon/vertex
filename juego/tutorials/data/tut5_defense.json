@@ -33,8 +33,8 @@
 	},
 	{
 		"id": "node_firewall",
-		"title": "Firewall de Nodo [F]",
-      "text": "FIREWALL DE NODO — PROTECCIÓN PERMANENTE.\n\nPresiona [F] para activar el modo firewall\nde nodo. Luego haz clic en un NODO para\ncolocar un firewall permanente.\n\n¿QUÉ HACE?\n- Bloquea TODAS las conexiones que pasan\n  por ese nodo (entrada y salida)\n- Es PERMANENTE: no expira\n- Costo: 2 bloqueos (1 turno completo)\n\nCUÁNDO USARLO:\n- Nodos críticos (DataCenter)\n- Cuellos de botella por donde pasan\n  muchas rutas del atacante\n\nCUÁNDO NO:\n- Si necesitas flexibilidad\n- Si tienes pocos bloqueos\n- Si el nodo no es estratégico\n\n¿Vale 2 bloqueos la protección permanente?",
+		"title": "Firewall de Nodo [2] o [F]",
+      "text": "FIREWALL DE NODO — PROTECCIÓN PERMANENTE.\n\nPresiona [2] (o [F]) para activar el modo firewall\nde nodo, o haz clic en la pill [2] FIREWALL del HUD.\nLuego haz clic en un NODO para colocarlo.\n\n¿QUÉ HACE?\n- Bloquea TODAS las conexiones que pasan\n  por ese nodo (entrada y salida)\n- Es PERMANENTE: no expira\n- Costo: 2 bloqueos (1 turno completo)\n\nCUÁNDO USARLO:\n- Nodos críticos (DataCenter)\n- Cuellos de botella por donde pasan\n  muchas rutas del atacante\n\nCUÁNDO NO:\n- Si necesitas flexibilidad\n- Si tienes pocos bloqueos\n- Si el nodo no es estratégico\n\n¿Vale 2 bloqueos la protección permanente?",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",
@@ -86,7 +86,7 @@
 	{
 		"id": "try_advanced",
 		"title": "¡Practica! Ponte a Prueba",
-      "text": "APLICA TODO LO APRENDIDO.\n\nAhora tienes todas las herramientas:\n- Bloqueo de aristas (clic en línea)\n- Firewall de nodo [F] (clic en nodo)\n- Análisis de corte mínimo\n- Timing estratégico\n\nTU MISIÓN:\nEl atacante está en Internet. Quiere llegar\na DataCenter en 12 turnos.\n\n1. Analiza la red: ¿cuántas rutas hay?\n2. Identifica cuellos de botella\n3. Decide: ¿firewall o bloqueos normales?\n4. Coloca defensas con inteligencia\n5. Resuelve turno con [Enter]\n\nCONSEJO: [F] alterna entre modo bloqueo\ny modo firewall. Observa la línea NARANJA.\n¡Demuestra lo aprendido!",
+      "text": "APLICA TODO LO APRENDIDO.\n\nAhora tienes la botonera táctica completa:\n- [1] Bloqueo de aristas (clic en línea)\n- [2] Firewall de nodo (clic en nodo)\n- [3] Aislamiento de host (cuarentena de emergencia)\n- [4] Radar / ruta óptima\n\nTU MISIÓN:\nEl atacante está en Internet. Quiere llegar\na DataCenter en 12 turnos.\n\n1. Analiza la red: ¿cuántas rutas hay?\n2. Identifica cuellos de botella\n3. Decide: ¿firewall o bloqueos normales?\n4. Coloca defensas con inteligencia\n5. Resuelve turno con [Enter]\n\nCONSEJO: Usa las teclas [1], [2], [3] o haz clic en las\npills del HUD superior. ¡Demuestra lo aprendido!",
 		"anchor_type": "screen",
 		"anchor_id": "",
 		"position": "center",

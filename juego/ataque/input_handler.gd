@@ -316,16 +316,30 @@ func _input(event: InputEvent) -> void:
 		if k.keycode in [KEY_ENTER, KEY_SPACE] and not game_over and Time.get_ticks_msec() >= _turn_locked_until:
 			defender_resolve_turn.emit()
 			return
-		if k.keycode == KEY_F and not game_over:
+
+		# Tecla [1]: Modo Aristas (desactiva modos especiales)
+		if k.keycode in [KEY_1, KEY_KP_1] and not game_over:
+			quarantine_mode = false
+			firewall_mode = false
+			defender_toggle_quarantine.emit()
+			_mensaje_temp("Modo Aristas activo [1]: Haz clic en las líneas para bloquear.")
+			return
+
+		# Tecla [2] o [F]: Modo Firewall de nodo
+		if k.keycode in [KEY_2, KEY_KP_2, KEY_F] and not game_over:
 			quarantine_mode = false
 			defender_toggle_firewall.emit()
 			return
-		if k.keycode == KEY_C and not game_over:
+
+		# Tecla [3] o [C]: Modo Cuarentena de nodo
+		if k.keycode in [KEY_3, KEY_KP_3, KEY_C] and not game_over:
 			firewall_mode = false
 			quarantine_mode = not quarantine_mode
 			defender_toggle_quarantine.emit()
 			return
-		if k.keycode == KEY_P and not game_over:
+
+		# Tecla [4] o [P]: Radar / Revelar ruta óptima o niebla
+		if k.keycode in [KEY_4, KEY_KP_4, KEY_P] and not game_over:
 			toggle_optimal_route.emit()
 			return
 
