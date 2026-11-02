@@ -254,12 +254,9 @@ func _request_export(slot_id: int) -> void:
 func _trigger_secret_konami_level() -> void:
 	_play_sfx("win")
 	_show_toast("🔓 ACCESO CLASIFICADO: SECTOR 0 DESBLOQUEADO", Color("39ff88"))
-	var sp = get_node_or_null("/root/SceneParams")
-	if sp:
-		sp.reset()
-		sp.level_key = "secret_root"
+	var LevelManagerClass = load("res://juego/system/level_manager.gd")
 	await get_tree().create_timer(1.2).timeout
-	SceneTransition.fade_to_scene("res://juego/ataque/juego_ataque.tscn")
+	LevelManagerClass.launch_level("secret", 0)
 
 
 ## Lista los .bak de user://backups/ del más reciente al más antiguo.

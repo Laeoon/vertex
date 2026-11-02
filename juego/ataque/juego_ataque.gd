@@ -673,8 +673,9 @@ func _draw() -> void:
 	# sin callables — orquestación en GameRenderer.draw_frame().
 	_renderer.draw_frame(_game_state.frame_data(vp_size))
 
-	# Dibujar terminal CLI encima si está activa
+	# Dibujar terminal CLI encima si está activa (garantizando transform neutral de pantalla)
 	if _terminal_overlay != null and _terminal_overlay.is_terminal_open:
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		_terminal_overlay.draw_terminal(self, vp_size, font, font_size)
 
 

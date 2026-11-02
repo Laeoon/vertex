@@ -120,19 +120,21 @@ func sync_state() -> void:
 func _input(event: InputEvent) -> void:
 	sync_state()
 
-	# Interceptar input si la terminal está abierta o si se presiona [~] / [T]
+	# Interceptar input si la terminal está abierta o si se presiona [~] / [T] / [F1]
 	if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
 		if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
 			var tk := (event as InputEventKey).keycode
-			if tk in [KEY_QUOTELEFT, KEY_ASCIITILDE]:
+			if tk in [KEY_QUOTELEFT, KEY_ASCIITILDE, KEY_F1]:
 				game._terminal_overlay.toggle()
+				game.queue_redraw()
 				return
 			elif tk == KEY_T and not game._terminal_overlay.is_terminal_open and not game.game_over:
-				# Tecla [T] abre la terminal si no estamos escribiendo en ella
 				game._terminal_overlay.open()
+				game.queue_redraw()
 				return
 		if game._terminal_overlay.is_terminal_open:
 			if game._terminal_overlay.handle_input(event):
+				game.queue_redraw()
 				return
 
 	# ─── Bloqueo durante movimiento interpolado ────────────────
@@ -404,6 +406,12 @@ func _input(event: InputEvent) -> void:
 				elif click_pos.x >= 520.0 and click_pos.x <= 640.0:
 					# Pill Revelar ruta / niebla
 					toggle_optimal_route.emit()
+					return
+				elif click_pos.x >= 645.0 and click_pos.x <= 780.0:
+					# Pill Terminal CLI
+					if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
+						game._terminal_overlay.toggle()
+						game.queue_redraw()
 					return
 
 			if quarantine_mode and not game_over:

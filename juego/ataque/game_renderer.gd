@@ -376,6 +376,10 @@ func draw_defender_hud(
 		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[4] RADAR"
 		_draw_hud_pill(Vector2(pills_start_x + 330.0, 8.0), p_label, telemetry_intercepted, BrandClass.WARNING if telemetry_intercepted else Color("80d8ff"))
 
+	# Pill 5: Terminal CLI [~] / [T]
+	var term_x := pills_start_x + (440.0 if (fog_of_war or telemetry_intercepted) else 330.0)
+	_draw_hud_pill(Vector2(term_x, 8.0), "[~] TERMINAL", false, Color("00e5ff"))
+
 	# 4. Centro-Derecha: Barra de progreso EDR Forensics Trace (0..100%)
 	var trace_box_w := 200.0
 	var trace_box_x := vp_size.x - 470.0

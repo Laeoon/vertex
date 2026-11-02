@@ -2,7 +2,7 @@ class_name TerminalOverlay extends Control
 
 ## TerminalOverlay
 ## Consola de comandos táctica in-game estilo UNIX/Cyberpunk para VERTEX.
-## Se abre con [~] o [T] y permite ejecutar diagnósticos y telemetría de red.
+## Se abre con [~], [T] o [F1] y permite ejecutar diagnósticos y telemetría de red.
 
 signal terminal_visibility_changed(is_visible: bool)
 
@@ -15,6 +15,11 @@ var _cursor_blink: float = 0.0
 
 const MAX_LINES: int = 14
 const PROMPT: String = "operator@vertex:~$ "
+
+
+func _ready() -> void:
+	# Permitir procesar cuando el juego esté pausado o en foco
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
 func setup(game_node: Node) -> void:
@@ -37,13 +42,15 @@ func open() -> void:
 	is_terminal_open = true
 	_input_text = ""
 	terminal_visibility_changed.emit(true)
-	queue_redraw()
+	if _game != null:
+		_game.queue_redraw()
 
 
 func close() -> void:
 	is_terminal_open = false
 	terminal_visibility_changed.emit(false)
-	queue_redraw()
+	if _game != null:
+		_game.queue_redraw()
 
 
 func handle_input(event: InputEvent) -> bool:
