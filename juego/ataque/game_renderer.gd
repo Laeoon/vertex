@@ -79,7 +79,12 @@ func draw_frame(d: Dictionary) -> void:
 	var should_draw_enemy_path: bool = d.get("brain_path_revealed", true) if d.defender_mode else false
 	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if should_draw_enemy_path else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
 	if d.defender_mode:
-		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, Vector2.ZERO, false, true, d.brain_enemy_pos, d.get("brain_quarantined_nodes", {}))
+		var q_mode_active: bool = d.get("quarantine_mode", false)
+		var enemy_start_node: StringName = d.graph.nodes[0].id if d.graph != null and d.graph.nodes.size() > 0 else &""
+		if d.get("enemy_start_node", &"") != &"":
+			enemy_start_node = d.get("enemy_start_node")
+		var enemy_vis: Vector2 = d.get("enemy_visual_pos", Vector2.ZERO)
+		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, enemy_vis, false, true, d.brain_enemy_pos, d.get("brain_quarantined_nodes", {}), q_mode_active, enemy_start_node, d.brain_enemy_target)
 		if should_draw_enemy_path and d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
@@ -97,7 +102,8 @@ func draw_frame(d: Dictionary) -> void:
 		_canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if d.defender_mode:
-		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}), d.get("brain_fog_of_war", false), d.get("brain_telemetry_intercepted", false))
+		var q_mode_active: bool = d.get("quarantine_mode", false)
+		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}), d.get("brain_fog_of_war", false), d.get("brain_telemetry_intercepted", false), q_mode_active)
 	else:
 		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
 	if d.hacker_mode:
@@ -315,8 +321,8 @@ func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: D
 func draw_defender_hud(
 	vp_size: Vector2,
 	turn: int,
-	_blocks_placed: int,
-	_blocks_per_turn: int,
+	blocks_placed: int,
+	blocks_per_turn: int,
 	enemy_pos: StringName,
 	enemy_target: StringName,
 	_max_turns: int,
@@ -327,58 +333,85 @@ func draw_defender_hud(
 	forensics_trace: float = 0.0,
 	_quarantined_nodes: Dictionary = {},
 	fog_of_war: bool = false,
-	telemetry_intercepted: bool = false
+	telemetry_intercepted: bool = false,
+	quarantine_mode: bool = false
 ) -> void:
-	# Barra única compacta (38px de alto) estilo consola táctica militar
-	var bar_h: float = 38.0
-	draw_rect(Rect2(0, 0, vp_size.x, bar_h), Color(0.02, 0.03, 0.07, 0.92))
+	# Barra única compacta (44px de alto) estilo consola táctica militar
+	var bar_h: float = 44.0
+	draw_rect(Rect2(0, 0, vp_size.x, bar_h), Color(0.02, 0.03, 0.07, 0.94))
 	draw_rect(Rect2(0, bar_h, vp_size.x, 1.5), Color(0.15, 0.65, 0.95, 0.7))
 
-	# Izquierda: Título y turno
-
-	draw_string(Vector2(16, 24), "BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.ACCENT)
-	var turn_txt := " // TURNO %d" % turn
+	# 1. Izquierda: Título y turno
+	draw_string(Vector2(16, 26), "BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.ACCENT)
+	var turn_txt := " // T%d" % turn
 	var t_sz := font.get_string_size("BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-	draw_string(Vector2(16 + t_sz.x, 24), turn_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	draw_string(Vector2(16 + t_sz.x, 26), turn_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
-	# Centro: Barra de progreso EDR Forensics Trace (0..100%)
-	var center_x: float = vp_size.x * 0.5
-	var trace_box_w := 260.0
-	var trace_box_x := center_x - (trace_box_w * 0.5)
+	# 2. Presupuesto de bloqueos del turno (Pips gráficos ● ● ○)
+	var pips_x := 16.0 + t_sz.x + 65.0
+	var blocks_avail := maxi(0, blocks_per_turn - blocks_placed)
+	draw_string(Vector2(pips_x, 18), "BLOQUEOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+	for b in range(maxi(1, blocks_per_turn)):
+		var pip_pos := Vector2(pips_x + b * 14.0 + 4.0, 28.0)
+		var is_ready := b < blocks_avail
+		draw_circle(pip_pos, 4.0, Color(0.0, 0.9, 0.6) if is_ready else Color(0.25, 0.28, 0.35))
+		if is_ready:
+			draw_circle(pip_pos, 6.0, Color(0.0, 0.9, 0.6, 0.25), false, 1.2)
+
+	# 3. Pills interactivas / indicadores de acción táctica
+	var pills_start_x := pips_x + (blocks_per_turn * 14.0) + 28.0
+	
+	# Pill 1: Aristas (Modo por defecto)
+	var is_edges_active := not firewall_mode and not quarantine_mode
+	_draw_hud_pill(Vector2(pills_start_x, 8.0), "1: ARISTAS", is_edges_active, BrandClass.ACCENT)
+
+	# Pill 2: Firewall [F]
+	_draw_hud_pill(Vector2(pills_start_x + 90.0, 8.0), "[F] FIREWALL", firewall_mode, Color(0.2, 0.7, 1.0))
+
+	# Pill 3: Cuarentena [C]
+	_draw_hud_pill(Vector2(pills_start_x + 195.0, 8.0), "[C] CUARENTENA", quarantine_mode, Color(1.0, 0.75, 0.0), true)
+
+	# Pill 4: Niebla / Telemetría [P]
+	if fog_of_war or telemetry_intercepted:
+		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[P] REVELAR"
+		_draw_hud_pill(Vector2(pills_start_x + 315.0, 8.0), p_label, telemetry_intercepted, BrandClass.WARNING if telemetry_intercepted else Color("80d8ff"))
+
+	# 4. Centro-Derecha: Barra de progreso EDR Forensics Trace (0..100%)
+	var trace_box_w := 200.0
+	var trace_box_x := vp_size.x - 470.0
 
 	var trace_label := "RASTREO EDR: %.0f%%" % forensics_trace
 	draw_string(Vector2(trace_box_x, 16), trace_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color("b388ff"))
 
-	var tb_bg := Rect2(trace_box_x, 21, trace_box_w, 8.0)
+	var tb_bg := Rect2(trace_box_x, 22, trace_box_w, 8.0)
 	draw_rect(tb_bg, Color(0.08, 0.08, 0.15, 0.8))
 	draw_rect(tb_bg, Color(0.4, 0.3, 0.7, 0.4), false, 1.0)
 	var tb_fill_w := trace_box_w * clampf(forensics_trace / 100.0, 0.0, 1.0)
 	if tb_fill_w > 0:
-		draw_rect(Rect2(trace_box_x, 21, tb_fill_w, 8.0), Color("b388ff"))
+		draw_rect(Rect2(trace_box_x, 22, tb_fill_w, 8.0), Color("b388ff"))
 
-	# A la derecha del Trace: Estado de telemetría de niebla o ciclo
-	var sub_x := center_x + 145.0
-	if telemetry_intercepted:
-		draw_string(Vector2(sub_x, 24), "RUTA EXPUESTA (MÁX 2★)", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.WARNING)
-	elif fog_of_war:
-		draw_string(Vector2(sub_x, 24), "[P] REVELAR RUTA", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color("80d8ff"))
-	else:
-		draw_string(Vector2(sub_x, 24), "RESPUESTA EN VIVO 1:1", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.2, 0.9, 0.5))
-
-	# Derecha extrema: Posición del Intruso y Núcleo objetivo
-	var targets_x := vp_size.x - 260.0
+	# 5. Derecha extrema: Posición del Intruso y Núcleo objetivo
+	var targets_x := vp_size.x - 240.0
 	if enemy_pos != &"":
-		draw_string(Vector2(targets_x, 16), "INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.35, 0.25))
+		draw_string(Vector2(targets_x, 18), "INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.35, 0.25))
 	if enemy_target != &"":
-		draw_string(Vector2(targets_x, 30), "NÚCLEO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.1, 0.85, 0.95))
+		draw_string(Vector2(targets_x, 34), "NÚCLEO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.1, 0.85, 0.95))
 
-	# Tag de modo firewall/cuarentena
-	if firewall_mode:
-		var fw_text := "MODO FW"
-		var fw_w := font.get_string_size(fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
-		draw_rect(Rect2(vp_size.x - fw_w - 20.0, 11, fw_w + 10, 16), Color(1.0, 0.4, 0.0, 0.2))
-		draw_rect(Rect2(vp_size.x - fw_w - 20.0, 11, fw_w + 10, 16), Color(1.0, 0.4, 0.0, 0.6), false, 1.0)
-		draw_string(Vector2(vp_size.x - fw_w - 15.0, 23), fw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.5, 0.0))
+
+func _draw_hud_pill(pos: Vector2, text: String, active: bool, color: Color, pulse: bool = false) -> void:
+	var t_w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
+	var pill_rect := Rect2(pos.x, pos.y, t_w + 14.0, 24.0)
+
+	var bg_col := BrandClass.with_alpha(color, 0.22 if active else 0.06)
+	var border_col := BrandClass.with_alpha(color, 0.85 if active else 0.25)
+	if active and pulse:
+		var p_wave := 0.6 + sin(Time.get_ticks_msec() * 0.008) * 0.35
+		border_col = BrandClass.with_alpha(color, p_wave)
+		draw_rect(Rect2(pos.x - 2, pos.y - 2, t_w + 18.0, 28.0), BrandClass.with_alpha(color, p_wave * 0.25), false, 1.5)
+
+	draw_rect(pill_rect, bg_col)
+	draw_rect(pill_rect, border_col, false, 1.2)
+	draw_string(Vector2(pos.x + 7.0, pos.y + 17.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color if active else BrandClass.TEXT_DIM)
 
 
 func draw_edges(
@@ -588,7 +621,10 @@ func draw_nodes(
 	is_moving: bool = false,
 	defender_mode: bool = false,
 	brain_enemy_pos: StringName = &"",
-	quarantined_nodes: Dictionary = {}
+	quarantined_nodes: Dictionary = {},
+	quarantine_mode_active: bool = false,
+	enemy_start_node: StringName = &"",
+	enemy_target_node: StringName = &""
 ) -> void:
 	# Identidad por tipo (E2): forma geométrica según NodeType.
 	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
@@ -795,6 +831,13 @@ func draw_nodes(
 			var q_color: Color = Color(1.0, 0.7, 0.0, 0.9)
 			draw_rect(Rect2(pos.x - radius - 6.0, pos.y - radius - 6.0, (radius + 6.0) * 2.0, (radius + 6.0) * 2.0), q_color, false, 2.0)
 			draw_string(Vector2(pos.x - 14, pos.y + 4), "AISLADO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, q_color)
+		elif defender_mode and quarantine_mode_active and not game_over:
+			# Halo ámbar/dorado en los nodos que sí se pueden aislar
+			if nid_str != enemy_start_node and nid_str != enemy_target_node:
+				var q_pulse: float = 0.5 + sin(Time.get_ticks_msec() * 0.006) * 0.3
+				draw_circle(pos, radius + 8.0, Color(1.0, 0.75, 0.0, q_pulse * 0.5), false, 2.0)
+				draw_circle(pos, radius + 13.0, Color(1.0, 0.75, 0.0, q_pulse * 0.25), false, 1.0)
+				draw_string(Vector2(pos.x - 6, pos.y - radius - 4), "☣", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color(1.0, 0.85, 0.2))
 
 		# Bonus node marker (E3): rombo pequeño flotando arriba-izquierda —
 		# WARNING mientras pendiente, TEXT_DIM cuando ya fue visitado.
@@ -818,8 +861,8 @@ func draw_nodes(
 			draw_circle(ppos, 4.0 if is_moving else 3.5, Color.WHITE)
 			draw_string(Vector2(ppos.x - 8, ppos.y + node_radius + 16), "YOU", HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.0, 0.9, 1.0))
 	else:
-		# En modo defensor, dibujamos el token táctico del atacante hostil en su posición actual
-		var epos: Vector2 = node_positions.get(brain_enemy_pos, Vector2.ZERO) as Vector2
+		# En modo defensor, dibujamos el token táctico del atacante hostil en su posición actual o interpolada
+		var epos: Vector2 = player_visual_pos if player_visual_pos != Vector2.ZERO else (node_positions.get(brain_enemy_pos, Vector2.ZERO) as Vector2)
 		if epos != Vector2.ZERO and not game_over and brain_enemy_pos != &"":
 			var e_pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.008) * 0.3
 			draw_circle(epos, node_radius + 6.0, Color(1.0, 0.2, 0.1, e_pulse * 0.7), false, 2.5)

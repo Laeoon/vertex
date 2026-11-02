@@ -142,6 +142,8 @@ var _unblock_flash_time: float = -1.0
 var _unblock_flash_edge: String = ""
 var _game_over_time: float = -1.0
 var _budget_display: float = 0.0
+var enemy_visual_pos: Vector2 = Vector2.ZERO
+var _enemy_tween: Tween = null
 
 # Componentes extraídos. Tipos omitidos donde el class_name no se resuelve
 # en CLI headless sin editor (convención del proyecto).
@@ -601,6 +603,17 @@ func _on_brain_state_changed() -> void:
 
 func _on_enemy_moved() -> void:
 	_enemy_move_flash_time = Time.get_ticks_msec() / 1000.0
+	if enemy_pos != &"" and node_positions.has(enemy_pos):
+		var target_pos: Vector2 = node_positions[enemy_pos]
+		if enemy_visual_pos == Vector2.ZERO:
+			enemy_visual_pos = target_pos
+		else:
+			if _enemy_tween != null and _enemy_tween.is_valid():
+				_enemy_tween.kill()
+			_enemy_tween = create_tween()
+			_enemy_tween.tween_property(self, "enemy_visual_pos", target_pos, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_enemy_tween.step_finished.connect(func(_idx): queue_redraw())
+	queue_redraw()
 
 
 # ─── Tutorial ──────────────────────────────────────────────────────

@@ -329,6 +329,15 @@ func _input(event: InputEvent) -> void:
 			toggle_optimal_route.emit()
 			return
 
+	# ─── Click secundario (Cancelación inmediata de modos) ────
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		if defender_mode and (quarantine_mode or firewall_mode):
+			quarantine_mode = false
+			firewall_mode = false
+			defender_toggle_quarantine.emit()
+			_mensaje_temp("Modo especial cancelado. Volviendo a bloqueo de aristas.")
+			return
+
 	# ─── Click izquierdo ──────────────────────────────────────
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if input_scheme == Scheme.KEYBOARD_ONLY:
@@ -343,15 +352,45 @@ func _input(event: InputEvent) -> void:
 
 		# Defender mode: clics
 		if defender_mode:
+			# Detectar si se hizo clic en las pills del HUD superior
+			if click_pos.y <= 44.0:
+				if click_pos.x >= 200.0 and click_pos.x <= 285.0:
+					# Pill Aristas
+					quarantine_mode = false
+					firewall_mode = false
+					defender_toggle_quarantine.emit()
+					_mensaje_temp("Modo Aristas activo: Haz clic en las líneas para bloquear.")
+					return
+				elif click_pos.x >= 290.0 and click_pos.x <= 390.0:
+					# Pill Firewall
+					quarantine_mode = false
+					defender_toggle_firewall.emit()
+					return
+				elif click_pos.x >= 395.0 and click_pos.x <= 515.0:
+					# Pill Cuarentena
+					firewall_mode = false
+					quarantine_mode = not quarantine_mode
+					defender_toggle_quarantine.emit()
+					return
+				elif click_pos.x >= 520.0 and click_pos.x <= 640.0:
+					# Pill Revelar ruta / niebla
+					toggle_optimal_route.emit()
+					return
+
 			if quarantine_mode and not game_over:
 				var node_id: StringName = _find_node_at_pos_firewall(click_pos)
 				if node_id != &"":
 					if _tutorial_blocks("input"):
 						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
+					# Desenganchar automáticamente el modo cuarentena tras emitir la orden
+					quarantine_mode = false
 					defender_quarantine_node.emit(node_id)
 				else:
-					_mensaje_temp("Haz clic en un NODO para declarar CUARENTENA, o presiona [C] para cancelar")
+					# Clic en el vacío cancela el modo cuarentena para evitar quedar pegado
+					quarantine_mode = false
+					defender_toggle_quarantine.emit()
+					_mensaje_temp("Cuarentena cancelada. Haz clic en una arista para bloquear.")
 			elif firewall_mode and not game_over:
 				var node_id: StringName = _find_node_at_pos_firewall(click_pos)
 				if node_id != &"":
@@ -359,9 +398,12 @@ func _input(event: InputEvent) -> void:
 					if _tutorial_blocks("input"):
 						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 						return
+					firewall_mode = false
 					defender_place_firewall.emit(node_id)
 				else:
-					_mensaje_temp("Haz clic en un NODO para colocar firewall, o presiona [F] para cambiar al modo bloqueo de aristas")
+					firewall_mode = false
+					defender_toggle_firewall.emit()
+					_mensaje_temp("Modo Firewall cancelado. Haz clic en una arista para bloquear.")
 			else:
 				var edge_key: String = _find_edge_at_pos(click_pos)
 				if edge_key != "":

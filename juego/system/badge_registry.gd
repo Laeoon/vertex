@@ -40,7 +40,7 @@ const BADGES: Array[Dictionary] = [
 		"title": "CENTINELA PERIMETRAL",
 		"description": "Completa todas las misiones del sector Cybersecurity.",
 		"icon": "glyph_shield",
-		"rule": {"type": "world_complete", "world": "cybersecurity", "target": 2},
+		"rule": {"type": "world_complete", "world": "cybersecurity", "target": 5},
 	},
 	{
 		"id": "unbroken_streak",
@@ -75,7 +75,7 @@ const BADGES: Array[Dictionary] = [
 		"title": "ARQUITECTO SUPREMO",
 		"description": "Obtén 3 estrellas en la totalidad de misiones registradas.",
 		"icon": "glyph_crown",
-		"rule": {"type": "all_3_stars", "target": 12},
+		"rule": {"type": "all_3_stars", "target": 15},
 	},
 ]
 
