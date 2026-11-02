@@ -37,6 +37,12 @@ var _toast_message: String = ""
 var _toast_color: Color = BrandClass.ACCENT
 var _toast_timer: float = 0.0
 
+# Secuencia Konami Code: ↑ ↑ ↓ ↓ ← → ← → B A
+const KONAMI_SEQUENCE: Array[int] = [
+	KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT, KEY_B, KEY_A
+]
+var _konami_idx: int = 0
+
 
 func _ready() -> void:
 	font = BrandClass.font_regular()
@@ -71,6 +77,18 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	var vp := get_viewport_rect().size
+
+	# Detección global de Konami Code en cualquier estado de StartScreen
+	if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
+		var key_code := (event as InputEventKey).keycode
+		if key_code == KONAMI_SEQUENCE[_konami_idx]:
+			_konami_idx += 1
+			if _konami_idx >= KONAMI_SEQUENCE.size():
+				_konami_idx = 0
+				_trigger_secret_konami_level()
+				return
+		else:
+			_konami_idx = 1 if key_code == KONAMI_SEQUENCE[0] else 0
 
 	if _state == State.PRESS_START:
 		if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
@@ -231,6 +249,17 @@ func _request_export(slot_id: int) -> void:
 		var error_msg: String = str(result.get("message", result.get("error", "ERROR DESCONOCIDO")))
 		_show_toast("[ERROR] NO SE PUDO EXPORTAR: %s" % error_msg, BrandClass.DANGER)
 		_play_sfx("alert")
+
+
+func _trigger_secret_konami_level() -> void:
+	_play_sfx("win")
+	_show_toast("🔓 ACCESO CLASIFICADO: SECTOR 0 DESBLOQUEADO", Color("39ff88"))
+	var sp = get_node_or_null("/root/SceneParams")
+	if sp:
+		sp.reset()
+		sp.level_key = "secret_root"
+	await get_tree().create_timer(1.2).timeout
+	SceneTransition.fade_to_scene("res://juego/ataque/juego_ataque.tscn")
 
 
 ## Lista los .bak de user://backups/ del más reciente al más antiguo.

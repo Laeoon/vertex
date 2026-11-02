@@ -58,6 +58,7 @@ func _ready() -> void:
 	_main_items = [
 		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play", "icon_path": "res://assets/icons/menu_play.png", "icon_tex": null, "vector_icon": "play"},
 		{"label": loc("menu.options"), "desc": loc("menu.options_desc"), "action": "options", "icon_path": "res://assets/icons/menu_options.png", "icon_tex": null, "vector_icon": "options"},
+		{"label": "Créditos", "desc": "Expediente clasificado de autoría y licencias", "action": "credits", "icon_path": "", "icon_tex": null, "vector_icon": "credits"},
 		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database", "icon_path": "res://assets/icons/menu_database.png", "icon_tex": null, "vector_icon": "database"},
 		{"label": loc("menu.exit"), "desc": loc("menu.exit_desc") if loc("menu.exit_desc") != "menu.exit_desc" else "Terminar sesión", "action": "exit", "icon_path": "res://assets/icons/menu_exit.png", "icon_tex": null, "vector_icon": "exit"},
 		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon_path": "res://assets/icons/menu_profile.png", "icon_tex": null, "vector_icon": "profile"},
@@ -444,6 +445,8 @@ func _activate_selected() -> void:
 				_start_dive_in("", "", State.WORLD_SELECT, true)
 			"options":
 				_start_dive_in("res://escenas/menu/options.tscn")
+			"credits":
+				_start_dive_in("res://escenas/menu/credits_screen.tscn")
 			"profile":
 				_start_dive_in("res://escenas/menu/profile.tscn")
 			"database":
@@ -758,6 +761,12 @@ func _draw_vector_icon(pos: Vector2, icon_type: String, nscale: float, col: Colo
 			for k in range(6):
 				var ta := float(k) * TAU / 6.0
 				draw_line(pos + Vector2(cos(ta), sin(ta)) * 7.0 * nscale, pos + Vector2(cos(ta), sin(ta)) * 11.0 * nscale, col, 1.5 * nscale)
+		"credits":
+			var c_rect := Rect2(pos - Vector2(6, 8) * nscale, Vector2(12, 16) * nscale)
+			draw_rect(c_rect, col, false, 1.5 * nscale)
+			draw_line(pos + Vector2(-3, -3) * nscale, pos + Vector2(3, -3) * nscale, col, 1.2 * nscale)
+			draw_line(pos + Vector2(-3, 1) * nscale, pos + Vector2(3, 1) * nscale, col, 1.2 * nscale)
+			draw_line(pos + Vector2(-3, 5) * nscale, pos + Vector2(1, 5) * nscale, col, 1.2 * nscale)
 		"profile":
 			draw_circle(pos - Vector2(0, 4) * nscale, 4.0 * nscale, col)
 			draw_arc(pos + Vector2(0, 7) * nscale, 6.5 * nscale, PI * 1.15, PI * 1.85, 12, col, 1.8 * nscale)

@@ -120,6 +120,21 @@ func sync_state() -> void:
 func _input(event: InputEvent) -> void:
 	sync_state()
 
+	# Interceptar input si la terminal está abierta o si se presiona [~] / [T]
+	if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
+		if event is InputEventKey and event.pressed and not (event as InputEventKey).echo:
+			var tk := (event as InputEventKey).keycode
+			if tk in [KEY_QUOTELEFT, KEY_ASCIITILDE]:
+				game._terminal_overlay.toggle()
+				return
+			elif tk == KEY_T and not game._terminal_overlay.is_terminal_open and not game.game_over:
+				# Tecla [T] abre la terminal si no estamos escribiendo en ella
+				game._terminal_overlay.open()
+				return
+		if game._terminal_overlay.is_terminal_open:
+			if game._terminal_overlay.handle_input(event):
+				return
+
 	# ─── Bloqueo durante movimiento interpolado ────────────────
 	if is_moving:
 		if event is InputEventKey and event.pressed:

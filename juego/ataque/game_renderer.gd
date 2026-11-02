@@ -523,7 +523,27 @@ func draw_edges(
 
 		draw_polyline(puntos, edge_color, line_width)
 
+		# VFX: Pulso de fotones de datos viajando a lo largo de aristas activas no bloqueadas
+		if not is_blocked and not game_over and puntos.size() >= 2:
+			var time_sec: float = Time.get_ticks_msec() * 0.001
+			var speed_mod: float = 0.85
+			var photon_t: float = fmod((time_sec * speed_mod) + (float(hash(edge_key) % 100) * 0.01), 1.0)
+			var photon_pos: Vector2 = puntos[0].lerp(puntos[puntos.size() - 1], photon_t)
+			if absf(bend) >= 0.5:
+				var ctrl: Vector2 = centro + perp * bend * 2.0
+				photon_pos = inicio.lerp(ctrl, photon_t).lerp(ctrl.lerp(tip, photon_t), photon_t)
+			var photon_col := Color("ffffff") if (in_path or in_enemy_path) else edge_color.lightened(0.4)
+			draw_circle(photon_pos, 2.2, photon_col)
+			draw_circle(photon_pos, 4.0, BrandClass.with_alpha(photon_col, 0.35), false, 1.0)
+
 		if is_blocked:
+			# Chispas de desconexión perimetral alrededor del bloqueo
+			var time_sec: float = Time.get_ticks_msec() * 0.001
+			for sp_i in range(3):
+				var sp_angle := time_sec * 3.0 + float(sp_i) * (TAU / 3.0)
+				var spark_pos := centro + Vector2(cos(sp_angle), sin(sp_angle)) * 17.0
+				draw_circle(spark_pos, 1.5, Color(1.0, 0.4, 0.2, 0.8))
+
 			draw_circle(centro, 14.0, Color(0.15, 0.05, 0.05, 0.8))
 			draw_circle(centro, 14.0, Color(1.0, 0.2, 0.2, 0.9), false, 2.0)
 			draw_string(centro + Vector2(-5, 5), "X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 0.3, 0.3, 1.0))

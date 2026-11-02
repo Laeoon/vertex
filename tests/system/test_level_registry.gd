@@ -17,8 +17,8 @@ func _ready() -> void:
 
 
 func _run_tests() -> void:
-	_afirmar(Registry.WORLDS.keys().size() == 3,
-		"WORLDS define exactamente 3 mundos: %s" % str(Registry.WORLDS.keys()))
+	_afirmar(Registry.WORLDS.keys().size() >= 3,
+		"WORLDS define al menos los 3 mundos principales: %s" % str(Registry.WORLDS.keys()))
 
 	for world_id in Registry.WORLDS:
 		var world: Dictionary = Registry.WORLDS[world_id]

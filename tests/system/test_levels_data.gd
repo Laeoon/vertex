@@ -41,6 +41,7 @@ const NIVELES: Array[String] = [
 	"res://juego/heist/heist_n3.json",
 	"res://juego/heist/heist_n4.json",
 	"res://juego/heist/heist_n5.json",
+	"res://juego/secret/secret_root.json",
 ]
 
 const CLAVES_MINIMAS: Array[String] = [

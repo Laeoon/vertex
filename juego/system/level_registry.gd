@@ -97,6 +97,17 @@ const WORLDS: Dictionary = {
 			},
 		]
 	},
+	"secret": {
+		"title": "Sector 0",
+		"description": "Cámara profunda del kernel",
+		"levels": [
+			{
+				"path": "res://juego/secret/secret_root.json",
+				"title": "Sector 0 — Root Genesis",
+				"difficulty": 5,
+			},
+		]
+	},
 }
 
 

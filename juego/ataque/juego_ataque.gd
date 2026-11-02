@@ -158,6 +158,8 @@ var _hacker_logic  # HackerLogic
 var _game_logic  # GameLogic
 var _game_over_overlay  # GameOverOverlay (capa 2: botones de mouse)
 var _pause_overlay  # PauseOverlay (in-game-pause-and-ui-immersion)
+const TerminalOverlayClass = preload("res://juego/ui/terminal_overlay.gd")
+var _terminal_overlay = null
 
 # Un solo show por transición a game_over (ganar/perder/defensor won/lost
 # confluyen en el flag); el hide vive en reset_state().
@@ -214,6 +216,12 @@ func _ready() -> void:
 	_pause_overlay.level_select_requested.connect(_on_pause_level_select)
 	_pause_overlay.main_menu_requested.connect(_on_pause_main_menu)
 	_pause_overlay.input_scheme_changed.connect(_on_input_scheme_changed)
+
+	# Terminal táctica in-game CLI
+	_terminal_overlay = TerminalOverlayClass.new()
+	_terminal_overlay.setup(self)
+	_terminal_overlay.terminal_visibility_changed.connect(func(_open): queue_redraw())
+	add_child(_terminal_overlay)
 
 	# IA bloqueadora, persecución y progreso ANTES de load_graph: reset_state()
 	# dispara el bloqueo inicial, limpia alertas y persiste resultados.
@@ -664,6 +672,10 @@ func _draw() -> void:
 	# P5/tarea 3: el frame se dibuja con datos puros (GameState.frame_data),
 	# sin callables — orquestación en GameRenderer.draw_frame().
 	_renderer.draw_frame(_game_state.frame_data(vp_size))
+
+	# Dibujar terminal CLI encima si está activa
+	if _terminal_overlay != null and _terminal_overlay.is_terminal_open:
+		_terminal_overlay.draw_terminal(self, vp_size, font, font_size)
 
 
 # ─── Cámara & Screen Shake ────────────────────────────────────────
