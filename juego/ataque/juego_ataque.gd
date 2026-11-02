@@ -173,6 +173,8 @@ func _process(delta: float) -> void:
 		_show_game_over_overlay()
 
 	_process_camera_shake(delta)
+	# Redibujado continuo para animación viva de fotones, shaders, relámpagos y partículas a 60 FPS
+	queue_redraw()
 
 
 func _ready() -> void:

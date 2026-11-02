@@ -73,7 +73,11 @@ func draw_frame(d: Dictionary) -> void:
 	if has_transform:
 		_canvas.draw_set_transform(pan, 0.0, Vector2(zoom, zoom))
 
-	draw_background_grid(d.vp_size, pan, zoom)
+	var is_secret_sector: bool = str(d.get("level_key", "")).begins_with("secret")
+	if is_secret_sector:
+		_draw_kernel_void_background(d.vp_size, pan, zoom)
+	else:
+		draw_background_grid(d.vp_size, pan, zoom)
 
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
 	var should_draw_enemy_path: bool = d.get("brain_path_revealed", true) if d.defender_mode else false
@@ -115,6 +119,37 @@ func draw_frame(d: Dictionary) -> void:
 	if d.selected_neighbor != &"" and not d.game_over:
 		draw_node_info_panel(d.vp_size, d.selected_neighbor, d.player_pos, d.graph, d.node_cache)
 	draw_status_bar(d.vp_size, d.mensaje_estado, d.selected_neighbor, d.game_over, d.game_won, d.defender_mode)
+
+
+## Fondo Abisal de Kernel Panic / Glitch Void para el Sector 0 secreto
+func _draw_kernel_void_background(vp_size: Vector2, _pan: Vector2, _zoom: float) -> void:
+	# Fondo negro carbón absoluto
+	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), Color("030305"))
+
+	# Lluvia volumétrica de memoria (Hex Dump y registros de fallo del kernel)
+	var time_sec: float = Time.get_ticks_msec() * 0.001
+	var hex_words: Array[String] = [
+		"0xDEADBEEF", "0xC001CAFE", "0x00000000", "0xFFFFFFFF",
+		"SEGFAULT", "KERNEL_PANIC", "STACK_DUMP", "NULL_PTR",
+		"PAGE_FAULT", "ROOT_EXPLOIT", "MEM_CORRUPT", "0x89AB_CDEF"
+	]
+
+	var col_w: float = 140.0
+	var num_cols := int(vp_size.x / col_w) + 1
+	for col in range(num_cols):
+		var col_x := float(col) * col_w + 10.0
+		var seed_speed := 35.0 + float((col * 17) % 25)
+		var y_offset := fmod((time_sec * seed_speed) + float(col * 85), vp_size.y + 120.0) - 60.0
+		var word_idx: int = (col + int(time_sec * 0.5)) % hex_words.size()
+		var text := hex_words[word_idx]
+
+		var hex_alpha := 0.12 + sin(time_sec * 2.0 + float(col)) * 0.06
+		draw_string(Vector2(col_x, y_offset), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1.0, 0.2, 0.35, hex_alpha))
+
+	# Líneas de cuadrícula corrompidas / Glitch scan
+	var glitch_y := fmod(time_sec * 90.0, vp_size.y)
+	draw_line(Vector2(0, glitch_y), Vector2(vp_size.x, glitch_y), Color(1.0, 0.1, 0.3, 0.25), 1.5)
+	draw_line(Vector2(0, glitch_y + 4.0), Vector2(vp_size.x, glitch_y + 4.0), Color(0.2, 1.0, 0.8, 0.15), 1.0)
 
 
 func draw_background_grid(vp_size: Vector2, pan: Vector2 = Vector2.ZERO, zoom: float = 1.0) -> void:
@@ -715,6 +750,17 @@ func draw_nodes(
 			var g_pulse: float = 0.5 + sin(Time.get_ticks_msec() * 0.007) * 0.3
 			draw_circle(pos, radius + 6.0, Color(1.0, 0.82, 0.0, g_pulse * 0.45), false, 2.5)
 			draw_circle(pos, radius + 11.0, Color(1.0, 0.82, 0.0, g_pulse * 0.2), false, 1.5)
+
+		# Sector 0 Glitch Node: Anillos de energía en contrarrotación si es un nodo de secret_root
+		if nid_str.begins_with("HexNode_") or nid_str == &"GenesisCore" or nid_str == &"RootBastion":
+			var t_sec := Time.get_ticks_msec() * 0.001
+			var rot1 := t_sec * 1.5
+			var rot2 := -t_sec * 2.2
+			var oct1 := _poligono(pos, radius + 7.0, 8, rot1)
+			var oct2 := _poligono(pos, radius + 12.0, 8, rot2)
+			oct1.append(oct1[0]); oct2.append(oct2[0])
+			draw_polyline(oct1, Color(1.0, 0.2, 0.4, 0.45), 1.2)
+			draw_polyline(oct2, Color(1.0, 0.7, 0.0, 0.30), 1.0)
 
 		# Sombra con la MISMA silueta de la forma (un círculo genérico asomaba
 		# detrás del triángulo/cuadrado/rombo como aureola redonda).
