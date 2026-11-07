@@ -1,7 +1,7 @@
 ---
 title: "Tareas Pendientes"
 created: "2026-06-26"
-updated: "2026-08-23"
+updated: "2026-10-28"
 tags:
   - tasks
   - todo
@@ -9,46 +9,27 @@ tags:
 
 # Tareas Pendientes
 
-## Hecho (cierre al 2026-08-23)
+## Hecho (Cierre v0.6.0)
 
 | # | Tarea | Notas |
 |---|-------|-------|
-| ✅ | Transiciones fade entre escenas | Fade ya existe y está en uso (ver [[18 - Overview y auditoría pendiente]], §7) |
-| ✅ | Balance Heist N1-N3 | Self-play + par por nivel (slice 5, ver [[14 - Historial de cambios]]) |
-| ✅ | Navegación post-partida con UI | Teclas [N]/[L]/[Q] en game over + botones (slice 6 + capas 2/2b) |
-| ✅ | Stats visibles en Perfil | Progreso por nivel del mundo heist (ver [[14 - Historial de cambios]]) |
+| ✅ | Campaña completa de 15 niveles de historia | 5 Heist, 5 Hacker, 5 Cybersecurity implementados y testeados. |
+| ✅ | Sector 0: Root Genesis | Nivel secreto con mecánicas de desintegración y colapso de memoria. |
+| ✅ | Activación por Konami Code | Secuencia en StartScreen con lanzamiento directo al nivel secreto. |
+| ✅ | Sistema de 3 Save Slots independientes | Gestión aislada por carpetas en `user://slots/slot_1..3/`. |
+| ✅ | Backup & Restore criptográfico `.bak` | Checksum SHA-256, snapshots automáticos y recuperación ante fallos. |
+| ✅ | Visualizador de Espectro de Audio Reactivo | Envolvente simétrica sobre el riel de niveles basada en decibelios. |
+| ✅ | Terminal CLI interactiva in-game | Consola estilo UNIX accesible con `[~]` o botón en HUD. |
+| ✅ | Sistema de 10 Condecoraciones / Badges | Pestaña interactiva en Perfil con glifos vectoriales. |
+| ✅ | Pista DEFENDER en Academia | 2 módulos interactivos con validación de paso en `TutorialPlayer`. |
+| ✅ | Watchdog del Runner ajustado a 10s | Prevención de cuelgues por temporizadores en tests headless. |
+| ✅ | Documentación formal UML 2.5 (Figuras 1 a 7) | Compilación a PDF consolidado con Typst y casos de uso CU-01 a CU-11. |
 
-## Pendiente (prioridad alta)
+## Backlog para Siguientes Versiones (v0.7.0+)
 
-| # | Tarea | Dependencias | Notas |
-|---|-------|--------------|-------|
-| 1 | Balance hacker/cyber/defense | Harness de balance | Políticas propias por modo (ver [[18 - Overview y auditoría pendiente]], §7) |
-| 2 | Stats extendidas (tiempo, racha, intentos) | Perfil funcional | `user://stats.cfg` ya existe (ProgressService); falta medición y superficie |
-
-## Pendiente (prioridad media/baja)
-
-| # | Tarea | Dependencias | Notas |
-|---|-------|--------------|-------|
-| 3 | i18n del contenido pedagógico | Tutoriales + glosario | Doc 16 (ver [[18 - Overview y auditoría pendiente]], §7) |
-| 4 | Limpieza menor post-auditoría | — | `ai_enabled=true` inerte en defensor; naming legacy `nivel1_red.tres` (grafo de heist_n1) |
-
-## Indefinido (no planificado)
-
-| # | Tarea | Notas |
-|---|-------|-------|
-| 5 | Música | Punto de enganche AudioManager en `show_overlay`; implementación indefinida (ver [[14 - Historial de cambios]], Capa 2b) |
-
-## Futuro (no planificado)
-
-| # | Tarea | Notas |
-|---|-------|-------|
-| 6 | Más niveles por mundo | Balance actual primero |
-| 7 | Optimización de rendimiento | Playtesting primero |
-| 8 | Multiplayer educativo | Red local, 2 jugadores |
-| 9 | Niveles generados proceduralmente | Difícil de balancear |
-| 10 | Modo sandbox libre | Sin objetivos |
-
-## Enlaces
-
-- [[02 - Roadmap]]
-- [[01 - Estado actual]]
+| # | Tarea | Prioridad | Notas |
+|---|-------|:---:|-------|
+| 1 | Tarjeta teaser para Sector 0 en selector de mundos | Media | Mostrar nodo con candado "ACCESO CLASIFICADO (15 ★)" como alternativa visible a Konami. |
+| 2 | Refactor de `database_renderer.gd` | Baja | Extraer el diccionario estático de 13 entradas a archivos `.json` en `res://data/codex/`. |
+| 3 | Modo Endless / Boss Rush en Ciberdefensa | Baja | Generación continua de adversarios con mitigación y aumento progresivo de velocidad. |
+| 4 | Auditoría completa de i18n para Sector 0 | Baja | Revisar que todas las cadenas de la terminal y glitch tengan paridad en inglés y portugués. |

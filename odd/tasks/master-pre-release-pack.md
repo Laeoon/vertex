@@ -21,11 +21,11 @@ Implementación integral de las 4 propuestas previas al lanzamiento v0.6.0 de VE
   - Todas las suites de pruebas pasando limpias (45+ tests) y sincronización con GitHub.
 
 ## Tasks
-- [ ] T1 (S1) [inline]: Diseñar nivel secreto `secret_root` (.json y .tres) e implementar detector del código Konami en `StartScreen.gd`.
-- [ ] T2 (S2) [inline]: Crear componente `TerminalOverlay.gd` con intérprete de comandos tácticos e integrarlo en `JuegoAtaque.gd`.
-- [ ] T3 (S3) [inline]: Implementar VFX de chispas en aristas y pulsos fotónicos viajando por enlaces en `GameRenderer.gd`.
-- [ ] T4 (S4) [inline]: Crear pantalla estética `CreditsScreen.gd` y registrar botón de acceso en el Menú Principal.
-- [ ] T5 (S5) [verify]: Verificar suite global en Godot headless y realizar commit semántico con push a `origin/main`.
+- [x] T1 (S1) [inline]: Diseñar nivel secreto `secret_root` (.json y .tres) e implementar detector del código Konami en `StartScreen.gd`.
+- [x] T2 (S2) [inline]: Crear componente `TerminalOverlay.gd` con intérprete de comandos tácticos e integrarlo en `JuegoAtaque.gd`.
+- [x] T3 (S3) [inline]: Implementar VFX de chispas en aristas y pulsos fotónicos viajando por enlaces en `GameRenderer.gd`.
+- [x] T4 (S4) [inline]: Crear pantalla estética `CreditsScreen.gd` y registrar botón de acceso en el Menú Principal.
+- [x] T5 (S5) [verify]: Verificar suite global en Godot headless y realizar commit semántico con push a `origin/main`.
 
 ## Log
 - L1: "las 4" (Usuario autoriza la implementación de las cuatro propuestas completas para el pack previo a la v0.6.0).

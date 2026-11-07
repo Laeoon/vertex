@@ -871,7 +871,7 @@ func _draw_bottom_dock(vp: Vector2, alpha: float, ox: float) -> void:
 	draw_string(font, Vector2(dock_rect.position.x + 16, dock_y + 27), hint_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, alpha * 0.9))
 
 	# Right version badge
-	var ver_text := "VERTEX v0.4.0  |  ONLINE"
+	var ver_text := "VERTEX v0.6.0  |  ONLINE"
 	var ver_size := font.get_string_size(ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2)
 	draw_string(font, Vector2(dock_rect.position.x + dock_w - ver_size.x - 16, dock_y + 27), ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7))
 

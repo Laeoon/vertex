@@ -1,7 +1,7 @@
 ---
 title: "VERTEX — Simulador de Ciberseguridad"
 status: "active"
-version: "0.1.0-alpha"
+version: "0.6.0"
 tags:
   - project
   - godot
@@ -46,6 +46,7 @@ juego/                   # Lógica de gameplay
 │   ├── hacker/          # Niveles Hacker (.tres + .json)
 │   ├── cyber/           # Niveles Cybersecurity (.tres + .json)
 │   ├── defense/         # Nivel Defensa Perimetral
+│   ├── secret/          # Sector 0: Root Genesis (Nivel Secreto Kernel Void)
 │   ├── tutorials/       # Sistema de tutoriales
 │   └── utils/           # Utilidades compartidas (ProgressUtil, LocUtil)
 escenas/                 # Menús (main_menu, selector de mundos)
@@ -59,7 +60,8 @@ documentacion/           # Documentación del proyecto
 |------|------------------|-----------|
 | Heist | Infiltración con presupuesto y waypoints | Dijkstra |
 | Hacker | Movimiento lateral con ruido y exploits | Dijkstra |
-| Cybersecurity | Defensa con bloqueos y corte mínimo | Edmonds-Karp |
+| Cybersecurity | Defensa reactiva 1:1, EDR Trace, cuarentena | Edmonds-Karp |
+| Sector 0 (Secret) | Supervivencia contra colapso de memoria | Resistencia híbrida |
 
 ## Tutoriales
 

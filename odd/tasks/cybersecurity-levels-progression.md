@@ -22,11 +22,11 @@ Diseño, balance y creación de los 3 niveles de defensa faltantes para el mundo
 - S4: Commit y push automático a GitHub al cerrar el ciclo.
 
 ## Tasks
-- [ ] T1 (S1, S2) [worker]: Crear topología y configuración de `cyber_n2` (Movimiento Lateral y Cuarentena) - JSON y TRES.
-- [ ] T2 (S1, S2) [worker]: Crear topología y configuración de `cyber_n3` (Niebla de Guerra y Forensics EDR) - JSON y TRES.
-- [ ] T3 (S1, S2) [worker]: Crear topología y configuración de `cyber_n4` (Operación Zero Trust / Boss Defensivo) - JSON y TRES.
-- [ ] T4 (S3) [inline]: Registrar los nuevos niveles en `LevelRegistry.gd` y en la suite `test_levels_data.gd`.
-- [ ] T5 (S3, S4) [verify]: Verificar suite global completa en Godot Headless y realizar commit semántico con push a `origin/main`.
+- [x] T1 (S1, S2) [worker]: Crear topología y configuración de `cyber_n2` (Movimiento Lateral y Cuarentena) - JSON y TRES.
+- [x] T2 (S1, S2) [worker]: Crear topología y configuración de `cyber_n3` (Niebla de Guerra y Forensics EDR) - JSON y TRES.
+- [x] T3 (S1, S2) [worker]: Crear topología y configuración de `cyber_n4` (Operación Zero Trust / Boss Defensivo) - JSON y TRES.
+- [x] T4 (S3) [inline]: Registrar los nuevos niveles en `LevelRegistry.gd` y en la suite `test_levels_data.gd`.
+- [x] T5 (S3, S4) [verify]: Verificar suite global completa en Godot Headless y realizar commit semántico con push a `origin/main`.
 
 ## Log
 - L1: "crea las especificaciones para que uses sonet 5.5 en la creacion de los niveles, tu de orquestador, sonet de worker. go" (Usuario autoriza especificaciones, delegación a Sonnet 5.5 como worker y ejecución completa con push).

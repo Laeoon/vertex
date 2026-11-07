@@ -1,7 +1,7 @@
 ---
 title: "Roadmap del Proyecto"
 created: "2026-06-26"
-updated: "2026-08-23"
+updated: "2026-10-28"
 tags:
   - roadmap
   - planning
@@ -9,53 +9,37 @@ tags:
 
 # Roadmap del Proyecto
 
-## Entregado (alpha 0.1.0)
+## Entregado en v0.6.0 (Hitos Completados)
 
-| # | Entregable | Notas |
-|---|-----------|-------|
-| ✅ | Menú principal con Opciones, Perfil y Database | Audio, gráficos, idioma |
-| ✅ | Feedback visual (flashes, animaciones) | — |
-| ✅ | Sistema de tutoriales completo | 7 tutoriales guiados, glosario, tooltips |
-| ✅ | Modos Heist, Hacker, Defensa y Ataque | Mecánicas funcionales |
-| ✅ | Tests automatizados de core y gameplay | Suite completa |
-| ✅ | Ejecutable Windows publicado | GitHub Releases |
-| ✅ | Transiciones fade entre escenas | Fade ya existe y está en uso (ver [[18 - Overview y auditoría pendiente]], §7) |
+| # | Entregable | Estado | Notas |
+|---|---|:---:|---|
+| ✅ | Campaña completa de 15 niveles de historia | Completado | 5 Heist, 5 Hacker, 5 Cybersecurity con min-cut $\ge 2$. |
+| ✅ | Nivel Secreto cinemático "Sector 0: Root Genesis" | Completado | Estética Kernel Void, lluvia Hex Dump y colapso de memoria. |
+| ✅ | Desbloqueo de nivel secreto vía Konami Code | Completado | `[↑ ↑ ↓ ↓ ← → ← → B A]` en StartScreen. |
+| ✅ | Sistema de 3 Save Slots independientes | Completado | Gestión en `SlotManager`, migración automática y borrado seguro. |
+| ✅ | Snapshots automáticos y Backup `.bak` (SHA-256) | Completado | Rotación máx 5, exportación e importación atómica con verificación. |
+| ✅ | Visualizador de Espectro de Audio Reactivo | Completado | `AudioSpectrumVisualizer` en decibelios a lo largo del riel de niveles. |
+| ✅ | Terminal Táctica CLI In-Game | Completado | `TerminalOverlay` con comandos `help`, `netstat`, `traceroute`, etc. |
+| ✅ | Metajuego de 10 Condecoraciones / Badges | Completado | `BadgeRegistry` con evaluación pura de méritos y pestaña en Perfil. |
+| ✅ | Pista DEFENDER en Academia de Tutoriales | Completado | Lecciones interactivas 1 y 2 para el modo Ciberdefensa. |
+| ✅ | Audio multicanal con buses y 16 SFX tácticos | Completado | `AudioManager`, música DavidKBD y persistencia en arranque. |
+| ✅ | Documentación UML formal (Figuras 1 a 7 en PDF) | Completado | Estándar UML 2.5, verbos en infinitivo y fichas de Casos de Uso. |
+| ✅ | Suite de pruebas headless con watchdog de 10s | Completado | 45 suites en verde, 0 fallos, 0 cuelgues. |
 
-## Próximas sesiones
+## Futuras Mejoras (v0.7.0+)
 
-| # | Tarea | Prioridad | Dependencias |
-|---|-------|-----------|--------------|
-| 1 | Sonidos y feedback audiovisual — **Completado en v0.4.0 (AudioManager, buses, 16 SFX, música DavidKBD, trauma shake)** | — | — |
-| 2 | Balanced tuning y playtesting — **Heist N1-N3 hecho (slice 5: self-play + par por nivel, ver [[14 - Historial de cambios]])**; falta hacker/cyber/defense | Alta | Todos los niveles |
-| 3 | Stats extendidas (tiempo, racha, intentos) | Baja | Perfil |
+| # | Propuesta | Prioridad | Notas |
+|---|---|:---:|---|
+| 1 | Tarjeta de Sector 0 en selector de mundos | Media | Candado visual "ACCESO CLASIFICADO" al alcanzar 15★ sin depender solo de Konami. |
+| 2 | Niveles de Ciberdefensa adicionales (D6+ / Boss Rush) | Baja | Modos de asedio continuo con oleadas múltiples de atacantes. |
+| 3 | Extracción de lore de Database a JSON externo | Baja | Desacoplar textos de `database_renderer.gd` a recursos de datos. |
+| 4 | Soporte para paquetes de mapas comunitarios | Baja | Importador de grafos en formato JSON externo desde la carpeta de usuario. |
 
-## Futuro cercano
+## Criterios de Calidad
 
-| # | Tarea | Prioridad | Dependencias |
-|---|-------|-----------|--------------|
-| 4 | Más niveles por mundo (N2, N3) | Media | Balance actual |
-| 5 | Integrar señales Event Bus en tutoriales | Baja | Event Bus |
-| 6 | Optimización de rendimiento | Baja | Playtesting |
-
-## Ideas futuras
-
-| # | Idea | Notas |
-|---|------|-------|
-| 7 | Multiplayer educativo | Red local, 2 jugadores |
-| 8 | Niveles generados proceduralmente | Basados en parámetros de dificultad |
-| 9 | Modo sandbox libre | Sin objetivos, exploración pura |
-
-## Criterios de terminado
-
-Un nivel está "terminado" cuando:
-- [x] Grafo validado (sin dead ends)
-- [x] Mecánicas funcionales probadas
-- [x] HUD correcto y sin solapamientos
-- [x] Tutorial asociado creado
-- [x] Balance verificado (presupuesto/ruido/turnos alcanzables)
-
-## Enlaces
-
-- [[00 - Inicio]]
-- [[01 - Estado actual]]
-- [[10 - Bugs y deuda técnica]]
+Un nivel o módulo se considera "terminado" cuando:
+- [x] Grafo validado topológicamente (sin dead-ends involuntarios y con corte mínimo verificado).
+- [x] Mecánicas funcionales probadas en suites de tests headless.
+- [x] HUD limpio y legible sin solapamientos en resoluciones estándar.
+- [x] Persistencia y registro de estrellas/par integrado en el slot activo.
+- [x] Cero regresiones en la suite global de 45 pruebas automatizadas.

@@ -10,7 +10,7 @@
 ![Lenguaje](https://img.shields.io/badge/GDScript-100%25-478CBF)
 ![Tests](https://img.shields.io/badge/tests-43%20suites%20pass-39FF88)
 ![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-0078D6)
-![Versión](https://img.shields.io/badge/versión-0.5.0-00e5ff)
+![Versión](https://img.shields.io/badge/versión-0.6.0-00e5ff)
 
 [📥 Descargar](#-descargar-el-juego-windows) · [🎮 Características](#-características) · [🕹 Controles](#-controles) · [🧰 Código Fuente](#-descargar-el-código-fuente) · [🛠 Desarrollo y Motor](#-para-desarrolladores-y-uso-del-motor)
 
@@ -60,14 +60,14 @@ VERTEX es un videojuego de estrategia y educación donde navegas redes corporati
 
 Binario precompilado para Windows 10/11 (x64), autocontenido y listo para jugar sin instalación previa.
 
-**Última versión:** [VERtex 0.5.0](https://github.com/Laeoon/vertex/releases/latest)
+**Última versión:** [VERtex 0.6.0](https://github.com/Laeoon/vertex/releases/latest)
 
 ```bash
 # Descarga directa vía curl
-curl -L -o VERtex-0.5.0.exe https://github.com/Laeoon/vertex/releases/download/v0.5.0/VERtex-0.5.0.exe
+curl -L -o VERtex-0.6.0.exe https://github.com/Laeoon/vertex/releases/download/v0.6.0/VERtex-0.6.0.exe
 
 # O con wget
-wget https://github.com/Laeoon/vertex/releases/download/v0.5.0/VERtex-0.5.0.exe
+wget https://github.com/Laeoon/vertex/releases/download/v0.6.0/VERtex-0.6.0.exe
 ```
 
 *Requisitos:* Windows 10/11 x64, GPU compatible con Vulkan / DirectX 12.
@@ -107,8 +107,8 @@ wget https://github.com/Laeoon/vertex/releases/download/v0.5.0/VERtex-0.5.0.exe
 git clone https://github.com/Laeoon/vertex.git
 
 # O descargar el tarball de la versión más reciente
-curl -L -o vertex-0.5.0.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.5.0.tar.gz
-tar -xzf vertex-0.5.0.tar.gz
+curl -L -o vertex-0.6.0.tar.gz https://github.com/Laeoon/vertex/archive/refs/tags/v0.6.0.tar.gz
+tar -xzf vertex-0.6.0.tar.gz
 ```
 
 ---

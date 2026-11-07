@@ -17,11 +17,11 @@ Transformación completa de la experiencia audiovisual y jugable de VERTEX para 
 - S2: Verificación de la suite global en Godot headless garantizando cero regresiones y push a origin/main.
 
 ## Tasks
-- [ ] T1 (S1) [inline]: Activar el loop de redibujado continuo a 60 FPS en `juego_ataque._process()` y afinar la física de los fotones en `GameRenderer.gd`.
-- [ ] T2 (S1) [inline]: Implementar en `GameRenderer.gd` el renderizado de vanguardia para Sector 0 (lluvia de hex dump, nodos de energía rotatorios y aristas eléctricas de relámpago).
-- [ ] T3 (S1) [inline]: Diseñar topología cinemática asimétrica para `secret_root.tres` y mecánica de Kernel Panic.
-- [ ] T4 (S2) [inline]: Ejecutar suite completa en Godot headless (45+ tests).
-- [ ] T5 (S2) [inline]: Commit semántico y push automático a GitHub `origin/main`.
+- [x] T1 (S1) [inline]: Activar el loop de redibujado continuo a 60 FPS en `juego_ataque._process()` y afinar la física de los fotones en `GameRenderer.gd`.
+- [x] T2 (S1) [inline]: Implementar en `GameRenderer.gd` el renderizado de vanguardia para Sector 0 (lluvia de hex dump, nodos de energía rotatorios y aristas eléctricas de relámpago).
+- [x] T3 (S1) [inline]: Diseñar topología cinemática asimétrica para `secret_root.tres` y mecánica de Kernel Panic.
+- [x] T4 (S2) [inline]: Ejecutar suite completa en Godot headless (45+ tests).
+- [x] T5 (S2) [inline]: Commit semántico y push automático a GitHub `origin/main`.
 
 ## Log
 - L1: "mata la liga pues, lucete, quiero que sea algo que no haya visto." (Usuario autoriza rediseño visual y mecánico disruptivo).

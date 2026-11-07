@@ -1,13 +1,51 @@
 ---
 title: "Historial de Cambios"
 created: "2026-06-26"
-updated: "2026-08-16"
+updated: "2026-10-28"
 tags:
   - changelog
   - history
 ---
 
 # Historial de Cambios
+
+## v0.6.0 — Campaña Expandida, Nivel Secreto Konami, Backup Seguro y Audio Reactivo (2026-10-28)
+
+### Campaña y Contenido
+- **Campaña de Ciberdefensa Completa (5 Niveles):** Progresión 1 a 5 (`defense_n1`, `cyber_n1` a `cyber_n4`) implementando el ciclo reactivo 1:1 (Ping-Pong), Rastreo Forense EDR (0..100%), movimiento lateral del adversario (MITRE T1021), exploit Bypass, aislamiento de host mediante Cuarentena `[C]` y penalización por revelación de ruta `[P]` bajo niebla de guerra.
+- **Nivel Secreto "Sector 0: Root Genesis":** Desbloqueo mediante el código Konami (`↑ ↑ ↓ ↓ ← → ← → B A`) en pantalla de inicio. Renderizado de vanguardia con estética "Kernel Void", lluvia volumétrica de volcado de memoria (Hex Dump), nodos octogonales rotatorios en contrarrotación, aristas con jitter eléctrico y mecánica de colapso de regiones de memoria cada dos turnos.
+- **Terminal CLI Táctica In-Game:** Consola desplegable (`[~]` / `[T]` o botón en HUD) con soporte para comandos deterministas estilo UNIX (`help`, `status`, `netstat`, `traceroute`, `matrix`, `whoami`, `clear`).
+- **Sistema de Condecoraciones y Badges:** 10 medallas data-driven evaluadas en tiempo real por `BadgeRegistry`, incluyendo méritos por runs impecables de 3 estrellas, rachas invictas y maestría total de la red.
+
+### Persistencia, Seguridad y Save Slots
+- **Gestión de 3 Save Slots Independientes:** Implementación de `SlotManager` con directorios aislados en `user://slots/slot_1..3/`, pantalla táctica `StartScreen` para selección de perfil de operador y borrado seguro con confirmación `[Supr]`.
+- **Snapshots Preventivos Automáticos:** Hasta 5 copias de respaldo históricas por slot en `user://slots/slot_X/backups/`, con rotación automática y snapshots de contingencia antes de operaciones de borrado o sobrescritura.
+- **Exportación e Importación `.bak` con SHA-256:** Empaquetado atómico de partidas con cabecera mágica `VERTEX_SAVE_BAK_v1` y suma de verificación criptográfica SHA-256; rechazo automático de archivos alterados o corruptos.
+- **Controles Tácticos en UI:** Atajos directos `[E]` Exportar, `[I]` Importar con modal selector de archivos y `[R]` Restaurar snapshot con confirmación y notificaciones toast visuales.
+
+### Paisaje Sonoro y Audio Reactivo
+- **Visualizador de Espectro en Riel de Niveles:** Componente procedural `AudioSpectrumVisualizer` con muestreo logarítmico en decibelios (-52 dB de rango dinámico), montado directamente sobre la línea horizontal de conexión de nodos en `LevelSelectScreen` y pie de pantalla en `WorldSelectRenderer`.
+- **Onda Orgánica de Reposo:** Algoritmo armónico multicapa continuo que mantiene la envolvente pulsante y viva incluso ante silencios o en entornos headless.
+- **Persistencia de Audio en Boot:** Carga y aplicación inmediata de volúmenes de buses Master, Music y SFX en el arranque desde `user://settings.cfg`.
+
+### Infraestructura y Calidad
+- **Runner de Pruebas con Watchdog:** Ajuste del timeout a 10s por prueba en `tests/runner/run_all.gd` para evitar bloqueos por stalls de temporizadores. 45 suites ejecutables en modo headless pasando limpias al 100%.
+- **Modelado Formal UML 2.5:** Ampliación de la memoria técnica de ingeniería de software con el caso de uso `CU-11` (Respaldar, Exportar e Importar Ranuras de Guardado) y compilación vectorial en PDF de las Figuras 1 a 7 con Typst.
+
+---
+
+## v0.5.0 — Save Slots, Rediseño Defensor Blue Team y Documentación UML (2026-10-27)
+
+### Modos y Gameplay
+- **Rediseño del Modo Defensor:** Eliminada la victoria trivial en turno 1; ciclo reactivo 1:1, barra de telemetría EDR Trace (0..100%), movimiento lateral del atacante y contramedida de cuarentena de host.
+- **Pista DEFENDER en Academia:** Desactivado cartel de mantenimiento e integrados los módulos interactivos 1 y 2 para enseñanza guiada del rol defensivo.
+- **Controles Ortogonales:** Navegación con WASD para paneo libre de cámara y flechas direccionales para selección de nodos vecinos.
+- **Dieta de HUD:** Minimalismo visual en la interfaz del defensor reduciendo la barra a 38px y cuadrícula blueprint táctica de fondo.
+
+### Documentación Formal
+- **Compilación de Diagramas UML a PDF Vectorial:** Set integral de Figuras 1 a 7 compilado mediante Typst (`VERTEX_Diagramas_Arquitectura_UML.pdf`), incorporando la exigencia académica de verbos en infinitivo y unificación de modos en casos de uso general.
+
+---
 
 ## v0.4.0 — Audio Multicanal, Juice Cinematográfico y Calidad de Vida (QoL) (2026-10-02)
 
