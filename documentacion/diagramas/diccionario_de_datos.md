@@ -16,22 +16,23 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 
 ### Catálogo de Entidades y Archivos de Persistencia
 
-| Entidad / Tabla Lógica | Archivo Físico | Ámbito | Descripción Funcional |
-|---|---|---|---|
-| **`SlotMeta`** | `user://slots.cfg` | Global | Meta-registro de puntero de ranura activa y banderas de migración heredada. |
-| **`SaveSlot`** | `user://slots/slot_X/` | Ranura | Contenedor de ranura (1..3) con metadatos de integridad y caché de estrellas. |
-| **`Profile`** | `.../profile.cfg` | Ranura | Datos de identidad del analista (alias, icono y color de interfaz). |
-| **`LevelProgress`** | `.../progress.cfg` | Ranura | Registro de estrellas obtenidas y menor coste de camino por escenario. |
-| **`GlobalStats`** | `.../stats.cfg` | Ranura | Métricas históricas agregadas (victorias, derrotas, racha y tiempo de juego). |
-| **`LevelStats`** | `.../stats.cfg` | Ranura | Desglose discreto de victorias y derrotas por nivel táctico. |
-| **`BadgeRecord`** | `BadgeRegistry` | Ranura / Memoria | Catálogo de méritos, condecoraciones y avance hacia metas operacionales. |
-| **`SlotSnapshot`** | `.../backups/` | Ranura / Archivo | Instantáneas atómicas rotativas (máx. 5) previas a borrados o modificaciones críticas. |
+| Entidad / Tabla Lógica | Archivo Físico | Ámbito | Última Modif. (Commit) | Descripción Funcional |
+|---|---|---|:---:|---|
+| **`SlotMeta`** | `user://slots.cfg` | Global | 2026-10-27 (`b644450`) | Puntero maestro de ranura activa y banderas de migración heredada. |
+| **`SaveSlot`** | `user://slots/slot_X/` | Ranura | 2026-10-27 (`b644450`) | Contenedor de ranura (1..3) con metadatos de integridad y caché de estrellas. |
+| **`Profile`** | `.../profile.cfg` | Ranura | 2026-10-19 (`3c32c94`) | Identidad del analista (alias, icono y color de acento de interfaz). |
+| **`LevelProgress`** | `.../progress.cfg` | Ranura | 2026-10-19 (`3180710`) | Registro de estrellas obtenidas y menor coste de camino por escenario. |
+| **`GlobalStats`** | `.../stats.cfg` | Ranura | 2026-10-27 (`b644450`) | Métricas históricas agregadas (victorias, derrotas, racha y tiempo de juego). |
+| **`LevelStats`** | `.../stats.cfg` | Ranura | 2026-10-27 (`b644450`) | Desglose discreto de victorias y derrotas por nivel táctico. |
+| **`BadgeRecord`** | `BadgeRegistry` | Ranura / Memoria | 2026-11-02 (`51bfcf6`) | Catálogo de méritos, condecoraciones y avance hacia metas operacionales. |
+| **`SlotSnapshot`** | `.../backups/` | Ranura / Archivo | 2026-10-27 (`b644450`) | Instantáneas atómicas rotativas (máx. 5) previas a borrados o modificaciones. |
 
 ---
 
 ### 1. Entidad: `SlotMeta` (Metadatos Globales de Ranuras)
 * **Archivo Físico:** `user://slots.cfg`
 * **Sección ConfigFile:** `[slots]`
+* **Última Modificación:** 2026-10-27 (Commit `b644450` — *feat(slots): implement backup, restore, automatic snapshots and .bak import/export*)
 * **Descripción:** Controla el estado global del sistema de ranuras y el puntero al perfil en uso.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |
@@ -44,6 +45,7 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 
 ### 2. Entidad: `SaveSlot` (Contenedor de Ranura de Guardado)
 * **Ubicación Física:** `user://slots/slot_X/` (donde $X \in \{1, 2, 3\}$)
+* **Última Modificación:** 2026-10-27 (Commit `b644450` — *feat(slots): implement backup, restore, automatic snapshots and .bak import/export*)
 * **Descripción:** Representa la partición aislada de almacenamiento para un operador específico.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |
@@ -59,6 +61,7 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 ### 3. Entidad: `Profile` (Identidad del Operador / Analista)
 * **Archivo Físico:** `user://slots/slot_X/profile.cfg`
 * **Sección ConfigFile:** `[profile]`
+* **Última Modificación:** 2026-10-19 (Commit `3c32c94` — *perf(slots): cache slot summaries and route remaining legacy user paths to active slot*)
 * **Descripción:** Almacena los parámetros de personalización y credenciales tácticas del operador en la ranura activa.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |
@@ -74,6 +77,7 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 ### 4. Entidad: `LevelProgress` (Progresión de Niveles y Puntuación)
 * **Archivo Físico:** `user://slots/slot_X/progress.cfg`
 * **Sección ConfigFile:** `[estrellas]`
+* **Última Modificación:** 2026-10-19 (Commit `3180710` — *feat(tutorials): activate DEFENDER track with 2 interactive lessons and live quarantine control*)
 * **Descripción:** Registra las calificaciones por escenario táctico, costo de ruta optimizado y estado de desbloqueo.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |
@@ -89,6 +93,7 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 ### 5. Entidad: `GlobalStats` (Métricas Globales de Desempeño)
 * **Archivo Físico:** `user://slots/slot_X/stats.cfg`
 * **Sección ConfigFile:** `[stats]`
+* **Última Modificación:** 2026-10-27 (Commit `b644450` — *feat(slots): implement backup, restore, automatic snapshots and .bak import/export*)
 * **Descripción:** Métricas globales acumulativas para evaluación analítica y desbloqueo de insignias de carrera.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |
@@ -106,6 +111,7 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 ### 6. Entidad: `LevelStats` (Métricas Específicas por Escenario)
 * **Archivo Físico:** `user://slots/slot_X/stats.cfg`
 * **Sección ConfigFile:** `[levels]`
+* **Última Modificación:** 2026-10-27 (Commit `b644450` — *feat(slots): implement backup, restore, automatic snapshots and .bak import/export*)
 * **Descripción:** Desglose analítico de rendimiento detallado a nivel de escenario táctico.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |
@@ -119,6 +125,7 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 
 ### 7. Entidad: `BadgeRecord` (Registro de Méritos e Insignias)
 * **Subsistema:** Evaluada dinámicamente en `BadgeRegistry` (persiste sincronizada en perfil)
+* **Última Modificación:** 2026-11-02 (Commit `51bfcf6` — *feat(ux): intuitive quarantine mode, tactical defense HUD pills, and smooth enemy tweening*)
 * **Descripción:** Representa el estado de condecoraciones tácticas desbloqueadas por el analista.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |
@@ -133,6 +140,7 @@ El subsistema de persistencia de **VERTEX** implementa un modelo de datos jerár
 
 ### 8. Entidad: `SlotSnapshot` (Respaldo Atómico e Instantáneas)
 * **Ubicación Física:** `user://slots/slot_X/backups/snapshot_<timestamp>_<tag>/`
+* **Última Modificación:** 2026-10-27 (Commit `b644450` — *feat(slots): implement backup, restore, automatic snapshots and .bak import/export*)
 * **Descripción:** Política preventiva de snapshots rotativos para recuperación ante fallos o antes del vaciado de ranuras.
 
 | Campo / Clave | Tipo Físico | Longitud / Rango | Nulidad | Tipo de Clave | Valor por Defecto | Descripción y Reglas de Negocio |

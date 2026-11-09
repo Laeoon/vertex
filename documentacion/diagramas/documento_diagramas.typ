@@ -251,7 +251,7 @@ El presente diccionario de datos documenta formalmente la arquitectura de almace
 
 #v(0.2cm)
 === 1. Entidad: `SlotMeta` (Metadatos Globales de Ranuras)
-*Archivo:* `user://slots.cfg` | *Sección:* `[slots]`
+*Archivo Físico:* `user://slots.cfg` | *Sección:* `[slots]` | *Última Modificación:* 2026-10-27 (Commit `b644450`)
 
 #table(
   columns: (1.6fr, 1fr, 1.2fr, 1fr, 0.9fr, 1.3fr, 3fr),
@@ -274,7 +274,7 @@ El presente diccionario de datos documenta formalmente la arquitectura de almace
 
 #v(0.2cm)
 === 2. Entidad: `SaveSlot` (Contenedor de Ranura)
-*Ubicación:* `user://slots/slot_X/` (donde $X in {1, 2, 3}$)
+*Ubicación Física:* `user://slots/slot_X/` (donde $X in {1, 2, 3}$) | *Última Modificación:* 2026-10-27 (Commit `b644450`)
 
 #table(
   columns: (1.6fr, 1fr, 1.2fr, 1fr, 0.9fr, 1.3fr, 3fr),
@@ -303,7 +303,7 @@ El presente diccionario de datos documenta formalmente la arquitectura de almace
 == Diccionario de Datos: Perfil, Progreso, Métricas y Respaldo
 
 === 3. Entidad: `Profile` (Identidad del Analista)
-*Archivo:* `user://slots/slot_X/profile.cfg` | *Sección:* `[profile]`
+*Archivo Físico:* `user://slots/slot_X/profile.cfg` | *Sección:* `[profile]` | *Última Modificación:* 2026-10-19 (Commit `3c32c94`)
 
 #table(
   columns: (1.6fr, 1fr, 1.2fr, 1fr, 0.9fr, 1.3fr, 3fr),
@@ -328,7 +328,7 @@ El presente diccionario de datos documenta formalmente la arquitectura de almace
 
 #v(0.15cm)
 === 4. Entidad: `LevelProgress` (Progresión y Puntuación)
-*Archivo:* `user://slots/slot_X/progress.cfg` | *Sección:* `[estrellas]`
+*Archivo Físico:* `user://slots/slot_X/progress.cfg` | *Sección:* `[estrellas]` | *Última Modificación:* 2026-10-19 (Commit `3180710`)
 
 #table(
   columns: (1.6fr, 1fr, 1.2fr, 1fr, 0.9fr, 1.3fr, 3fr),
@@ -353,7 +353,7 @@ El presente diccionario de datos documenta formalmente la arquitectura de almace
 
 #v(0.15cm)
 === 5. Entidades de Estadísticas: `GlobalStats` y `LevelStats`
-*Archivo:* `user://slots/slot_X/stats.cfg` | *Secciones:* `[stats]` y `[levels]`
+*Archivo Físico:* `user://slots/slot_X/stats.cfg` | *Secciones:* `[stats]` y `[levels]` | *Última Modificación:* 2026-10-27 (Commit `b644450`)
 
 #table(
   columns: (1.6fr, 1fr, 1.2fr, 1fr, 0.9fr, 1.3fr, 3fr),
@@ -378,6 +378,7 @@ El presente diccionario de datos documenta formalmente la arquitectura de almace
 
 #v(0.15cm)
 === 6. Entidades de Soporte: `BadgeRecord` y `SlotSnapshot`
+*Ámbito:* `BadgeRegistry` (Memoria/Config) y `.../backups/` | *Última Modificación:* 2026-11-02 (`51bfcf6`) y 2026-10-27 (`b644450`)
 
 #table(
   columns: (1.6fr, 1fr, 1.2fr, 1fr, 0.9fr, 1.3fr, 3fr),
