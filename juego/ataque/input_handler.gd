@@ -60,6 +60,9 @@ var hovered_edge: String = ""
 var player_pos: StringName = &""
 var is_moving: bool = false
 var _is_panning: bool = false
+var _is_touch_panning: bool = false
+var _touch_pan_index: int = -1
+var _defender_context_node: StringName = &""
 
 
 func _ready() -> void:
@@ -115,6 +118,8 @@ func sync_state() -> void:
 	player_pos = game.player_pos if "player_pos" in game else &""
 	is_moving = game.is_moving if "is_moving" in game else false
 	tutorial_player = game.tutorial_player if "tutorial_player" in game else null
+	if game != null and "defender_context_node" in game:
+		_defender_context_node = game.defender_context_node
 
 
 func _input(event: InputEvent) -> void:
@@ -155,6 +160,11 @@ func _input(event: InputEvent) -> void:
 			if k.keycode == KEY_ESCAPE:
 				tutorial_skipped.emit()
 				return
+			if k.keycode in [KEY_ENTER, KEY_SPACE]:
+				# Fix Enter Double-Action Bug: En pasos informativos o cuando la acción ya se cumplió,
+				# Enter/Space avanza exclusivamente el diálogo del tutorial; no se procesa movimiento.
+				if not tutorial_player._waiting_for_action or tutorial_player._action_fulfilled:
+					return
 		if tutorial_player.is_game_paused():
 			return
 
@@ -246,6 +256,10 @@ func _input(event: InputEvent) -> void:
 				cycle_neighbor.emit(1)
 				return
 			KEY_ENTER, KEY_SPACE:
+				# Fix Enter Double-Action Bug:
+				if tutorial_player != null and is_instance_valid(tutorial_player) and tutorial_player.is_active:
+					if not tutorial_player._waiting_for_action or tutorial_player._action_fulfilled:
+						return
 				# Slice 3.8 v2: si el tutorial exige OTRA acción (ej. escanear),
 				# bloquear el movimiento accidental (Tab+Enter por camino incorrecto).
 				if _tutorial_blocks("move"):
@@ -289,6 +303,39 @@ func _input(event: InputEvent) -> void:
 						return
 					exploit_used.emit("decoy")
 					return
+
+	# ─── Touch Events (Touchscreen & Laptop Touch) ─────────────
+	if event is InputEventScreenTouch:
+		var st: InputEventScreenTouch = event as InputEventScreenTouch
+		var vp_size: Vector2 = game.get_viewport_rect().size if game != null else Vector2(1280, 720)
+		if st.pressed:
+			if _is_tutorial_touch(st.position):
+				return
+			if _handle_hud_click(st.position, vp_size):
+				return
+			if not game_over and Time.get_ticks_msec() >= _turn_locked_until:
+				if defender_mode:
+					if _handle_defender_canvas_click(st.position):
+						return
+				else:
+					if _handle_attacker_canvas_click(st.position):
+						return
+			# Toque en canvas vacío: iniciar pan táctil
+			_is_touch_panning = true
+			_touch_pan_index = st.index
+			return
+		else:
+			if st.index == _touch_pan_index:
+				_is_touch_panning = false
+				_touch_pan_index = -1
+			return
+
+	if event is InputEventScreenDrag:
+		var sd: InputEventScreenDrag = event as InputEventScreenDrag
+		if _is_touch_panning and (sd.index == _touch_pan_index or _touch_pan_index == -1):
+			if game != null and game.has_method("pan_by"):
+				game.pan_by(sd.relative)
+			return
 
 	# ─── Pan & Zoom de topología (Rueda y Drag Derecho/Medio) ─
 	if event is InputEventMouseButton:
@@ -362,7 +409,9 @@ func _input(event: InputEvent) -> void:
 
 	# ─── Click secundario (Cancelación inmediata de modos) ────
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
-		if defender_mode and (quarantine_mode or firewall_mode):
+		if defender_mode and (_defender_context_node != &"" or quarantine_mode or firewall_mode):
+			_defender_context_node = &""
+			_sync_defender_context()
 			quarantine_mode = false
 			firewall_mode = false
 			defender_toggle_quarantine.emit()
@@ -377,100 +426,263 @@ func _input(event: InputEvent) -> void:
 			return
 		var click_pos: Vector2 = event.position
 		var vp_size: Vector2 = game.get_viewport_rect().size if game != null else Vector2(1280, 720)
-		if click_pos.y >= vp_size.y - 32.0:
-			pause_toggle_requested.emit()
+
+		# Evitar clics sobre UI del tutorial
+		if _is_tutorial_touch(click_pos):
 			return
 
-		# Defender mode: clics
+		# Clics sobre elementos de HUD táctico / dock / cámara
+		if _handle_hud_click(click_pos, vp_size):
+			return
+
+		# Defender mode: clics en canvas
 		if defender_mode:
-			# Detectar si se hizo clic en las pills del HUD superior
-			if click_pos.y <= 44.0:
-				if click_pos.x >= 200.0 and click_pos.x <= 285.0:
-					# Pill Aristas
-					quarantine_mode = false
-					firewall_mode = false
-					defender_toggle_quarantine.emit()
-					_mensaje_temp("Modo Aristas activo: Haz clic en las líneas para bloquear.")
-					return
-				elif click_pos.x >= 290.0 and click_pos.x <= 390.0:
-					# Pill Firewall
-					quarantine_mode = false
-					defender_toggle_firewall.emit()
-					return
-				elif click_pos.x >= 395.0 and click_pos.x <= 515.0:
-					# Pill Cuarentena
-					firewall_mode = false
-					quarantine_mode = not quarantine_mode
-					defender_toggle_quarantine.emit()
-					return
-				elif click_pos.x >= 520.0 and click_pos.x <= 640.0:
-					# Pill Revelar ruta / niebla
-					toggle_optimal_route.emit()
-					return
-				elif click_pos.x >= 645.0 and click_pos.x <= 780.0:
-					# Pill Terminal CLI
-					if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
-						game._terminal_overlay.toggle()
-						game.queue_redraw()
-					return
-
-			if quarantine_mode and not game_over:
-				var node_id: StringName = _find_node_at_pos_firewall(click_pos)
-				if node_id != &"":
-					if _tutorial_blocks("input"):
-						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
-						return
-					# Desenganchar automáticamente el modo cuarentena tras emitir la orden
-					quarantine_mode = false
-					defender_quarantine_node.emit(node_id)
-				else:
-					# Clic en el vacío cancela el modo cuarentena para evitar quedar pegado
-					quarantine_mode = false
-					defender_toggle_quarantine.emit()
-					_mensaje_temp("Cuarentena cancelada. Haz clic en una arista para bloquear.")
-			elif firewall_mode and not game_over:
-				var node_id: StringName = _find_node_at_pos_firewall(click_pos)
-				if node_id != &"":
-					# Slice 3.8 v2: bloquear acciones que no son la requerida
-					if _tutorial_blocks("input"):
-						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
-						return
-					firewall_mode = false
-					defender_place_firewall.emit(node_id)
-				else:
-					firewall_mode = false
-					defender_toggle_firewall.emit()
-					_mensaje_temp("Modo Firewall cancelado. Haz clic en una arista para bloquear.")
-			else:
-				var edge_key: String = _find_edge_at_pos(click_pos)
-				if edge_key != "":
-					if _tutorial_blocks("input"):
-						_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
-						return
-					defender_block_edge.emit(edge_key)
-			return
-
-		# Modo atacante: clic en nodo
-		var clicked_node: StringName = _find_node_at_pos(click_pos)
-		if clicked_node == &"" or clicked_node == player_pos:
-			return
-		if _es_vecino_valido(clicked_node):
-			# Slice 3.8 v2: clic = movimiento → respetar la acción requerida
-			if _tutorial_blocks("move"):
-				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+			if _handle_defender_canvas_click(click_pos):
 				return
-			move_requested.emit(clicked_node)
-		else:
-			# Ruta indirecta: encontrar primer paso
-			var path_to: Array[StringName] = _pathfind_to(player_pos, clicked_node)
-			if path_to.size() >= 2:
-				var first_step: StringName = path_to[1] as StringName
-				var ekey: String = "%s→%s" % [player_pos, first_step]
-				if not _is_edge_blocked(ekey):
-					node_targeted.emit(clicked_node, first_step)
+			return
+
+		# Modo atacante: clics en canvas
+		if _handle_attacker_canvas_click(click_pos):
+			return
 
 
 # ─── Helpers de input que consultan al juego ─────────────────────
+
+func _world_to_screen(pos: Vector2) -> Vector2:
+	if game != null:
+		var pan: Vector2 = game.topology_pan if "topology_pan" in game else Vector2.ZERO
+		var zoom: float = game.topology_zoom if "topology_zoom" in game else 1.0
+		return pos * zoom + pan
+	return pos
+
+
+func _sync_defender_context() -> void:
+	if game != null:
+		game.set("defender_context_node", _defender_context_node)
+		if game.has_method("queue_redraw"):
+			game.queue_redraw()
+
+
+func _is_tutorial_touch(pos: Vector2) -> bool:
+	if tutorial_player == null or not is_instance_valid(tutorial_player) or not tutorial_player.is_active:
+		return false
+	var vp_size: Vector2 = game.get_viewport_rect().size if game != null else Vector2(1280, 720)
+	# Barra de controles inferior del tutorial
+	if pos.y >= vp_size.y - 48.0 and not (hacker_mode or defender_mode):
+		return true
+	# Panel flotante o recordatorio del tutorial
+	if "_panel_rect" in tutorial_player and (tutorial_player._panel_rect as Rect2).grow(12.0).has_point(pos):
+		return true
+	return false
+
+
+func _handle_hud_click(pos: Vector2, vp_size: Vector2) -> bool:
+	# 1. Controles táctiles de cámara y pausa en la esquina inferior derecha
+	var btn_center := Rect2(vp_size.x - 240.0, vp_size.y - 48.0, 75.0, 42.0)
+	var btn_zoom_out := Rect2(vp_size.x - 160.0, vp_size.y - 48.0, 40.0, 42.0)
+	var btn_zoom_in := Rect2(vp_size.x - 115.0, vp_size.y - 48.0, 40.0, 42.0)
+	var btn_pause := Rect2(vp_size.x - 70.0, vp_size.y - 48.0, 56.0, 42.0)
+
+	if btn_center.has_point(pos):
+		if game != null and game.has_method("reset_pan_zoom"):
+			game.reset_pan_zoom()
+		return true
+	elif btn_zoom_out.has_point(pos):
+		if game != null and game.has_method("zoom_out"):
+			game.zoom_out(vp_size / 2.0)
+		return true
+	elif btn_zoom_in.has_point(pos):
+		if game != null and game.has_method("zoom_in"):
+			game.zoom_in(vp_size / 2.0)
+		return true
+	elif btn_pause.has_point(pos):
+		pause_toggle_requested.emit()
+		return true
+
+	# 2. Dock táctico en modo Hacker: Exploit & Scan bar
+	if hacker_mode and not game_over:
+		var scan_rect := Rect2(16.0, vp_size.y - 48.0, 95.0, 42.0)
+		var bypass_rect := Rect2(116.0, vp_size.y - 48.0, 110.0, 42.0)
+		var escalate_rect := Rect2(231.0, vp_size.y - 48.0, 120.0, 42.0)
+		var persist_rect := Rect2(356.0, vp_size.y - 48.0, 115.0, 42.0)
+		var decoy_rect := Rect2(476.0, vp_size.y - 48.0, 130.0, 42.0)
+
+		if scan_rect.has_point(pos):
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			scan_requested.emit()
+			return true
+		elif bypass_rect.has_point(pos):
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			exploit_used.emit("bypass")
+			return true
+		elif escalate_rect.has_point(pos):
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			exploit_used.emit("escalate")
+			return true
+		elif persist_rect.has_point(pos):
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			exploit_used.emit("persist")
+			return true
+		elif decoy_rect.has_point(pos):
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			exploit_used.emit("decoy")
+			return true
+
+	# 3. Dock táctico en modo Heist / Atacante
+	if not defender_mode and not hacker_mode and not game_over:
+		if selected_neighbor != &"":
+			var confirm_rect := Rect2((vp_size.x - 260.0) / 2.0, vp_size.y - 48.0, 260.0, 42.0)
+			if confirm_rect.has_point(pos):
+				if _tutorial_blocks("move"):
+					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+					return true
+				move_requested.emit(selected_neighbor)
+				return true
+
+	# 4. Modo Defensor: pills superiores y menú contextual
+	if defender_mode:
+		# Menú contextual abierto sobre un nodo
+		if _defender_context_node != &"" and game != null and "node_positions" in game:
+			var npos: Vector2 = game.node_positions.get(_defender_context_node, Vector2.ZERO) as Vector2
+			var screen_pos: Vector2 = _world_to_screen(npos)
+			var btn_fw := Rect2(screen_pos.x - 110.0, screen_pos.y - 50.0, 105.0, 36.0)
+			var btn_q := Rect2(screen_pos.x + 5.0, screen_pos.y - 50.0, 115.0, 36.0)
+			var btn_close := Rect2(screen_pos.x + 125.0, screen_pos.y - 50.0, 32.0, 36.0)
+
+			if btn_fw.has_point(pos):
+				var target := _defender_context_node
+				_defender_context_node = &""
+				_sync_defender_context()
+				if _tutorial_blocks("input"):
+					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+					return true
+				defender_place_firewall.emit(target)
+				return true
+			elif btn_q.has_point(pos):
+				var target := _defender_context_node
+				_defender_context_node = &""
+				_sync_defender_context()
+				if _tutorial_blocks("input"):
+					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+					return true
+				defender_quarantine_node.emit(target)
+				return true
+			elif btn_close.has_point(pos):
+				_defender_context_node = &""
+				_sync_defender_context()
+				return true
+			else:
+				_defender_context_node = &""
+				_sync_defender_context()
+
+		# Pills superiores del HUD
+		if pos.y <= 48.0:
+			if pos.x >= 195.0 and pos.x <= 335.0:
+				quarantine_mode = false
+				firewall_mode = false
+				defender_toggle_quarantine.emit()
+				_mensaje_temp("Modo Aristas activo [1]: Haz clic en las líneas para bloquear.")
+				return true
+			elif pos.x >= 340.0 and pos.x <= 455.0:
+				quarantine_mode = false
+				defender_toggle_firewall.emit()
+				return true
+			elif pos.x >= 460.0 and pos.x <= 595.0:
+				firewall_mode = false
+				quarantine_mode = not quarantine_mode
+				defender_toggle_quarantine.emit()
+				return true
+			elif pos.x >= 600.0 and pos.x <= 710.0:
+				toggle_optimal_route.emit()
+				return true
+			elif pos.x >= 715.0 and pos.x <= 840.0:
+				if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
+					game._terminal_overlay.toggle()
+					game.queue_redraw()
+				return true
+
+	return false
+
+
+func _handle_defender_canvas_click(click_pos: Vector2) -> bool:
+	if quarantine_mode and not game_over:
+		var node_id: StringName = _find_node_at_pos_firewall(click_pos)
+		if node_id != &"":
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			quarantine_mode = false
+			defender_quarantine_node.emit(node_id)
+			return true
+		else:
+			quarantine_mode = false
+			defender_toggle_quarantine.emit()
+			_mensaje_temp("Cuarentena cancelada. Haz clic en una arista para bloquear.")
+			return true
+	elif firewall_mode and not game_over:
+		var node_id: StringName = _find_node_at_pos_firewall(click_pos)
+		if node_id != &"":
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			firewall_mode = false
+			defender_place_firewall.emit(node_id)
+			return true
+		else:
+			firewall_mode = false
+			defender_toggle_firewall.emit()
+			_mensaje_temp("Modo Firewall cancelado. Haz clic en una arista para bloquear.")
+			return true
+	else:
+		# Si no hay herramienta activa, un clic en un nodo abre el menú contextual
+		var node_id: StringName = _find_node_at_pos(click_pos)
+		if node_id != &"":
+			_defender_context_node = node_id
+			_sync_defender_context()
+			_mensaje_temp("Nodo seleccionado: elige Firewall o Cuarentena")
+			return true
+
+		var edge_key: String = _find_edge_at_pos(click_pos)
+		if edge_key != "":
+			if _tutorial_blocks("input"):
+				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+				return true
+			defender_block_edge.emit(edge_key)
+			return true
+	return false
+
+
+func _handle_attacker_canvas_click(click_pos: Vector2) -> bool:
+	var clicked_node: StringName = _find_node_at_pos(click_pos)
+	if clicked_node == &"" or clicked_node == player_pos:
+		return false
+	if _es_vecino_valido(clicked_node):
+		if _tutorial_blocks("move"):
+			_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+			return true
+		selected_neighbor = clicked_node
+		move_requested.emit(clicked_node)
+		return true
+	else:
+		var path_to: Array[StringName] = _pathfind_to(player_pos, clicked_node)
+		if path_to.size() >= 2:
+			var first_step: StringName = path_to[1] as StringName
+			var ekey: String = "%s→%s" % [player_pos, first_step]
+			if not _is_edge_blocked(ekey):
+				node_targeted.emit(clicked_node, first_step)
+				return true
+	return false
+
 
 func _find_edge_at_pos(pos: Vector2) -> String:
 	"""Delega a _edge_en_posicion del juego."""

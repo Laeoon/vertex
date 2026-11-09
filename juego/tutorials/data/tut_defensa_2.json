@@ -17,7 +17,7 @@
     {
       "id": "intro_apt",
       "title": "AMENAZAS PERSISTENTES AVANZADAS (APT)",
-      "text": "Los adversarios experimentados no se rinden ante simples muros.\nEstán equipados con exploits ofensivos (como el Bypass que usas en modo Hacker).\nSi un atacante queda acorralado sin salida, quemará un Bypass para romper tu bloqueo.",
+      "text": "Los actores hostiles sofisticados (APT) despliegan exploits perimetrales Zero-Day / Bypass.\nSi un intruso queda acorralado sin vector de avance, quemará un Bypass para forzar tu bloqueo.\nComo operador Blue Team, debes prever la absorción de exploits y anticipar su siguiente salto.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -30,8 +30,8 @@
     },
     {
       "id": "alerta_bypass",
-      "title": "ABSORCIÓN DE EXPLOITS",
-      "text": "Cuando el intruso fuerza un bloqueo con Bypass, verás un destello y una alarma en tu telemetría.\nLa buena noticia es que los exploits enemigos son limitados.\nUna vez agotado su arsenal, queda vulnerable y la contención total acelera tu rastreo EDR.",
+      "title": "ABSORCIÓN DE EXPLOITS ZERO-DAY",
+      "text": "Al forzar un bloqueo con Bypass, el sistema emitirá una alerta visual en la consola.\nLos arsenales de exploits del adversario son estrictamente limitados.\nUna vez agotados sus cargos ofensivos, la contención acelera el rastreo forense EDR.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -45,7 +45,7 @@
     {
       "id": "host_isolation_intro",
       "title": "CONTRAMEDIDA CRÍTICA: CUARENTENA DE HOST [3]",
-      "text": "Si un servidor intermedio (como DMZ) está comprometido y a punto de saltar al DataCenter,\npuedes ejecutar la opción nuclear: AISLAMIENTO DE RED (Host Quarantine).\nPresiona [3] (o [C]), o haz clic en [3] CUARENTENA en el HUD superior, y selecciona un nodo con halo ámbar.\nEsto cortará todas sus conexiones de raíz para frenar el avance.",
+      "text": "Si un host intermedio (como DMZ) está comprometido y amenaza con saltar al DataCenter,\nejecuta la contramedida de emergencia: AISLAMIENTO DE RED (Host Quarantine).\nPresiona [3] (o [C]), usa la pill superior, o haz clic directamente en el nodo para abrir el menú contextual.\nEsto desconectará quirúrgicamente todas sus conexiones para frenar el vector hostil.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -58,8 +58,8 @@
     },
     {
       "id": "costo_operativo",
-      "title": "DISPONIBILIDAD VS SEGURIDAD",
-      "text": "En ciberseguridad real, aislar un servidor detiene el ataque pero interrumpe los servicios del negocio.\nCada nodo sacrificado en cuarentena aplica una penalización en tu calificación final de estrellas.\nÚsalo como recurso quirúrgico de última instancia para salvar el Núcleo.",
+      "title": "TRIADA CIA: DISPONIBILIDAD VS SEGURIDAD",
+      "text": "En ciberseguridad corporativa, aislar un servidor contiene la brecha pero suspende la disponibilidad.\nCada host sacrificado en cuarentena deduce calificación en la evaluación final de estrellas.\nÚsalo como recurso quirúrgico de última instancia para salvar el Núcleo crítico.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "bottom",
@@ -73,7 +73,7 @@
     {
       "id": "practica_defensa_avanzada",
       "title": "ASEGURA EL PERÍMETRO",
-      "text": "Contén al atacante, vigila sus intentos de penetración y mantén el Núcleo a salvo.\nAl alcanzar el 100% de Trace EDR obtendrás la victoria y el acceso a operaciones clasificadas.\n¡El sistema confía en tu criterio!",
+      "text": "Contén la intrusión, gestiona los intentos de Bypass y protege el DataCenter.\nAl alcanzar el 100% de Trace EDR neutralizarás la amenaza y obtendrás acceso a operaciones avanzadas.\n¡Defiende la infraestructura!",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",

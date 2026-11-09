@@ -54,7 +54,7 @@ func _ready() -> void:
 			{"label": "Módulo 1: Reconocimiento e Infiltración", "key": &"tut_hacker_1", "desc": "Scan [X] y Bypass [1] con Nmap y Web Exploitation."},
 			{"label": "Módulo 2: Escalada y Telemetría", "key": &"tut_hacker_2", "desc": "Escalate [2] y telemetría de red a 2 saltos."},
 			{"label": "Módulo 3: Persistencia y Refugio", "key": &"tut_hacker_3", "desc": "Persist [3], 0 ruido de movimiento y doble enfriamiento."},
-			{"label": "Módulo 4: Señuelos y Contramedidas", "key": &"tut_hacker_4", "desc": "Decoy [4], absorción de bloqueos de IA y desvío de patrullas."},
+			{"label": "Módulo 4: Honeypots y Decepción", "key": &"tut_hacker_4", "desc": "Honeypot [4], absorción de bloqueos de cortafuegos y desvío de patrullas CSIRT."},
 		],
 		Track.DEFENDER: [
 			{"label": "Módulo 1: Contención y Ciclo Reactivo", "key": &"tut_defensa_1", "desc": "Defensa perimetral, ciclo Ping-Pong 1:1 y rastreo forense EDR."},

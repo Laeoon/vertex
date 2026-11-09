@@ -21,7 +21,7 @@
     {
       "id": "intro_mod3",
       "title": "Fase 3: Persistencia y C2",
-      "text": "MÓDULO 3: PERSISTENCIA Y REFUGIO\n\nEn operaciones avanzadas, mantener el acceso sin ser expulsado es crítico.\nLos atacantes implementan técnicas de PERSISTENCIA (ej. tareas programadas,\nclaves de registro, rootkits o webshells) y canales de Comando y Control (C2).\n\nEsto les permite contar con \"puntos ciegos\" seguros en la infraestructura,\ndesde donde pueden monitorear, descansar y esperar a que baje la alerta.\n\nEn este módulo aprenderás:\n- Persist [3]: Establece un refugio con 0 ruido de tránsito y doble enfriamiento.",
+      "text": "MÓDULO 3: PERSISTENCIA Y REFUGIO\n\nEn operaciones prolongadas, preservar el acceso sin alertar al SOC es crítico.\nLos operadores despliegan técnicas de PERSISTENCIA (Persistence / C2 Implants)\ncomo tareas programadas, webshells o claves de registro ocultas.\n\nEsto establece un refugio táctico para monitorear, descansar y enfriar la alerta de red.\n\nEn este módulo dominarás:\n- Persist [3]: Implanta un C2 que anula el ruido de tránsito y duplica el enfriamiento.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -33,8 +33,8 @@
     },
     {
       "id": "persist_mechanic",
-      "title": "Mecánica: Persist [3] (Backdoor C2)",
-      "text": "PERSISTENCIA DE RED [3]:\n\nPresiona [3] sobre un nodo seleccionado para desplegar un backdoor activo durante 3 turnos.\n\nVENTAJAS TÁCTICAS:\n- MOVIMIENTO SILENCIOSO: entrar o salir de un nodo persistido cuesta 0 RUIDO de movimiento.\n- REFUGIO DE ENFRIAMIENTO (Safe Haven): descansar en este nodo DUPLICA el decaimiento natural\n  del ruido (-6 por turno en vez del habitual -3).\n\nCOSTO: +10 de ruido inicial.\nIdeal para limpiar la alerta acumulada tras hackeos ruidosos como Escalate.",
+      "title": "Mecánica: Persistence [3] (C2 Implant)",
+      "text": "PERSISTENCIA DE RED [3] / PERSIST:\n\nPresiona [3] o toca [3] PERSIST en el dock táctico para implantar una baliza por 3 turnos.\n\nVENTAJAS TÁCTICAS:\n- MOVIMIENTO SILENCIOSO: entrar o salir del host persistido cuesta 0 RUIDO de tránsito.\n- REFUGIO TÁCTICO (Safe Haven): descansar en este host DUPLICA el enfriamiento de ruido\n  (-6 por turno en lugar del estándar -3).\n\nCOSTO: +10 de ruido inicial.\nIdeal para mitigar la alerta acumulada tras acciones ruidosas como Escalate.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -47,7 +47,7 @@
     {
       "id": "try_persist_mod3",
       "title": "Práctica: Desplegar Persistencia",
-      "text": "PASOS:\n1. Selecciona el nodo WebServer con [Tab] o clic.\n2. Presiona [3] para instalar el backdoor de persistencia.\n3. Verás el indicador ♻ activo sobre el nodo indicando que el refugio está listo.\n\nINTENTA AHORA: selecciona WebServer y presiona [3].",
+      "text": "PASOS:\n1. Selecciona el host WebServer con [Tab] o clic.\n2. Presiona [3] o toca [3] PERSIST en el dock táctico inferior.\n3. Verás el indicador ♻ activo sobre el host indicando que el refugio está operativo.\n\nINTENTA AHORA: selecciona WebServer y activa [3] PERSIST.",
       "anchor_type": "node",
       "anchor_id": "DMZ",
       "position": "bottom",
@@ -55,13 +55,13 @@
       "highlight_edges": [],
       "pause_game": false,
       "action_required": "input",
-      "hint": "Selecciona WebServer y presiona [3] para instalar Persistencia.",
+      "hint": "Selecciona WebServer y presiona [3] o toca [3] PERSIST.",
       "auto_advance_after": null
     },
     {
       "id": "safe_haven_usage",
       "title": "Uso Táctico del Refugio",
-      "text": "¡Persistencia establecida!\nAhora entra a WebServer usando movimiento normal (o [Enter]).\nNota que no se sumará ruido de movimiento.\n\nSi te quedas descansando en un nodo con persistencia activa, tu medidor de ruido\nreducirá 6 unidades en cada turno. Es la herramienta clave para operaciones prolongadas.\n\nContinúa tu avance hacia AdminPanel y Core.",
+      "text": "¡Implante de persistencia operativo!\nIngresa a WebServer mediante salto normal o [Enter].\nObserva que no se añade ruido de movimiento.\n\nAl permanecer en un nodo con persistencia activa, el medidor de ruido se enfría\n6 unidades por turno. Es la contramedida clave para evadir alertas críticas.\n\nContinúa tu avance hacia AdminPanel y el Core.",
       "anchor_type": "node",
       "anchor_id": "WebServer",
       "position": "center",
@@ -73,8 +73,8 @@
     },
     {
       "id": "mod3_conclusion",
-      "title": "Conclusión y Detección de Persistencia",
-      "text": "Has dominado el mantenimiento del acceso táctico.\n\nDEFENSA EN EL MUNDO REAL:\nLos equipos de respuesta a incidentes (DFIR) buscan persistencias analizando autoruns,\nprocesos huérfanos, firmas en memoria y conexiones anómalas a servidores C2 externos.\n\nAlcanza el Core para completar el módulo.",
+      "title": "Detección Forense (DFIR)",
+      "text": "Persistencia y refugio dominados.\n\nDEFENSA EN EL MUNDO REAL:\nLos analistas forenses (DFIR) rastrean balizas de persistencia analizando claves Run,\nprocesos huérfanos inyectados y sockets anómalos hacia infraestructuras C2.\n\nVulnera el Core para completar el módulo.",
       "anchor_type": "node",
       "anchor_id": "Core",
       "position": "top",

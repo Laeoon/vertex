@@ -38,6 +38,7 @@ var _panel_rect: Rect2 = Rect2()
 var _panel_alpha: float = 0.0
 var _target_alpha: float = 0.0
 
+var game: Node = null
 var _locale: Node = null
 
 var _show_step_index: bool = false  # [I] navegación

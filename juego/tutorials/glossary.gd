@@ -34,6 +34,13 @@ var _glossary_data: Dictionary = {}
 var _glossary_scroll: float = 0.0
 
 
+func _log_info(tag: String, msg: String) -> void:
+	if _p != null:
+		var gl = _p.get_node_or_null("/root/GameLogger")
+		if gl != null and gl.has_method("info"):
+			gl.info(tag, msg)
+
+
 func setup(player: Control) -> void:
 	_p = player
 
@@ -48,7 +55,7 @@ func _load_glossary() -> void:
 	var parsed = JSON.parse_string(json_text)
 	if parsed != null and parsed is Dictionary:
 		_glossary_data = parsed
-		GameLogger.info("TutorialPlayer", "Glosario cargado: %d términos" % parsed.get("terms", {}).size())
+		_log_info("TutorialPlayer", "Glosario cargado: %d términos" % parsed.get("terms", {}).size())
 
 
 ## Puerto del viejo tutorial_player.toggle_glossary().
@@ -56,7 +63,7 @@ func toggle_glossary() -> void:
 	_show_glossary = not _show_glossary
 	_glossary_scroll = 0.0
 	if _show_glossary:
-		GameLogger.info("TutorialPlayer", "Glosario abierto")
+		_log_info("TutorialPlayer", "Glosario abierto")
 
 
 func is_open() -> bool:

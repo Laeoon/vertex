@@ -102,6 +102,7 @@ var enemy_start_node: StringName = &""
 var enemy_target_node: StringName = &""
 var enemy_path: Array[StringName] = []
 var selected_edge: String = ""
+var defender_context_node: StringName = &""
 var hovered_edge: String = ""
 var min_cut_analysis: Dictionary = {}  # min-cut (StrategicAnalyzer)
 var node_firewalls: Dictionary = {}
@@ -310,9 +311,59 @@ func _is_blocked(edge_key: String) -> bool: return _game_state.is_blocked(edge_k
 func _block_edge(edge_key: String, from_n: StringName, to_n: StringName) -> void: _game_state.block_edge(edge_key, from_n, to_n)
 func _unblock_edge(edge_key: String) -> void: _game_state.unblock_edge(edge_key)
 func _limpiar_bloqueos_expirados() -> void: _game_state.limpiar_bloqueos_expirados()
-func _edge_en_posicion(pos: Vector2) -> String: return _game_state.edge_en_posicion(pos)
-func _nodo_en_posicion(pos: Vector2) -> StringName: return _game_state.nodo_en_posicion(pos)
-func _nodo_en_posicion_firewall(pos: Vector2) -> StringName: return _game_state.nodo_en_posicion_firewall(pos)
+
+func _edge_en_posicion(pos: Vector2) -> String:
+	if graph == null or node_positions.is_empty():
+		return ""
+	var best_edge: String = ""
+	var best_dist: float = 24.0  # Hitbox generoso de al menos 22.0px
+	for e in graph.edges:
+		if e == null:
+			continue
+		var from_pos: Vector2 = node_positions.get(e.from_id, Vector2.ZERO) as Vector2
+		var to_pos: Vector2 = node_positions.get(e.to_id, Vector2.ZERO) as Vector2
+		if from_pos == Vector2.ZERO or to_pos == Vector2.ZERO:
+			continue
+		var ab: Vector2 = to_pos - from_pos
+		var ap: Vector2 = pos - from_pos
+		var t: float = ap.dot(ab) / ab.length_squared() if ab.length_squared() > 0.0 else 0.0
+		t = clampf(t, 0.0, 1.0)
+		var closest: Vector2 = from_pos + ab * t
+		var d: float = pos.distance_to(closest)
+		if d < best_dist:
+			best_dist = d
+			best_edge = "%s→%s" % [e.from_id, e.to_id]
+	return best_edge
+
+func _nodo_en_posicion(pos: Vector2) -> StringName:
+	if node_positions.is_empty():
+		return &""
+	var best_node: StringName = &""
+	var best_dist: float = maxf(36.0, node_radius + 22.0)  # Hitbox generoso de al menos 36.0px
+	for nid in node_positions.keys():
+		if hidden_nodes.has(nid) or hidden_nodes.has(String(nid)):
+			continue
+		var npos: Vector2 = node_positions[nid] as Vector2
+		var d: float = npos.distance_to(pos)
+		if d <= best_dist:
+			best_dist = d
+			best_node = nid as StringName
+	return best_node
+
+func _nodo_en_posicion_firewall(pos: Vector2) -> StringName:
+	if node_positions.is_empty():
+		return &""
+	var best_node: StringName = &""
+	var best_dist: float = maxf(42.0, node_radius + 30.0)  # Hitbox generoso de al menos 42.0px
+	for nid in node_positions.keys():
+		if hidden_nodes.has(nid) or hidden_nodes.has(String(nid)):
+			continue
+		var npos: Vector2 = node_positions[nid] as Vector2
+		var d: float = npos.distance_to(pos)
+		if d <= best_dist:
+			best_dist = d
+			best_node = nid as StringName
+	return best_node
 
 # game_logic.gd
 func _vecinos_jugador() -> Array: return _game_logic.vecinos_jugador()
@@ -633,6 +684,7 @@ func _setup_tutorial() -> void:
 	var tutorial_root = preload("res://juego/tutorials/tutorial_player.tscn").instantiate()
 	add_child(tutorial_root)
 	tutorial_player = tutorial_root.get_node("Control")
+	tutorial_player.set("game", self)
 	tutorial_player.step_changed.connect(_on_tutorial_step_changed)
 	tutorial_player.tutorial_completed.connect(_on_tutorial_completed)
 	tutorial_player.tutorial_skipped.connect(_on_tutorial_skipped)
@@ -674,7 +726,9 @@ func _draw() -> void:
 		return
 	# P5/tarea 3: el frame se dibuja con datos puros (GameState.frame_data),
 	# sin callables — orquestación en GameRenderer.draw_frame().
-	_renderer.draw_frame(_game_state.frame_data(vp_size))
+	var frame_data: Dictionary = _game_state.frame_data(vp_size)
+	frame_data["defender_context_node"] = defender_context_node
+	_renderer.draw_frame(frame_data)
 
 	# Dibujar terminal CLI encima si está activa (garantizando transform neutral de pantalla)
 	if _terminal_overlay != null and _terminal_overlay.is_terminal_open:

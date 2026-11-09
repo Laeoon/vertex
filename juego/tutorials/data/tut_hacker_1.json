@@ -19,8 +19,8 @@
   "steps": [
     {
       "id": "intro_mod1",
-      "title": "Fase 1: Reconocimiento del Objetivo",
-      "text": "MÓDULO 1: RECONOCIMIENTO E INFILTRACIÓN\n\nEn ciberseguridad ofensiva y auditorías de Red Team, nunca se ataca a ciegas.\nLa primera fase de la Cyber Kill Chain es el RECONOCIMIENTO.\n\nHerramientas del mundo real como Nmap, Nessus o Shodan permiten mapear puertos,\nservicios expuestos y versiones vulnerables antes de interactuar.\n\nEn este módulo dominarás:\n1) Scan [X]: Detección de activos y neutralización de trampas.\n2) Bypass [1]: Infiltración limpia aprovechando vulnerabilidades perimetrales.",
+      "title": "Fase 1: Reconocimiento de Red",
+      "text": "MÓDULO 1: RECONOCIMIENTO E INFILTRACIÓN\n\nEn operaciones Red Team, la primera fase de la Cyber Kill Chain es el RECONOCIMIENTO.\nHerramientas reales como Nmap mapean puertos y servicios antes de interactuar.\n\nEn este módulo dominarás:\n1) Scan [X]: Telemetría de activos y neutralización de honeypots pasivos.\n2) Bypass [1]: Explotación perimetral para forzar acceso en sigilo absoluto.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -32,8 +32,8 @@
     },
     {
       "id": "scan_mechanic",
-      "title": "Mecánica: Scan [X] (Escaneo Pasivo)",
-      "text": "ESCANEADOR DE RED [X]:\n\nPresiona [X] sobre un nodo adyacente seleccionado para obtener telemetría.\n\nVENTAJAS TÁCTICAS:\n- Revela el tipo de nodo, vulnerabilidades y nivel de riesgo de detección.\n- DESACTIVA TRAMPAS: si el nodo tiene trampas pasivas, evita un castigo de +30 de ruido.\n- MITIGA DETECCIÓN: reduce a la mitad la probabilidad de ser detectado al ingresar.\n\nCOSTO: +2 de ruido. Rápido, silencioso y seguro.",
+      "title": "Mecánica: Scan [X] (Nmap Port Scan)",
+      "text": "SONDEO DE RED [X] / SCAN:\n\nPresiona [X] o toca [X] SCAN en el dock táctico sobre un host adyacente.\n\nVENTAJAS TÁCTICAS:\n- Revela vulnerabilidades y probabilidad de detección del host.\n- DESACTIVA TRAMPAS: anula penalizaciones de +30 de ruido en honeypots.\n- MITIGA DETECCIÓN: reduce al 50% el riesgo al ingresar al nodo.\n\nCOSTO: +2 de ruido. Operación silenciosa y quirúrgica.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -46,7 +46,7 @@
     {
       "id": "try_scan_mod1",
       "title": "Práctica: Escanear WebServer",
-      "text": "PASOS:\n1. Selecciona el nodo WebServer con [Tab] o clic.\n2. Presiona [X] para ejecutar el escaneo.\n3. Observa los datos del nodo y el registro en consola.\n\nINTENTA AHORA: selecciona WebServer y presiona [X].",
+      "text": "PASOS:\n1. Selecciona el host WebServer con [Tab] o clic.\n2. Presiona [X] o toca el botón [X] SCAN en el dock inferior.\n3. Examina la telemetría del nodo en el panel táctico.\n\nINTENTA AHORA: selecciona WebServer y ejecuta [X] SCAN.",
       "anchor_type": "node",
       "anchor_id": "DMZ",
       "position": "bottom",
@@ -54,13 +54,13 @@
       "highlight_edges": [],
       "pause_game": false,
       "action_required": "input",
-      "hint": "Selecciona WebServer con clic o [Tab] y presiona [X].",
+      "hint": "Selecciona WebServer con clic o [Tab] y activa [X] SCAN.",
       "auto_advance_after": null
     },
     {
       "id": "bypass_mechanic",
-      "title": "Mecánica: Bypass [1] (Explotación Web)",
-      "text": "INFILTRACIÓN PERIMETRAL [1]:\n\nUna vez identificada la vulnerabilidad (ej. fallo en servidor web o API),\nel atacante ejecuta un exploit para ingresar al sistema.\n\nVENTAJAS TÁCTICAS:\n- SIGILO ABSOLUTO: garantiza 0% de probabilidad de detección al entrar al nodo.\n- Desbloquea aristas bloqueadas por defensas activas.\n\nCOSTO: +15 de ruido.\nÚsalo cuando el riesgo de detección en el salto sea elevado.",
+      "title": "Mecánica: Zero-Day / Bypass [1]",
+      "text": "INFILTRACIÓN PERIMETRAL [1] / BYPASS:\n\nAprovecha una vulnerabilidad perimetral para comprometer el servicio.\n\nVENTAJAS TÁCTICAS:\n- SIGILO ABSOLUTO: garantiza 0% de probabilidad de detección al entrar al host.\n- Desbloquea aristas clausuradas por el firewall.\n\nCOSTO: +15 de ruido.\nEsencial para penetrar cuellos de botella fuertemente vigilados.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -73,7 +73,7 @@
     {
       "id": "try_bypass_mod1",
       "title": "Práctica: Infiltración con Bypass",
-      "text": "PASOS:\n1. Mantén seleccionado WebServer.\n2. Presiona [1] para consumir un exploit Bypass y penetrar el nodo en sigilo.\n\nINTENTA AHORA: presiona [1] para cruzar hacia WebServer.",
+      "text": "PASOS:\n1. Mantén seleccionado WebServer.\n2. Presiona [1] o toca [1] BYPASS en el dock inferior para ingresar con 0% de detección.\n\nINTENTA AHORA: activa [1] BYPASS hacia WebServer.",
       "anchor_type": "node",
       "anchor_id": "WebServer",
       "position": "bottom",
@@ -81,13 +81,13 @@
       "highlight_edges": [],
       "pause_game": false,
       "action_required": "input",
-      "hint": "Con WebServer seleccionado, presiona [1] para activar Bypass.",
+      "hint": "Con WebServer seleccionado, pulsa [1] o toca [1] BYPASS.",
       "auto_advance_after": null
     },
     {
       "id": "mod1_conclusion",
       "title": "Conclusión y Exfiltración",
-      "text": "¡Infiltración perimetral completada!\nHas combinado reconocimiento previo con explotación precisa.\n\nContinúa navegando hacia el Core para completar la misión.\nRecuerda: si el ruido sube de 60 entrarás en alerta alta.\n\nMARCO ÉTICO:\nEn auditorías profesionales (pentesting), el reconocimiento se limita\nestrictamente al alcance contratado (Rules of Engagement).",
+      "text": "¡Infiltración perimetral completada!\nHas combinado escaneo de puertos con explotación Zero-Day.\n\nContinúa tu avance hacia el Core para completar la operación.\nRecuerda: si el ruido supera 60 el SOC entrará en alerta alta.\n\nMARCO ÉTICO:\nEn auditorías profesionales, la explotación se ciñe a las Rules of Engagement.",
       "anchor_type": "node",
       "anchor_id": "Core",
       "position": "top",

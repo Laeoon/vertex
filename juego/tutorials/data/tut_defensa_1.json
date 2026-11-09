@@ -17,7 +17,7 @@
     {
       "id": "intro_soc",
       "title": "CENTRO DE OPERACIONES DE SEGURIDAD (SOC)",
-      "text": "Bienvenido al equipo de respuesta Blue Team.\nUn vector de ataque hostil ha penetrado desde Internet y avanza hacia el DataCenter.\nTu misión es contener el avance del intruso y proteger los activos críticos.",
+      "text": "Bienvenido al equipo de respuesta a incidentes Blue Team.\nUn vector de ataque hostil ha penetrado desde Internet y avanza hacia el DataCenter.\nTu misión: ejecutar contención activa y blindar los activos críticos corporativos.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -30,8 +30,8 @@
     },
     {
       "id": "bloqueo_reglas",
-      "title": "SEGMENTACIÓN Y REGLAS DE FIREWALL",
-      "text": "En defensa, no controlas un avatar físico; operas la infraestructura.\nHaz clic en cualquier arista activa para levantar un bloqueo de tráfico (Firewall ACL).\nEl muro impedirá que el intruso use ese canal de comunicación.",
+      "title": "SEGMENTACIÓN MIN-CUT & FIREWALL ACL",
+      "text": "En Blue Team operas la infraestructura perimetral.\nHaz clic o tap en cualquier enlace activo para desplegar una regla de filtrado ACL.\nLa regla cerrará el socket e impedirá que el intruso use ese vector de ataque.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -45,7 +45,7 @@
     {
       "id": "ciclo_reactivo",
       "title": "RESPUESTA EN VIVO (CICLO PING-PONG 1:1)",
-      "text": "Cada acción defensiva que ejecutas activa una respuesta inmediata del adversario.\nAl sellar una arista, el turno se resuelve al instante y el intruso intentará moverse o rodearte.\nNo necesitas presionar Enter para confirmar.",
+      "text": "Cada acción defensiva activa una respuesta táctica inmediata del adversario.\nAl sellar una arista, el turno se resuelve al instante y el intruso busca pivotar.\nNo requiere confirmación con Enter: respuesta en tiempo real 1:1.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -59,7 +59,7 @@
     {
       "id": "practica_bloqueo",
       "title": "ACCIÓN: CIERRA EL VECTOR PERIMETRAL",
-      "text": "El atacante planea avanzar por Internet → FirewallExt.\nHaz clic en la arista Internet→FirewallExt para forzarlo a desviarse.",
+      "text": "El atacante planea avanzar por Internet → FirewallExt.\nHaz clic o toca en la arista Internet→FirewallExt para forzarlo a desviarse.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "bottom",
@@ -67,13 +67,13 @@
       "highlight_edges": ["Internet→FirewallExt"],
       "pause_game": false,
       "action_required": "input",
-      "hint": "Haz clic izquierdo en la arista que conecta Internet con FirewallExt.",
+      "hint": "Haz clic izquierdo o toca en la arista que conecta Internet con FirewallExt.",
       "auto_advance_after": null
     },
     {
       "id": "edr_trace_telemetria",
-      "title": "TELEMETRÍA FORENSE EDR (CONDICIÓN DE VICTORIA)",
-      "text": "¡Excelente! Has forzado al intruso a buscar una ruta secundaria por Proxy.\nObserva la barra superior: RASTREO FORENSE EDR.\nCada turno que contienes al intruso ganas +20% (más un bonus si fue demorado).\nAl alcanzar el 100%, la amenaza queda neutralizada judicialmente.",
+      "title": "TELEMETRÍA FORENSE EDR (RASTREO)",
+      "text": "¡Vector perimetral bloqueado! El intruso se desvía hacia Proxy.\nObserva el indicador superior: RASTREO FORENSE EDR.\nCada turno de contención exitosa suma +20% al rastreo forense.\nAl alcanzar el 100%, el origen del ataque queda localizado y neutralizado.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -87,7 +87,7 @@
     {
       "id": "conclusion_modulo1",
       "title": "MANTÉN LA CONTENCIÓN",
-      "text": "Continúa bloqueando las aristas hacia donde pivote el intruso.\nNo permitas que pise el DataCenter mientras el rastreo llega al 100%.\n¡Proceder con la contención!",
+      "text": "Continúa segmentando las conexiones hacia donde pivote el adversario.\nProtege el DataCenter mientras la telemetría EDR alcanza el 100% de atribución.\n¡Proceder con la contención activa!",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",

@@ -21,7 +21,7 @@
     {
       "id": "intro_mod2",
       "title": "Fase 2: Escalada y Pivoting",
-      "text": "MÓDULO 2: ESCALADA Y TELEMETRÍA\n\nUna vez dentro del perímetro inicial (WebServer), un atacante tiene privilegios limitados.\nPara alcanzar activos críticos (bases de datos o controladores de dominio),\nes necesario realizar ESCALADA DE PRIVILEGIOS (PrivEsc) y PIVOTING.\n\nEn entornos reales, esto implica explotar malas configuraciones de sudo,\ntokens de autenticación o vulnerabilidades de kernel para obtener acceso de Administrador/Root.\n\nEn este módulo aprenderás:\n- Escalate [2]: Fuerza el acceso a nodos restringidos y desencadena telemetría profunda.",
+      "text": "MÓDULO 2: ESCALADA Y TELEMETRÍA\n\nCon acceso perimetral inicial, los privilegios del intruso son limitados.\nPara alcanzar activos críticos (bases de datos o DCs), es imperativo ejecutar\nESCALADA DE PRIVILEGIOS (Privilege Escalation) y PIVOTING.\n\nEn auditorías reales, esto explota configuraciones indebidas de sudo,\ntokens de autenticación o vulnerabilidades de kernel para obtener acceso Root.\n\nEn este módulo dominarás:\n- Escalate [2]: Compromiso de credenciales elevadas y telemetría de red profunda.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -33,8 +33,8 @@
     },
     {
       "id": "escalate_mechanic",
-      "title": "Mecánica: Escalate [2] (Root Compromise)",
-      "text": "ELEVACIÓN DE PRIVILEGIOS [2]:\n\nPresiona [2] sobre un nodo vecino para vulnerar sus defensas y tomar control.\n\nVENTAJAS TÁCTICAS:\n- Accede a servidores protegidos o con restricciones de firewall.\n- TELEMETRÍA DE RED AUTOMÁTICA: al ingresar, escanea automáticamente todos los nodos\n  en un radio de 2 saltos sin consumir ruido adicional ni turnos.\n\nCOSTO: +25 de ruido.\nGenera ruido considerable porque las auditorías internas registran la elevación de privilegios.",
+      "title": "Mecánica: Privilege Escalation [2]",
+      "text": "ESCALADA DE PRIVILEGIOS [2] / ESCALATE:\n\nPresiona [2] o toca [2] ESCALATE en el dock táctico sobre el host vecino.\n\nVENTAJAS TÁCTICAS:\n- Accede a servidores protegidos o con restricciones de acceso.\n- TELEMETRÍA DE RED AUTOMÁTICA: cartografía automáticamente todos los activos\n  en un radio de 2 saltos sin consumir turnos ni ruido extra.\n\nCOSTO: +25 de ruido.\nGenera ruido sustancial debido a los registros de auditoría del sistema operativo.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -47,7 +47,7 @@
     {
       "id": "try_escalate_mod2",
       "title": "Práctica: Escalar hacia AppServer",
-      "text": "PASOS:\n1. Selecciona AppServer con [Tab] o clic.\n2. Presiona [2] para activar la elevación de privilegios.\n3. Observa cómo saltas hacia AppServer y la telemetría revela automáticamente\n   los nodos contiguos (DBServer y sus conexiones).\n\nINTENTA AHORA: selecciona AppServer y presiona [2].",
+      "text": "PASOS:\n1. Selecciona AppServer con [Tab] o clic.\n2. Presiona [2] o toca [2] ESCALATE en el dock táctico inferior.\n3. Salta hacia AppServer y observa cómo la telemetría cartografía\n   los nodos contiguos (DBServer y sus conexiones).\n\nINTENTA AHORA: selecciona AppServer y activa [2] ESCALATE.",
       "anchor_type": "node",
       "anchor_id": "WebServer",
       "position": "bottom",
@@ -55,13 +55,13 @@
       "highlight_edges": [],
       "pause_game": false,
       "action_required": "input",
-      "hint": "Selecciona AppServer y presiona [2] para ejecutar Escalate.",
+      "hint": "Selecciona AppServer y presiona [2] o toca [2] ESCALATE.",
       "auto_advance_after": null
     },
     {
       "id": "telemetry_reflection",
-      "title": "Análisis de Telemetría",
-      "text": "¡Acceso concedido y red cartografiada!\nObserva el tablero: los nodos adyacentes a AppServer han sido escaneados.\n\nEn ciberseguridad, esto simula el descubrimiento de Active Directory y topología interna:\ncuando comprometes un servidor de aplicaciones, extraes credenciales y tablas de enrutamiento\nque dejan al descubierto toda la subred corporativa.\n\nContinúa hacia DBServer y AdminPanel rumbo al Core.",
+      "title": "Descubrimiento de Red",
+      "text": "¡Privilegios de Administrador adquiridos!\nLos hosts contiguos a AppServer han sido cartografiados mediante telemetría.\n\nEn intrusiones cibernéticas, esto equivale a extraer tablas de enrutamiento y\ncredenciales cacheadas de Active Directory, exponiendo la topología interna.\n\nContinúa hacia DBServer y AdminPanel rumbo al Core.",
       "anchor_type": "node",
       "anchor_id": "AppServer",
       "position": "center",
@@ -73,8 +73,8 @@
     },
     {
       "id": "mod2_conclusion",
-      "title": "Conclusión y Buenas Prácticas",
-      "text": "Has completado la elevación de privilegios.\n\nDEFENSA EN EL MUNDO REAL:\nPara mitigar este riesgo, los defensores implementan Principio de Menor Privilegio (PoLP),\nmicrosegmentación y monitoreo de llamadas al sistema con EDRs.\n\nExfiltra hacia el Core para finalizar el módulo.",
+      "title": "Conclusión y Contramedidas",
+      "text": "Escalada de privilegios y cartografía completadas.\n\nCONTRAMEDIDAS DEFENSIVAS:\nPara neutralizar este vector, las organizaciones aplican Principio de Menor Privilegio (PoLP),\nmicrosegmentación y monitorización de llamadas al sistema con agentes EDR.\n\nExfiltra hacia el Core para concluir el módulo.",
       "anchor_type": "node",
       "anchor_id": "Core",
       "position": "top",

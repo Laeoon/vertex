@@ -79,6 +79,66 @@ func _input(event: InputEvent) -> void:
 					next_requested.emit()
 					get_viewport().set_input_as_handled()
 
+	# Clic con mouse o Tap táctil en botones del tutorial
+	var is_click := false
+	var click_pos := Vector2.ZERO
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		is_click = true
+		click_pos = event.position
+	elif event is InputEventScreenTouch and event.pressed:
+		is_click = true
+		click_pos = event.position
+
+	if is_click:
+		var vp_size: Vector2 = player.get_viewport_rect().size
+
+		# 1. Botón siguiente (en pasos informativos)
+		if not player._waiting_for_action:
+			var btn_rect: Rect2 = render._get_next_button_rect(player._panel_rect, vp_size)
+			if btn_rect.grow(10.0).has_point(click_pos):
+				next_requested.emit()
+				get_viewport().set_input_as_handled()
+				return
+		else:
+			# En pasos de acción, si ya se cumplió, clic en el panel o botón continuar avanza
+			if player._action_fulfilled:
+				var panel_r: Rect2 = player._panel_rect
+				if panel_r.grow(12.0).has_point(click_pos):
+					next_requested.emit()
+					get_viewport().set_input_as_handled()
+					return
+
+		# 2. Botones de barra inferior (Anterior, Saltar, Índice, Glosario, Pista)
+		var prev_rect := Rect2(10.0, vp_size.y - 44.0, 110.0, 38.0)
+		var skip_rect := Rect2(125.0, vp_size.y - 44.0, 100.0, 38.0)
+		var idx_rect := Rect2(230.0, vp_size.y - 44.0, 100.0, 38.0)
+		var gls_rect := Rect2(335.0, vp_size.y - 44.0, 110.0, 38.0)
+		var hint_rect := Rect2(450.0, vp_size.y - 44.0, 120.0, 38.0)
+
+		if prev_rect.has_point(click_pos):
+			previous_requested.emit()
+			get_viewport().set_input_as_handled()
+			return
+		elif skip_rect.has_point(click_pos):
+			skip_requested.emit()
+			get_viewport().set_input_as_handled()
+			return
+		elif idx_rect.has_point(click_pos):
+			toggle_step_index_requested.emit()
+			get_viewport().set_input_as_handled()
+			return
+		elif gls_rect.has_point(click_pos):
+			toggle_glossary_requested.emit()
+			get_viewport().set_input_as_handled()
+			return
+		elif hint_rect.has_point(click_pos):
+			if player._waiting_for_action:
+				hint_requested.emit()
+			else:
+				help_toggled.emit()
+			get_viewport().set_input_as_handled()
+			return
+
 
 ## Puerto de los viejos tutorial_player._update_tooltip_buttons() y
 ## _check_tooltip_hover(): reconstruye los hotspots (geometría del render) y

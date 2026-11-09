@@ -15,8 +15,8 @@
   "steps": [
     {
       "id": "intro",
-      "title": "Bienvenida",
-      "text": "Ahora la IA está ACTIVA.\nElla analiza tu ruta con DIJKSTRA y BLOQUEA\nla arista más cercana a tu destino.\nDebes encontrar rutas alternativas.\n\n¿QUÉ ES UN FIREWALL?\nUn firewall decide quién entra y por dónde.\nEn Vertex, la IA hace el papel del firewall:\nbloquea rutas según tu comportamiento.\nEn una red corporativa real, un atacante\nenfrenta múltiples capas de defensa.\nAprender a esquivarlas es el primer paso\ndel reconocimiento ofensivo.\nMás detalles en GLOSARIO [G].",
+      "title": "Defensa Perimetral",
+      "text": "Defensa Perimetral e IA Adaptativa:\nEl entorno corporativo opera un sistema IDS/IPS activo.\nLa IA analiza el tráfico y bloquea la arista más próxima a tu vector.\nDebes recalcular y hallar rutas alternativas de penetración.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -28,8 +28,8 @@
     },
     {
       "id": "ai_block_explain",
-      "title": "¿Cómo Piensa la IA?",
-      "text": "¿CÓMO PIENSA LA IA?\n1. Calcula tu ruta óptima actual\n2. Identifica la arista clave cerca del destino\n3. La BLOQUEA (marca X roja)\n4. Tú debes RECALCULAR tu ruta\n\nEs un sistema reactivo de defensa perimetral.\nEn el mundo real, un IPS (Intrusion Prevention\nSystem) hace esto: detecta actividad sospechosa\ny bloquea conexiones automáticamente.\nHerramientas: Snort, Suricata, fail2ban.\nLa IA de Vertex simula este comportamiento.",
+      "title": "Inspección de Tráfico",
+      "text": "Inspección de Tráfico & Reglas Dinámicas:\n1. El IDS calcula tu vector de aproximación con Dijkstra.\n2. Aplica corte Min-Cut en el enlace clave.\n3. Bloquea la conexión (marca X roja) durante 3 turnos.\n4. Te fuerza a buscar redundancia perimetral.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -41,8 +41,8 @@
     },
     {
       "id": "ai_already_blocked",
-      "title": "Bloqueo Inicial",
-      "text": "La IA ya bloqueó la Puerta_A al inicio.\nLa arista está marcada en ROJO con una X.\nEl bloqueo dura 3 TURNOS.\nTienes una ruta alternativa por Puerta_B.",
+      "title": "Segmentación Perimetral",
+      "text": "Segmentación Perimetral (Puerta_A):\nEl firewall cerró el enlace Puerta_A.\nLa conexión permanecerá bloqueada durante 3 turnos.\nRuta táctica alternativa disponible: Puerta_B.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -54,8 +54,8 @@
     },
     {
       "id": "find_alt",
-      "title": "Rutas Alternativas",
-      "text": "Analiza el grafo:\n- Puerta_A → Target cuesta 3\n- Puerta_B → Target cuesta 5\nPuerta_B es más caro pero SIGUE SIENDO VÁLIDO.\nA veces la ruta larga es la ÚNICA disponible.\n\nEn redes reales, esto se llama \"route redundancy\":\nmúltiples caminos para llegar a un destino.\nProtocolos como HSRP y VRRP implementan esto.\nCuando un enlace falla, el tráfico toma\nautomáticamente una alternativa.",
+      "title": "Redundancia de Enlaces",
+      "text": "Redundancia de Enlaces (Route Redundancy):\nPuerta_B tiene mayor costo (5 vs 3) pero permanece abierta.\nEn evasión de red, las rutas redundantes son críticas\ncuando el canal principal es clausurado por un firewall.",
       "anchor_type": "node",
       "anchor_id": "Inicio",
       "position": "bottom",
@@ -67,8 +67,8 @@
     },
     {
       "id": "try_move",
-      "title": "Tu Movimiento",
-      "text": "Usa [Click] en Puerta_B o [Tab] para seleccionarlo.\nLuego [Enter] para moverte.\nLa IA reaccionará tras tu movimiento.",
+      "title": "Salto Táctico",
+      "text": "Ejecuta Salto a Puerta_B:\nUsa [Click / Tap] en Puerta_B o [Tab] + [Enter] para saltar.\nEl dock táctico inferior permite confirmar en pantallas touch.\nLa defensa perimetral reaccionará tras tu movimiento.",
       "anchor_type": "node",
       "anchor_id": "Target",
       "position": "top",
@@ -81,8 +81,8 @@
     },
     {
       "id": "after_ai_turn",
-      "title": "Después del Turno IA",
-      "text": "La IA bloqueó otra arista.\nObserva el patrón: siempre bloquea la arista\nMÁS CERCANA a tu destino en tu ruta actual.\n\nESTRATEGIA:\n- Toma rutas largas al inicio para consumir\n  los bloqueos de la IA en aristas irrelevantes\n- Avanza por la ruta corta al final,\n  cuando la IA se queda sin bloqueos",
+      "title": "Respuesta IDS/IPS",
+      "text": "Análisis de Reacción Defensiva:\nEl IDS reasigna sus reglas de corte tras cada salto.\nEstrategia: Consume los bloqueos del firewall en aristas secundarias\nantes de comprometer el objetivo final.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -94,8 +94,8 @@
     },
     {
       "id": "conclusion",
-      "title": "Conclusión",
-      "text": "La IA tiene recursos LIMITADOS (max_ai_blocks).\nSi la IA se queda sin bloqueos, tienes vía libre.\nUsa [P] para ver tu ruta óptima actualizada.\n\nConcepto: CORTE MÍNIMO (Min-Cut).\nLa IA busca aristas cuyo bloqueo te afecte más.\nEso es teoría de grafos en acción.",
+      "title": "Agotamiento de Reglas",
+      "text": "Segmentación Min-Cut Neutralizada:\nLos recursos de filtrado de la IA son finitos (max_ai_blocks).\nAl agotar su capacidad de corte, dispones de vía libre al objetivo.\nConcepto clave: Segmentación de Tráfico Min-Cut.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",

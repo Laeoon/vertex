@@ -17,8 +17,8 @@
   "steps": [
     {
       "id": "intro",
-      "title": "Bienvenida",
-      "text": "NIVEL AVANZADO.\nCombinamos: WAYPOINTS + DETECCIÓN + PERSEGUIDORES + LÍMITE DE TURNOS.\nDebes pasar por DMZ antes de llegar a Servidor.\nTienes 8 TURNOS máximo.\n\nMODELO DE DEFENSA EN PROFUNDIDAD:\nEn ciberseguridad real se usa \"defense in depth\":\n- Perímetro = Firewall (Tut1-Tut2)\n- Detección = IDS, monitoreo (Tut3)\n- Respuesta = Perseguidores, CSIRT (Tut3)\n- Explotación = Hacker tools (Tut4)\nCada tutorial cubre una capa de defensa.",
+      "title": "Defensa en Profundidad",
+      "text": "Defensa en Profundidad (Defense-in-Depth):\nOperación multi-vector: WAYPOINTS + FIRMAS IDS + PATRULLAS CSIRT.\nObjetivo: Pivotar obligatoriamente por la DMZ antes de comprometer el Servidor.\nPresupuesto operativo: 8 turnos de ventana de ataque.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -30,8 +30,8 @@
     },
     {
       "id": "waypoints_explain",
-      "title": "¿Qué son los Waypoints?",
-      "text": "¿QUÉ SON LOS WAYPOINTS?\nSon nodos que DEBES VISITAR en orden.\nSi llegas al target sin pasar por DMZ, PIERDES.\nLos waypoints se marcan con ◇ (actual) y ○ (pendiente).\nSon puntos de control obligatorios en la ruta.",
+      "title": "Puntos de Pivote",
+      "text": "Puntos de Pivote (Waypoints Obligatorios):\nLos waypoints representan etapas de exfiltración intermedia.\nSi alcanzas el objetivo final sin capturar las credenciales en DMZ, la operación fracasa.\nIdentificados con rombo ◇ en HUD y tablero.",
       "anchor_type": "node",
       "anchor_id": "DMZ",
       "position": "bottom",
@@ -45,8 +45,8 @@
     },
     {
       "id": "path_strategy",
-      "title": "Planificación de Ruta",
-      "text": "RUTAS DISPONIBLES:\n- Inicio → Firewall → DMZ (costo alto, 4)\n- Inicio → Router → DMZ (costo bajo, 2)\n- Luego DMZ → Servidor (2 opciones)\n\nPlanifica: ¿qué camino usas para CADA segmento?",
+      "title": "Segmentación de Red",
+      "text": "Planificación de Enlaces & Segmentación:\nVectores disponibles:\n- Inicio → Firewall → DMZ (costo 4, mayor blindaje)\n- Inicio → Router → DMZ (costo 2, ruta ágil)\nSelecciona el balance entre costo de red y riesgo de detección.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -58,8 +58,8 @@
     },
     {
       "id": "detection",
-      "title": "Detección en Nodos",
-      "text": "DETECCIÓN: Algunos nodos tienen CÁMARAS.\nFirewall (12%), Router (10%), DMZ (15%), IDS (18%).\nSi entras a un nodo con detección,\n hay PROBABILIDAD de ser detectado.\nSi te detectan, aparece un PERSEGUIDOR.\n\nEn redes reales, un IDS (Intrusion Detection\nSystem) monitorea el tráfico buscando patrones\nsospechosos. Las empresas usan SIEM (Splunk,\nELK, QRadar) para correlacionar alertas.\nEn Vertex, los % de detección simulan la\nprobabilidad de que un IDS te descubra.",
+      "title": "Firmas IDS & SIEM",
+      "text": "Firmas IDS y Monitoreo SIEM:\nNodos de tránsito equipados con telemetría de red.\nProbabilidad de detección: Firewall (12%), Router (10%), DMZ (15%), IDS (18%).\nLa detección activa dispara alarmas y alerta a los equipos de respuesta.",
       "anchor_type": "node",
       "anchor_id": "Firewall",
       "position": "right",
@@ -76,8 +76,8 @@
     },
     {
       "id": "pursuers",
-      "title": "Perseguidores",
-      "text": "PERSEGUIDORES:\n- Aparecen en un nodo seguro (spawn)\n- Tienen DELAY: no se mueven inmediatamente\n- Avanzan 1 paso por turno hacia ti\n- Si te alcanzan, PIERDES\n- MÁXIMO 4 perseguidores simultáneos\n\nEn redes reales, los perseguidores representan\nal equipo CSIRT (Incident Response). Cuando un\nIDS detecta intrusión, el equipo analiza tu\nhuella y te rastrea. Por eso los atacantes\nusan anti-forensics: borrar logs, cifrar\ncomunicaciones, proxies.\nEl delay simula el tiempo de reacción humano.",
+      "title": "Patrullas CSIRT",
+      "text": "Agentes de Respuesta a Incidentes (CSIRT):\nAl dispararse una alerta, un agente de contención se despliega con delay de reacción.\nAvanza quirúrgicamente por la ruta más corta hacia tu posición.\nSi el equipo de seguridad intercepta tu nodo, la intrusión es contenida.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -89,8 +89,8 @@
     },
     {
       "id": "risk_management",
-      "title": "Gestión de Riesgo",
-      "text": "GESTIÓN DE RIESGO:\n- Rutas con alta detección = más cortas pero peligrosas\n- Rutas seguras = más largas pero sin riesgo\n- Los perseguidores comparten tu ruta\n  (también siguen el camino más corto)\n- Puedes atraer a los perseguidores hacia\n  caminos largos mientras avanzas por una ruta más corta",
+      "title": "Evasión Forense",
+      "text": "Gestión de Riesgo & Evasión Forense:\nRutas con alto riesgo son más rápidas pero atraen patrullas.\nLos agentes de contención comparten la topología del grafo:\npuedes forzar desvíos atrayéndolos hacia cuellos de botella secundarios.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -102,8 +102,8 @@
     },
     {
       "id": "timer",
-      "title": "Límite de Turnos",
-      "text": "LÍMITE DE TURNOS: 8.\nCada movimiento = 1 turno.\nLa IA también bloquea después de cada turno.\n\nPresupuesto estimado:\nInicio → DMZ: 2-4 turnos (según ruta)\nDMZ → Servidor: 2-5 turnos\nIA bloquea: 1-2 turnos extra\n\n¡Planifica con cuidado!",
+      "title": "Ventana Operativa",
+      "text": "Ventana Operativa (8 Turnos):\nCada movimiento lateral consume 1 turno.\nEl cortafuegos corporativo reasigna bloqueos tras cada interacción.\nOptimiza cada salto para no quedar sin tiempo.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -115,8 +115,8 @@
     },
     {
       "id": "try_it",
-      "title": "¡Inténtalo!",
-      "text": "Intenta llegar a DMZ primero.\nLuego a Servidor.\nMonitorea el HUD: turnos restantes, alertas,\ny posición de perseguidores.",
+      "title": "Infiltración Activa",
+      "text": "Ejecuta la Infiltración:\nPivota por la DMZ y asegura la ruta hacia el Servidor.\nUsa el Dock táctico o teclado para confirmar tus movimientos.",
       "anchor_type": "node",
       "anchor_id": "Inicio",
       "position": "bottom",
@@ -131,8 +131,8 @@
     },
     {
       "id": "debrief",
-      "title": "Resumen",
-      "text": "Completaste el tutorial avanzado.\n\nSÍNTESIS DE MECÁNICAS:\n1. GRAFO: navegación con costos\n2. IA: bloquea tu ruta óptima\n3. WAYPOINTS: forzan ruta específica\n4. DETECCIÓN: riesgo probabilístico\n5. PERSEGUIDORES: amenaza dinámica\n6. TIEMPO: presión por turnos\n\nEstos conceptos son la base de todos los niveles.",
+      "title": "Debrief Táctico",
+      "text": "Operación en Profundidad Dominada:\n- Modelado de grafos con costo y waypoints.\n- Evasión de agentes de respuesta (CSIRT).\n- Gestión de ventanas operativas y telemetría de red.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",

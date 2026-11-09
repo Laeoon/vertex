@@ -1,6 +1,6 @@
 {
   "id": "tut_hacker_4",
-  "title": "Hacker Módulo 4: Señuelos y Contramedidas",
+  "title": "Hacker Módulo 4: Honeypots y Decepción",
   "graph_path": "res://juego/hacker/hacker_n1.tres",
   "start_node": "WebServer",
   "target_node": "Core",
@@ -10,8 +10,8 @@
   "ai_bloquea_al_inicio": false,
   "max_ai_blocks": 2,
   "max_turns": 18,
-  "titulo_nivel": "Hacker Módulo 4: Señuelos y Contramedidas",
-  "objective": "Desplegar señuelos activos [4] para engañar defensas automatizadas y absorber bloqueos de la IA.",
+  "titulo_nivel": "Hacker Módulo 4: Honeypots y Decepción",
+  "objective": "Desplegar honeypots activos [4] para engañar defensas automatizadas y absorber bloqueos de la IA.",
   "hacker_mode": true,
   "starting_exploits": {
     "bypass": 1,
@@ -21,7 +21,7 @@
     {
       "id": "intro_mod4",
       "title": "Fase 4: Decepción y Contramedidas",
-      "text": "MÓDULO 4: SEÑUELOS Y CONTRAMEDIDAS\n\nEn redes corporativas modernas, los sistemas defensivos no son pasivos:\noperan con SIEM, SOAR y algoritmos predictivos que bloquean aristas y despachan patrullas.\n\nPara contrarrestarlos, los atacantes y equipos de Red Team emplean técnicas de DECEPCIÓN:\ninyecciones de tráfico señuelo (decoy traffic), generación de alarmas distractoras y señuelos activos.\n\nEn este módulo aprenderás:\n- Decoy [4]: Coloca un señuelo que absorbe bloqueos de la IA y atrae patrullas enemigas.",
+      "text": "MÓDULO 4: HONEYPOTS Y DECEPCIÓN\n\nEn redes corporativas modernas, los sistemas defensivos no son pasivos:\noperan con SIEM, SOAR y algoritmos predictivos que bloquean enlaces y despachan patrullas.\n\nPara contrarrestarlos, los equipos Red Team aplican tecnología de DECEPCIÓN:\ninyecciones de tráfico señuelo y despliegue de HONEYPOTS ofensivos.\n\nEn este módulo aprenderás:\n- Honeypot [4]: Planta un señuelo activo que absorbe bloqueos del cortafuegos y desvía patrullas CSIRT.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "center",
@@ -33,8 +33,8 @@
     },
     {
       "id": "decoy_mechanic",
-      "title": "Mecánica: Decoy [4] (Honeytoken Ofensivo)",
-      "text": "SEÑUELO ACTIVO [4]:\n\nPresiona [4] sobre un nodo vecino conectado para plantar un señuelo por 2 turnos.\n\nVENTAJAS TÁCTICAS:\n- ABSORCIÓN DE BLOQUEOS: si el sistema de defensa intenta bloquear una conexión hacia ese nodo,\n  el señuelo absorbe el corte, mantiene la arista abierta y agota la acción defensiva.\n- DISTRACCIÓN DE PATRULLAS: los agentes de seguridad priorizan el señuelo sobre tu posición real.\n\nCOSTO: +15 de ruido.\nLa herramienta defensiva definitiva contra cortes de ruta en cuellos de botella.",
+      "title": "Mecánica: Honeypot Ofensivo [4]",
+      "text": "HONEYPOT ACTIVO [4]:\n\nPresiona [4] o toca [4] HONEYPOT en el dock táctico sobre un nodo adyacente para desplegarlo por 2 turnos.\n\nVENTAJAS TÁCTICAS:\n- ABSORCIÓN DE BLOQUEOS: si el cortafuegos intenta clausurar una conexión hacia ese nodo,\n  el Honeypot absorbe el corte, mantiene la arista abierta y agota el bloqueo del firewall.\n- DISTRACCIÓN DE PATRULLAS CSIRT: los agentes de contención desvían su ruta hacia el Honeypot.\n\nCOSTO: +15 de ruido.\nLa herramienta táctica definitiva contra cortes de ruta en cuellos de botella.",
       "anchor_type": "screen",
       "anchor_id": "",
       "position": "top",
@@ -46,8 +46,8 @@
     },
     {
       "id": "try_decoy_mod4",
-      "title": "Práctica: Plantar Señuelo en AppServer",
-      "text": "PASOS:\n1. Selecciona AppServer con [Tab] o clic.\n2. Presiona [4] para desplegar el señuelo activo.\n3. Verás el indicador 🎯 sobre AppServer protegiendo el segmento.\n\nINTENTA AHORA: selecciona AppServer y presiona [4].",
+      "title": "Práctica: Desplegar Honeypot en AppServer",
+      "text": "PASOS:\n1. Selecciona AppServer con [Tab] o clic.\n2. Presiona [4] o toca [4] HONEYPOT en el dock táctico inferior.\n3. Verás el indicador 🎯 sobre AppServer protegiendo el segmento de red.\n\nINTENTA AHORA: selecciona AppServer y activa [4] HONEYPOT.",
       "anchor_type": "node",
       "anchor_id": "WebServer",
       "position": "bottom",
@@ -55,13 +55,13 @@
       "highlight_edges": [],
       "pause_game": false,
       "action_required": "input",
-      "hint": "Selecciona AppServer y presiona [4] para desplegar el Señuelo.",
+      "hint": "Selecciona AppServer y presiona [4] o toca [4] HONEYPOT para desplegar el señuelo.",
       "auto_advance_after": null
     },
     {
       "id": "decoy_reflection",
-      "title": "Estrategia con Sistemas Predictivos",
-      "text": "¡Señuelo operativo!\nCualquier intento de contramedida en ese segmento será neutralizado por el señuelo.\n\nEn ciberseguridad, la tecnología de engaño es bidireccional:\nlos defensores usan Honeypots y Honeytokens para cazar intrusos,\nmientras los atacantes saturan los SOCs con telemetría señuelo para cubrir su exfiltración.\n\nAvanza hacia AppServer, neutraliza contingencias y llega al Core.",
+      "title": "Decepción Bidireccional",
+      "text": "¡Honeypot operativo!\nCualquier intento de segmentación en ese segmento será neutralizado por el señuelo.\n\nEn ciberseguridad, la tecnología de engaño es bidireccional:\nlos defensores usan Honeypots y Honeytokens para cazar intrusos,\nmientras los atacantes saturan los SOCs con telemetría señuelo para cubrir su exfiltración.\n\nAvanza hacia AppServer, neutraliza contingencias y penetra hasta el Core.",
       "anchor_type": "node",
       "anchor_id": "AppServer",
       "position": "center",
@@ -73,8 +73,8 @@
     },
     {
       "id": "mod4_conclusion",
-      "title": "Fin del Entrenamiento Hacker",
-      "text": "¡Has completado el currículum táctico completo de Hacker!\n\nRESUMEN DE ARSENAL:\n- Scan [X]: Reconocimiento pasivo e inmunidad a trampas.\n- Bypass [1]: Infiltración con sigilo absoluto.\n- Escalate [2]: Control root y telemetría de subred a 2 saltos.\n- Persist [3]: Refugio táctico con doble reducción de ruido.\n- Decoy [4]: Absorción de bloqueos y distracción de perseguidores.\n\n¡Estás listo para las misiones avanzadas de la campaña Vertex!",
+      "title": "Cyber Kill Chain Completada",
+      "text": "Has completado los 4 módulos de operaciones cibernéticas:\n1. Reconocimiento pasivo con Scan [X].\n2. Infiltración perimetral Zero-Day / Bypass [1].\n3. Escalada de privilegios y telemetría [2].\n4. Persistencia C2 [3] y Honeypots ofensivos [4].\n\nEstás preparado para las operaciones de mayor complejidad en la red.",
       "anchor_type": "node",
       "anchor_id": "Core",
       "position": "top",

@@ -356,6 +356,17 @@ func _draw_action_reminder(canvas: Control, s: Dictionary, step: Dictionary) -> 
 	var confirm_color: Color = Color(0.4, 1.0, 0.6, alpha) if s.action_fulfilled else Color(0.7, 0.7, 0.7, alpha * 0.9)
 	canvas.draw_string(fnt, Vector2(text_x, y), layout["confirm_label"], HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size, confirm_color)
 
+	# Botón interactivo táctil cuando la acción ya fue cumplida
+	if s.action_fulfilled:
+		var btn_w := 140.0
+		var btn_h := 32.0
+		var btn_rect := Rect2(panel_rect.position.x + panel_rect.size.x - btn_w - 12.0, panel_rect.position.y + (panel_rect.size.y - btn_h) / 2.0, btn_w, btn_h)
+		canvas.draw_rect(btn_rect, Color(0.05, 0.35, 0.2, alpha * 0.95))
+		canvas.draw_rect(btn_rect, Color(0.3, 1.0, 0.6, alpha), false, 1.5)
+		var lbl := "[ CONTINUAR ]"
+		var lsz := fnt.get_string_size(lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size)
+		canvas.draw_string(fnt, Vector2(btn_rect.position.x + (btn_w - lsz.x) / 2.0, btn_rect.position.y + 21.0), lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size, Color.WHITE)
+
 
 ## Puerto del viejo tutorial_player._draw_next_button().
 func _draw_next_button(canvas: Control, s: Dictionary) -> void:
@@ -453,27 +464,90 @@ func _draw_step_indicator(canvas: Control, s: Dictionary) -> void:
 
 
 ## Puerto del viejo tutorial_player._draw_controls_bar().
-## Barra de controles siempre visible en la parte inferior de la pantalla.
+## Barra de controles siempre visible en la parte inferior de la pantalla con botones táctiles.
 func _draw_controls_bar(canvas: Control, s: Dictionary) -> void:
 	var fnt: Font = s.font
 	var vp_size: Vector2 = s.vp_size
-	var bar_h: float = 28.0
+	var bar_h: float = 38.0
 	var bar_pos: Vector2 = Vector2(0.0, vp_size.y - bar_h)
 	var alpha: float = s.panel_alpha
 
 	# Draw semi-transparent background bar for controls
-	canvas.draw_rect(Rect2(bar_pos, Vector2(vp_size.x, bar_h)), Color(0.02, 0.02, 0.06, alpha * 0.85))
-	canvas.draw_rect(Rect2(bar_pos, Vector2(vp_size.x, bar_h)), Color(s.accent_color.r, s.accent_color.g, s.accent_color.b, alpha * 0.3), false, 1.0)
+	canvas.draw_rect(Rect2(bar_pos, Vector2(vp_size.x, bar_h)), Color(0.02, 0.02, 0.06, alpha * 0.9))
+	canvas.draw_rect(Rect2(bar_pos, Vector2(vp_size.x, bar_h)), Color(s.accent_color.r, s.accent_color.g, s.accent_color.b, alpha * 0.35), false, 1.2)
 
-	var controls_text: String
-	if s.waiting_for_action:
-		controls_text = "[Enter] confirmar al completar  [←] %s  [I] Índice  [G] Glosario  [H] Pista  [ESC] Saltar" % _t(s, "tutorial.previous")
-	else:
-		controls_text = "[Enter/Espacio] %s  [←] %s  [I] Índice  [G] Glosario  [H] Ayuda  [ESC] Saltar" % [_t(s, "tutorial.next"), _t(s, "tutorial.previous")]
+	# Pills interactivas touch-friendly para acciones de navegación
+	var b_y := bar_pos.y + 3.0
+	var b_h := 32.0
+	_draw_ctrl_pill(canvas, fnt, Rect2(10.0, b_y, 105.0, b_h), "[←] %s" % _t(s, "tutorial.previous"), s.accent_color, alpha)
+	_draw_ctrl_pill(canvas, fnt, Rect2(125.0, b_y, 95.0, b_h), "[ESC] Saltar", Color(1.0, 0.4, 0.4), alpha)
+	_draw_ctrl_pill(canvas, fnt, Rect2(230.0, b_y, 95.0, b_h), "[I] Índice", s.accent_color, alpha)
+	_draw_ctrl_pill(canvas, fnt, Rect2(335.0, b_y, 105.0, b_h), "[G] Glosario", s.accent_color, alpha)
+	var h_label := "[H] Pista" if s.waiting_for_action else "[H] Ayuda"
+	_draw_ctrl_pill(canvas, fnt, Rect2(450.0, b_y, 115.0, b_h), h_label, Color(1.0, 0.85, 0.2), alpha)
 
-	var text_w: float = fnt.get_string_size(controls_text, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size).x
-	var text_x: float = (vp_size.x - text_w) / 2.0
-	canvas.draw_string(fnt, Vector2(text_x, bar_pos.y + bar_h * 0.65), controls_text, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size, Color(0.8, 0.8, 0.8, alpha))
+	# Hint textual a la derecha
+	var hint_msg := "[Enter] Confirmar" if s.waiting_for_action else "[Enter/Espacio] %s" % _t(s, "tutorial.next")
+	var msg_sz := fnt.get_string_size(hint_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size)
+	canvas.draw_string(fnt, Vector2(vp_size.x - msg_sz.x - 20.0, bar_pos.y + 24.0), hint_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size, Color(0.75, 0.85, 0.9, alpha * 0.8))
+
+
+func _draw_ctrl_pill(canvas: Control, fnt: Font, rect: Rect2, text: String, color: Color, alpha: float) -> void:
+	canvas.draw_rect(rect, Color(color.r, color.g, color.b, alpha * 0.12))
+	canvas.draw_rect(rect, Color(color.r, color.g, color.b, alpha * 0.55), false, 1.0)
+	var t_sz := fnt.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 11)
+	var t_pos := Vector2(rect.position.x + (rect.size.x - t_sz.x) / 2.0, rect.position.y + 20.0)
+	canvas.draw_string(fnt, t_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1.0, 1.0, 1.0, alpha * 0.95))
+
+
+## Dibuja un retículo animado con halo pulsante y flecha direccional (▼ OBJETIVO / TAP AQUÍ).
+func draw_target_halo_and_arrow(canvas: CanvasItem, pos: Vector2, label: String = "▼ OBJETIVO", sub_label: String = "TAP / CLICK AQUÍ", color: Color = Color(0.2, 1.0, 0.6)) -> void:
+	var t: float = Time.get_ticks_msec() * 0.006
+	var pulse: float = 0.55 + sin(t) * 0.35
+	var r_outer: float = 34.0 + sin(t * 1.5) * 4.0
+	var r_inner: float = 24.0
+
+	# Anillos concéntricos pulsantes
+	canvas.draw_circle(pos, r_outer, Color(color.r, color.g, color.b, pulse * 0.25), false, 2.0)
+	canvas.draw_circle(pos, r_inner, Color(color.r, color.g, color.b, pulse * 0.6), false, 2.5)
+
+	# Brackets tácticos en las 4 esquinas
+	var b_sz: float = 30.0
+	var b_arm: float = 8.0
+	var b_col := Color(color.r, color.g, color.b, pulse * 0.9)
+	# Top-Left
+	canvas.draw_line(pos + Vector2(-b_sz, -b_sz), pos + Vector2(-b_sz + b_arm, -b_sz), b_col, 2.0)
+	canvas.draw_line(pos + Vector2(-b_sz, -b_sz), pos + Vector2(-b_sz, -b_sz + b_arm), b_col, 2.0)
+	# Top-Right
+	canvas.draw_line(pos + Vector2(b_sz, -b_sz), pos + Vector2(b_sz - b_arm, -b_sz), b_col, 2.0)
+	canvas.draw_line(pos + Vector2(b_sz, -b_sz), pos + Vector2(b_sz, -b_sz + b_arm), b_col, 2.0)
+	# Bottom-Left
+	canvas.draw_line(pos + Vector2(-b_sz, b_sz), pos + Vector2(-b_sz + b_arm, b_sz), b_col, 2.0)
+	canvas.draw_line(pos + Vector2(-b_sz, b_sz), pos + Vector2(-b_sz, b_sz - b_arm), b_col, 2.0)
+	# Bottom-Right
+	canvas.draw_line(pos + Vector2(b_sz, b_sz), pos + Vector2(b_sz - b_arm, b_sz), b_col, 2.0)
+	canvas.draw_line(pos + Vector2(b_sz, b_sz), pos + Vector2(b_sz, b_sz - b_arm), b_col, 2.0)
+
+	# Flecha animada oscilante apuntando hacia abajo
+	var bob: float = sin(t * 2.0) * 6.0
+	var tip: Vector2 = pos + Vector2(0.0, -32.0 + bob)
+	var base_l: Vector2 = pos + Vector2(-12.0, -48.0 + bob)
+	var base_r: Vector2 = pos + Vector2(12.0, -48.0 + bob)
+	var arrow_pts: PackedVector2Array = [tip, base_l, base_r]
+	canvas.draw_colored_polygon(arrow_pts, Color(color.r, color.g, color.b, pulse * 0.95))
+
+	# Placa con texto / badge
+	var badge_w: float = 140.0
+	var badge_h: float = 34.0
+	var badge_pos: Vector2 = pos + Vector2(-badge_w / 2.0, -86.0 + bob)
+	canvas.draw_rect(Rect2(badge_pos, Vector2(badge_w, badge_h)), Color(0.03, 0.05, 0.1, 0.92))
+	canvas.draw_rect(Rect2(badge_pos, Vector2(badge_w, badge_h)), Color(color.r, color.g, color.b, pulse * 0.8), false, 1.5)
+
+	var fnt: Font = font if font != null else ThemeDB.fallback_font
+	var l_sz := fnt.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12)
+	canvas.draw_string(fnt, Vector2(pos.x - l_sz.x / 2.0, badge_pos.y + 15.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+	var s_sz := fnt.get_string_size(sub_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10)
+	canvas.draw_string(fnt, Vector2(pos.x - s_sz.x / 2.0, badge_pos.y + 29.0), sub_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, color)
 
 
 ## Puerto del viejo tutorial_player._draw_hint_panel().

@@ -16,6 +16,13 @@ extends RefCounted
 var _p: Control
 
 
+func _log_info(tag: String, msg: String) -> void:
+	if _p != null:
+		var gl = _p.get_node_or_null("/root/GameLogger")
+		if gl != null and gl.has_method("info"):
+			gl.info(tag, msg)
+
+
 func setup(player: Control) -> void:
 	_p = player
 
@@ -80,7 +87,7 @@ func load_tutorial(path: String) -> bool:
 	_p._panel_alpha = 0.0
 	_p._target_alpha = 1.0
 
-	GameLogger.info("TutorialPlayer", "Tutorial cargado: %s (%d pasos)" % [_p.tutorial_data.get("id", "?"), _p.steps.size()])
+	_log_info("TutorialPlayer", "Tutorial cargado: %s (%d pasos)" % [_p.tutorial_data.get("id", "?"), _p.steps.size()])
 	return true
 
 
@@ -98,7 +105,7 @@ func skip() -> void:
 	var tid: String = _p.tutorial_data.get("id", "")
 	_finish_tutorial()
 	_p.tutorial_skipped.emit(tid)
-	GameLogger.info("TutorialPlayer", "Tutorial saltado: %s" % tid)
+	_log_info("TutorialPlayer", "Tutorial saltado: %s" % tid)
 
 
 ## Puerto del viejo tutorial_player.complete_tutorial() (asíncrono).
@@ -119,7 +126,7 @@ func complete_tutorial() -> void:
 	await _p.get_tree().create_timer(0.5).timeout
 	_finish_tutorial()
 	# _finish_tutorial() ya emite tutorial_completed y oculta el panel
-	GameLogger.info("TutorialPlayer", "Tutorial completado desde juego: %s" % tid)
+	_log_info("TutorialPlayer", "Tutorial completado desde juego: %s" % tid)
 
 
 ## Puerto del viejo tutorial_player.advance().
@@ -178,14 +185,14 @@ func show_hint() -> void:
 		return
 	_p._hint_shown = true
 	_p._hint_used = true
-	GameLogger.info("TutorialPlayer", "Hint mostrado en paso %d" % (_p.current_step_index + 1))
+	_log_info("TutorialPlayer", "Hint mostrado en paso %d" % (_p.current_step_index + 1))
 
 
 ## Puerto del viejo tutorial_player.notify_action().
 func notify_action(action_type: String) -> void:
 	## Marca la acción del paso actual como cumplida cuando el juego reporta
 	## que el jugador la ejecutó. NO avanza automáticamente: el avance se
-	## confirma con [Enter] (Slice 3.8 v2).
+	## confirma con [Enter] o clic en [CONTINUAR] (Slice 3.8 v2).
 	if not _p.is_active or not _p._waiting_for_action:
 		return
 	var step: Dictionary = _p.steps[_p.current_step_index]
@@ -194,6 +201,13 @@ func notify_action(action_type: String) -> void:
 		required = ""
 	if required == "" or required == action_type:
 		_p._action_fulfilled = true
+		return
+	if required == "input" and action_type in ["move", "scan", "bypass", "escalate", "persist", "decoy", "honeypot", "block_edge", "firewall", "quarantine", "input"]:
+		_p._action_fulfilled = true
+		return
+	if action_type == "input" and required in ["scan", "bypass", "escalate", "persist", "decoy", "honeypot", "block_edge", "firewall", "quarantine", "input"]:
+		_p._action_fulfilled = true
+		return
 
 
 ## Puerto del viejo tutorial_player.notify_moved().
@@ -209,7 +223,7 @@ func notify_input() -> void:
 ## Puerto del viejo tutorial_player.can_perform_action().
 func can_perform_action(action_type: String) -> bool:
 	## Devuelve si la acción `action_type` está permitida ahora mismo.
-	## Durante un paso de acción SOLO se permite la acción requerida.
+	## Durante un paso de acción se permite la acción requerida sin bloqueos falsos.
 	if not _p.is_active or _p.current_step_index < 0 or _p.current_step_index >= _p.steps.size():
 		return true
 	if not _p._waiting_for_action:
@@ -217,9 +231,13 @@ func can_perform_action(action_type: String) -> bool:
 	var required = _p.steps[_p.current_step_index].get("action_required", "")
 	if required == null:
 		required = ""
-	if required == "":
+	if required == "" or required == action_type:
 		return true
-	return required == action_type
+	if required == "input" and action_type in ["scan", "bypass", "escalate", "persist", "decoy", "honeypot", "block_edge", "firewall", "quarantine", "input"]:
+		return true
+	if action_type == "input" and required in ["scan", "bypass", "escalate", "persist", "decoy", "honeypot", "block_edge", "firewall", "quarantine", "input"]:
+		return true
+	return false
 
 
 ## Puerto del viejo tutorial_player.step_requires_action().
@@ -287,7 +305,7 @@ func _advance_to_step(idx: int) -> void:
 	_p._target_alpha = 1.0
 
 	_p.step_changed.emit(idx, step)
-	GameLogger.info("TutorialPlayer", "Tutorial paso %d/%d: %s" % [idx + 1, _p.steps.size(), step.get("id", "?")])
+	_log_info("TutorialPlayer", "Tutorial paso %d/%d: %s" % [idx + 1, _p.steps.size(), step.get("id", "?")])
 
 
 ## Puerto del viejo tutorial_player._finish_tutorial() (asíncrono).
@@ -304,7 +322,7 @@ func _finish_tutorial() -> void:
 		_p.is_paused_by_tutorial = false
 
 	_p.tutorial_completed.emit(tid)
-	GameLogger.info("TutorialPlayer", "Tutorial completado: %s" % tid)
+	_log_info("TutorialPlayer", "Tutorial completado: %s" % tid)
 
 	await _p.get_tree().create_timer(0.3).timeout
 	_p.visible = false
