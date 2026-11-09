@@ -103,8 +103,12 @@ func _get_max_scroll() -> float:
 
 func _back_to_menu() -> void:
 	_play_click_sfx()
+	var vp := get_viewport_rect().size
+	var back_pos := Vector2(130.0, vp.y - 32.0)
 	var st = get_node_or_null("/root/SceneTransition")
-	if st != null and st.has_method("fade_to_scene"):
+	if st != null and st.has_method("dive_out_to_scene"):
+		st.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
+	elif st != null and st.has_method("fade_to_scene"):
 		st.fade_to_scene("res://escenas/main_menu.tscn")
 	elif get_tree() != null:
 		get_tree().change_scene_to_file("res://escenas/main_menu.tscn")

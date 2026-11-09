@@ -1,7 +1,5 @@
 extends Control
 
-signal start_world(world_id: String)
-
 const BrandClass = preload("res://juego/ui/brand.gd")
 const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
 const WorldSelectRendererClass = preload("res://escenas/main_menu/world_select_renderer.gd")
@@ -58,9 +56,9 @@ func _ready() -> void:
 	_main_items = [
 		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play", "icon_path": "res://assets/icons/menu_play.png", "icon_tex": null, "vector_icon": "play"},
 		{"label": loc("menu.options"), "desc": loc("menu.options_desc"), "action": "options", "icon_path": "res://assets/icons/menu_options.png", "icon_tex": null, "vector_icon": "options"},
-		{"label": "Créditos", "desc": "Expediente clasificado de autoría y licencias", "action": "credits", "icon_path": "", "icon_tex": null, "vector_icon": "credits"},
+		{"label": loc("menu.credits"), "desc": loc("menu.credits_desc"), "action": "credits", "icon_path": "", "icon_tex": null, "vector_icon": "credits"},
 		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database", "icon_path": "res://assets/icons/menu_database.png", "icon_tex": null, "vector_icon": "database"},
-		{"label": loc("menu.exit"), "desc": loc("menu.exit_desc") if loc("menu.exit_desc") != "menu.exit_desc" else "Terminar sesión", "action": "exit", "icon_path": "res://assets/icons/menu_exit.png", "icon_tex": null, "vector_icon": "exit"},
+		{"label": loc("menu.exit"), "desc": loc("menu.exit_desc"), "action": "exit", "icon_path": "res://assets/icons/menu_exit.png", "icon_tex": null, "vector_icon": "exit"},
 		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon_path": "res://assets/icons/menu_profile.png", "icon_tex": null, "vector_icon": "profile"},
 	]
 
@@ -373,18 +371,22 @@ func _get_orbital_node_pos(idx: int, total: int, vp: Vector2) -> Vector2:
 
 
 func _start_dive_in(target_scene: String = "", target_world_id: String = "", target_state: State = State.MAIN_MENU, is_state_change: bool = false) -> void:
-	if DisplayServer.get_name() == "headless":
-		if is_state_change:
-			_go_to_state(target_state)
-			return
+	if not is_state_change and target_scene != "":
 		var sp = get_node_or_null("/root/SceneParams")
 		if sp != null and target_world_id != "":
 			sp.titulo_nivel = target_world_id
-		var st = get_node_or_null("/root/SceneTransition")
-		if st != null and st.has_method("fade_to_scene"):
-			st.fade_to_scene(target_scene)
-		elif get_tree() != null:
-			get_tree().change_scene_to_file(target_scene)
+		var vp := get_viewport_rect().size
+		var items := _current_items()
+		var center := _get_orbital_node_pos(selected_idx, items.size(), vp)
+		var am = get_node_or_null("/root/AudioManager")
+		if am != null and am.has_method("play_sfx"):
+			am.play_sfx("confirm")
+		SceneTransition.dive_in_to_scene(target_scene, center)
+		return
+
+	if DisplayServer.get_name() == "headless":
+		if is_state_change:
+			_go_to_state(target_state)
 		return
 
 	_dive_mode = DiveMode.IN
@@ -487,16 +489,27 @@ func loc(key: String) -> String:
 
 
 func _refresh_texts() -> void:
-	_main_items[0].label = loc("menu.play")
-	_main_items[0].desc = loc("menu.play_desc")
-	_main_items[1].label = loc("menu.options")
-	_main_items[1].desc = loc("menu.options_desc")
-	_main_items[2].label = loc("menu.database")
-	_main_items[2].desc = loc("menu.database_desc")
-	_main_items[3].label = loc("menu.exit")
-	_main_items[3].desc = loc("menu.exit_desc") if loc("menu.exit_desc") != "menu.exit_desc" else "Terminar sesión"
-	_main_items[4].label = loc("menu.profile")
-	_main_items[4].desc = loc("menu.profile_desc")
+	for item in _main_items:
+		var action: String = item.get("action", "")
+		match action:
+			"play":
+				item.label = loc("menu.play")
+				item.desc = loc("menu.play_desc")
+			"options":
+				item.label = loc("menu.options")
+				item.desc = loc("menu.options_desc")
+			"credits":
+				item.label = loc("menu.credits")
+				item.desc = loc("menu.credits_desc")
+			"database":
+				item.label = loc("menu.database")
+				item.desc = loc("menu.database_desc")
+			"exit":
+				item.label = loc("menu.exit")
+				item.desc = loc("menu.exit_desc")
+			"profile":
+				item.label = loc("menu.profile")
+				item.desc = loc("menu.profile_desc")
 
 	_world_items[0].label = loc("world.tutorials")
 	_world_items[0].desc = loc("world.tutorials_desc")

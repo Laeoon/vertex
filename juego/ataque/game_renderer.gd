@@ -31,7 +31,10 @@ func _init(
 
 
 func draw_rect(rect: Rect2, color: Color, filled: bool = true, width: float = -1.0, antialiased: bool = false) -> void:
-	_canvas.draw_rect(rect, color, filled, width, antialiased)
+	if filled:
+		_canvas.draw_rect(rect, color, true)
+	else:
+		_canvas.draw_rect(rect, color, false, width, antialiased)
 
 
 func draw_line(from: Vector2, to: Vector2, color: Color, width: float = 1.0, antialiased: bool = false) -> void:
@@ -39,7 +42,10 @@ func draw_line(from: Vector2, to: Vector2, color: Color, width: float = 1.0, ant
 
 
 func draw_circle(pos: Vector2, radius: float, color: Color, filled: bool = true, width: float = -1.0, antialiased: bool = false) -> void:
-	_canvas.draw_circle(pos, radius, color, filled, width, antialiased)
+	if filled:
+		_canvas.draw_circle(pos, radius, color, true)
+	else:
+		_canvas.draw_circle(pos, radius, color, false, width, antialiased)
 
 
 func draw_polygon(points: PackedVector2Array, color: Color) -> void:

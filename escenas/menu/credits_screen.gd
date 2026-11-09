@@ -104,7 +104,9 @@ func _go_back() -> void:
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null and am.has_method("play_sfx"):
 		am.play_sfx("click")
-	SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+	var vp := get_viewport_rect().size
+	var back_pos := Vector2(130.0, 44.0)
+	SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
 
 
 func _draw() -> void:

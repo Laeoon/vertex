@@ -19,10 +19,10 @@ Unificación del esquema de controles en modo Defensor y actualización de texto
 - S3: Suite completa de pruebas en verde y push automático a origin/main.
 
 ## Tasks
-- [ ] T1 (S1) [inline]: Mapear `KEY_1`..`KEY_4` en `input_handler.gd` para modo defensor y actualizar HUD pills en `game_renderer.gd`.
-- [ ] T2 (S2) [inline]: Actualizar menciones de controles en los tutoriales de defensa y generales (`tut5_defense.json`, `tut_defensa_2.json`, `tut2_perimetro.json`).
-- [ ] T3 (S3) [inline]: Verificar suites de tutoriales y niveles en Godot headless (`test_defense_tutorials.gd`, `test_input_schemes.gd`, `run_all.gd`).
-- [ ] T4 (S3) [inline]: Commit semántico y push automático a GitHub `origin/main`.
+- [x] T1 (S1) [inline]: Mapear `KEY_1`..`KEY_4` en `input_handler.gd` para modo defensor y actualizar HUD pills en `game_renderer.gd`.
+- [x] T2 (S2) [inline]: Actualizar menciones de controles en los tutoriales de defensa y generales (`tut5_defense.json`, `tut_defensa_2.json`, `tut2_perimetro.json`).
+- [x] T3 (S3) [inline]: Verificar suites de tutoriales y niveles en Godot headless (`test_defense_tutorials.gd`, `test_input_schemes.gd`, `run_all.gd`).
+- [x] T4 (S3) [inline]: Commit semántico y push automático a GitHub `origin/main`.
 
 ## Log
 - L1: "hay algunos problemas con el firewall, seria mejor meter en vez de f c etc dejarlo en 12345 etc, en los numeros" y "cambia los tutoriales tambien, quiero mejor uso de los controles en todos los modos." (Usuario autoriza unificación de controles numéricos 1-4 en defensor y actualización de tutoriales).

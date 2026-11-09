@@ -87,6 +87,20 @@ func _refresh_levels_detail() -> void:
 		stats["levels_detail"] = build_level_rows(active_wid, _progress_cfg, _stats_cfg)
 
 
+func _back_to_menu() -> void:
+	_save_profile()
+	_play_click_sfx()
+	var vp := get_viewport_rect().size
+	var back_pos := Vector2(130.0, vp.y - 32.0)
+	var st = get_node_or_null("/root/SceneTransition")
+	if st != null and st.has_method("dive_out_to_scene"):
+		st.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
+	elif st != null and st.has_method("fade_to_scene"):
+		st.fade_to_scene("res://escenas/main_menu.tscn")
+	elif get_tree() != null:
+		get_tree().change_scene_to_file("res://escenas/main_menu.tscn")
+
+
 func _input(event: InputEvent) -> void:
 	var vp := get_viewport_rect().size
 
@@ -137,13 +151,7 @@ func _input(event: InputEvent) -> void:
 		var k := event as InputEventKey
 		match k.keycode:
 			KEY_ESCAPE:
-				_save_profile()
-				_play_click_sfx()
-				var st = get_node_or_null("/root/SceneTransition")
-				if st != null and st.has_method("fade_to_scene"):
-					st.fade_to_scene("res://escenas/main_menu.tscn")
-				elif get_tree() != null:
-					get_tree().change_scene_to_file("res://escenas/main_menu.tscn")
+				_back_to_menu()
 			KEY_ENTER:
 				_editing_name = true
 				_cursor_pos = player_name.length()
@@ -180,13 +188,7 @@ func _input(event: InputEvent) -> void:
 		if mb.button_index == MOUSE_BUTTON_LEFT:
 			var mpos := mb.position
 			if _renderer.get_back_button_rect(vp).has_point(mpos):
-				_save_profile()
-				_play_click_sfx()
-				var st = get_node_or_null("/root/SceneTransition")
-				if st != null and st.has_method("fade_to_scene"):
-					st.fade_to_scene("res://escenas/main_menu.tscn")
-				elif get_tree() != null:
-					get_tree().change_scene_to_file("res://escenas/main_menu.tscn")
+				_back_to_menu()
 				return
 
 			if _renderer.get_name_box_rect(vp).has_point(mpos):

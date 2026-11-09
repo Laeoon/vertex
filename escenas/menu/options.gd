@@ -92,13 +92,15 @@ func _recalculate_tab_rects() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	var vp := get_viewport_rect().size
 	if event is InputEventKey and event.pressed:
 		var k := event as InputEventKey
 		match k.keycode:
 			KEY_ESCAPE:
 				_save_settings()
 				_play_click_sfx()
-				SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+				var back_pos := Vector2(140.0, vp.y - 35.0)
+				SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
 			KEY_UP:
 				_item_idx = maxi(0, _item_idx - 1)
 				_play_click_sfx()
@@ -142,7 +144,6 @@ func _input(event: InputEvent) -> void:
 		# Item hover
 		var section: Dictionary = _sections[_section_idx]
 		var by: float = 160.0
-		var vp := get_viewport_rect().size
 		for i in section.items.size():
 			var row_rect := Rect2(60, by - 16, vp.x - 120, 38)
 			if row_rect.has_point(mpos):
@@ -162,7 +163,8 @@ func _input(event: InputEvent) -> void:
 			if _back_btn_rect.has_point(mpos):
 				_save_settings()
 				_play_click_sfx()
-				SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+				var back_pos := Vector2(140.0, vp.y - 35.0)
+				SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
 				return
 
 			# Tab clicked

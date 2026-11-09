@@ -30,7 +30,7 @@ func _ready() -> void:
 	progress = ProgressUtil.cargar_progreso()
 	if not ProgressUtil.is_world_unlocked(world_id, progress):
 		push_warning("LevelSelectScreen: el mundo '%s' esta bloqueado. Redirigiendo a menu principal." % world_id)
-		SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+		SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn")
 		return
 	_load_world_data()
 	var am = get_node_or_null("/root/AudioManager")
@@ -90,7 +90,9 @@ func _go_back() -> void:
 	if am != null and am.has_method("play_sfx"):
 		am.play_sfx("click")
 	SceneParams.menu_target_state = "world_select"
-	SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+	var vp: Vector2 = get_viewport_rect().size
+	var back_pos := Vector2(140.0, vp.y - 31.0)
+	SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
 
 
 func _get_node_position(node_data: Dictionary, index: int) -> Vector2:
@@ -118,6 +120,10 @@ func _is_level_unlocked(index: int) -> bool:
 
 func _play_level(node_id: String) -> void:
 	var idx: int = int(node_id)
+	var node_pos := Vector2.ZERO
+	if idx >= 0 and idx < level_nodes.size():
+		node_pos = _get_node_position(level_nodes[idx], idx)
+	SceneTransition.set_next_dive_origin(node_pos)
 	var LevelManagerClass = load("res://juego/system/level_manager.gd")
 	LevelManagerClass.launch_level(world_id, idx)
 

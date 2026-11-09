@@ -10,11 +10,11 @@ Parametrización de `CyberBackground` para soportar `theme_color` y `bg_color` p
   - Verificar suite global completa en Godot Headless (45 suites limpias) y realizar commit semántico con push a `origin/main`.
 
 ## Tasks
-- [ ] T1 (S1) [inline]: Extender `Brand.gd` con `get_world_bg_color()` y variantes tonales por modo.
-- [ ] T2 (S1) [inline]: Parametrizar `CyberBackground.gd` para aceptar `theme_color` y `bg_color` en `draw()` y en sus sub-rutinas sin romper compatibilidad.
-- [ ] T3 (S1) [inline]: Actualizar `LevelSelectScreen.gd` para dibujar el fondo temático integral y teñir conexiones, hints y botones.
-- [ ] T4 (S1, S2) [inline]: Verificar `test_cyber_background.gd` y la suite global de 45 pruebas en Godot headless.
-- [ ] T5 (S2) [inline]: Commit semántico y push automático a `origin/main`.
+- [x] T1 (S1) [inline]: Extender `Brand.gd` con `get_world_bg_color()` y variantes tonales por modo.
+- [x] T2 (S1) [inline]: Parametrizar `CyberBackground.gd` para aceptar `theme_color` y `bg_color` en `draw()` y en sus sub-rutinas sin romper compatibilidad.
+- [x] T3 (S1) [inline]: Actualizar `LevelSelectScreen.gd` para dibujar el fondo temático integral y teñir conexiones, hints y botones.
+- [x] T4 (S1, S2) [inline]: Verificar `test_cyber_background.gd` y la suite global de 45 pruebas en Godot headless.
+- [x] T5 (S2) [inline]: Commit semántico y push automático a `origin/main`.
 
 ## Log
 - L1: "ahora solo falta cambiar el fondo de cada selector de nivel, no solo las ondas del color si no todo el brandig, despues de eso hacemos los niveles faltantes de cyber" (Usuario autoriza branding integral de fondo en selectores de nivel antes de pasar a los niveles de cyber).

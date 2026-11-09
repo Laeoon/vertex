@@ -445,7 +445,7 @@ func _on_neighbor_hovered(node_id: StringName) -> void:
 func _on_defender_block_edge(edge_key: String) -> void: _game_logic.defender_block_edge(edge_key)
 func _on_defender_place_firewall(node_id: StringName) -> void: _game_logic.defender_place_firewall(node_id)
 func _on_defender_quarantine_node(node_id: StringName) -> void: _game_logic.defender_quarantine_node(node_id)
-func _on_return_to_menu() -> void: SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+func _on_return_to_menu() -> void: SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn")
 func _on_quit() -> void: _toggle_pause()
 func _on_pause_toggle_requested() -> void: _toggle_pause()
 
@@ -527,7 +527,7 @@ func _on_next_level() -> void:
 	# En tutoriales, volver al menú de tutoriales en el track jugado
 	if tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player)):
 		SceneParams.tutorial_track = _deduce_tutorial_track()
-		SceneTransition.fade_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
+		SceneTransition.dive_out_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
 		return
 	# Siguiente nivel del mismo mundo; si es el último, cae al selector de ese mundo.
 	if not LevelManagerClass.launch_next(level_key):
@@ -538,14 +538,15 @@ func _on_level_select() -> void:
 	# En tutoriales, volver al menú de tutoriales en el track jugado
 	if tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player)):
 		SceneParams.tutorial_track = _deduce_tutorial_track()
-		SceneTransition.fade_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
+		SceneTransition.dive_out_to_scene("res://escenas/main_menu/tutorials_menu.tscn")
 		return
 	# Mundo del nivel actual; si no está registrado o está vacío, volver al menú principal.
 	var world: String = LevelRegistryClass.find_level(level_key).get("world", "")
 	if world == "":
-		SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+		SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn")
 		return
-	LevelManagerClass.goto_level_select(world)
+	SceneParams.titulo_nivel = world
+	SceneTransition.dive_out_to_scene("res://juego/system/level_select_screen.tscn")
 
 
 func _on_reset_requested() -> void:

@@ -25,11 +25,11 @@ Programa integral de refinamiento final para VERTEX (Godot 4.7.2):
   - Pruebas automatizadas limpias en headless y push a `origin/main`.
 
 ## Tasks
-- [ ] T1 (S1) [inline]: Corregir UX del Modo Cuarentena en `input_handler.gd`, `game_logic.gd` y `juego_ataque.gd` (auto-desenganche, click derecho/vacío para cancelar, halos de nodos elegibles).
-- [ ] T2 (S2) [inline]: Rediseñar el HUD in-game en `game_renderer.gd` con botones tácticos clickeables, pills de modo activo y contador de bloques.
-- [ ] T3 (S3) [inline]: Implementar interpolación visual de desplazamiento del atacante con Tween y feedback de desconexión en `juego_ataque.gd` y `game_renderer.gd`.
-- [ ] T4 (S4) [inline]: Afinar medallas, estadísticas y easter egg táctico en `badge_registry.gd` y `profile_renderer.gd`.
-- [ ] T5 (S5) [verify]: Verificar suite global en Godot headless (45+ tests en verde) y push automático a GitHub `origin/main`.
+- [x] T1 (S1) [inline]: Corregir UX del Modo Cuarentena en `input_handler.gd`, `game_logic.gd` y `juego_ataque.gd` (auto-desenganche, click derecho/vacío para cancelar, halos de nodos elegibles).
+- [x] T2 (S2) [inline]: Rediseñar el HUD in-game en `game_renderer.gd` con botones tácticos clickeables, pills de modo activo y contador de bloques.
+- [x] T3 (S3) [inline]: Implementar interpolación visual de desplazamiento del atacante con Tween y feedback de desconexión en `juego_ataque.gd` y `game_renderer.gd`.
+- [x] T4 (S4) [inline]: Afinar medallas, estadísticas y easter egg táctico en `badge_registry.gd` y `profile_renderer.gd`.
+- [x] T5 (S5) [verify]: Verificar suite global en Godot headless (45+ tests en verde) y push automático a GitHub `origin/main`.
 
 ## Log
 - L1: "ya creo que tenemos el producto a 100% solo falta arreglar bugs( como el modo cuarentena, nada intuitivo y aveces se queda pegado) , animaciones y el hud in game. lo demas como niveles secretos, ester eggs, medallas, son features ... vamos a hacer todo." (Usuario autoriza la ejecución secuencial completa de pulido de UX, HUD, animaciones y medallas con push final).

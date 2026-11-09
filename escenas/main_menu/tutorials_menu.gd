@@ -154,7 +154,9 @@ func _go_back() -> void:
 	if am != null and am.has_method("play_sfx"):
 		am.play_sfx("click")
 	SceneParams.menu_target_state = "world_select"
-	SceneTransition.fade_to_scene("res://escenas/main_menu.tscn")
+	var vp_size: Vector2 = get_viewport_rect().size
+	var back_pos := Vector2(130.0, vp_size.y - 32.0)
+	SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
 
 
 func _process(delta: float) -> void:
@@ -301,7 +303,9 @@ func _launch(key: StringName) -> void:
 		SceneParams.mensaje_tutorial = ""
 		SceneParams.tutorial_path = "res://juego/tutorials/data/tut6_combined.json"
 
-	SceneTransition.fade_to_scene("res://juego/ataque/escena_juego.tscn")
+	var vp_size: Vector2 = get_viewport_rect().size
+	var launch_pos := Vector2(vp_size.x * 0.5, 180.0 + float(selected_idx) * 58.0)
+	SceneTransition.dive_in_to_scene("res://juego/ataque/escena_juego.tscn", launch_pos)
 
 
 func loc(key: String) -> String:
