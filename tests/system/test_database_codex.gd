@@ -172,16 +172,20 @@ func test_controller_navigation() -> void:
 	db._input(ev_d)
 	_assert(db._active_cat_idx == 2, "KEY_D switches category to 2 (ARCHIVOS)")
 
-	# TAB wraps around from 2 to 0
+	# TAB switches to 3 (CINEMÁTICAS)
+	db._input(ev_tab)
+	_assert(db._active_cat_idx == 3, "KEY_TAB switches category to 3 (CINEMÁTICAS)")
+
+	# TAB wraps around from 3 to 0
 	db._input(ev_tab)
 	_assert(db._active_cat_idx == 0, "KEY_TAB wraps category back to 0 (CONCEPTOS)")
 
-	# Keyboard Category switching: A / Left
+	# Keyboard Category switching: A / Left reverses from 0 to 3 (CINEMÁTICAS)
 	var ev_a := InputEventKey.new()
 	ev_a.pressed = true
 	ev_a.keycode = KEY_A
 	db._input(ev_a)
-	_assert(db._active_cat_idx == 2, "KEY_A reverses category from 0 to 2 (ARCHIVOS)")
+	_assert(db._active_cat_idx == 3, "KEY_A reverses category from 0 to 3 (CINEMÁTICAS)")
 
 	# Return to Category 0
 	db._set_active_category(0)

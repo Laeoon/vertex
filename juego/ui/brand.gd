@@ -25,12 +25,14 @@ const WORLD_HACKER := Color("39ff88")        # Verde terminal / infiltración
 const WORLD_CYBER := Color("00d2ff")         # Azul acuarela / cian ciberdefensa
 const WORLD_HEIST := Color("bf5af2")         # Morado / púrpura synthwave
 const WORLD_TUTORIALS := Color("64b5f6")     # Azul formativo neutro
+const WORLD_SECRET := Color("ff2a6d")        # Carmesí / glitch kernel
 
 ## Fondos oscuros profundos con tinte armónico según el modo
 const BG_HACKER := Color("09120e")           # Tinte negro-verdoso terminal
 const BG_CYBER := Color("081018")            # Tinte azul noche acuarela profundo
 const BG_HEIST := Color("120918")            # Tinte púrpura oscuro synthwave
 const BG_TUTORIALS := Color("0a1018")        # Tinte azul acero formativo
+const BG_SECRET := Color("14080e")           # Tinte negro-carmesí profundo
 
 ## Retorna el color insignia asociado a cada mundo
 static func get_world_color(world_id: String) -> Color:
@@ -43,6 +45,8 @@ static func get_world_color(world_id: String) -> Color:
 			return WORLD_HEIST
 		"tutorials":
 			return WORLD_TUTORIALS
+		"secret", "sector0", "sector 0":
+			return WORLD_SECRET
 		_:
 			return ACCENT
 
@@ -58,6 +62,8 @@ static func get_world_bg_color(world_id: String) -> Color:
 			return BG_HEIST
 		"tutorials":
 			return BG_TUTORIALS
+		"secret", "sector0", "sector 0":
+			return BG_SECRET
 		_:
 			return BG
 
