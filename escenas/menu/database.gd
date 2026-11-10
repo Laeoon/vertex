@@ -58,6 +58,7 @@ var _cinematic_overlay: Control
 var _active_cat_idx: int = 0
 var _selected_entry_idx: int = 0
 var _scroll_y: float = 0.0
+var _cin_list_scroll: float = 0.0
 
 var _hovered_back: bool = false
 var _hovered_cat_idx: int = -1
@@ -130,11 +131,38 @@ func _set_active_category(idx: int) -> void:
 		_active_cat_idx = new_cat
 		_selected_entry_idx = 0
 		_scroll_y = 0.0
+		_cin_list_scroll = 0.0
 		_play_click_sfx()
 		queue_redraw()
 
 
-func _select_entry(idx: int) -> void:
+func _get_effective_vp(custom_vp: Vector2 = Vector2.ZERO) -> Vector2:
+	if custom_vp != Vector2.ZERO:
+		return custom_vp
+	var vp := get_viewport_rect().size
+	if DisplayServer.get_name() == "headless" and vp.y > 720.0:
+		vp.y = 720.0
+	return vp
+
+
+func _get_max_cin_list_scroll(vp: Vector2 = Vector2.ZERO) -> float:
+	vp = _get_effective_vp(vp)
+	var lp := _renderer.get_left_panel_rect(vp)
+	var list_h := (lp.size.y - 102.0)
+	var total_h := float(CinematicRegistryClass.get_all().size()) * 54.0
+	return maxf(0.0, total_h - list_h)
+
+
+func _scroll_cin_list_by(amount: float, custom_vp: Vector2 = Vector2.ZERO) -> void:
+	var vp := _get_effective_vp(custom_vp)
+	var max_s := _get_max_cin_list_scroll(vp)
+	var prev_s := _cin_list_scroll
+	_cin_list_scroll = clampf(_cin_list_scroll + amount, 0.0, max_s)
+	if not is_equal_approx(_cin_list_scroll, prev_s):
+		queue_redraw()
+
+
+func _select_entry(idx: int, custom_vp: Vector2 = Vector2.ZERO) -> void:
 	var total_entries := _get_entry_count(_active_cat_idx)
 	if total_entries == 0:
 		return
@@ -143,7 +171,25 @@ func _select_entry(idx: int) -> void:
 		_selected_entry_idx = new_idx
 		_scroll_y = 0.0
 		_play_click_sfx()
-		queue_redraw()
+
+	if _active_cat_idx == Tab.CINEMATICS:
+		var vp := _get_effective_vp(custom_vp)
+		var lp := _renderer.get_left_panel_rect(vp)
+		var list_top := lp.position.y + 88.0
+		var list_bottom := lp.position.y + lp.size.y - 14.0
+		var row_step := 54.0
+		var row_h := 48.0
+		var row_y_abs := list_top + float(_selected_entry_idx) * row_step
+
+		if row_y_abs + row_h - _cin_list_scroll > list_bottom:
+			_cin_list_scroll = (row_y_abs + row_h) - list_bottom
+		elif row_y_abs - _cin_list_scroll < list_top:
+			_cin_list_scroll = row_y_abs - list_top
+
+		var max_s := _get_max_cin_list_scroll(vp)
+		_cin_list_scroll = clampf(_cin_list_scroll, 0.0, max_s)
+
+	queue_redraw()
 
 
 func _scroll_by(amount: float) -> void:
@@ -209,15 +255,18 @@ func get_tab_rect(cat_idx: int, vp: Vector2) -> Rect2:
 	return Rect2(tab_x, tab_y, tab_w, 32.0)
 
 
-func get_cinematic_row_rect(entry_idx: int, vp: Vector2) -> Rect2:
+func get_cinematic_row_rect(entry_idx: int, vp: Vector2 = Vector2.ZERO) -> Rect2:
+	vp = _get_effective_vp(vp)
 	var lp := _renderer.get_left_panel_rect(vp)
-	var row_y := lp.position.y + 88.0 + float(entry_idx) * 54.0
+	var row_y := lp.position.y + 88.0 + float(entry_idx) * 54.0 - _cin_list_scroll
 	return Rect2(lp.position.x + 14.0, row_y, lp.size.x - 28.0, 48.0)
 
 
 func get_play_button_rect(vp: Vector2) -> Rect2:
 	var rp := _renderer.get_right_panel_rect(vp)
-	var btn_w := 260.0
+	var label := "[ ▶ REPRODUCIR TRANSMISIÓN ]"
+	var text_w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x if font else 240.0
+	var btn_w := maxf(300.0, text_w + 40.0)
 	var btn_h := 44.0
 	return Rect2(rp.position.x + 24.0, rp.position.y + rp.size.y - btn_h - 24.0, btn_w, btn_h)
 
@@ -265,10 +314,13 @@ func _input(event: InputEvent) -> void:
 		var prev_e := _hovered_entry_idx
 		_hovered_entry_idx = -1
 		var num_entries := _get_entry_count(_active_cat_idx)
+		var lp := _renderer.get_left_panel_rect(vp)
 		for i in range(num_entries):
 			var r: Rect2
 			if _active_cat_idx == Tab.CINEMATICS:
 				r = get_cinematic_row_rect(i, vp)
+				if r.position.y + r.size.y < lp.position.y + 82.0 or r.position.y > lp.position.y + lp.size.y - 8.0:
+					continue
 			else:
 				r = _renderer.get_entry_row_rect(i, vp)
 			if r.has_point(mpos):
@@ -286,9 +338,15 @@ func _input(event: InputEvent) -> void:
 		var mpos := mb.position
 		match mb.button_index:
 			MOUSE_BUTTON_WHEEL_UP:
-				_scroll_by(-40.0)
+				if _active_cat_idx == Tab.CINEMATICS and _renderer.get_left_panel_rect(vp).has_point(mpos):
+					_scroll_cin_list_by(-40.0)
+				else:
+					_scroll_by(-40.0)
 			MOUSE_BUTTON_WHEEL_DOWN:
-				_scroll_by(40.0)
+				if _active_cat_idx == Tab.CINEMATICS and _renderer.get_left_panel_rect(vp).has_point(mpos):
+					_scroll_cin_list_by(40.0)
+				else:
+					_scroll_by(40.0)
 			MOUSE_BUTTON_LEFT:
 				if _renderer.get_back_button_rect(vp).has_point(mpos):
 					_back_to_menu()
@@ -300,10 +358,13 @@ func _input(event: InputEvent) -> void:
 						return
 
 				var num_entries := _get_entry_count(_active_cat_idx)
+				var lp := _renderer.get_left_panel_rect(vp)
 				for i in range(num_entries):
 					var r: Rect2
 					if _active_cat_idx == Tab.CINEMATICS:
 						r = get_cinematic_row_rect(i, vp)
+						if r.position.y + r.size.y < lp.position.y + 82.0 or r.position.y > lp.position.y + lp.size.y - 8.0:
+							continue
 					else:
 						r = _renderer.get_entry_row_rect(i, vp)
 					if r.has_point(mpos):
@@ -380,9 +441,9 @@ func _draw_cinematics_screen(vp: Vector2) -> void:
 	var lp := _renderer.get_left_panel_rect(vp)
 	var rp := _renderer.get_right_panel_rect(vp)
 
-	# Encabezado principal de la base de datos
-	draw_string(font, Vector2(40.0, 48.0), "BASE DE DATOS TÁCTICA // REGISTRO CLASIFICADO", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, BrandClass.ACCENT)
-	draw_string(font, Vector2(40.0, 72.0), "HISTORIAL DE MISIONES, TRANSMISIONES Y DOCTRINA DE CIBERSEGURIDAD", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT_DIM)
+	# Encabezado principal de la base de datos (alineado a X=230 para no colisionar con VOLVER)
+	draw_string(font, Vector2(230.0, 52.0), "BASE DE DATOS TÁCTICA // REGISTRO CLASIFICADO", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size - 4, BrandClass.ACCENT)
+	draw_string(font, Vector2(230.0, 72.0), "HISTORIAL DE MISIONES, TRANSMISIONES Y DOCTRINA DE CIBERSEGURIDAD", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT_DIM)
 
 	# 1. Panel Izquierdo: Lista de Cinemáticas
 	draw_rect(lp, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.85))
@@ -398,9 +459,14 @@ func _draw_cinematics_screen(vp: Vector2) -> void:
 
 	# Filas de cinemáticas
 	var cinematics := CinematicRegistryClass.get_all()
+	var list_clip_min := lp.position.y + 82.0
+	var list_clip_max := lp.position.y + lp.size.y - 8.0
+
 	for i in range(cinematics.size()):
 		var cin: Dictionary = cinematics[i]
 		var row_rect := get_cinematic_row_rect(i, vp)
+		if row_rect.position.y + row_rect.size.y < list_clip_min or row_rect.position.y > list_clip_max:
+			continue
 		var is_sel := (i == _selected_entry_idx)
 		var is_hov := (i == _hovered_entry_idx)
 		var op_id: String = cin.get("operator", "ZERO")
@@ -429,6 +495,17 @@ func _draw_cinematics_screen(vp: Vector2) -> void:
 			draw_string(font, Vector2(row_rect.position.x + 75.0, row_rect.position.y + 20.0), cin.get("title", ""), HORIZONTAL_ALIGNMENT_LEFT, row_rect.size.x - 85.0, font_size - 1, BrandClass.TEXT_DIM)
 			var sub := "ACTO %d // %s DIAPOSITIVAS" % [cin.get("act", 1), cin.get("slides", []).size()]
 			draw_string(font, Vector2(row_rect.position.x + 12.0, row_rect.position.y + 38.0), sub, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 2, Color(0.40, 0.44, 0.58))
+
+	# Barra de desplazamiento elegante en el borde derecho del panel izquierdo
+	var max_cin_s := _get_max_cin_list_scroll(vp)
+	if max_cin_s > 0.0:
+		var track_y := lp.position.y + 88.0
+		var track_h := lp.size.y - 102.0
+		var thumb_h := maxf(24.0, track_h * (track_h / (track_h + max_cin_s)))
+		var thumb_y := track_y + (track_h - thumb_h) * (_cin_list_scroll / max_cin_s)
+		var sb_x := lp.position.x + lp.size.x - 6.0
+		draw_rect(Rect2(sb_x, track_y, 3.0, track_h), BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.35))
+		draw_rect(Rect2(sb_x, thumb_y, 3.0, thumb_h), BrandClass.with_alpha(Color("bf5af2"), 0.75))
 
 	# 2. Panel Derecho: Dossier de la Transmisión Seleccionada
 	draw_rect(rp, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.90))
@@ -485,7 +562,10 @@ func _draw_cinematics_screen(vp: Vector2) -> void:
 		var btn_border := op_col if _hovered_play_btn else BrandClass.with_alpha(op_col, 0.60)
 		draw_rect(play_btn, btn_bg)
 		draw_rect(play_btn, btn_border, false, 1.5)
-		draw_string(font, Vector2(play_btn.position.x + 18.0, play_btn.position.y + 28.0), "[ ▶ REPRODUCIR TRANSMISIÓN ]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, op_col)
+		var play_lbl := "[ ▶ REPRODUCIR TRANSMISIÓN ]"
+		var play_lbl_sz := font.get_string_size(play_lbl, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size) if font else Vector2(240.0, 16.0)
+		var play_lbl_x := play_btn.position.x + (play_btn.size.x - play_lbl_sz.x) * 0.5
+		draw_string(font, Vector2(play_lbl_x, play_btn.position.y + 28.0), play_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, op_col)
 
 	# Botón Volver
 	var btn_rect := _renderer.get_back_button_rect(vp)

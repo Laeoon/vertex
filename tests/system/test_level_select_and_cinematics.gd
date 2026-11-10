@@ -35,6 +35,10 @@ func _run_tests() -> void:
 	test_audio_spectrum_bass_energy_and_spine_wave()
 	test_all_16_levels_have_narratives_and_codecs()
 	test_mandatory_first_time_codec_autoplay_and_replay()
+	test_act_pills_dimensions_and_no_collision()
+	test_spine_nodes_and_pills_in_bounds()
+	test_boss_pill_text_no_literal_specifier()
+	test_database_cinematics_list_scrolling()
 
 	_finalizar()
 
@@ -379,3 +383,74 @@ func test_mandatory_first_time_codec_autoplay_and_replay() -> void:
 	ls._cinematic_overlay.skip()
 
 	ls.queue_free()
+
+
+func test_act_pills_dimensions_and_no_collision() -> void:
+	var ls = LevelSelectClass.new()
+	ls.setup("heist")
+	add_child(ls)
+	var vp := Vector2(1356, 672)
+
+	var r1: Rect2 = ls.get_act1_rect(vp)
+	var r2: Rect2 = ls.get_act2_rect(vp)
+	_assert(r1.size.x >= 175.0, "Act 1 pill width >= 175px (got %.1f)" % r1.size.x)
+	_assert(r2.size.x >= 175.0, "Act 2 pill width >= 175px (got %.1f)" % r2.size.x)
+	var gap := r2.position.x - (r1.position.x + r1.size.x)
+	_assert(gap >= 16.0, "Act pills do not collide with at least 16px gap (got %.1f)" % gap)
+	ls.queue_free()
+
+	# Sector 0: Debe ocultar Acto II o mostrar precuela centrada
+	var ls_sec = LevelSelectClass.new()
+	ls_sec.setup("secret")
+	add_child(ls_sec)
+	var r2_sec: Rect2 = ls_sec.get_act2_rect(vp)
+	_assert(r2_sec.size.x == 0.0, "Sector 0 hides Act II pill (Act 2 width is 0)")
+	ls_sec.queue_free()
+
+
+func test_spine_nodes_and_pills_in_bounds() -> void:
+	var ls = LevelSelectClass.new()
+	ls.setup("heist")
+	add_child(ls)
+	var vp := Vector2(1356, 672)
+
+	for sel in range(5):
+		ls.selected_idx = sel
+		ls._carousel_offset = float(sel)
+		for node_idx in range(5):
+			var p := ls.get_spine_node_position(node_idx, vp)
+			_assert(p.x >= 130.0 and p.x <= vp.x - 130.0, "Node %d at sel %d x (%.1f) stays in [130, %0.1f]" % [node_idx, sel, p.x, vp.x - 130.0])
+			var pill_rect: Rect2 = ls.get_spine_node_pill_rect(node_idx, vp)
+			_assert(pill_rect.position.x >= 16.0 and pill_rect.position.x + pill_rect.size.x <= vp.x - 16.0, "Pill %d at sel %d [x=%.1f, right=%.1f] stays in screen bounds" % [node_idx, sel, pill_rect.position.x, pill_rect.position.x + pill_rect.size.x])
+
+	ls.queue_free()
+
+
+func test_boss_pill_text_no_literal_specifier() -> void:
+	var ls = LevelSelectClass.new()
+	ls.setup("heist")
+	add_child(ls)
+	var boss_txt: String = ls.get_spine_node_pill_text(4)
+	_assert(not boss_txt.contains("%s"), "Boss pill text does not contain literal '%%s' (got '%s')" % boss_txt)
+	_assert(boss_txt.begins_with("BOSS // "), "Boss pill text begins with 'BOSS // ' (got '%s')" % boss_txt)
+	ls.queue_free()
+
+
+func test_database_cinematics_list_scrolling() -> void:
+	var db = DatabaseClass.new()
+	add_child(db)
+	var vp := Vector2(1356, 672)
+
+	db._set_active_category(DatabaseClass.Tab.CINEMATICS)
+	db._select_entry(15, vp)
+
+	_assert(db._cin_list_scroll > 0.0, "Selecting entry 15 scrolls cin list (got %.1f)" % db._cin_list_scroll)
+
+	var lp: Rect2 = db._renderer.get_left_panel_rect(vp)
+	var r15: Rect2 = db.get_cinematic_row_rect(15, vp)
+	_assert(r15.position.y >= lp.position.y + 82.0 and r15.position.y + r15.size.y <= lp.position.y + lp.size.y, "Row 15 [y=%.1f..%.1f] is visible inside left panel [y=%.1f..%.1f]" % [r15.position.y, r15.position.y + r15.size.y, lp.position.y, lp.position.y + lp.size.y])
+
+	var play_btn: Rect2 = db.get_play_button_rect(vp)
+	_assert(play_btn.size.x >= 300.0, "Play button width >= 300px (got %.1f)" % play_btn.size.x)
+
+	db.queue_free()

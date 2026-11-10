@@ -76,7 +76,7 @@ func _ready() -> void:
 	_cinematic_overlay.cinematic_finished.connect(_on_cinematic_finished)
 
 	var sp = get_node_or_null("/root/SceneParams")
-	if sp and sp.titulo_nivel != "":
+	if sp and sp.titulo_nivel != "" and world_id.is_empty():
 		world_id = sp.titulo_nivel
 
 	progress = ProgressUtil.cargar_progreso()
@@ -99,6 +99,7 @@ func _ready() -> void:
 			am.play_menu_music()
 
 	_entrance_anim = 0.0
+	_calculate_act_rects(_get_viewport_size())
 	queue_redraw()
 
 
@@ -120,6 +121,7 @@ func _load_world_data() -> void:
 		world_title = reg_world.get("title", world_id)
 		level_nodes = reg_world.get("levels", [])
 	_entrance_anim = 0.0
+	_calculate_act_rects(_get_viewport_size())
 
 
 func set_act(act_num: int) -> void:
@@ -179,20 +181,69 @@ func _play_level(node_id: String) -> void:
 	LevelManagerClass.launch_level(world_id, idx)
 
 
+func _get_viewport_size() -> Vector2:
+	return get_viewport_rect().size if is_inside_tree() else Vector2(1356, 672)
+
+
 func _get_spine_node_position(act_index: int, vp: Vector2 = Vector2.ZERO) -> Vector2:
 	if vp == Vector2.ZERO:
-		vp = get_viewport_rect().size
-	var spine_start := Vector2(vp.x * 0.14, vp.y * 0.54)
-	var spine_end := Vector2(vp.x * 0.82, vp.y * 0.30)
-	var t := float(act_index) / 4.0
+		vp = _get_viewport_size()
+	var act_levels := _get_current_act_levels()
+	var total_nodes := maxi(1, act_levels.size())
+	if total_nodes == 1:
+		return vp * Vector2(0.48, 0.42)
+
+	var spine_start := Vector2(vp.x * 0.19, vp.y * 0.53)
+	var spine_end := Vector2(vp.x * 0.81, vp.y * 0.29)
+	var t := float(act_index) / float(maxi(1, total_nodes - 1))
 	var spine_dir := (spine_end - spine_start).normalized()
 	var base_pos := spine_start.lerp(spine_end, t)
-	var shift := (float(act_index) - _carousel_offset) * (vp.x * 0.035)
-	return base_pos + spine_dir * shift
+	var shift := (float(act_index) - _carousel_offset) * (vp.x * 0.025)
+	var pos := base_pos + spine_dir * shift
+	pos.x = clampf(pos.x, 130.0, vp.x - 130.0)
+	return pos
 
 
 func get_spine_node_position(act_index: int, vp: Vector2 = Vector2.ZERO) -> Vector2:
 	return _get_spine_node_position(act_index, vp)
+
+
+func get_spine_node_pill_text(act_index: int) -> String:
+	var g_idx := _get_global_level_index(act_index)
+	var act_levels := _get_current_act_levels()
+	var total_nodes := maxi(1, act_levels.size())
+	var is_boss: bool = (act_index == total_nodes - 1 and total_nodes >= 5) or (act_index == 4)
+	var is_unlocked := _is_level_unlocked(g_idx)
+	var lvl_data: Dictionary = {}
+	if g_idx < level_nodes.size():
+		lvl_data = level_nodes[g_idx]
+	var title_str: String = lvl_data.get("title", "Misión")
+	if not is_unlocked:
+		title_str = "[ BLOQUEADO ]"
+	return ("BOSS // %s" % title_str) if is_boss else ("N%02d // %s" % [g_idx + 1, title_str])
+
+
+func get_spine_node_pill_rect(act_index: int, vp: Vector2 = Vector2.ZERO) -> Rect2:
+	if vp == Vector2.ZERO:
+		vp = _get_viewport_size()
+	if font == null:
+		font = BrandClass.font_regular()
+	var p := _get_spine_node_position(act_index, vp)
+	var act_levels := _get_current_act_levels()
+	var total_nodes := maxi(1, act_levels.size())
+	var depth_t := float(act_index) / float(maxi(1, total_nodes - 1)) if total_nodes > 1 else 0.5
+	var persp_scale := lerpf(1.10, 0.72, depth_t)
+	if act_index == selected_idx:
+		persp_scale *= 1.25
+	var core_r := 34.0 * persp_scale
+
+	var pill_str := get_spine_node_pill_text(act_index)
+	var pill_font_size := maxi(8, int((small_font_size - 1) * clampf(persp_scale, 0.8, 1.15)))
+	var str_sz := font.get_string_size(pill_str, HORIZONTAL_ALIGNMENT_LEFT, -1, pill_font_size) if font else Vector2(100.0, 16.0)
+	var pill_w := str_sz.x + 16.0
+	var pill_h := 20.0 * clampf(persp_scale, 0.85, 1.15)
+	var pill_x := clampf(p.x - pill_w * 0.5, 16.0, vp.x - pill_w - 16.0)
+	return Rect2(pill_x, p.y - core_r - pill_h - 6.0, pill_w, pill_h)
 
 
 func _get_node_position(_node_data: Dictionary, index: int) -> Vector2:
@@ -202,7 +253,7 @@ func _get_node_position(_node_data: Dictionary, index: int) -> Vector2:
 
 func get_bottom_command_column_rects(vp: Vector2 = Vector2.ZERO) -> Array[Rect2]:
 	if vp == Vector2.ZERO:
-		vp = get_viewport_rect().size
+		vp = _get_viewport_size()
 	var col1 := Rect2(40.0, vp.y - 144.0, 230.0, 116.0)
 	var col2 := Rect2(280.0, vp.y - 146.0, 220.0, 118.0)
 	var cta_x := vp.x - 24.0 - 215.0 - 10.0
@@ -260,7 +311,8 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				_go_back()
 			KEY_TAB:
-				set_act(2 if current_act == 1 else 1)
+				if world_id != "secret":
+					set_act(2 if current_act == 1 else 1)
 			KEY_A, KEY_LEFT:
 				_select_delta(-1)
 			KEY_D, KEY_RIGHT:
@@ -289,7 +341,7 @@ func _input(event: InputEvent) -> void:
 				if _act1_rect.has_point(mpos):
 					set_act(1)
 					return
-				if _act2_rect.has_point(mpos):
+				if _act2_rect.size.x > 0.0 and _act2_rect.has_point(mpos):
 					set_act(2)
 					return
 				if _deploy_rect.has_point(mpos):
@@ -335,7 +387,7 @@ func _input(event: InputEvent) -> void:
 			if _act1_rect.has_point(tpos):
 				set_act(1)
 				return
-			if _act2_rect.has_point(tpos):
+			if _act2_rect.size.x > 0.0 and _act2_rect.has_point(tpos):
 				set_act(2)
 				return
 			if _deploy_rect.has_point(tpos):
@@ -366,7 +418,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _select_delta(delta_idx: int) -> void:
-	var total_cards := 5
+	var act_levels := _get_current_act_levels()
+	var total_cards := maxi(1, act_levels.size())
 	var next_idx: int = clampi(selected_idx + delta_idx, 0, total_cards - 1)
 	if next_idx != selected_idx:
 		selected_idx = next_idx
@@ -484,8 +537,8 @@ func _draw_horizon_perspective_rings(vp: Vector2, theme_col: Color) -> void:
 
 
 func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
-	var spine_start := Vector2(vp.x * 0.14, vp.y * 0.54)
-	var spine_end := Vector2(vp.x * 0.82, vp.y * 0.30)
+	var spine_start := Vector2(vp.x * 0.19, vp.y * 0.53)
+	var spine_end := Vector2(vp.x * 0.81, vp.y * 0.29)
 	var bass_energy: float = _spectrum_viz.get_bass_energy()
 
 	# 1. Onda Reactiva a lo largo de la espina 3D con pases glow, bloom y core
@@ -495,8 +548,8 @@ func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
 	draw_line(spine_start, spine_end, BrandClass.with_alpha(theme_col, 0.30), 1.5)
 
 	# 3. Nodos de misión ordenados por profundidad (de lejano a cercano para z-ordering)
-	var total_nodes := 5
 	var act_levels := _get_current_act_levels()
+	var total_nodes := maxi(1, act_levels.size())
 
 	_card_rects.clear()
 	var rect_map: Dictionary = {}
@@ -511,7 +564,7 @@ func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
 			lvl_data = act_levels[i]
 
 		var p := _get_spine_node_position(i, vp)
-		var depth_t := float(i) / 4.0
+		var depth_t := float(i) / float(maxi(1, total_nodes - 1)) if total_nodes > 1 else 0.5
 		var persp_scale := lerpf(1.10, 0.72, depth_t)
 		if is_selected:
 			persp_scale *= 1.25
@@ -522,7 +575,7 @@ func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
 
 		rect_map[i] = Rect2(p.x - outer_r, p.y - outer_r, outer_r * 2.0, outer_r * 2.0)
 
-		_draw_spine_mission_node(p, i, g_idx, lvl_data, is_selected, is_unlocked, persp_scale, outer_r, theme_col, bass_energy)
+		_draw_spine_mission_node(p, i, g_idx, lvl_data, is_selected, is_unlocked, persp_scale, outer_r, theme_col, bass_energy, vp)
 
 	for i in range(total_nodes):
 		_card_rects.append(rect_map.get(i, Rect2()))
@@ -538,8 +591,11 @@ func _draw_spine_mission_node(
 	scale_val: float,
 	outer_r: float,
 	theme_col: Color,
-	bass_energy: float
+	bass_energy: float,
+	vp: Vector2 = Vector2.ZERO
 ) -> void:
+	if vp == Vector2.ZERO:
+		vp = get_viewport_rect().size
 	var is_boss: bool = (act_idx == 4)
 	var node_col: Color = Color("ff2a6d") if is_boss else (theme_col if is_unlocked else BrandClass.TEXT_DIM)
 
@@ -558,22 +614,17 @@ func _draw_spine_mission_node(
 	_draw_regular_polygon(self, p, core_r, sides, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.94), true, 1.0, rot_off)
 	_draw_regular_polygon(self, p, core_r, sides, node_col, false, 2.8 if is_selected else 1.6, rot_off)
 
-	# Núcleo interior palpitante
-	var inner_r := 8.0 * scale_val + (bass_energy * 5.0 if is_selected else 0.0)
-	draw_circle(p, inner_r, node_col)
-	if is_selected:
-		draw_circle(p, inner_r * 0.5, Color.WHITE)
+	# Anillo interior sutil no intrusivo en lugar de círculo sólido sobre el texto
+	draw_arc(p, core_r * 0.62, 0.0, TAU, 24, BrandClass.with_alpha(node_col, 0.35), 1.2)
 
 	# Pill superior limpia: "N03 // Nombre"
-	var title_str: String = lvl_data.get("title", "Misión")
-	if not is_unlocked:
-		title_str = "[ BLOQUEADO ]"
-	var pill_str := ("BOSS // %s" if is_boss else ("N%02d // %s" % [global_idx + 1, title_str]))
+	var pill_str := get_spine_node_pill_text(act_idx)
 	var pill_font_size := maxi(8, int((small_font_size - 1) * clampf(scale_val, 0.8, 1.15)))
 	var str_sz := font.get_string_size(pill_str, HORIZONTAL_ALIGNMENT_LEFT, -1, pill_font_size)
 	var pill_w := str_sz.x + 16.0
 	var pill_h := 20.0 * clampf(scale_val, 0.85, 1.15)
-	var pill_rect := Rect2(p.x - pill_w * 0.5, p.y - core_r - pill_h - 6.0, pill_w, pill_h)
+	var pill_x := clampf(p.x - pill_w * 0.5, 16.0, vp.x - pill_w - 16.0)
+	var pill_rect := Rect2(pill_x, p.y - core_r - pill_h - 6.0, pill_w, pill_h)
 
 	draw_rect(pill_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.92))
 	draw_rect(pill_rect, BrandClass.with_alpha(node_col, 0.70 if is_selected else 0.35), false, 1.2)
@@ -583,7 +634,8 @@ func _draw_spine_mission_node(
 	var lbl_text := "BOSS" if is_boss else ("N%02d" % (global_idx + 1))
 	var lbl_font_sz := maxi(9, int((small_font_size + 1) * scale_val))
 	var lbl_sz := font.get_string_size(lbl_text, HORIZONTAL_ALIGNMENT_CENTER, -1, lbl_font_sz)
-	draw_string(font, Vector2(p.x - lbl_sz.x * 0.5, p.y + lbl_sz.y * 0.35), lbl_text, HORIZONTAL_ALIGNMENT_LEFT, -1, lbl_font_sz, node_col if is_unlocked else BrandClass.TEXT_DIM)
+	var lbl_col := BrandClass.TEXT if (is_selected or is_unlocked) else BrandClass.TEXT_DIM
+	draw_string(font, Vector2(p.x - lbl_sz.x * 0.5, p.y + lbl_sz.y * 0.35), lbl_text, HORIZONTAL_ALIGNMENT_LEFT, -1, lbl_font_sz, lbl_col)
 
 	# Calificación de estrellas abajo: "★ ★ ☆"
 	var json_path: String = lvl_data.get("path", "")
@@ -648,6 +700,57 @@ func _get_operator_log_prefix(op_name: String) -> String:
 		_: return "[%s // LOG]:" % op_name
 
 
+func _get_total_act_count() -> int:
+	var max_act := 1
+	for node in level_nodes:
+		var a: int = node.get("act", 1)
+		if a > max_act:
+			max_act = a
+	return max_act
+
+
+func _calculate_act_rects(vp: Vector2 = Vector2.ZERO) -> void:
+	if vp == Vector2.ZERO:
+		vp = _get_viewport_size()
+	if font == null:
+		font = BrandClass.font_regular()
+	if world_id == "secret":
+		var label := "[ PRECUELA // SECTOR 0 ]"
+		var str_w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 170.0
+		var pill_w := maxf(175.0, str_w + 28.0)
+		var pill_h := 34.0
+		var start_x := (vp.x - pill_w) * 0.5
+		_act1_rect = Rect2(start_x, 18.0, pill_w, pill_h)
+		_act2_rect = Rect2(0.0, 0.0, 0.0, 0.0)
+		return
+
+	var label1 := "[ ACTO I (N1–N5) ]"
+	var label2 := "[ ACTO II (N6–N10) ]"
+	var str1_w := font.get_string_size(label1, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 140.0
+	var str2_w := font.get_string_size(label2, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 140.0
+	var pill1_w := maxf(175.0, str1_w + 28.0)
+	var pill2_w := maxf(175.0, str2_w + 28.0)
+	var gap := 16.0
+	var total_w := pill1_w + gap + pill2_w
+	var start_x := (vp.x - total_w) * 0.5
+	var pill_h := 34.0
+
+	_act1_rect = Rect2(start_x, 18.0, pill1_w, pill_h)
+	_act2_rect = Rect2(start_x + pill1_w + gap, 18.0, pill2_w, pill_h)
+
+
+func get_act1_rect(vp: Vector2 = Vector2.ZERO) -> Rect2:
+	if vp != Vector2.ZERO or _act1_rect.size.x == 0.0:
+		_calculate_act_rects(vp if vp != Vector2.ZERO else _get_viewport_size())
+	return _act1_rect
+
+
+func get_act2_rect(vp: Vector2 = Vector2.ZERO) -> Rect2:
+	if vp != Vector2.ZERO or (_act2_rect.size.x == 0.0 and world_id != "secret"):
+		_calculate_act_rects(vp if vp != Vector2.ZERO else _get_viewport_size())
+	return _act2_rect
+
+
 func _draw_floating_header(vp: Vector2, theme_col: Color) -> void:
 	# Isla Flotante Superior Izquierda (Rect2(24, 18, 380, 50))
 	_back_rect = Rect2(24.0, 18.0, 380.0, 50.0)
@@ -666,27 +769,31 @@ func _draw_floating_header(vp: Vector2, theme_col: Color) -> void:
 	draw_string(font, Vector2(_back_rect.position.x + 92.0, _back_rect.position.y + 42.0), sub, HORIZONTAL_ALIGNMENT_LEFT, _back_rect.size.x - 100.0, small_font_size - 2, BrandClass.TEXT_DIM)
 
 	# Selector Flotante Superior Central de Actos
-	var total_w := 280.0
-	var start_x := (vp.x - total_w) * 0.5
-	var pill_w := 134.0
-	var pill_h := 34.0
-	_act1_rect = Rect2(start_x, 18.0, pill_w, pill_h)
-	_act2_rect = Rect2(start_x + pill_w + 12.0, 18.0, pill_w, pill_h)
+	_calculate_act_rects(vp)
 
-	_draw_act_pill(_act1_rect, "[ ACTO I (N1–N5) ]", current_act == 1, theme_col)
-	_draw_act_pill(_act2_rect, "[ ACTO II (N6–N10) ]", current_act == 2, theme_col)
+	if world_id == "secret" or _get_total_act_count() <= 1:
+		_draw_act_pill(_act1_rect, "[ PRECUELA // SECTOR 0 ]", true, theme_col)
+	else:
+		_draw_act_pill(_act1_rect, "[ ACTO I (N1–N5) ]", current_act == 1, theme_col)
+		_draw_act_pill(_act2_rect, "[ ACTO II (N6–N10) ]", current_act == 2, theme_col)
 
 
 func _draw_act_pill(rect: Rect2, label: String, is_active: bool, theme_col: Color) -> void:
+	if rect.size.x <= 0.0:
+		return
+	var font_sz := small_font_size if is_active else small_font_size - 1
+	var col := theme_col if is_active else BrandClass.TEXT_DIM
 	if is_active:
 		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95))
 		draw_rect(rect, theme_col, false, 2.0)
 		draw_rect(Rect2(rect.position.x, rect.position.y + rect.size.y - 3.0, rect.size.x, 3.0), theme_col)
-		draw_string(font, Vector2(rect.position.x + 12, rect.position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, theme_col)
 	else:
 		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.45))
 		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.35), false, 1.0)
-		draw_string(font, Vector2(rect.position.x + 12, rect.position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 1, BrandClass.TEXT_DIM)
+
+	var text_sz := font.get_string_size(label, HORIZONTAL_ALIGNMENT_CENTER, -1, font_sz) if font else Vector2(100.0, 16.0)
+	var text_x := rect.position.x + (rect.size.x - text_sz.x) * 0.5
+	draw_string(font, Vector2(text_x, rect.position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_sz, col)
 
 
 func _draw_bottom_command_strip(vp: Vector2, theme_col: Color) -> void:
@@ -713,12 +820,9 @@ func _draw_bottom_command_strip(vp: Vector2, theme_col: Color) -> void:
 	draw_string(font, Vector2(40.0, vp.y - 128.0), tag_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, small_font_size - 1, theme_col)
 	draw_string(font, Vector2(40.0, vp.y - 104.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, font_size + 1, BrandClass.TEXT)
 
-	var diff_bars := ""
-	for d in range(5):
-		diff_bars += "///" if d < difficulty else " - "
 	var deg_val := 2.2 + float(g_idx) * 0.4
 	var ms_val := 8 + g_idx * 3
-	var meta_str := "Dif %s · deg(G)=%.1f · %d ms" % [diff_bars, deg_val, ms_val]
+	var meta_str := "Dif %d/5 · deg(G)=%.1f · %d ms" % [difficulty, deg_val, ms_val]
 	draw_string(font, Vector2(40.0, vp.y - 82.0), meta_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, small_font_size - 2, BrandClass.TEXT_DIM)
 
 	var stars: int = progress.get(level_key, 0)
