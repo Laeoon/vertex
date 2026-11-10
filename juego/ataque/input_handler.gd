@@ -588,7 +588,16 @@ func _handle_hud_click(pos: Vector2, vp_size: Vector2) -> bool:
 		var btn_zoom_out := Rect2(vp_size.x - 145.0, vp_size.y - 42.0, 32.0, 38.0)
 		var btn_zoom_in := Rect2(vp_size.x - 108.0, vp_size.y - 42.0, 32.0, 38.0)
 		var btn_pause := Rect2(vp_size.x - 71.0, vp_size.y - 42.0, 55.0, 38.0)
-		var confirm_rect := Rect2((vp_size.x - 260.0) * 0.5, vp_size.y - 42.0, 260.0, 38.0)
+		var confirm_w := 260.0
+		if selected_neighbor != &"":
+			var p_fnt: Font = game.font if (game != null and "font" in game) else null
+			var p_fsz: int = game.font_size if (game != null and "font_size" in game) else 14
+			var nc: Dictionary = game.node_cache if (game != null and "node_cache" in game) else {}
+			var sel_display: String = GameRendererClass.resolve_node_display_name(selected_neighbor, nc)
+			var m_txt := "⏭ CONFIRMAR: %s" % sel_display
+			var measured_w: float = p_fnt.get_string_size(m_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, p_fsz - 1).x if p_fnt != null else (float(m_txt.length()) * 8.0)
+			confirm_w = maxf(260.0, measured_w + 32.0)
+		var confirm_rect := Rect2((vp_size.x - confirm_w) * 0.5, vp_size.y - 42.0, confirm_w, 38.0)
 
 		if btn_cli.has_point(pos):
 			if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:

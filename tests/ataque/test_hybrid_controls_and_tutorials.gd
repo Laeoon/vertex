@@ -40,6 +40,9 @@ class MockGame extends Node:
 	var is_moving: bool = false
 	var tutorial_player: Node = null
 	var mensaje_estado: String = ""
+	var node_cache: Dictionary = {}
+	var font: Font = null
+	var font_size: int = 14
 	var reset_pan_zoom_called: bool = false
 	var zoom_in_called: bool = false
 	var zoom_out_called: bool = false
@@ -199,6 +202,16 @@ func _test_top_perks_rects_all_modes() -> void:
 				var r_j: Rect2 = perks[j]["rect"]
 				_assert(not r_i.intersects(r_j), "Top perks non-overlapping in mode '%s': %s vs %s" % [m, perks[i]["id"], perks[j]["id"]])
 
+	# Safe Zone Checks (Image#1 & Image#3 fix): start_x >= 445.0 at 1356x672 and 1280x720
+	var test_vp := Vector2(1356, 672)
+	var hacker_perks := GameRendererClass.get_top_perk_rects(test_vp, "hacker")
+	_assert(hacker_perks.size() > 0 and hacker_perks[0]["rect"].position.x >= 445.0,
+		"GameRenderer.get_top_perk_rects(Vector2(1356, 672), 'hacker')[0] position.x (%.1f) >= 445.0" % (hacker_perks[0]["rect"].position.x if hacker_perks.size() > 0 else 0.0))
+
+	var heist_perks := GameRendererClass.get_top_perk_rects(test_vp, "heist")
+	_assert(heist_perks.size() > 0 and heist_perks[0]["rect"].position.x >= 445.0,
+		"GameRenderer.get_top_perk_rects(Vector2(1356, 672), 'heist')[0] position.x (%.1f) >= 445.0" % (heist_perks[0]["rect"].position.x if heist_perks.size() > 0 else 0.0))
+
 
 func _test_hacker_dock_mouse_and_touch() -> void:
 	var mock_game = MockGame.new()
@@ -299,6 +312,20 @@ func _test_attacker_dock_confirm_and_camera() -> void:
 	ev_zoom_out.position = Vector2(1140.0, 695.0)
 	handler._input(ev_zoom_out)
 	_assert(mock_game.zoom_out_called, "Click en [-] llama zoom_out()")
+
+	# Click en botón CONFIRMAR cuando el nodo tiene nombre ancho (Image#1 fix)
+	mock_game.selected_neighbor = &"SecurityPost"
+	mock_game.node_cache = {
+		&"SecurityPost": {"display_name": "Puesto de seguridad"}
+	}
+	# El botón se ensancha (> 260px), centrado en 640.0. Un clic en el lateral expandido (ej. x = 500.0)
+	# debe registrarse si el botón mide ~312px (rango x: [484, 796])
+	var ev_wide_move = InputEventMouseButton.new()
+	ev_wide_move.button_index = MOUSE_BUTTON_LEFT
+	ev_wide_move.pressed = true
+	ev_wide_move.position = Vector2(500.0, 695.0)
+	handler._input(ev_wide_move)
+	_assert(moved_dest.size() == 2 and moved_dest[1] == &"SecurityPost", "Click en [CONFIRMAR: Puesto de seguridad] expandido registra move_requested")
 
 	handler.queue_free()
 	mock_game.queue_free()

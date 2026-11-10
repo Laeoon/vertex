@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "chosen": "07-level-select-3d-spine-tunnel.html",
+  "chosen": "04-top-perks-compact-hud.html",
   "handoffs": {
     "01-unified-tactical-dock.html": {
       "status": "implemented",
@@ -27,6 +27,14 @@
       "startedAt": null,
       "implementedAt": "2026-11-10T01:10:51.459Z",
       "note": "Implementado Artboard 07 (3D Spine Tunnel + Audio Wave 3-pass con bass reactivity + Consola Inferior de 4 columnas + MGS Codec con malla 3D de Kain y Auto-Play 1ª vez) en level_select_screen.gd y cinematic_overlay.gd. 130/130 tests y 48/48 suites en verde."
+    },
+    "04-top-perks-compact-hud.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-10T03:12:08.134Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-10T03:12:08.134Z",
+      "note": "Implementado Artboard 04 en game_renderer.gd, input_handler.gd y juego_ataque.gd (Perks arriba al centro, chips numéricos sin barras, fondo fullscreen sin encogerse al hacer zoom out y Auto-Fit de cámara)."
     }
   }
 }

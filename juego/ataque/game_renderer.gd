@@ -57,6 +57,8 @@ func draw_polyline(points: PackedVector2Array, color: Color, width: float = -1.0
 
 
 func draw_string(pos: Vector2, text: String, alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1, font_size_override: int = -1, color: Color = Color.WHITE) -> void:
+	if font == null:
+		return
 	var fs: int = font_size_override if font_size_override > 0 else font_size
 	_canvas.draw_string(font, pos, text, alignment, width, fs, color)
 
@@ -126,7 +128,9 @@ static func get_top_perk_rects(
 		total_w += w
 	total_w += gap * float(maxi(0, pills_info.size() - 1))
 
-	var start_x := (vp_size.x - total_w) / 2.0
+	var safe_left := 445.0
+	var safe_right := vp_size.x - 230.0
+	var start_x := maxf(safe_left, safe_left + (safe_right - safe_left - total_w) * 0.5)
 	var pill_y := 8.0
 
 	var result: Array[Dictionary] = []
@@ -425,25 +429,25 @@ func draw_hud(
 	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
 	draw_rect(Rect2(0, bar_h - 1.5, vp_size.x, 1.5), theme_col)
 
-	# 1. Left Cluster (x = 16.0)
+	# 1. Left Cluster (x = 16.0, max width = 220.0)
 	# Line 1 (y = 20): Level Title
-	draw_string(Vector2(16.0, 20.0), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, theme_col)
+	var title_font_size := font_size + 1
+	var title_w := font.get_string_size(titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, title_font_size).x if font else 120.0
+	if title_w > 220.0:
+		title_font_size = maxi(8, font_size - 2)
+	draw_string(Vector2(16.0, 20.0), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, 220.0, title_font_size, theme_col)
 
 	# Line 2 (y = 38): Subtitle
-	var sub_text := "TURNO %d" % turn
+	var sub_text := "T%d" % turn
 	if waypoints.size() > 0:
-		sub_text = "TURNO %d  ·  WP: %d/%d" % [turn, current_waypoint_idx + 1, waypoints.size()]
-	draw_string(Vector2(16.0, 38.0), sub_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+		sub_text = "T%d · WP %d/%d" % [turn, current_waypoint_idx + 1, waypoints.size()]
+	draw_string(Vector2(16.0, 38.0), sub_text, HORIZONTAL_ALIGNMENT_LEFT, 220.0, font_size - 3, BrandClass.TEXT_DIM)
 
-	var title_w := font.get_string_size(titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1).x if font else 120.0
-	var sub_w := font.get_string_size(sub_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 100.0
-	var stack_end_x: float = 16.0 + maxf(title_w, sub_w)
+	# Divisor at x = 244.0 (stack_end_x = 236.0)
+	draw_line(Vector2(244.0, 10.0), Vector2(244.0, 42.0), BrandClass.PANEL_BORDER, 1.0)
 
-	# Divisor
-	draw_line(Vector2(stack_end_x + 10.0, 10.0), Vector2(stack_end_x + 10.0, 42.0), BrandClass.PANEL_BORDER, 1.0)
-
-	# Pure Numeric Chips (NO progress bars!)
-	var chip_x: float = stack_end_x + 18.0
+	# Pure Numeric Chips (NO progress bars!) starting at x = 252.0
+	var chip_x: float = 252.0
 	var pts_col: Color = BrandClass.SUCCESS if movement_points > int(max_movement_points * 0.3) else BrandClass.WARNING
 	if hacker_mode or is_secret:
 		var noise: int = hacker_state.get("noise", 0)
@@ -455,10 +459,10 @@ func draw_hud(
 		elif noise >= 30:
 			noise_col = BrandClass.WARNING
 
-		var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "PRESUPUESTO", "%d pts" % movement_points, pts_col)
-		_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "RUIDO IDS", "%d%%" % noise, noise_col)
+		var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "PTS", "%d" % movement_points, pts_col)
+		_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "RUIDO", "%d%%" % noise, noise_col)
 	else:
-		var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "PRESUPUESTO", "%d pts" % movement_points, pts_col)
+		var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "PTS", "%d" % movement_points, pts_col)
 		_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "COSTE", "%.1f" % player_total_cost, Color.WHITE)
 
 	# 2. Center Cluster: ALL Perks / Tools in Top Bar (y = 8.0, height = 36.0)
@@ -528,30 +532,27 @@ func draw_defender_hud(
 	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
 	draw_rect(Rect2(0, bar_h - 1.5, vp_size.x, 1.5), theme_col)
 
-	# 1. Left Cluster (x = 16.0)
-	var title_str := "Blue Team — Defensa Perimetral"
-	draw_string(Vector2(16.0, 20.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, theme_col)
+	# 1. Left Cluster (x = 16.0, max width = 220.0)
+	var title_str := "Defensa Perimetral"
+	var def_title_font_size := font_size + 1
+	var def_title_w := font.get_string_size(title_str, HORIZONTAL_ALIGNMENT_LEFT, -1, def_title_font_size).x if font else 120.0
+	if def_title_w > 220.0:
+		def_title_font_size = maxi(8, font_size - 2)
+	draw_string(Vector2(16.0, 20.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, 220.0, def_title_font_size, theme_col)
 
-	var sub_str := "TURNO %d  ·  SOC ACTIVO" % turn
-	draw_string(Vector2(16.0, 38.0), sub_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	var sub_str := "T%d · SOC ACTIVO" % turn
+	draw_string(Vector2(16.0, 38.0), sub_str, HORIZONTAL_ALIGNMENT_LEFT, 220.0, font_size - 3, BrandClass.TEXT_DIM)
 
-	var title_w := font.get_string_size(title_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1).x if font else 150.0
-	var sub_w := font.get_string_size(sub_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 110.0
-	var stack_end_x: float = 16.0 + maxf(title_w, sub_w)
+	# Divisor at x = 244.0 (stack_end_x = 236.0)
+	draw_line(Vector2(244.0, 10.0), Vector2(244.0, 42.0), BrandClass.PANEL_BORDER, 1.0)
 
-	# Divisor
-	draw_line(Vector2(stack_end_x + 10.0, 10.0), Vector2(stack_end_x + 10.0, 42.0), BrandClass.PANEL_BORDER, 1.0)
-
-	# Pure Numeric Chips (NO progress bars!)
-	var chip_x: float = stack_end_x + 18.0
+	# Pure Numeric Chips (NO progress bars!) starting at x = 252.0
+	var chip_x: float = 252.0
 	var blocks_avail := maxi(0, blocks_per_turn - blocks_placed)
-	var pips_str := ""
-	for b in range(maxi(1, blocks_per_turn)):
-		pips_str += "● " if b < blocks_avail else "○ "
-	pips_str += "(%d/%d)" % [blocks_avail, blocks_per_turn]
+	var pips_str := "%d/%d" % [blocks_avail, blocks_per_turn]
 
-	var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "BLOQUEOS", pips_str.strip_edges(), BrandClass.SUCCESS if blocks_avail > 0 else BrandClass.DANGER)
-	_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "EDR TRACE", "%.0f%%" % forensics_trace, Color("#00d2ff"))
+	var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "BLOQ", pips_str, BrandClass.SUCCESS if blocks_avail > 0 else BrandClass.DANGER)
+	_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "EDR", "%.0f%%" % forensics_trace, Color("#00d2ff"))
 
 	# 2. Center Cluster: ALL Perks / Tools in Top Bar
 	var top_perks := get_top_perk_rects(vp_size, "defender", fog_of_war, telemetry_intercepted, font, font_size)
@@ -1092,12 +1093,36 @@ func draw_nodes(
 			draw_polyline(poly_inner, Color(1.0, 0.78, 0.34, 0.85), 1.8)
 			draw_circle(pos, 16.0, Color(1.0, 0.16, 0.42, 0.45))
 
-		var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		var used_font_size: int = font_size
+		var label_y_offset: float = 0.0
+
+		var has_close_horizontal_node: bool = false
+		var is_higher_x_than_close_node: bool = false
+		for other_id in node_positions.keys():
+			if other_id == nid:
+				continue
+			var other_p: Vector2 = node_positions[other_id] as Vector2
+			var dx: float = absf(other_p.x - pos.x)
+			var dy: float = absf(other_p.y - pos.y)
+			if dx > 0.1 and dx < 155.0 and dy < 32.0:
+				has_close_horizontal_node = true
+				if pos.x > other_p.x:
+					is_higher_x_than_close_node = true
+				break
+
+		if label_text.length() > 16 and has_close_horizontal_node:
+			used_font_size = tiny_font_size
+			label_y_offset = -8.0 if is_higher_x_than_close_node else 6.0
+
+		var text_sz: Vector2 = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, used_font_size) if font else Vector2(label_text.length() * 8.0, 14.0)
+		var text_w: float = text_sz.x
 		var label_x: float = pos.x - text_w / 2.0
-		var label_y: float = pos.y - radius - 8.0
-		draw_rect(Rect2(label_x - 4, label_y - 14, text_w + 8, 18), label_bg_color)
-		draw_rect(Rect2(label_x - 4, label_y - 14, text_w + 8, 18), border_color, false, 1.0)
-		draw_string(Vector2(label_x, label_y), label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+		var label_y: float = pos.y - radius - 8.0 + label_y_offset
+		var box_h: float = 14.0 if used_font_size == tiny_font_size else 18.0
+		var box_top: float = (label_y - 10.0) if used_font_size == tiny_font_size else (label_y - 14.0)
+		draw_rect(Rect2(label_x - 4, box_top, text_w + 8, box_h), label_bg_color)
+		draw_rect(Rect2(label_x - 4, box_top, text_w + 8, box_h), border_color, false, 1.0)
+		draw_string(Vector2(label_x, label_y), label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, used_font_size, Color.WHITE)
 
 		if defender_mode:
 			if nid_str == brain_enemy_pos:
@@ -1217,8 +1242,43 @@ func draw_optimal_overlay(
 ) -> void:
 	if optimal_path.size() < 2:
 		return
-	# Dibujar highlights en los nodos del camino (no línea continua)
 	var pulse: float = 0.5 + sin(Time.get_ticks_msec() * 0.005) * 0.3
+
+	# 1. 3-pass Neon Green route lines between consecutive path nodes
+	for i in range(optimal_path.size() - 1):
+		var p1: Vector2 = node_positions.get(optimal_path[i], Vector2.ZERO) as Vector2
+		var p2: Vector2 = node_positions.get(optimal_path[i + 1], Vector2.ZERO) as Vector2
+		if p1 == Vector2.ZERO or p2 == Vector2.ZERO:
+			continue
+		var seg_vec := p2 - p1
+		var seg_len := seg_vec.length()
+		if seg_len <= node_radius * 2.0:
+			continue
+		var dir := seg_vec / seg_len
+		var start_pt := p1 + dir * node_radius
+		var end_pt := p2 - dir * node_radius
+
+		# 3-pass Neon Green (#39ff88 / Color(0.22, 1.0, 0.53)) route line:
+		# 1) Outer neon glow
+		draw_line(start_pt, end_pt, Color(0.1, 1.0, 0.45, 0.24 * pulse), 10.0)
+		# 2) Mid bloom
+		draw_line(start_pt, end_pt, Color(0.2, 1.0, 0.55, 0.55 * pulse), 5.0)
+		# 3) Bright neon core
+		draw_line(start_pt, end_pt, Color(0.4, 1.0, 0.65, 0.95), 2.5)
+
+		# Animated directional chevrons / photon pulses traveling along start_pt -> end_pt
+		var progress := fmod((Time.get_ticks_msec() * 0.0012) + float(i) * 0.25, 1.0)
+		var travel_pos := start_pt.lerp(end_pt, progress)
+		var normal := Vector2(-dir.y, dir.x)
+		var chev_tip := travel_pos + dir * 6.0
+		var chev_left := travel_pos - dir * 4.0 + normal * 4.5
+		var chev_right := travel_pos - dir * 4.0 - normal * 4.5
+		draw_circle(travel_pos, 4.0, Color(0.1, 1.0, 0.45, 0.3 * pulse))
+		draw_circle(travel_pos, 2.0, Color(0.8, 1.0, 0.9, 0.95))
+		draw_line(chev_left, chev_tip, Color(0.35, 1.0, 0.65, 0.9), 2.0)
+		draw_line(chev_right, chev_tip, Color(0.35, 1.0, 0.65, 0.9), 2.0)
+
+	# 2. Node highlights along optimal_path with crisp neon green rings and step numbers
 	for i in range(optimal_path.size()):
 		var node_id: StringName = optimal_path[i] as StringName
 		var pos: Vector2 = node_positions.get(node_id, Vector2.ZERO) as Vector2
@@ -1226,15 +1286,22 @@ func draw_optimal_overlay(
 			continue
 		var is_start: bool = i == 0
 		var is_end: bool = i == optimal_path.size() - 1
-		var highlight_color: Color
+
+		var ring_col := Color(0.22, 1.0, 0.53, 0.85)
 		if is_start:
-			highlight_color = Color(0.0, 0.9, 1.0, pulse)
+			ring_col = Color(0.0, 0.95, 1.0, 0.9)
 		elif is_end:
-			highlight_color = Color(1.0, 0.3, 0.3, pulse)
-		else:
-			highlight_color = Color(0.6, 0.4, 1.0, pulse)
-		draw_circle(pos, node_radius + 10.0, Color(highlight_color.r, highlight_color.g, highlight_color.b, 0.2))
-		draw_circle(pos, node_radius + 10.0, highlight_color, false, 2.0)
+			ring_col = Color(1.0, 0.3, 0.3, 0.9)
+		draw_circle(pos, node_radius + 9.0, Color(ring_col.r, ring_col.g, ring_col.b, 0.22 * pulse))
+		draw_circle(pos, node_radius + 9.0, ring_col, false, 2.0)
+		draw_circle(pos, node_radius + 13.0, Color(ring_col.r, ring_col.g, ring_col.b, 0.3 * pulse), false, 1.2)
+
+		var step_str := str(i + 1)
+		var badge_pos := pos + Vector2(node_radius + 7.0, -node_radius - 5.0)
+		draw_circle(badge_pos, 9.0, Color(0.04, 0.15, 0.08, 0.92))
+		draw_circle(badge_pos, 9.0, Color(0.22, 1.0, 0.53, 0.85), false, 1.2)
+		var num_sz := font.get_string_size(step_str, HORIZONTAL_ALIGNMENT_CENTER, -1, tiny_font_size) if font else Vector2(7.0, 10.0)
+		draw_string(Vector2(badge_pos.x - num_sz.x * 0.5, badge_pos.y + 4.0), step_str, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, Color(0.85, 1.0, 0.9))
 
 
 func draw_node_info_panel(
@@ -1482,6 +1549,22 @@ func draw_tactical_action_dock(d: Dictionary) -> void:
 
 	var is_secret_sector: bool = str(d.get("level_key", "")).begins_with("secret") or d.get("world", "") == "secret" or str(d.get("titulo_nivel", "")).find("Sector 0") != -1 or d.node_positions.has(&"GenesisCore") or d.node_positions.has("GenesisCore")
 
+	# Measure confirm button if active
+	var has_confirm_btn := false
+	var confirm_btn_w := 260.0
+	var confirm_btn_x := (vp_size.x - 260.0) * 0.5
+	var m_txt := ""
+	var sel_display := ""
+	if not d.get("defender_mode", false) and not d.get("game_over", false):
+		var sel_n: StringName = d.get("selected_neighbor", &"")
+		if sel_n != &"":
+			has_confirm_btn = true
+			sel_display = resolve_node_display_name(sel_n, d.get("node_cache", {}))
+			m_txt = "⏭ CONFIRMAR: %s" % sel_display
+			var measured_txt_w: float = font.get_string_size(m_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1).x if font else 160.0
+			confirm_btn_w = maxf(260.0, measured_txt_w + 32.0)
+			confirm_btn_x = (vp_size.x - confirm_btn_w) * 0.5
+
 	# 1. Left Cluster: Single status / operator log line
 	var tag := "[EXFIL // VEX]: "
 	var tag_col: Color = BrandClass.WORLD_HEIST
@@ -1505,22 +1588,19 @@ func draw_tactical_action_dock(d: Dictionary) -> void:
 		msg_text = def_msg
 
 	var tag_w := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 90.0
-	var max_msg_w := (vp_size.x - 280.0) * 0.5 - 20.0 - tag_w
+	var right_boundary := (confirm_btn_x - 28.0) if has_confirm_btn else (vp_size.x - 305.0)
+	var max_msg_w := maxf(60.0, right_boundary - (16.0 + tag_w))
 	draw_string(Vector2(16.0, bar_y + 26.0), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, tag_col)
 	draw_string(Vector2(16.0 + tag_w, bar_y + 26.0), msg_text, HORIZONTAL_ALIGNMENT_LEFT, max_msg_w, font_size - 3, BrandClass.TEXT)
 
 	# 2. Center: Prominent green confirm move button when selected_neighbor != &"" in Attacker/Hacker
-	if not d.get("defender_mode", false) and not d.get("game_over", false):
-		var sel_n: StringName = d.get("selected_neighbor", &"")
-		if sel_n != &"":
-			var sel_display: String = resolve_node_display_name(sel_n, d.get("node_cache", {}))
-			var m_btn := Rect2((vp_size.x - 260.0) * 0.5, bar_y + 5.0, 260.0, 34.0)
-			var pulse := 0.7 + sin(Time.get_ticks_msec() * 0.008) * 0.3
-			draw_rect(m_btn, Color(0.0, 0.25, 0.15, 0.95))
-			draw_rect(m_btn, Color(0.22, 1.0, 0.53, pulse), false, 1.5)
-			var m_txt := "⏭ CONFIRMAR: %s" % sel_display
-			var m_sz := font.get_string_size(m_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2) if font else Vector2(120.0, 14.0)
-			draw_string(Vector2(m_btn.position.x + (m_btn.size.x - m_sz.x) * 0.5, bar_y + 23.0), m_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color.WHITE)
+	if has_confirm_btn:
+		var m_btn := Rect2(confirm_btn_x, bar_y + 5.0, confirm_btn_w, 34.0)
+		var pulse := 0.7 + sin(Time.get_ticks_msec() * 0.008) * 0.3
+		draw_rect(m_btn, Color(0.0, 0.25, 0.15, 0.95))
+		draw_rect(m_btn, Color(0.22, 1.0, 0.53, pulse), false, 1.5)
+		var m_sz := font.get_string_size(m_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2) if font else Vector2(120.0, 14.0)
+		draw_string(Vector2(m_btn.position.x + (m_btn.size.x - m_sz.x) * 0.5, bar_y + 23.0), m_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color.WHITE)
 
 	# 3. Right Cluster: [~] CLI, [⟲ CENTRAR], [-], [+], [⏸]
 	var btn_y := bar_y + 5.0
