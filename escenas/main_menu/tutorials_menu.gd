@@ -2,7 +2,9 @@ extends Control
 
 const BrandClass = preload("res://juego/ui/brand.gd")
 const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
+const AudioSpectrumVisualizerClass = preload("res://juego/ui/audio_spectrum_visualizer.gd")
 var _cyber_bg := CyberBackgroundClass.new()
+var _spectrum_viz := AudioSpectrumVisualizerClass.new(28)
 
 enum Track { GENERAL, HEIST, HACKER, DEFENDER }
 
@@ -34,6 +36,24 @@ var progress: Dictionary = {}
 var _pulse: float = 0.0
 
 var track_lessons: Dictionary = {}
+
+var _sp_instance: Object = null
+var SceneParams: Object:
+	get:
+		if _sp_instance == null:
+			_sp_instance = get_node_or_null("/root/SceneParams")
+			if _sp_instance == null:
+				var sp_script = load("res://core/autoloads/scene_params.gd")
+				if sp_script != null:
+					_sp_instance = sp_script.new()
+		return _sp_instance
+
+var _st_instance: Object = null
+var SceneTransition: Object:
+	get:
+		if _st_instance == null:
+			_st_instance = get_node_or_null("/root/SceneTransition")
+		return _st_instance
 
 
 func _ready() -> void:
@@ -72,8 +92,9 @@ func _ready() -> void:
 		SceneParams.tutorial_track = ""
 
 	progress = ProgressUtil.cargar_progreso()
-	if get_node_or_null("/root/AudioManager") != null:
-		AudioManager.play_menu_music()
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_menu_music"):
+		am.play_menu_music()
 	queue_redraw()
 
 
@@ -156,12 +177,14 @@ func _go_back() -> void:
 	SceneParams.menu_target_state = "world_select"
 	var vp_size: Vector2 = get_viewport_rect().size
 	var back_pos := Vector2(130.0, vp_size.y - 32.0)
-	SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
+	if SceneTransition != null and SceneTransition.has_method("dive_out_to_scene"):
+		SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn", back_pos)
 
 
 func _process(delta: float) -> void:
 	_pulse += delta * 2.0
 	_cyber_bg.update(delta, get_viewport_rect().size)
+	_spectrum_viz.update(delta)
 	queue_redraw()
 
 
@@ -305,7 +328,8 @@ func _launch(key: StringName) -> void:
 
 	var vp_size: Vector2 = get_viewport_rect().size
 	var launch_pos := Vector2(vp_size.x * 0.5, 180.0 + float(selected_idx) * 58.0)
-	SceneTransition.dive_in_to_scene("res://juego/ataque/escena_juego.tscn", launch_pos)
+	if SceneTransition != null and SceneTransition.has_method("dive_in_to_scene"):
+		SceneTransition.dive_in_to_scene("res://juego/ataque/escena_juego.tscn", launch_pos)
 
 
 func loc(key: String) -> String:
@@ -314,11 +338,15 @@ func loc(key: String) -> String:
 
 func _draw() -> void:
 	var vp_size := get_viewport_rect().size
-	_cyber_bg.draw(self, vp_size)
+	_cyber_bg.draw(self, vp_size, 0.0, BrandClass.WORLD_TUTORIALS, BrandClass.BG_TUTORIALS)
 
-	# Encabezado principal
-	draw_string(font, Vector2(60, 50), "ACADEMIA DE ENTRENAMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, BrandClass.ACCENT)
+	# Encabezado principal con identidad visual formativa
+	draw_string(font, Vector2(60, 50), "ACADEMIA DE ENTRENAMIENTO", HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size + 4, BrandClass.WORLD_TUTORIALS)
 	draw_string(font, Vector2(60, 74), "Selecciona una sección y completa las lecciones operativas", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
+
+	# Onda de espectro reactiva pulsando detrás de las tarjetas
+	var wave_y := 165.0
+	_spectrum_viz.draw_track_waveform(self, Vector2(50.0, wave_y), Vector2(vp_size.x - 50.0, wave_y), BrandClass.with_alpha(BrandClass.WORLD_TUTORIALS, 0.45), 24.0, 52, 0.35)
 
 	# Pestañas horizontales de categorías
 	var tab_x: float = 60.0
@@ -330,12 +358,12 @@ func _draw() -> void:
 		var t_title: String = meta.get("title", "")
 		var is_active: bool = (t == current_track)
 		var tab_text: String = "[ %s ]" % t_title
-		var text_color: Color = BrandClass.ACCENT if is_active else BrandClass.TEXT_DIM
+		var text_color: Color = BrandClass.WORLD_TUTORIALS if is_active else BrandClass.TEXT_DIM
 
 		if is_active:
 			var text_size: float = font.get_string_size(tab_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
-			draw_rect(Rect2(tab_x - 8, tab_y - 18, text_size + 16, 26), BrandClass.with_alpha(BrandClass.ACCENT, 0.12))
-			draw_line(Vector2(tab_x - 8, tab_y + 8), Vector2(tab_x + text_size + 8, tab_y + 8), BrandClass.ACCENT, 2.0)
+			draw_rect(Rect2(tab_x - 8, tab_y - 18, text_size + 16, 26), BrandClass.with_alpha(BrandClass.WORLD_TUTORIALS, 0.16))
+			draw_line(Vector2(tab_x - 8, tab_y + 8), Vector2(tab_x + text_size + 8, tab_y + 8), BrandClass.WORLD_TUTORIALS, 2.0)
 
 		draw_string(font, Vector2(tab_x, tab_y), tab_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, text_color)
 		var tab_width: float = font.get_string_size(tab_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
@@ -344,82 +372,84 @@ func _draw() -> void:
 	# Subtítulo del track activo
 	var active_meta: Dictionary = TRACK_METADATA.get(current_track, {})
 	var track_desc: String = active_meta.get("desc", "")
-	draw_string(font, Vector2(60, 142), track_desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT, 0.8))
+	draw_string(font, Vector2(60, 142), track_desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.with_alpha(BrandClass.TEXT, 0.85))
 
 	# Lista de lecciones del track activo
 	var lessons: Array = _get_current_lessons()
-	var by: float = 190.0
+	var by: float = 192.0
 
 	for i in lessons.size():
-			var b: Dictionary = lessons[i]
-			var is_sel: bool = (i == selected_idx)
-			var color: Color
-			var prefix: String
+		var b: Dictionary = lessons[i]
+		var is_sel: bool = (i == selected_idx)
+		var color: Color
+		var prefix: String
 
-			var lk: StringName = b.get("key", &"")
-			var level_key: String = String(lk)
-			var stars: int = progress.get(level_key, 0)
-			var is_completed: bool = stars > 0
+		var lk: StringName = b.get("key", &"")
+		var level_key: String = String(lk)
+		var stars: int = progress.get(level_key, 0)
+		var is_completed: bool = stars > 0
 
-			if is_sel:
-				var glow := 0.7 + sin(_pulse) * 0.3
-				color = BrandClass.with_alpha(BrandClass.ACCENT, glow)
-				prefix = "> "
-				draw_rect(Rect2(50, by - 16, vp_size.x - 110, 48), BrandClass.with_alpha(BrandClass.ACCENT, 0.08))
-			else:
-				color = BrandClass.TEXT_DIM
-				prefix = "  "
+		var card_rect := Rect2(50.0, by - 16.0, vp_size.x - 100.0, 52.0)
+		if is_sel:
+			var glow := 0.75 + sin(_pulse) * 0.25
+			color = BrandClass.with_alpha(BrandClass.WORLD_TUTORIALS, glow)
+			prefix = "> "
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.WORLD_TUTORIALS, 0.12))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.WORLD_TUTORIALS, glow), false, 1.5)
+		else:
+			color = BrandClass.TEXT
+			prefix = "  "
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.65))
+			draw_rect(card_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.35), false, 1.0)
 
-			# Indicador visual de check / estado a la izquierda
-			var check_x := 60.0
-			var check_y := by - 12.0
-			var check_size := 16.0
-			var check_rect := Rect2(check_x, check_y, check_size, check_size)
+		# Indicador visual de check / estado a la izquierda
+		var check_x := 64.0
+		var check_y := by - 6.0
+		var check_size := 18.0
+		var check_rect := Rect2(check_x, check_y, check_size, check_size)
 
-			if is_completed:
-				draw_rect(check_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.20))
-				draw_rect(check_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.85), false, 1.2)
-				# Checkmark vectorial
-				draw_line(Vector2(check_x + 3.5, check_y + 8.5), Vector2(check_x + 6.5, check_y + 12.0), BrandClass.SUCCESS, 2.0)
-				draw_line(Vector2(check_x + 6.5, check_y + 12.0), Vector2(check_x + 12.5, check_y + 4.5), BrandClass.SUCCESS, 2.0)
-			else:
-				draw_rect(check_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.45), false, 1.0)
+		if is_completed:
+			draw_rect(check_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.20))
+			draw_rect(check_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.85), false, 1.2)
+			draw_line(Vector2(check_x + 4.0, check_y + 9.5), Vector2(check_x + 7.5, check_y + 13.5), BrandClass.SUCCESS, 2.0)
+			draw_line(Vector2(check_x + 7.5, check_y + 13.5), Vector2(check_x + 14.5, check_y + 5.0), BrandClass.SUCCESS, 2.0)
+		else:
+			draw_rect(check_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.50), false, 1.0)
 
-			draw_string(font, Vector2(88.0, by), prefix + b.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, color)
+		draw_string(font, Vector2(94.0, by + 4.0), prefix + b.label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, color)
 
-			# Badge táctico y estrellas a la derecha
-			var badge_w := 115.0
-			var badge_h := 20.0
-			var badge_x := vp_size.x - 265.0
-			var badge_y := by - 14.0
-			var badge_rect := Rect2(badge_x, badge_y, badge_w, badge_h)
+		# Badge táctico y estrellas a la derecha
+		var badge_w := 115.0
+		var badge_h := 22.0
+		var badge_x := vp_size.x - 265.0
+		var badge_y := by - 8.0
+		var badge_rect := Rect2(badge_x, badge_y, badge_w, badge_h)
 
-			if is_completed:
-				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.15))
-				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.60), false, 1.0)
-				draw_string(font, Vector2(badge_x + 8.0, badge_y + 14.0), "[COMPLETADO]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.SUCCESS)
+		if is_completed:
+			draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.18))
+			draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.SUCCESS, 0.70), false, 1.0)
+			draw_string(font, Vector2(badge_x + 8.0, badge_y + 15.0), "[COMPLETADO]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.SUCCESS)
 
-				var stars_str: String = ""
-				for si in range(3):
-					stars_str += "★" if si < stars else "☆"
-				draw_string(font, Vector2(vp_size.x - 135.0, by), stars_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.WARNING)
-			else:
-				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.15))
-				draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.40), false, 1.0)
-				draw_string(font, Vector2(badge_x + 14.0, badge_y + 14.0), "[PENDIENTE]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+			var stars_str: String = ""
+			for si in range(3):
+				stars_str += "★" if si < stars else "☆"
+			draw_string(font, Vector2(vp_size.x - 135.0, by + 4.0), stars_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.WARNING)
+		else:
+			draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.15))
+			draw_rect(badge_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.40), false, 1.0)
+			draw_string(font, Vector2(badge_x + 14.0, badge_y + 15.0), "[PENDIENTE]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
 
-				draw_string(font, Vector2(vp_size.x - 135.0, by), "☆☆☆", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, 0.40))
+			draw_string(font, Vector2(vp_size.x - 135.0, by + 4.0), "☆☆☆", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.with_alpha(BrandClass.TEXT_DIM, 0.40))
 
-			by += 22
-			draw_string(font, Vector2(106.0, by), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-			by += 36
+		draw_string(font, Vector2(94.0, by + 24.0), b.desc, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+		by += 64.0
 
 	# Controles al pie
 	var foot_y: float = vp_size.y - 48.0
 	var back_rect := Rect2(40.0, foot_y, 180.0, 32.0)
 	draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.85))
 	draw_rect(back_rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.5), false, 1.2)
-	draw_string(font, Vector2(back_rect.position.x + 14.0, back_rect.position.y + 21.0), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.ACCENT)
+	draw_string(font, Vector2(back_rect.position.x + 14.0, back_rect.position.y + 21.0), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WORLD_TUTORIALS)
 
 	var controls_hint: String = "[Enter / Clic] Iniciar lección    [A / D] Cambiar sección"
 	draw_string(font, Vector2(240.0, foot_y + 21.0), controls_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.TEXT_DIM)

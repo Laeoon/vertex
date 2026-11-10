@@ -1,0 +1,28 @@
+{
+  "title": "VERTEX In-Game HUD Consolidation & Sector 0 Root Genesis Overhaul",
+  "brief": "Eliminate duplicated boxes and colliding buttons across Heist, Hacker, Cybersecurity, and redesign Sector 0: Root Genesis with Triad Daemon visual identity",
+  "feature": "odd/tasks/vertex-1-0-overhaul.md",
+  "artboards": [
+    {
+      "file": "01-unified-tactical-dock.html",
+      "title": "Unified Tactical Dock (Heist & Hacker Modes)",
+      "tradeoff": "Maximum screen clarity: Top bar is strictly read-only telemetry; Bottom bar holds all clickable/touchable actions with dynamic flex spacing and zero duplicate panels.",
+      "width": 1356,
+      "height": 672
+    },
+    {
+      "file": "02-floating-radial-pill.html",
+      "title": "Floating Pills + Direct Node Radial Context (Cybersecurity Mode)",
+      "tradeoff": "More open canvas in the corners via floating islands and direct node radial actions; tailored for Blue Team SOC command.",
+      "width": 1356,
+      "height": 672
+    },
+    {
+      "file": "03-sector-zero-root-genesis.html",
+      "title": "Sector 0: Root Genesis (The Triad Breach — Architect-0 / Kain)",
+      "tradeoff": "Replaces the flat gray cement background and colliding labels with a deep crimson/triad hypervisor canvas, curved non-overlapping CROSS_SYNC edges, distinct octagonal/hexagonal daemon nodes, and Kain's TCP steganography hints.",
+      "width": 1356,
+      "height": 672
+    }
+  ]
+}

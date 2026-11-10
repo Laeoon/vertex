@@ -96,12 +96,25 @@ func _get_next_button_rect(panel_rect: Rect2, vp_size: Vector2 = Vector2.ZERO) -
 	var margin: float = 20.0
 	var btn_y: float = panel_rect.position.y + panel_rect.size.y + 12.0
 	if vp_size.y > 0.0:
-		btn_y = min(btn_y, vp_size.y - btn_h - 10.0)
+		btn_y = min(btn_y, vp_size.y - btn_h - 64.0)
 	var btn_pos: Vector2 = Vector2(
 		panel_rect.position.x + panel_rect.size.x - btn_w - margin,
 		btn_y
 	)
 	return Rect2(btn_pos, Vector2(btn_w, btn_h))
+
+
+static func get_controls_pill_rects(vp_size: Vector2) -> Array[Dictionary]:
+	var bar_h := 40.0
+	var b_y := vp_size.y - bar_h + 4.0
+	var b_h := 32.0
+	return [
+		{"id": "previous", "rect": Rect2(10.0, b_y, 105.0, b_h)},
+		{"id": "skip", "rect": Rect2(125.0, b_y, 95.0, b_h)},
+		{"id": "index", "rect": Rect2(230.0, b_y, 95.0, b_h)},
+		{"id": "glossary", "rect": Rect2(335.0, b_y, 105.0, b_h)},
+		{"id": "hint", "rect": Rect2(450.0, b_y, 115.0, b_h)},
+	]
 
 
 ## Puerto del viejo tutorial_player._update_tooltip_buttons(): construye y
@@ -120,46 +133,40 @@ func _build_tooltip_buttons(vp_size: Vector2, waiting_for_action: bool, panel_re
 			"en": "Advance to the next step"
 		})
 
-	# Previous (←) area
-	var prev_rect: Rect2 = Rect2(Vector2(15.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
-	buttons.append({
-		"rect": prev_rect,
-		"text": "Volver al paso anterior",
-		"en": "Go back to the previous step"
-	})
-
-	# Skip (ESC) area
-	var skip_rect: Rect2 = Rect2(Vector2(100.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
-	buttons.append({
-		"rect": skip_rect,
-		"text": "Saltar este tutorial",
-		"en": "Skip this tutorial"
-	})
-
-	# Index (I) area
-	var idx_rect: Rect2 = Rect2(Vector2(190.0, vp_size.y - 30.0), Vector2(80.0, 24.0))
-	buttons.append({
-		"rect": idx_rect,
-		"text": "Ver todos los pasos",
-		"en": "View all steps"
-	})
-
-	# Glossary (G) area
-	var gls_rect: Rect2 = Rect2(Vector2(270.0, vp_size.y - 30.0), Vector2(65.0, 24.0))
-	buttons.append({
-		"rect": gls_rect,
-		"text": "Abrir glosario",
-		"en": "Open glossary"
-	})
-
-	# Hint (H) area
-	var hint_label: String = "Mostrar pista" if waiting_for_action else "Ayuda de controles"
-	var hint_rect: Rect2 = Rect2(Vector2(340.0, vp_size.y - 30.0), Vector2(100.0, 24.0))
-	buttons.append({
-		"rect": hint_rect,
-		"text": hint_label,
-		"en": "Show hint" if waiting_for_action else "Controls help"
-	})
+	var pill_rects := get_controls_pill_rects(vp_size)
+	for p in pill_rects:
+		match p["id"]:
+			"previous":
+				buttons.append({
+					"rect": p["rect"],
+					"text": "Volver al paso anterior",
+					"en": "Go back to the previous step"
+				})
+			"skip":
+				buttons.append({
+					"rect": p["rect"],
+					"text": "Saltar este tutorial",
+					"en": "Skip this tutorial"
+				})
+			"index":
+				buttons.append({
+					"rect": p["rect"],
+					"text": "Ver todos los pasos",
+					"en": "View all steps"
+				})
+			"glossary":
+				buttons.append({
+					"rect": p["rect"],
+					"text": "Abrir glosario",
+					"en": "Open glossary"
+				})
+			"hint":
+				var hint_label: String = "Mostrar pista" if waiting_for_action else "Ayuda de controles"
+				buttons.append({
+					"rect": p["rect"],
+					"text": hint_label,
+					"en": "Show hint" if waiting_for_action else "Controls help"
+				})
 
 	return buttons
 
@@ -178,9 +185,9 @@ func _floating_panel_layout(vp_size: Vector2, text: String, position: String) ->
 	var panel_pos: Vector2
 	match position:
 		"top":
-			panel_pos = Vector2((vp_size.x - panel_w) / 2.0, 70.0)
+			panel_pos = Vector2((vp_size.x - panel_w) / 2.0, 78.0)
 		"bottom":
-			panel_pos = Vector2((vp_size.x - panel_w) / 2.0, vp_size.y - panel_h - 60.0)
+			panel_pos = Vector2((vp_size.x - panel_w) / 2.0, vp_size.y - panel_h - 64.0)
 		"left":
 			panel_pos = Vector2(30.0, (vp_size.y - panel_h) / 2.0)
 		"right":
@@ -189,7 +196,7 @@ func _floating_panel_layout(vp_size: Vector2, text: String, position: String) ->
 			panel_pos = Vector2((vp_size.x - panel_w) / 2.0, (vp_size.y - panel_h) / 2.0)
 
 	panel_pos.x = clampf(panel_pos.x, 10.0, max(10.0, vp_size.x - panel_w - 10.0))
-	panel_pos.y = clampf(panel_pos.y, 10.0, max(10.0, vp_size.y - panel_h - 10.0))
+	panel_pos.y = clampf(panel_pos.y, 78.0, max(78.0, vp_size.y - panel_h - 64.0))
 
 	return {
 		"rect": Rect2(panel_pos, Vector2(panel_w, panel_h)),
@@ -231,7 +238,7 @@ func _action_reminder_layout(step: Dictionary, vp_size: Vector2, small_font_size
 		detail_lines = _wrap_text(detail, rem_w - margin * 2.0, small_font_size)
 
 	var rem_h: float = line_h * (2 + detail_lines.size()) + 18.0
-	var rem_pos: Vector2 = Vector2((vp_size.x - rem_w) / 2.0, 10.0)
+	var rem_pos: Vector2 = Vector2((vp_size.x - rem_w) / 2.0, 78.0)
 
 	return {
 		"rect": Rect2(rem_pos, Vector2(rem_w, rem_h)),
@@ -468,7 +475,7 @@ func _draw_step_indicator(canvas: Control, s: Dictionary) -> void:
 func _draw_controls_bar(canvas: Control, s: Dictionary) -> void:
 	var fnt: Font = s.font
 	var vp_size: Vector2 = s.vp_size
-	var bar_h: float = 38.0
+	var bar_h: float = 40.0
 	var bar_pos: Vector2 = Vector2(0.0, vp_size.y - bar_h)
 	var alpha: float = s.panel_alpha
 
@@ -477,19 +484,25 @@ func _draw_controls_bar(canvas: Control, s: Dictionary) -> void:
 	canvas.draw_rect(Rect2(bar_pos, Vector2(vp_size.x, bar_h)), Color(s.accent_color.r, s.accent_color.g, s.accent_color.b, alpha * 0.35), false, 1.2)
 
 	# Pills interactivas touch-friendly para acciones de navegación
-	var b_y := bar_pos.y + 3.0
-	var b_h := 32.0
-	_draw_ctrl_pill(canvas, fnt, Rect2(10.0, b_y, 105.0, b_h), "[←] %s" % _t(s, "tutorial.previous"), s.accent_color, alpha)
-	_draw_ctrl_pill(canvas, fnt, Rect2(125.0, b_y, 95.0, b_h), "[ESC] Saltar", Color(1.0, 0.4, 0.4), alpha)
-	_draw_ctrl_pill(canvas, fnt, Rect2(230.0, b_y, 95.0, b_h), "[I] Índice", s.accent_color, alpha)
-	_draw_ctrl_pill(canvas, fnt, Rect2(335.0, b_y, 105.0, b_h), "[G] Glosario", s.accent_color, alpha)
-	var h_label := "[H] Pista" if s.waiting_for_action else "[H] Ayuda"
-	_draw_ctrl_pill(canvas, fnt, Rect2(450.0, b_y, 115.0, b_h), h_label, Color(1.0, 0.85, 0.2), alpha)
+	var pill_rects := get_controls_pill_rects(vp_size)
+	for p in pill_rects:
+		match p["id"]:
+			"previous":
+				_draw_ctrl_pill(canvas, fnt, p["rect"], "[←] %s" % _t(s, "tutorial.previous"), s.accent_color, alpha)
+			"skip":
+				_draw_ctrl_pill(canvas, fnt, p["rect"], "[ESC] Saltar", Color(1.0, 0.4, 0.4), alpha)
+			"index":
+				_draw_ctrl_pill(canvas, fnt, p["rect"], "[I] Índice", s.accent_color, alpha)
+			"glossary":
+				_draw_ctrl_pill(canvas, fnt, p["rect"], "[G] Glosario", s.accent_color, alpha)
+			"hint":
+				var h_label := "[H] Pista" if s.waiting_for_action else "[H] Ayuda"
+				_draw_ctrl_pill(canvas, fnt, p["rect"], h_label, Color(1.0, 0.85, 0.2), alpha)
 
 	# Hint textual a la derecha
 	var hint_msg := "[Enter] Confirmar" if s.waiting_for_action else "[Enter/Espacio] %s" % _t(s, "tutorial.next")
 	var msg_sz := fnt.get_string_size(hint_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size)
-	canvas.draw_string(fnt, Vector2(vp_size.x - msg_sz.x - 20.0, bar_pos.y + 24.0), hint_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size, Color(0.75, 0.85, 0.9, alpha * 0.8))
+	canvas.draw_string(fnt, Vector2(vp_size.x - msg_sz.x - 20.0, bar_pos.y + 25.0), hint_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, s.small_font_size, Color(0.75, 0.85, 0.9, alpha * 0.8))
 
 
 func _draw_ctrl_pill(canvas: Control, fnt: Font, rect: Rect2, text: String, color: Color, alpha: float) -> void:

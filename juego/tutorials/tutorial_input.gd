@@ -109,35 +109,36 @@ func _input(event: InputEvent) -> void:
 					return
 
 		# 2. Botones de barra inferior (Anterior, Saltar, Índice, Glosario, Pista)
-		var prev_rect := Rect2(10.0, vp_size.y - 44.0, 110.0, 38.0)
-		var skip_rect := Rect2(125.0, vp_size.y - 44.0, 100.0, 38.0)
-		var idx_rect := Rect2(230.0, vp_size.y - 44.0, 100.0, 38.0)
-		var gls_rect := Rect2(335.0, vp_size.y - 44.0, 110.0, 38.0)
-		var hint_rect := Rect2(450.0, vp_size.y - 44.0, 120.0, 38.0)
-
-		if prev_rect.has_point(click_pos):
-			previous_requested.emit()
-			get_viewport().set_input_as_handled()
-			return
-		elif skip_rect.has_point(click_pos):
-			skip_requested.emit()
-			get_viewport().set_input_as_handled()
-			return
-		elif idx_rect.has_point(click_pos):
-			toggle_step_index_requested.emit()
-			get_viewport().set_input_as_handled()
-			return
-		elif gls_rect.has_point(click_pos):
-			toggle_glossary_requested.emit()
-			get_viewport().set_input_as_handled()
-			return
-		elif hint_rect.has_point(click_pos):
-			if player._waiting_for_action:
-				hint_requested.emit()
-			else:
-				help_toggled.emit()
-			get_viewport().set_input_as_handled()
-			return
+		var pill_rects: Array = []
+		if render != null and render.has_method("get_controls_pill_rects"):
+			pill_rects = render.get_controls_pill_rects(vp_size)
+		for p in pill_rects:
+			var r: Rect2 = p["rect"]
+			if r.grow(4.0).has_point(click_pos):
+				match p["id"]:
+					"previous":
+						previous_requested.emit()
+						get_viewport().set_input_as_handled()
+						return
+					"skip":
+						skip_requested.emit()
+						get_viewport().set_input_as_handled()
+						return
+					"index":
+						toggle_step_index_requested.emit()
+						get_viewport().set_input_as_handled()
+						return
+					"glossary":
+						toggle_glossary_requested.emit()
+						get_viewport().set_input_as_handled()
+						return
+					"hint":
+						if player._waiting_for_action:
+							hint_requested.emit()
+						else:
+							help_toggled.emit()
+						get_viewport().set_input_as_handled()
+						return
 
 
 ## Puerto de los viejos tutorial_player._update_tooltip_buttons() y

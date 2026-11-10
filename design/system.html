@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VERTEX — Design System (Brand.gd)</title>
+<style>
+  :root {
+    --bg: #0d0e16;
+    --panel: rgba(22, 24, 38, 0.88);
+    --panel-solid: rgba(16, 18, 31, 0.95);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --world-heist: #bf5af2;
+    --world-hacker: #39ff88;
+    --world-cyber: #00d2ff;
+    --world-secret: #ff2a6d;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1440px;
+    min-height: 900px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    padding: 32px 40px;
+  }
+  header {
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  h1 { font-size: 22px; color: var(--accent); letter-spacing: 1px; }
+  h2 { font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 32px; }
+  .swatch {
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    padding: 12px;
+    border-radius: 4px;
+  }
+  .color-box { height: 44px; border-radius: 3px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.12); }
+  .token-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .token-hex { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .rules {
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    padding: 20px;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .rule-card h3 { font-size: 14px; color: var(--success); margin-bottom: 8px; }
+  .rule-card p { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>VERTEX // DESIGN SYSTEM TOKENS (juego/ui/brand.gd)</h1>
+    <span style="color: var(--text-dim); font-size: 12px;">1440 × 900 · JetBrains Mono · Zero-Overlap HUD Contract</span>
+  </header>
+
+  <h2>1. Core & Semantic Tokens</h2>
+  <div class="grid">
+    <div class="swatch"><div class="color-box" style="background:#0d0e16"></div><div class="token-name">BG</div><div class="token-hex">#0d0e16</div></div>
+    <div class="swatch"><div class="color-box" style="background:#10121f"></div><div class="token-name">PANEL_SOLID</div><div class="token-hex">#10121f (95%)</div></div>
+    <div class="swatch"><div class="color-box" style="background:#00e5ff"></div><div class="token-name">ACCENT</div><div class="token-hex">#00e5ff</div></div>
+    <div class="swatch"><div class="color-box" style="background:#ff2e88"></div><div class="token-name">ENEMY</div><div class="token-hex">#ff2e88</div></div>
+    <div class="swatch"><div class="color-box" style="background:#ffc857"></div><div class="token-name">WARNING</div><div class="token-hex">#ffc857</div></div>
+  </div>
+
+  <h2>2. World Mode Accents (Operators)</h2>
+  <div class="grid">
+    <div class="swatch"><div class="color-box" style="background:#bf5af2"></div><div class="token-name">WORLD_HEIST (VEX)</div><div class="token-hex">#bf5af2 · BG #120918</div></div>
+    <div class="swatch"><div class="color-box" style="background:#39ff88"></div><div class="token-name">WORLD_HACKER (N0X)</div><div class="token-hex">#39ff88 · BG #09120e</div></div>
+    <div class="swatch"><div class="color-box" style="background:#00d2ff"></div><div class="token-name">WORLD_CYBER (AEGIS)</div><div class="token-hex">#00d2ff · BG #081018</div></div>
+    <div class="swatch"><div class="color-box" style="background:#ff2a6d"></div><div class="token-name">WORLD_SECRET (KAIN)</div><div class="token-hex">#ff2a6d · BG #14080e</div></div>
+    <div class="swatch"><div class="color-box" style="background:#2a2e4a"></div><div class="token-name">PANEL_BORDER</div><div class="token-hex">#2a2e4a</div></div>
+  </div>
+
+  <h2>3. Anti-Overlap & Single-Source HUD Rules</h2>
+  <div class="rules">
+    <div class="rule-card">
+      <h3>✓ Zero Duplication</h3>
+      <p>Every metric and action exists in exactly ONE place. No duplicate right-side Hacker exploit box, no duplicate "Ve hacia..." pill in the bottom dock, and no duplicate keyboard legend when action buttons already show their shortcut keycap.</p>
+    </div>
+    <div class="rule-card">
+      <h3>✓ Dynamic Width Flow (No Collisions)</h3>
+      <p>Every pill and button computes its width from its text length + 28px padding with a strict 10px gap. Buttons never collide like "[1] SEGMENTAR ARISTA[2] FIREWALL".</p>
+    </div>
+  </div>
+</body>
+</html>

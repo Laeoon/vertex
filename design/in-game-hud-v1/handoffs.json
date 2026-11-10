@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "chosen": "01-unified-tactical-dock.html",
+  "handoffs": {
+    "01-unified-tactical-dock.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T22:47:59.255Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-10T00:02:33.304Z",
+      "feature": "odd/tasks/vertex-1-0-overhaul.md",
+      "note": "Implementados Artboard 01 (Unified Dock), Artboard 02 (Floating Pills + Radial para Cybersecurity) y Artboard 03 (Sector 0 Root Genesis Triad) en game_renderer.gd, input_handler.gd, tutorials_menu.gd y tutorial_render.gd con 48/48 suites en verde."
+    },
+    "02-floating-radial-pill.html": {
+      "status": "implemented",
+      "queued": true,
+      "sentAt": "2026-11-09T22:47:54.413Z",
+      "startedAt": "2026-11-09T22:49:11.894Z",
+      "implementedAt": "2026-11-10T00:02:33.451Z",
+      "feature": "odd/tasks/vertex-1-0-overhaul.md",
+      "note": "Implementado Artboard 02 en modo Cybersecurity (islas flotantes + dock flotante sin colisiones + menú contextual en nodo)."
+    }
+  }
+}

@@ -236,6 +236,7 @@ func _ready() -> void:
 	_progress_service.setup(self)
 
 	_game_state.load_graph()
+	_apply_level_positions_override()
 	if tutorial_path != "":
 		_setup_tutorial()
 	if _pause_overlay != null and (tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player))):
@@ -247,6 +248,27 @@ func _ready() -> void:
 		GameLogger.info("JuegoAtaque", "Bloques/turno: %d, Duración: %d" % [defender_blocks_per_turn, defender_block_duration])
 
 	_start_level_music()
+
+
+func _apply_level_positions_override() -> void:
+	if level_key == "secret_root" or graph_path.ends_with("secret_root.tres") or titulo_nivel.find("Sector 0") != -1:
+		var file_path := "res://juego/secret/secret_root.json"
+		if FileAccess.file_exists(file_path):
+			var file := FileAccess.open(file_path, FileAccess.READ)
+			if file != null:
+				var parsed = JSON.parse_string(file.get_as_text())
+				if parsed is Dictionary and parsed.has("node_positions"):
+					var pos_map: Dictionary = parsed["node_positions"]
+					for nid_str in pos_map:
+						var arr = pos_map[nid_str]
+						if arr is Array and arr.size() >= 2:
+							var pos_v := Vector2(float(arr[0]), float(arr[1]))
+							var sn := StringName(nid_str)
+							node_positions[sn] = pos_v
+							if _node_cache.has(sn):
+								_node_cache[sn].position = pos_v
+					if player_pos != &"" and node_positions.has(player_pos):
+						player_visual_pos = node_positions[player_pos]
 
 
 func _start_level_music() -> void:

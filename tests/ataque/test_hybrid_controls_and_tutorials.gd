@@ -10,6 +10,7 @@ extends Node
 ##    actions satisfy tutorial action_required without false lockups.
 
 const InputHandlerClass = preload("res://juego/ataque/input_handler.gd")
+const GameRendererClass = preload("res://juego/ataque/game_renderer.gd")
 
 var passed: int = 0
 var failed: int = 0
@@ -91,6 +92,8 @@ func _run_tests() -> void:
 	_test_hacker_dock_mouse_and_touch()
 	_test_attacker_dock_confirm_and_camera()
 	_test_defender_pills_and_contextual_menu()
+	_test_human_readable_node_names()
+	_test_tutorials_menu_visual_identity()
 	_test_touch_pan_and_hitboxes()
 	_test_tutorial_enter_double_action_prevention()
 	_test_tutorial_mouse_touch_actions()
@@ -238,27 +241,48 @@ func _test_defender_pills_and_contextual_menu() -> void:
 	handler.defender_place_firewall.connect(func(nid: StringName): fw_placed.append(nid))
 	handler.defender_quarantine_node.connect(func(nid: StringName): q_placed.append(nid))
 
-	# Click en Pill [2] FIREWALL superior: Rect2(340, 4, 115, 38) -> centro Vector2(390, 20)
+	# Verificar que todas las píldoras del modo defensor tienen ZERO overlap (rect_i.intersects(rect_j) == false)
+	var pill_rects := GameRendererClass.get_defender_pill_rects(Vector2(1280, 720), null, 14, false, false)
+	_assert(pill_rects.size() >= 4, "get_defender_pill_rects retorna al menos 4 acciones")
+	for i in range(pill_rects.size()):
+		for j in range(i + 1, pill_rects.size()):
+			var r_i: Rect2 = pill_rects[i]["rect"]
+			var r_j: Rect2 = pill_rects[j]["rect"]
+			_assert(not r_i.intersects(r_j), "Pills Defender sin superposición: %s vs %s" % [pill_rects[i]["id"], pill_rects[j]["id"]])
+
+	# Ubicar rectángulos exactos medidos dinámicamente
+	var fw_rect: Rect2
+	var q_rect: Rect2
+	var r_rect: Rect2
+	for p in pill_rects:
+		if p["id"] == "firewall":
+			fw_rect = p["rect"]
+		elif p["id"] == "quarantine":
+			q_rect = p["rect"]
+		elif p["id"] == "radar":
+			r_rect = p["rect"]
+
+	# Click en Pill [2] FIREWALL superior usando su centro dinámico
 	var ev_pill_fw = InputEventMouseButton.new()
 	ev_pill_fw.button_index = MOUSE_BUTTON_LEFT
 	ev_pill_fw.pressed = true
-	ev_pill_fw.position = Vector2(390.0, 20.0)
+	ev_pill_fw.position = fw_rect.get_center()
 	handler._input(ev_pill_fw)
 	_assert(fw_toggled.size() == 1, "Click en Pill [2] FIREWALL superior activa modo firewall")
 
-	# Click en Pill [3] CUARENTENA superior: Rect2(460, 4, 135, 38) -> centro Vector2(520, 20)
+	# Click en Pill [3] CUARENTENA superior usando su centro dinámico
 	var ev_pill_q = InputEventMouseButton.new()
 	ev_pill_q.button_index = MOUSE_BUTTON_LEFT
 	ev_pill_q.pressed = true
-	ev_pill_q.position = Vector2(520.0, 20.0)
+	ev_pill_q.position = q_rect.get_center()
 	handler._input(ev_pill_q)
 	_assert(q_toggled.size() == 1, "Click en Pill [3] CUARENTENA superior activa modo cuarentena")
 
-	# Click en Pill [4] RADAR superior: Rect2(600, 4, 110, 38) -> centro Vector2(650, 20)
+	# Click en Pill [4] RADAR superior usando su centro dinámico
 	var ev_pill_r = InputEventMouseButton.new()
 	ev_pill_r.button_index = MOUSE_BUTTON_LEFT
 	ev_pill_r.pressed = true
-	ev_pill_r.position = Vector2(650.0, 20.0)
+	ev_pill_r.position = r_rect.get_center()
 	handler._input(ev_pill_r)
 	_assert(radar_toggled.size() == 1, "Click en Pill [4] RADAR superior activa toggle_optimal_route")
 
@@ -285,6 +309,28 @@ func _test_defender_pills_and_contextual_menu() -> void:
 
 	handler.queue_free()
 	mock_game.queue_free()
+
+
+func _test_human_readable_node_names() -> void:
+	var cache := {
+		&"Incursor": {"display_name": "Punto Cero"},
+		&"NexusA": {"display_name": "Nexus Superior"},
+		&"HexNode_1": {"name": "Celda Alfa"},
+	}
+	_assert(GameRendererClass.resolve_node_display_name(&"Incursor", cache) == "Punto Cero", "Incursor resuelve a 'Punto Cero'")
+	_assert(GameRendererClass.resolve_node_display_name(&"NexusA", cache) == "Nexus Superior", "NexusA resuelve a 'Nexus Superior'")
+	_assert(GameRendererClass.resolve_node_display_name(&"HexNode_1", cache) == "Celda Alfa", "HexNode_1 resuelve a 'Celda Alfa'")
+	_assert(GameRendererClass.resolve_node_display_name(&"Desconocido", cache) == "Desconocido", "Nodo desconocido cae a fallback de ID")
+
+
+func _test_tutorials_menu_visual_identity() -> void:
+	var TutorialsMenuClass = preload("res://escenas/main_menu/tutorials_menu.gd")
+	var menu = TutorialsMenuClass.new()
+	add_child(menu)
+	_assert(menu._spectrum_viz != null, "tutorials_menu inicializa AudioSpectrumVisualizer")
+	_assert(menu._cyber_bg != null, "tutorials_menu inicializa CyberBackground")
+	remove_child(menu)
+	menu.free()
 
 
 func _test_touch_pan_and_hitboxes() -> void:

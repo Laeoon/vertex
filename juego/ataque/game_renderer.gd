@@ -66,6 +66,93 @@ func draw_error(vp_size: Vector2, mensaje_estado: String) -> void:
 	draw_string(Vector2(30, 106), mensaje_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.RED)
 
 
+static func resolve_node_display_name(nid: Variant, node_cache: Dictionary) -> String:
+	var s_nid := StringName(str(nid))
+	if node_cache.has(s_nid):
+		var res = node_cache[s_nid]
+		if res != null:
+			if "display_name" in res and str(res.display_name).strip_edges() != "":
+				return str(res.display_name)
+			elif "name" in res and str(res.name).strip_edges() != "":
+				return str(res.name)
+	return str(nid)
+
+
+static func get_defender_pill_rects(
+	vp_size: Vector2,
+	p_font: Font,
+	p_font_size: int,
+	fog_of_war: bool = false,
+	telemetry_intercepted: bool = false
+) -> Array[Dictionary]:
+	var pills_info: Array[Dictionary] = [
+		{"id": "edges", "text": "[1] SEGMENTAR ARISTA", "color": BrandClass.ACCENT},
+		{"id": "firewall", "text": "[2] FIREWALL", "color": Color(0.2, 0.7, 1.0)},
+		{"id": "quarantine", "text": "[3] CUARENTENA", "color": Color(1.0, 0.75, 0.0)},
+	]
+	if fog_of_war or telemetry_intercepted:
+		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[4] RADAR"
+		pills_info.append({"id": "radar", "text": p_label, "color": BrandClass.WARNING if telemetry_intercepted else Color("80d8ff")})
+	else:
+		pills_info.append({"id": "radar", "text": "[4] RADAR", "color": Color("80d8ff")})
+	pills_info.append({"id": "terminal", "text": "[~] CLI", "color": Color("00e5ff")})
+
+	var pill_h := 36.0
+	var gap := 12.0
+	var total_w := 0.0
+	var widths: Array[float] = []
+
+	for p in pills_info:
+		var txt: String = p["text"]
+		var tw: float = 80.0
+		if p_font != null:
+			tw = p_font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, p_font_size - 3).x
+		var w := tw + 24.0
+		widths.append(w)
+		total_w += w
+	total_w += gap * float(pills_info.size() - 1)
+
+	var start_x := (vp_size.x - total_w) / 2.0
+	var pill_y := 6.0
+
+	var result: Array[Dictionary] = []
+	var cur_x := start_x
+	for i in range(pills_info.size()):
+		var w := widths[i]
+		var rect := Rect2(cur_x, pill_y, w, pill_h)
+		result.append({
+			"id": pills_info[i]["id"],
+			"text": pills_info[i]["text"],
+			"color": pills_info[i]["color"],
+			"rect": rect
+		})
+		cur_x += w + gap
+
+	return result
+
+
+## Sub-header ribbon dedicado para telemetría secundaria / Kain ghost stream (y = 48..76)
+func draw_sub_header_ribbon(vp_size: Vector2, text: String, is_secret: bool = false) -> void:
+	var rib_y := 48.0
+	var rib_h := 28.0
+	var rib_rect := Rect2(0, rib_y, vp_size.x, rib_h)
+	draw_rect(rib_rect, Color(0.05, 0.05, 0.09, 0.94))
+	draw_rect(rib_rect, Color(0.16, 0.18, 0.29, 0.8), false, 1.0)
+
+	var draw_text := text
+	var tag := "[STATUS]: "
+	var tag_col: Color = BrandClass.ACCENT
+	if is_secret:
+		tag = "[TCP_SEQ_GHOST // ARCHITECT-0]: "
+		tag_col = BrandClass.WORLD_SECRET
+		if draw_text == "":
+			draw_text = "Infiltración en espacio de memoria del kernel. Bypass o desvío requerido."
+
+	var tag_sz := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3)
+	draw_string(Vector2(20.0, rib_y + 19.0), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, tag_col)
+	draw_string(Vector2(20.0 + tag_sz.x, rib_y + 19.0), draw_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT)
+
+
 ## Orquestación del frame completo (P5): juego_ataque._draw() sólo hace los
 ## guards (brain válido, runtime/graph cargados) y delega acá con un
 ## diccionario de datos puro armado por GameState.frame_data() — sin
@@ -79,26 +166,27 @@ func draw_frame(d: Dictionary) -> void:
 	if has_transform:
 		_canvas.draw_set_transform(pan, 0.0, Vector2(zoom, zoom))
 
-	var is_secret_sector: bool = str(d.get("level_key", "")).begins_with("secret")
+	var is_secret_sector: bool = str(d.get("level_key", "")).begins_with("secret") or d.get("world", "") == "secret" or str(d.get("titulo_nivel", "")).find("Sector 0") != -1 or d.node_positions.has(&"GenesisCore") or d.node_positions.has("GenesisCore")
+	var core_pos: Vector2 = d.node_positions.get(&"GenesisCore", d.node_positions.get("GenesisCore", Vector2(935, 272))) as Vector2
 	if is_secret_sector:
-		_draw_kernel_void_background(d.vp_size, pan, zoom)
+		_draw_kernel_void_background(d.vp_size, pan, zoom, core_pos)
 	else:
 		draw_background_grid(d.vp_size, pan, zoom)
 
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
 	var should_draw_enemy_path: bool = d.get("brain_path_revealed", true) if d.defender_mode else false
-	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if should_draw_enemy_path else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor)
+	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if should_draw_enemy_path else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor, is_secret_sector)
 	if d.defender_mode:
 		var q_mode_active: bool = d.get("quarantine_mode", false)
 		var enemy_start_node: StringName = d.graph.nodes[0].id if d.graph != null and d.graph.nodes.size() > 0 else &""
 		if d.get("enemy_start_node", &"") != &"":
 			enemy_start_node = d.get("enemy_start_node")
 		var enemy_vis: Vector2 = d.get("enemy_visual_pos", Vector2.ZERO)
-		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, enemy_vis, false, true, d.brain_enemy_pos, d.get("brain_quarantined_nodes", {}), q_mode_active, enemy_start_node, d.brain_enemy_target)
+		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, enemy_vis, false, true, d.brain_enemy_pos, d.get("brain_quarantined_nodes", {}), q_mode_active, enemy_start_node, d.brain_enemy_target, is_secret_sector)
 		if should_draw_enemy_path and d.brain_enemy_path.size() >= 2:
 			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
 	else:
-		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"", {})
+		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"", {}, false, &"", &"", is_secret_sector)
 
 	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
 	if d.show_optimal_overlay:
@@ -116,17 +204,19 @@ func draw_frame(d: Dictionary) -> void:
 
 	if d.defender_mode:
 		var q_mode_active: bool = d.get("quarantine_mode", false)
-		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}), d.get("brain_fog_of_war", false), d.get("brain_telemetry_intercepted", false), q_mode_active)
+		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}), d.get("brain_fog_of_war", false), d.get("brain_telemetry_intercepted", false), q_mode_active, d.get("node_cache", {}))
 	else:
-		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display)
-	if d.hacker_mode:
-		draw_hacker_hud(d.vp_size, d.hacker_state, d.scan_results)
-	# El game over ya no se dibuja acá: lo lleva GameOverOverlay (capa 2b) a
-	# pantalla completa. frame_data() sigue exponiendo los campos para el overlay.
+		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display, d.get("node_cache", {}), d.get("hacker_state", {}), d.get("hacker_mode", false), is_secret_sector)
+
+	# Sub-header ribbon dedicado para estado / Kain stream (y = 48..76, fuera del canvas)
+	var mensaje_estado: String = d.get("mensaje_estado", "")
+	if (mensaje_estado != "" and not mensaje_estado.begins_with("Ve hacia")) or is_secret_sector:
+		draw_sub_header_ribbon(d.vp_size, mensaje_estado, is_secret_sector)
+
 	if d.mensaje_tutorial != "" and not d.game_over:
 		draw_tutorial_text(d.mensaje_tutorial)
 	if d.selected_neighbor != &"" and not d.game_over:
-		draw_node_info_panel(d.vp_size, d.selected_neighbor, d.player_pos, d.graph, d.node_cache)
+		draw_node_info_panel(d.vp_size, d.selected_neighbor, d.player_pos, d.graph, d.node_cache, is_secret_sector)
 
 	# Menú contextual de nodo en modo Defensor (pantalla UI)
 	if d.defender_mode and d.get("defender_context_node", &"") != &"":
@@ -136,13 +226,30 @@ func draw_frame(d: Dictionary) -> void:
 	draw_tactical_action_dock(d)
 
 
-## Fondo Abisal de Kernel Panic / Glitch Void para el Sector 0 secreto
-func _draw_kernel_void_background(vp_size: Vector2, _pan: Vector2, _zoom: float) -> void:
-	# Fondo negro carbón absoluto
-	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), Color("030305"))
+## Fondo Abisal de Kernel Panic / Glitch Void para el Sector 0 secreto (Artboard 03)
+func _draw_kernel_void_background(vp_size: Vector2, _pan: Vector2, _zoom: float, core_pos: Vector2 = Vector2(935, 272)) -> void:
+	# Fondo Crimson / Void Hypervisor profundo (#14080e)
+	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), Color("14080e"))
+
+	# Cuadrícula sutil crimson (espaciado 48px)
+	var grid_color := Color(1.0, 0.16, 0.42, 0.07)
+	var spacing := 48.0
+	var x: float = 0.0
+	while x <= vp_size.x:
+		draw_line(Vector2(x, 0), Vector2(x, vp_size.y), grid_color, 1.0)
+		x += spacing
+	var y: float = 0.0
+	while y <= vp_size.y:
+		draw_line(Vector2(0, y), Vector2(vp_size.x, y), grid_color, 1.0)
+		y += spacing
+
+	# Anillos concéntricos de gravedad hipervisor centrados en GenesisCore (935, 272)
+	var t: float = Time.get_ticks_msec() * 0.001
+	draw_circle(core_pos, 76.0, Color(1.0, 0.16, 0.42, 0.25), false, 1.5)
+	draw_circle(core_pos, 130.0, Color(0.75, 0.35, 0.95, 0.18), false, 1.2)
+	draw_circle(core_pos, 190.0, Color(1.0, 0.16, 0.42, 0.12), false, 1.0)
 
 	# Lluvia volumétrica de memoria (Hex Dump y registros de fallo del kernel)
-	var time_sec: float = Time.get_ticks_msec() * 0.001
 	var hex_words: Array[String] = [
 		"0xDEADBEEF", "0xC001CAFE", "0x00000000", "0xFFFFFFFF",
 		"SEGFAULT", "KERNEL_PANIC", "STACK_DUMP", "NULL_PTR",
@@ -154,15 +261,15 @@ func _draw_kernel_void_background(vp_size: Vector2, _pan: Vector2, _zoom: float)
 	for col in range(num_cols):
 		var col_x := float(col) * col_w + 10.0
 		var seed_speed := 35.0 + float((col * 17) % 25)
-		var y_offset := fmod((time_sec * seed_speed) + float(col * 85), vp_size.y + 120.0) - 60.0
-		var word_idx: int = (col + int(time_sec * 0.5)) % hex_words.size()
+		var y_offset := fmod((t * seed_speed) + float(col * 85), vp_size.y + 120.0) - 60.0
+		var word_idx: int = (col + int(t * 0.5)) % hex_words.size()
 		var text := hex_words[word_idx]
 
-		var hex_alpha := 0.12 + sin(time_sec * 2.0 + float(col)) * 0.06
+		var hex_alpha := 0.12 + sin(t * 2.0 + float(col)) * 0.06
 		draw_string(Vector2(col_x, y_offset), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1.0, 0.2, 0.35, hex_alpha))
 
 	# Líneas de cuadrícula corrompidas / Glitch scan
-	var glitch_y := fmod(time_sec * 90.0, vp_size.y)
+	var glitch_y := fmod(t * 90.0, vp_size.y)
 	draw_line(Vector2(0, glitch_y), Vector2(vp_size.x, glitch_y), Color(1.0, 0.1, 0.3, 0.25), 1.5)
 	draw_line(Vector2(0, glitch_y + 4.0), Vector2(vp_size.x, glitch_y + 4.0), Color(0.2, 1.0, 0.8, 0.15), 1.0)
 
@@ -215,36 +322,40 @@ func draw_hud(
 	alerted_nodes: Array,
 	movement_points: int,
 	max_movement_points: int,
-	_budget_display: float = 0.0
+	_budget_display: float = 0.0,
+	node_cache: Dictionary = {},
+	hacker_state: Dictionary = {},
+	hacker_mode: bool = false,
+	is_secret: bool = false
 ) -> void:
-	var bar_h: float = 52.0
+	var bar_h: float = 48.0
 
-	# ZONA 1: Barra superior con fondo
+	# ZONA 1: Barra superior con fondo (Artboard 01 / 03)
 	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
-	draw_rect(Rect2(0, bar_h, vp_size.x, 2.0), BrandClass.accent_dim(0.5))
+	draw_rect(Rect2(0, bar_h, vp_size.x, 1.5), BrandClass.accent_dim(0.4))
 
 	# Título del nivel (izquierda)
-	draw_string(Vector2(16, 22), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 4, BrandClass.ACCENT)
+	draw_string(Vector2(16, 20), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.ACCENT)
 
 	# Indicadores principales (centro)
 	var center_x: float = vp_size.x / 2.0
-	var ind_y: float = 22.0
+	var ind_y: float = 20.0
 
 	# Turno
 	var turn_text: String = "TURNO %d" % turn
 	var turn_w: float = font.get_string_size(turn_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
-	draw_string(Vector2(center_x - turn_w / 2.0 - 120, ind_y), "TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-	draw_string(Vector2(center_x - turn_w / 2.0 - 120 + font.get_string_size("TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x, ind_y), "%d" % turn, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2, Color.WHITE)
+	draw_string(Vector2(center_x - turn_w / 2.0 - 130, ind_y), "TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	draw_string(Vector2(center_x - turn_w / 2.0 - 130 + font.get_string_size("TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x, ind_y), "%d" % turn, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, Color.WHITE)
 
 	# Puntos de movimiento con barra visual
 	if max_movement_points > 0:
-		var pts_label_x: float = center_x - 60
+		var pts_label_x: float = center_x - 70
 		var pts_color: Color = Color(0.0, 1.0, 0.5) if movement_points > max_movement_points * 0.3 else BrandClass.WARNING if movement_points > max_movement_points * 0.1 else BrandClass.DANGER
-		draw_string(Vector2(pts_label_x, ind_y), "PUNTOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+		draw_string(Vector2(pts_label_x, ind_y), "PUNTOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 		# Barra de progreso
 		var bar_x: float = pts_label_x + 50
-		var bar_w: float = 100.0
+		var bar_w: float = 80.0
 		var bar_y: float = ind_y - 10
 		var bar_h_inner: float = 12.0
 		var fill_ratio: float = _budget_display / float(max_movement_points)
@@ -254,118 +365,87 @@ func draw_hud(
 
 		# Texto sobre la barra
 		var pts_text: String = "%d/%d" % [movement_points, max_movement_points]
-		draw_string(Vector2(bar_x + bar_w + 8, ind_y), pts_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, pts_color)
+		draw_string(Vector2(bar_x + bar_w + 8, ind_y), pts_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, pts_color)
+
+	# Noise IDS meter integrado en barra superior (en lugar del panel derecho duplicado)
+	if hacker_mode or is_secret:
+		var noise: int = hacker_state.get("noise", 0)
+		var max_noise: int = hacker_state.get("max_noise", 100)
+		var noise_col: Color = BrandClass.SUCCESS
+		if noise >= 85:
+			noise_col = BrandClass.DANGER
+		elif noise >= 60:
+			noise_col = Color(1.0, 0.5, 0.0)
+		elif noise >= 30:
+			noise_col = BrandClass.WARNING
+
+		var nm_x := center_x + (85.0 if max_movement_points > 0 else -60.0)
+		draw_string(Vector2(nm_x, ind_y), "RUIDO IDS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+		var nm_bar_x := nm_x + 68.0
+		var nm_bar_w := 80.0
+		var nm_fill_w := nm_bar_w * clampf(float(noise) / float(maxi(1, max_noise)), 0.0, 1.0)
+		draw_rect(Rect2(nm_bar_x, ind_y - 10.0, nm_bar_w, 12.0), Color(0.1, 0.12, 0.18))
+		if nm_fill_w > 0:
+			draw_rect(Rect2(nm_bar_x, ind_y - 10.0, nm_fill_w, 12.0), noise_col)
+		draw_rect(Rect2(nm_bar_x, ind_y - 10.0, nm_bar_w, 12.0), Color(0.3, 0.35, 0.45), false, 1.0)
+		draw_string(Vector2(nm_bar_x + nm_bar_w + 8.0, ind_y), "%d/%d" % [noise, max_noise], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, noise_col)
 
 	# Indicadores secundarios (debajo)
-	var sec_y: float = 42.0
+	var sec_y: float = 38.0
 	var sec_x: float = 16.0
 
-	# Posición
-	var pos_text: String = "POS: %s" % str(player_pos)
-	draw_string(Vector2(sec_x, sec_y), pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-	sec_x += font.get_string_size(pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x + 20.0
+	# Posición con nombre legible de nodo
+	var pos_display: String = resolve_node_display_name(player_pos, node_cache)
+	var pos_text: String = "POS: %s" % pos_display
+	draw_string(Vector2(sec_x, sec_y), pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	sec_x += font.get_string_size(pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 18.0
 
 	# Coste
 	var cost_text: String = "COSTE: %.1f" % player_total_cost
-	draw_string(Vector2(sec_x, sec_y), cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-	sec_x += font.get_string_size(cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x + 20.0
+	draw_string(Vector2(sec_x, sec_y), cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	sec_x += font.get_string_size(cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 18.0
 
 	# Turnos restantes
 	if max_turns > 0:
 		var rem_text: String = "RESTANTE: %d" % (max_turns - turn)
 		var rem_color: Color = Color(0.0, 1.0, 0.5) if (max_turns - turn) > max_turns * 0.3 else BrandClass.WARNING
-		draw_string(Vector2(sec_x, sec_y), rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, rem_color)
-		sec_x += font.get_string_size(rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x + 20.0
+		draw_string(Vector2(sec_x, sec_y), rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, rem_color)
+		sec_x += font.get_string_size(rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 18.0
 
 	# Waypoints
 	if waypoints.size() > 0:
 		var wp_text: String = "WP: %d/%d" % [current_waypoint_idx + 1, waypoints.size()]
-		draw_string(Vector2(sec_x, sec_y), wp_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+		draw_string(Vector2(sec_x, sec_y), wp_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
 	# Indicador de amenaza (derecha)
 	var alert_x: float = vp_size.x - 16.0
 	var badge_left: float = vp_size.x - 16.0
 	if pursuers.size() > 0:
 		var p_text: String = "PERSEGUIDORES: %d" % pursuers.size()
-		var pw: float = font.get_string_size(p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
+		var pw: float = font.get_string_size(p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
 		alert_x -= pw + 8.0
 		badge_left = alert_x - 6.0
 		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(0.8, 0.05, 0.02, 0.4))
 		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(1.0, 0.2, 0.1, 0.7), false, 1.0)
-		draw_string(Vector2(alert_x, ind_y), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.DANGER)
+		draw_string(Vector2(alert_x, ind_y), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.DANGER)
 	elif alerted_nodes.size() > 0:
 		var a_text: String = "ALERTAS: %d" % alerted_nodes.size()
-		var aw: float = font.get_string_size(a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
+		var aw: float = font.get_string_size(a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
 		alert_x -= aw + 8.0
 		badge_left = alert_x
-		draw_string(Vector2(alert_x, ind_y), a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.WARNING)
+		draw_string(Vector2(alert_x, ind_y), a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.WARNING)
 
-	# Meta (a la izquierda de las insignias de amenaza, sin colisión)
-	var meta_text: String = "META: %s" % str(target)
-	var meta_w: float = font.get_string_size(meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	# Meta con nombre legible de nodo (a la izquierda de las insignias de amenaza, sin colisión)
+	var target_display: String = resolve_node_display_name(target, node_cache)
+	var meta_text: String = "META: %s" % target_display
+	var meta_w: float = font.get_string_size(meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1).x
 	var meta_x: float = badge_left - 16.0 - meta_w
-	draw_string(Vector2(meta_x, ind_y), meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.DANGER)
+	draw_string(Vector2(meta_x, ind_y), meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.DANGER)
 
 
-func draw_hacker_hud(vp_size: Vector2, hacker_state: Dictionary, scan_results: Dictionary) -> void:
-	var noise: int = hacker_state.get("noise", 0)
-	var max_noise: int = hacker_state.get("max_noise", 100)
-	var exploits: Dictionary = hacker_state.get("exploits", {})
-
-	# Panel derecho — separado del tablero y el panel de info de nodo
-	var panel_w: float = 160.0
-	var panel_x: float = vp_size.x - panel_w - 12.0
-	var panel_y: float = 200.0
-
-	# Fondo del panel
-	draw_rect(Rect2(panel_x - 8, panel_y - 12, panel_w + 16, 130), Color(0.03, 0.03, 0.07, 0.9))
-	draw_rect(Rect2(panel_x - 8, panel_y - 12, panel_w + 16, 130), Color(0.0, 0.8, 0.5, 0.4), false, 1.0)
-
-	# Título del panel
-	draw_string(Vector2(panel_x, panel_y), "HACKER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.SUCCESS)
-	draw_rect(Rect2(panel_x, panel_y + 4, 50, 1.0), Color(0.0, 1.0, 0.5, 0.4))
-
-	# Noise meter
-	var nm_y: float = panel_y + 20.0
-	var nm_w: float = panel_w - 10.0
-	var nm_h: float = 10.0
-	var fill_ratio: float = float(noise) / float(max_noise)
-
-	var noise_color: Color
-	if noise >= 85:
-		noise_color = Color(1.0, 0.1, 0.0)
-	elif noise >= 60:
-		noise_color = Color(1.0, 0.5, 0.0)
-	elif noise >= 30:
-		noise_color = Color(1.0, 0.9, 0.0)
-	else:
-		noise_color = Color(0.0, 1.0, 0.5)
-
-	draw_string(Vector2(panel_x, nm_y), "RUIDO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
-	draw_rect(Rect2(panel_x, nm_y + 6, nm_w, nm_h), Color(0.1, 0.12, 0.18))
-	draw_rect(Rect2(panel_x, nm_y + 6, nm_w * fill_ratio, nm_h), noise_color)
-	draw_rect(Rect2(panel_x, nm_y + 6, nm_w, nm_h), Color(0.3, 0.35, 0.45), false, 1.0)
-	draw_string(Vector2(panel_x + nm_w + 4, nm_y), "%d/%d" % [noise, max_noise], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, noise_color)
-
-	# Exploit inventory
-	var ei_y: float = nm_y + 28.0
-	var exploit_types: Array = ["bypass", "escalate", "persist", "decoy"]
-	var exploit_icons: Dictionary = {"bypass": "[+]", "escalate": "[^]", "persist": "[*]", "decoy": "[#]"}
-	var exploit_names: Dictionary = {"bypass": "Bypass", "escalate": "Escalate", "persist": "Persist", "decoy": "Honeypot"}
-
-	for i in exploit_types.size():
-		var et: String = exploit_types[i]
-		var count: int = exploits.get(et, 0)
-		var icon: String = exploit_icons.get(et, "?")
-		var label: String = exploit_names.get(et, et)
-		var key_hint: String = "[%d]" % (i + 1)
-
-		var color: Color = Color(0.0, 1.0, 0.5) if count > 0 else Color(0.4, 0.4, 0.45)
-		draw_string(Vector2(panel_x, ei_y), "%s %s %s x%d" % [key_hint, icon, label, count], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color)
-		ei_y += 16.0
-
-	# Scan hint
-	draw_string(Vector2(panel_x, ei_y + 4), "[X] Escanear", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+## Legacy helper — el panel derecho duplicado fue eliminado.
+func draw_hacker_hud(_vp_size: Vector2, _hacker_state: Dictionary, _scan_results: Dictionary) -> void:
+	pass
 
 
 func draw_defender_hud(
@@ -384,89 +464,106 @@ func draw_defender_hud(
 	_quarantined_nodes: Dictionary = {},
 	fog_of_war: bool = false,
 	telemetry_intercepted: bool = false,
-	quarantine_mode: bool = false
+	quarantine_mode: bool = false,
+	node_cache: Dictionary = {}
 ) -> void:
-	# Barra única compacta (44px de alto) estilo consola táctica militar
-	var bar_h: float = 44.0
-	draw_rect(Rect2(0, 0, vp_size.x, bar_h), Color(0.02, 0.03, 0.07, 0.94))
-	draw_rect(Rect2(0, bar_h, vp_size.x, 1.5), Color(0.15, 0.65, 0.95, 0.7))
+	# Barra de fondo sutil (Artboard 02)
+	draw_rect(Rect2(0, 0, vp_size.x, 48.0), Color(0.02, 0.03, 0.07, 0.94))
+	draw_rect(Rect2(0, 48.0, vp_size.x, 1.5), Color(0.15, 0.65, 0.95, 0.7))
 
-	# 1. Izquierda: Título y turno
-	draw_string(Vector2(16, 26), "BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.ACCENT)
+	# 1. Isla Flotante Superior Izquierda (BLUE TEAM // T#, BLOQUEOS, RASTREO EDR)
+	var island_left_w: float = 330.0
+	var island_left := Rect2(12.0, 5.0, island_left_w, 38.0)
+	draw_rect(island_left, Color(0.04, 0.06, 0.12, 0.94))
+	draw_rect(island_left, Color(0.15, 0.65, 0.95, 0.6), false, 1.0)
+	draw_rect(Rect2(12.0, 5.0, 3.0, 38.0), BrandClass.ACCENT)
+
+	draw_string(Vector2(22, 23), "BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.ACCENT)
 	var turn_txt := " // T%d" % turn
-	var t_sz := font.get_string_size("BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-	draw_string(Vector2(16 + t_sz.x, 26), turn_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	var t_sz := font.get_string_size("BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2)
+	draw_string(Vector2(22 + t_sz.x, 23), turn_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
 
-	# 2. Presupuesto de bloqueos del turno (Pips gráficos ● ● ○)
-	var pips_x := 16.0 + t_sz.x + 65.0
+	# Presupuesto de bloqueos (Pips gráficos ● ● ○)
+	var pips_x := 125.0
 	var blocks_avail := maxi(0, blocks_per_turn - blocks_placed)
-	draw_string(Vector2(pips_x, 18), "BLOQUEOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+	draw_string(Vector2(pips_x, 18), "BLOQUEOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 5, BrandClass.TEXT_DIM)
 	for b in range(maxi(1, blocks_per_turn)):
-		var pip_pos := Vector2(pips_x + b * 14.0 + 4.0, 28.0)
+		var pip_pos := Vector2(pips_x + b * 12.0 + 4.0, 29.0)
 		var is_ready := b < blocks_avail
-		draw_circle(pip_pos, 4.0, Color(0.0, 0.9, 0.6) if is_ready else Color(0.25, 0.28, 0.35))
+		draw_circle(pip_pos, 3.5, Color(0.0, 0.9, 0.6) if is_ready else Color(0.25, 0.28, 0.35))
 		if is_ready:
-			draw_circle(pip_pos, 6.0, Color(0.0, 0.9, 0.6, 0.25), false, 1.2)
+			draw_circle(pip_pos, 5.5, Color(0.0, 0.9, 0.6, 0.25), false, 1.0)
 
-	# 3. Pills interactivas / indicadores de acción táctica (Atajos 1, 2, 3, 4 con height >= 36px)
-	var pills_start_x := pips_x + (blocks_per_turn * 14.0) + 24.0
-
-	# Pill 1: Aristas (Modo por defecto)
-	var is_edges_active := not firewall_mode and not quarantine_mode
-	_draw_hud_pill(Vector2(pills_start_x, 4.0), "[1] SEGMENTAR ARISTA", is_edges_active, BrandClass.ACCENT)
-
-	# Pill 2: Firewall [2] / [F]
-	_draw_hud_pill(Vector2(pills_start_x + 155.0, 4.0), "[2] FIREWALL", firewall_mode, Color(0.2, 0.7, 1.0))
-
-	# Pill 3: Cuarentena [3] / [C]
-	_draw_hud_pill(Vector2(pills_start_x + 280.0, 4.0), "[3] CUARENTENA", quarantine_mode, Color(1.0, 0.75, 0.0), true)
-
-	# Pill 4: Niebla / Telemetría [4] / [P]
-	if fog_of_war or telemetry_intercepted:
-		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[4] RADAR / TRACE"
-		_draw_hud_pill(Vector2(pills_start_x + 425.0, 4.0), p_label, telemetry_intercepted, BrandClass.WARNING if telemetry_intercepted else Color("80d8ff"))
-
-	# Pill 5: Terminal CLI [~] / [T]
-	var term_x := pills_start_x + (560.0 if (fog_of_war or telemetry_intercepted) else 425.0)
-	_draw_hud_pill(Vector2(term_x, 4.0), "[~] TERMINAL", false, Color("00e5ff"))
-
-	# 4. Centro-Derecha: Barra de progreso EDR Forensics Trace (0..100%)
-	var trace_box_w := 200.0
-	var trace_box_x := vp_size.x - 470.0
-
+	# RASTREO EDR Forensics Trace (barra compacta)
+	var trace_box_x := 185.0
+	var trace_box_w := 135.0
 	var trace_label := "RASTREO EDR: %.0f%%" % forensics_trace
-	draw_string(Vector2(trace_box_x, 16), trace_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color("b388ff"))
+	draw_string(Vector2(trace_box_x, 18), trace_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, Color("b388ff"))
 
-	var tb_bg := Rect2(trace_box_x, 22, trace_box_w, 8.0)
+	var tb_bg := Rect2(trace_box_x, 24, trace_box_w, 8.0)
 	draw_rect(tb_bg, Color(0.08, 0.08, 0.15, 0.8))
 	draw_rect(tb_bg, Color(0.4, 0.3, 0.7, 0.4), false, 1.0)
 	var tb_fill_w := trace_box_w * clampf(forensics_trace / 100.0, 0.0, 1.0)
 	if tb_fill_w > 0:
-		draw_rect(Rect2(trace_box_x, 22, tb_fill_w, 8.0), Color("b388ff"))
+		draw_rect(Rect2(trace_box_x, 24, tb_fill_w, 8.0), Color("b388ff"))
 
-	# 5. Derecha extrema: Posición del Intruso y Núcleo objetivo
-	var targets_x := vp_size.x - 240.0
-	if enemy_pos != &"":
-		draw_string(Vector2(targets_x, 18), "INTRUSO: %s" % str(enemy_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.35, 0.25))
-	if enemy_target != &"":
-		draw_string(Vector2(targets_x, 34), "NÚCLEO: %s" % str(enemy_target), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.1, 0.85, 0.95))
+	# 2. Isla Flotante Superior Derecha (INTRUSO & NÚCLEO con nombres humanos)
+	var enemy_display: String = resolve_node_display_name(enemy_pos, node_cache)
+	var target_display: String = resolve_node_display_name(enemy_target, node_cache)
+
+	var intruso_text := "INTRUSO: %s" % enemy_display
+	var nucleo_text := "NÚCLEO: %s" % target_display
+
+	var iw: float = maxf(
+		font.get_string_size(intruso_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x,
+		font.get_string_size(nucleo_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
+	) + 24.0
+	var island_right_w: float = maxf(190.0, iw)
+	var island_right := Rect2(vp_size.x - island_right_w - 12.0, 5.0, island_right_w, 38.0)
+	draw_rect(island_right, Color(0.04, 0.06, 0.12, 0.94))
+	draw_rect(island_right, Color(0.15, 0.65, 0.95, 0.6), false, 1.0)
+	draw_rect(Rect2(vp_size.x - 15.0, 5.0, 3.0, 38.0), Color(1.0, 0.35, 0.25))
+
+	var rx: float = island_right.position.x + 10.0
+	draw_string(Vector2(rx, 20), intruso_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.35, 0.25))
+	draw_string(Vector2(rx, 35), nucleo_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.1, 0.85, 0.95))
+
+	# 3. Dock Centrado Flotante de Acciones Defender (Dynamic Width Measurement & 12px gap)
+	var pill_rects := get_defender_pill_rects(vp_size, font, font_size, fog_of_war, telemetry_intercepted)
+	for p in pill_rects:
+		var is_active := false
+		var is_pulse := false
+		match p["id"]:
+			"edges":
+				is_active = not firewall_mode and not quarantine_mode
+			"firewall":
+				is_active = firewall_mode
+			"quarantine":
+				is_active = quarantine_mode
+				is_pulse = true
+			"radar":
+				is_active = telemetry_intercepted
+			"terminal":
+				is_active = false
+		_draw_hud_pill(p["rect"].position, p["text"], is_active, p["color"], is_pulse)
 
 
 func _draw_hud_pill(pos: Vector2, text: String, active: bool, color: Color, pulse: bool = false) -> void:
 	var t_w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
 	var pill_h := 36.0  # Altura cómoda >= 36px para touch y mouse
-	var pill_rect := Rect2(pos.x, pos.y, t_w + 16.0, pill_h)
+	var pill_w := t_w + 24.0
+	var pill_rect := Rect2(pos.x, pos.y, pill_w, pill_h)
 
 	var bg_col := BrandClass.with_alpha(color, 0.25 if active else 0.08)
 	var border_col := BrandClass.with_alpha(color, 0.85 if active else 0.3)
 	if active and pulse:
 		var p_wave := 0.6 + sin(Time.get_ticks_msec() * 0.008) * 0.35
 		border_col = BrandClass.with_alpha(color, p_wave)
-		draw_rect(Rect2(pos.x - 2, pos.y - 2, t_w + 20.0, pill_h + 4.0), BrandClass.with_alpha(color, p_wave * 0.25), false, 1.5)
+		draw_rect(Rect2(pos.x - 2, pos.y - 2, pill_w + 4.0, pill_h + 4.0), BrandClass.with_alpha(color, p_wave * 0.25), false, 1.5)
 
 	draw_rect(pill_rect, bg_col)
 	draw_rect(pill_rect, border_col, false, 1.2)
-	draw_string(Vector2(pos.x + 8.0, pos.y + 23.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color if active else BrandClass.TEXT_DIM)
+	draw_string(Vector2(pos.x + 12.0, pos.y + 23.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color if active else BrandClass.TEXT_DIM)
 
 
 func draw_edges(
@@ -484,7 +581,8 @@ func draw_edges(
 	_unblock_flash_edge: String = "",
 	hidden_nodes: Array = [],
 	player_pos: StringName = &"",
-	selected_neighbor: StringName = &""
+	selected_neighbor: StringName = &"",
+	is_secret_sector: bool = false
 ) -> void:
 	# Pre-pasada: set de claves para detectar pares bidireccionales (A→B + B→A)
 	# y curvarlos aparte — dibujados rectos se superponen exactamente y las
@@ -551,6 +649,23 @@ func draw_edges(
 		elif is_hovered:
 			edge_color = Color(1.0, 0.6, 0.0, 0.95)
 			line_width = 4.0
+		elif is_secret_sector:
+			# Sector 0 Triad Daemon branch coloring
+			var f_str := String(e.from_id)
+			var t_str := String(e.to_id)
+			var upper_branch := ["NexusA", "HexNode_4", "VoidTrap"]
+			var lower_branch := ["NexusB", "HexNode_5", "GenesisAntechamber"]
+			var spine_branch := ["HexNode_3", "RootBastion", "HexNode_1", "HexNode_2"]
+
+			if upper_branch.has(f_str) or upper_branch.has(t_str):
+				edge_color = Color("#bf5af2")
+			elif lower_branch.has(f_str) or lower_branch.has(t_str):
+				edge_color = Color("#00d2ff")
+			elif spine_branch.has(f_str) or spine_branch.has(t_str):
+				edge_color = Color("#39ff88")
+			else:
+				edge_color = Color("#ff2a6d")
+			line_width = 2.0
 		else:
 			edge_color = Color(0.35, 0.5, 0.7, 0.9)
 			line_width = 1.5
@@ -565,6 +680,17 @@ func draw_edges(
 		var bend: float = 0.0
 		if claves.has("%s→%s" % [e.to_id, e.from_id]):
 			bend = 15.0 * (1.0 if String(e.from_id) < String(e.to_id) else -1.0)
+		elif absf(bend) < 0.5:
+			# Si la arista cruza cerca de un nodo intermedio, curvarla para que nunca lo atraviese
+			for other_nid in node_positions.keys():
+				if other_nid != e.from_id and other_nid != e.to_id:
+					var inter_pos: Vector2 = node_positions[other_nid] as Vector2
+					var closest: Vector2 = Geometry2D.get_closest_point_to_segment(inter_pos, from_pos, to_pos)
+					if closest.distance_to(inter_pos) < 38.0 and from_pos.distance_to(to_pos) > 80.0:
+						var offset_vec := inter_pos - closest
+						var cross_prod := dir.x * offset_vec.y - dir.y * offset_vec.x
+						bend = -45.0 if cross_prod >= 0.0 else 45.0
+						break
 
 		var puntos: PackedVector2Array = PackedVector2Array()
 		if absf(bend) < 0.5:
@@ -654,13 +780,20 @@ func draw_edges(
 					if absf(bend) >= 0.5
 					else centro
 				)
-				var label_bg: Color = BrandClass.PANEL_SOLID
-				var label_text: String = str(e.protocol)
-				var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
-				var label_pos: Vector2 = apex + Vector2(-text_w / 2.0, -12.0)
-				draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), label_bg)
-				draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), Color(edge_color.r, edge_color.g, edge_color.b, 0.5), false, 1.0)
-				draw_string(label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.85, 0.88, 0.95, 0.95))
+				# Anti-colisión: omitir etiqueta de protocolo si el punto medio está a menos de 48px de cualquier nodo
+				var too_close := false
+				for np in node_positions.values():
+					if (np as Vector2).distance_to(apex) < 48.0:
+						too_close = true
+						break
+				if not too_close:
+					var label_bg: Color = BrandClass.PANEL_SOLID
+					var label_text: String = str(e.protocol)
+					var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x
+					var label_pos: Vector2 = apex + Vector2(-text_w / 2.0, -12.0)
+					draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), label_bg)
+					draw_rect(Rect2(label_pos.x - 4, label_pos.y - 12, text_w + 8, 16), Color(edge_color.r, edge_color.g, edge_color.b, 0.5), false, 1.0)
+					draw_string(label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.85, 0.88, 0.95, 0.95))
 
 
 ## Polígono regular centrado en `centro` (identidad visual de nodos, E2).
@@ -699,7 +832,8 @@ func draw_nodes(
 	quarantined_nodes: Dictionary = {},
 	quarantine_mode_active: bool = false,
 	enemy_start_node: StringName = &"",
-	enemy_target_node: StringName = &""
+	enemy_target_node: StringName = &"",
+	is_secret_sector: bool = false
 ) -> void:
 	# Identidad por tipo (E2): forma geométrica según NodeType.
 	# INTERNET=doble anillo · FIREWALL=triángulo · ROUTER=círculo ·
@@ -854,6 +988,53 @@ func draw_nodes(
 		var label_text: String = str(nid_str)
 		if node_res != null and String(node_res.display_name) != "":
 			label_text = node_res.display_name
+
+		# Sector 0 Triad Daemon branch accenting
+		if is_secret_sector:
+			var s_nid := String(nid_str)
+			if ["NexusA", "HexNode_4", "VoidTrap"].has(s_nid):
+				border_color = Color("#bf5af2")
+			elif ["NexusB", "HexNode_5", "GenesisAntechamber"].has(s_nid):
+				border_color = Color("#00d2ff")
+			elif ["HexNode_1", "HexNode_2", "HexNode_3", "RootBastion"].has(s_nid):
+				border_color = Color("#39ff88")
+
+		if nid_str == selected_neighbor and not game_over:
+			var sel_pulse: float = 0.6 + sin(Time.get_ticks_msec() * 0.006) * 0.3
+			# Dual-ring tactical cyber reticle
+			draw_circle(pos, radius + 7.0, Color(0.0, 0.95, 1.0, sel_pulse * 0.8), false, 2.5)
+			draw_circle(pos, radius + 3.5, Color(1.0, 0.85, 0.2, sel_pulse * 0.5), false, 1.5)
+			# 4 corner framing brackets
+			var b_offset: float = radius + 9.0
+			var b_arm: float = 6.0
+			var bracket_color: Color = Color(0.0, 0.95, 1.0, clampf(sel_pulse * 0.9, 0.0, 1.0))
+			for sx in [-1.0, 1.0]:
+				for sy in [-1.0, 1.0]:
+					var corner: Vector2 = pos + Vector2(sx * b_offset, sy * b_offset)
+					draw_line(corner, corner + Vector2(-sx * b_arm, 0.0), bracket_color, 1.5)
+					draw_line(corner, corner + Vector2(0.0, -sy * b_arm), bracket_color, 1.5)
+
+			# Merge cost delta cleanly into unified neighbor top label pill (Artboard 03)
+			var transit_cost: float = 0.0
+			if graph != null and graph.edges != null:
+				for ed in graph.edges:
+					if ed != null and ((ed.from_id == player_pos and ed.to_id == selected_neighbor) or (ed.to_id == player_pos and ed.from_id == selected_neighbor)):
+						transit_cost = ed.transit_cost
+						break
+			if transit_cost > 0.0:
+				var base_name: String = node_res.display_name if (node_res != null and String(node_res.display_name) != "") else str(nid_str)
+				label_text = "%s · Δ %.1f" % [base_name, transit_cost]
+				border_color = BrandClass.ACCENT
+
+		# Sector 0 Climax Boss Node: Genesis Root Core (counter-rotating octagons)
+		if is_secret_sector and (nid_str == &"GenesisCore" or nid_str == "GenesisCore"):
+			var time_sec: float = Time.get_ticks_msec() * 0.001
+			var poly_outer := _poligono(pos, 38.0, 8, time_sec * 0.35)
+			var poly_inner := _poligono(pos, 26.0, 8, -time_sec * 0.50)
+			draw_polyline(poly_outer, Color(1.0, 0.16, 0.42, 0.9), 2.2)
+			draw_polyline(poly_inner, Color(1.0, 0.78, 0.34, 0.85), 1.8)
+			draw_circle(pos, 16.0, Color(1.0, 0.16, 0.42, 0.45))
+
 		var text_w: float = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 		var label_x: float = pos.x - text_w / 2.0
 		var label_y: float = pos.y - radius - 8.0
@@ -1004,7 +1185,8 @@ func draw_node_info_panel(
 	selected_neighbor: StringName,
 	player_pos: StringName,
 	graph: NetworkGraphResource,
-	node_cache: Dictionary
+	node_cache: Dictionary,
+	is_secret: bool = false
 ) -> void:
 	# P5/tarea 3: datos en lugar de callable — el cache {id: NodeResource}
 	# poblado en GameState.load_graph() reemplaza a find_node_res_func.
@@ -1012,42 +1194,65 @@ func draw_node_info_panel(
 	if node_res == null:
 		return
 
-	var panel_w: float = 200.0
-	var panel_h: float = 120.0
-	var panel_x: float = vp_size.x - panel_w - 12.0
-	var panel_y: float = 56.0
+	var panel_w: float = 232.0
+	var panel_h: float = 148.0
+	var panel_x: float = vp_size.x - 245.0
+	var panel_y: float = 82.0
 	var panel_rect: Rect2 = Rect2(panel_x, panel_y, panel_w, panel_h)
 
-	draw_rect(panel_rect, Color(0.03, 0.03, 0.07, 0.95))
-	draw_rect(panel_rect, Color(0.0, 1.0, 0.83, 0.6), false, 1.5)
+	draw_rect(panel_rect, Color(0.04, 0.05, 0.09, 0.94))
+	draw_rect(panel_rect, BrandClass.PANEL_BORDER, false, 1.0)
+	draw_line(Vector2(panel_x, panel_y), Vector2(panel_x + panel_w, panel_y), BrandClass.SUCCESS, 2.0)
 
 	var px: float = panel_x + 12.0
-	var py: float = panel_y + 20.0
-	var line_h: float = 18.0
+	var py: float = panel_y + 18.0
+	var line_h: float = 17.0
 
-	draw_string(Vector2(px, py), str(selected_neighbor), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BrandClass.ACCENT)
-	py += line_h + 4.0
+	var display_title: String = resolve_node_display_name(selected_neighbor, node_cache)
+	draw_string(Vector2(px, py), display_title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.SUCCESS)
+
+	var id_tag: String = "#%s" % str(selected_neighbor)
+	var tag_sz := font.get_string_size(id_tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4).x
+	draw_string(Vector2(panel_x + panel_w - tag_sz - 12.0, py), id_tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+	py += line_h + 2.0
 
 	var meta: Dictionary = node_res.metadata
 	var edge_cost: float = 0.0
-	for e in graph.edges:
-		if e != null and e.from_id == player_pos and e.to_id == selected_neighbor:
-			edge_cost = e.transit_cost
-			break
+	var deg: int = 0
+	if graph != null and graph.edges != null:
+		for e in graph.edges:
+			if e != null:
+				if (e.from_id == player_pos and e.to_id == selected_neighbor) or (e.to_id == player_pos and e.from_id == selected_neighbor):
+					edge_cost = e.transit_cost
+				if e.from_id == selected_neighbor or e.to_id == selected_neighbor:
+					deg += 1
 
-	draw_string(Vector2(px, py), "Coste: ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-	draw_string(Vector2(px + 52, py), "%.1f" % edge_cost, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color.WHITE)
+	# Coste de Salto
+	draw_string(Vector2(px, py), "Coste de Salto:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	draw_string(Vector2(px + 120, py), "%.1f" % edge_cost, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color.WHITE)
 	py += line_h
 
+	# Centralidad deg(v)
+	draw_string(Vector2(px, py), "Centralidad deg(v):", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	draw_string(Vector2(px + 140, py), "%d" % deg, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.ACCENT)
+	py += line_h
+
+	# Latencia BGP simulada
+	var latency: int = 8 + (deg * 4) % 15
+	draw_string(Vector2(px, py), "Latencia BGP:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	draw_string(Vector2(px + 120, py), "%d ms" % latency, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.7, 0.85, 1.0))
+	py += line_h
+
+	# Alerta IDS
 	var detect: float = meta.get("detection_chance", 0.0)
 	var det_label: String = "%.0f%%" % (detect * 100.0)
 	var det_color: Color = Color(0.0, 1.0, 0.5) if detect <= 0.0 else (Color(1.0, 0.8, 0.0) if detect < 0.3 else BrandClass.DANGER)
-	draw_string(Vector2(px, py), "Alerta: ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-	draw_string(Vector2(px + 50, py), det_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, det_color)
+	draw_string(Vector2(px, py), "Alerta IDS:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	draw_string(Vector2(px + 120, py), det_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, det_color)
 	py += line_h
 
 	if meta.has("label"):
-		draw_string(Vector2(px, py), str(meta["label"]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.6, 0.65, 0.75))
+		draw_string(Vector2(px, py), str(meta["label"]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.6, 0.65, 0.75))
 		py += line_h
 
 	if meta.get("has_firewall", false):
@@ -1059,6 +1264,27 @@ func draw_node_info_panel(
 		draw_rect(Rect2(px - 2, py - 10, 100, 14), Color(0.8, 0.3, 0.0, 0.3))
 		draw_string(Vector2(px, py), "SPAWN SEGURIDAD", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(1.0, 0.5, 0.0))
 		py += line_h
+
+	# En Sector 0: segunda tarjeta compacta con la TRÍADA GENESIS (Artboard 03)
+	if is_secret:
+		var triad_y: float = panel_y + panel_h + 10.0
+		var triad_h: float = 84.0
+		var triad_rect := Rect2(panel_x, triad_y, panel_w, triad_h)
+		draw_rect(triad_rect, Color(0.04, 0.04, 0.08, 0.95))
+		draw_rect(triad_rect, BrandClass.PANEL_BORDER, false, 1.0)
+		draw_line(Vector2(panel_x, triad_y), Vector2(panel_x + panel_w, triad_y), BrandClass.WORLD_SECRET, 2.0)
+
+		var ty: float = triad_y + 16.0
+		draw_string(Vector2(px, ty), "TRÍADA GENESIS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.WORLD_SECRET)
+		ty += 18.0
+		draw_string(Vector2(px, ty), "● DAEMON: EXFIL", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, Color("#bf5af2"))
+		draw_string(Vector2(panel_x + panel_w - 70.0, ty), "ACTIVO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+		ty += 16.0
+		draw_string(Vector2(px, ty), "● DAEMON: FUZZ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, Color("#39ff88"))
+		draw_string(Vector2(panel_x + panel_w - 70.0, ty), "PIVOT", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+		ty += 16.0
+		draw_string(Vector2(px, ty), "● DAEMON: CORDON", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, Color("#00d2ff"))
+		draw_string(Vector2(panel_x + panel_w - 70.0, ty), "ARMADO", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
 
 
 func draw_tutorial_highlights(tutorial_player, node_positions: Dictionary, node_radius: float, player_pos: StringName = &"") -> void:
@@ -1236,22 +1462,8 @@ func draw_tactical_action_dock(d: Dictionary) -> void:
 
 	# 4. Modo Defensor
 	elif d.get("defender_mode", false):
-		var d_text := "[Click arista] Bloquear  [2] Firewall  [3] Cuarentena  [WASD] Cámara"
+		var d_text := "[~] CLI  [1..3] Herramientas  [WASD/Drag] Cámara"
 		draw_string(Vector2(16, bar_y + 30.0), d_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
-
-	# Estado (centro-derecha)
-	var mensaje_estado: String = d.get("mensaje_estado", "")
-	if mensaje_estado != "":
-		var game_won: bool = d.get("game_won", false)
-		var game_over: bool = d.get("game_over", false)
-		var color_estado: Color = Color(0.0, 1.0, 0.5) if game_won else (BrandClass.DANGER if game_over else BrandClass.ACCENT)
-		var texto_estado: String = mensaje_estado
-		var tw: float = font.get_string_size(texto_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
-		var state_x: float = vp_size.x - tw - 260.0
-		if state_x > 250.0:
-			draw_rect(Rect2(state_x - 6, bar_y + 8, tw + 12, bar_h - 16), BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.85))
-			draw_rect(Rect2(state_x - 6, bar_y + 8, tw + 12, bar_h - 16), color_estado, false, 1.0)
-			draw_string(Vector2(state_x, bar_y + 30.0), texto_estado, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color_estado)
 
 
 func _draw_dock_button(rect: Rect2, text: String, color: Color, active: bool = false) -> void:
@@ -1303,31 +1515,10 @@ func draw_predictive_hover_preview(d: Dictionary) -> void:
 	if d.get("game_over", false):
 		return
 
-	# Modo Atacante: Preview sobre el vecino seleccionado
-	if not d.get("defender_mode", false) and d.get("selected_neighbor", &"") != &"":
-		var nid: StringName = d.selected_neighbor
-		var npos: Vector2 = d.node_positions.get(nid, Vector2.ZERO) as Vector2
-		if npos != Vector2.ZERO:
-			var cost: float = 0.0
-			for e in d.graph.edges:
-				if e != null and e.from_id == d.player_pos and e.to_id == nid:
-					cost = e.transit_cost
-					break
-			var preview_text := "Δ COSTE: %.1f" % cost
-			var pts: int = d.get("movement_points", 0)
-			if pts > 0:
-				var rem := maxi(0, pts - int(cost))
-				preview_text += " | PUNTOS: %d → %d" % [pts, rem]
-
-			var badge_w := font.get_string_size(preview_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 16.0
-			var badge_h := 22.0
-			var badge_rect := Rect2(npos.x - badge_w / 2.0, npos.y - d.node_radius - 28.0, badge_w, badge_h)
-			draw_rect(badge_rect, Color(0.02, 0.06, 0.12, 0.92))
-			draw_rect(badge_rect, Color(0.0, 1.0, 0.83, 0.8), false, 1.2)
-			draw_string(Vector2(badge_rect.position.x + 8.0, badge_rect.position.y + 15.0), preview_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.ACCENT)
-
+	# Modo Atacante: el coste ya está integrado en la píldora superior del nodo vecino
+	# (Celda Alfa · Δ 1.0) para garantizar cero superposición.
 	# Modo Defensor: Preview sobre arista hovered
-	elif d.get("defender_mode", false):
+	if d.get("defender_mode", false):
 		var h_edge: String = d.get("brain_hovered_edge", "")
 		if h_edge != "":
 			var parts := h_edge.split("→")

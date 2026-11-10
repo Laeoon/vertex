@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VERTEX HUD — 02 Floating Pill & Radial Node Context</title>
+<style>
+  :root {
+    --bg: #0d0e16;
+    --bg-cyber: #081018;
+    --panel: rgba(22, 24, 38, 0.88);
+    --panel-solid: rgba(16, 18, 31, 0.95);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1356px;
+    height: 672px;
+    background: var(--bg-cyber);
+    color: var(--text);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    position: relative;
+    background-image:
+      linear-gradient(to right, rgba(42, 46, 74, 0.22) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(42, 46, 74, 0.22) 1px, transparent 1px);
+    background-size: 64px 64px;
+    user-select: none;
+  }
+
+  /* Floating Top-Left Mission & Telemetry Pill */
+  header.floating-telemetry {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    height: 46px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .title-block { font-size: 14px; font-weight: 700; color: var(--accent); }
+  .chip { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .chip span { color: var(--text-dim); }
+
+  /* Floating Top-Right Objective & Inspector */
+  aside.floating-objective {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+  }
+
+  /* Centered MacOS-style Floating Action Dock at Bottom */
+  footer.floating-dock {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 54px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .dock-btn {
+    height: 38px;
+    padding: 0 14px;
+    background: rgba(22, 24, 38, 0.9);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .dock-btn.active {
+    background: rgba(0, 229, 255, 0.16);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .divider { width: 1px; height: 28px; background: var(--panel-border); margin: 0 4px; }
+
+  /* Direct Radial/Contextual Ring around Tapped Node */
+  .radial-menu {
+    position: absolute;
+    left: 395px;
+    top: 155px;
+    width: 220px;
+    height: 150px;
+    pointer-events: none;
+  }
+  .radial-pill {
+    position: absolute;
+    pointer-events: auto;
+    background: var(--panel-solid);
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .radial-pill.amber {
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+</style>
+</head>
+<body>
+
+  <header class="floating-telemetry">
+    <div class="title-block">BLUE TEAM // DEFENSA PERIMETRAL</div>
+    <div class="chip"><span>TURNO:</span> <strong>0</strong></div>
+    <div class="chip"><span>BLOQUEOS:</span> <strong style="color:var(--success);">● ● (2)</strong></div>
+    <div class="chip"><span>EDR TRACE:</span> <strong style="color:var(--accent);">35%</strong></div>
+  </header>
+
+  <aside class="floating-objective">
+    <div><span style="color:var(--text-dim);">INTRUSO:</span> <strong style="color:var(--warning);">Internet</strong></div>
+    <div><span style="color:var(--text-dim);">PROTEGER:</span> <strong style="color:var(--danger);">DataCenter</strong></div>
+  </aside>
+
+  <svg width="1356" height="672" viewBox="0 0 1356 672" aria-label="Grafo con menú radial">
+    <line x1="150" y1="330" x2="310" y2="210" stroke="#ffc857" stroke-width="3.5" />
+    <line x1="310" y1="210" x2="500" y2="210" stroke="#ffc857" stroke-width="3.5" />
+    <line x1="500" y1="210" x2="720" y2="330" stroke="#ffc857" stroke-width="3.5" />
+    <line x1="150" y1="330" x2="310" y2="470" stroke="#2a2e4a" stroke-width="2" />
+    <line x1="310" y1="470" x2="720" y2="330" stroke="#2a2e4a" stroke-width="2" />
+
+    <!-- Attacker -->
+    <g transform="translate(150, 330)">
+      <circle r="28" fill="rgba(255,46,136,0.18)" stroke="#00e5ff" stroke-width="2"/>
+      <polygon points="0,-14 14,12 -14,12" fill="none" stroke="#00e5ff" stroke-width="2"/>
+      <text x="0" y="-36" fill="#eaecf5" font-size="12" font-weight="700" text-anchor="middle">Internet</text>
+      <text x="0" y="44" fill="#ff4757" font-size="10" font-weight="700" text-anchor="middle">ATACANTE</text>
+    </g>
+
+    <!-- Selected Node with Contextual Radial Menu (DMZ) -->
+    <g transform="translate(500, 210)">
+      <circle r="38" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <circle r="26" fill="#161826" stroke="#00e5ff" stroke-width="2.5"/>
+      <text x="0" y="4" fill="#eaecf5" font-size="12" font-weight="700" text-anchor="middle">DMZ</text>
+      <text x="0" y="-45" fill="#00e5ff" font-size="11" font-weight="700" text-anchor="middle">NODO SELECCIONADO (Coste 1.0 · Alerta 0%)</text>
+    </g>
+
+    <!-- Core Target -->
+    <g transform="translate(720, 330)">
+      <circle r="28" fill="#ff4757" stroke="#eaecf5" stroke-width="2"/>
+      <text x="0" y="-38" fill="#ff4757" font-size="12" font-weight="700" text-anchor="middle">Data Center</text>
+      <text x="0" y="44" fill="#00e5ff" font-size="10" font-weight="700" text-anchor="middle">NÚCLEO</text>
+    </g>
+  </svg>
+
+  <!-- Contextual Node Action Popup directly around DMZ -->
+  <div class="radial-menu">
+    <button class="radial-pill" style="left:-75px; top:48px;">[2] 🛡️ FIREWALL</button>
+    <button class="radial-pill amber" style="right:-95px; top:48px;">[3] ☣ CUARENTENA</button>
+  </div>
+
+  <!-- Single Centered Floating Dock -->
+  <footer class="floating-dock">
+    <button class="dock-btn active">[1] SEGMENTAR ARISTA</button>
+    <button class="dock-btn">[2] FIREWALL</button>
+    <button class="dock-btn">[3] CUARENTENA</button>
+    <button class="dock-btn">[4] RADAR</button>
+    <div class="divider"></div>
+    <button class="dock-btn">[~] CLI</button>
+    <button class="dock-btn">[⟲]</button>
+    <button class="dock-btn">[-]</button>
+    <button class="dock-btn">[+]</button>
+    <button class="dock-btn" style="color:var(--warning);border-color:var(--warning);">[⏸]</button>
+  </footer>
+
+</body>
+</html>

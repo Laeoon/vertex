@@ -1,4 +1,6 @@
 class_name InputHandler extends Node
+
+const GameRendererClass = preload("res://juego/ataque/game_renderer.gd")
 ## Procesa todo el input del juego y emite señales.
 ## Reemplaza el _input() inline en juego_ataque.gd.
 ##
@@ -585,31 +587,43 @@ func _handle_hud_click(pos: Vector2, vp_size: Vector2) -> bool:
 				_defender_context_node = &""
 				_sync_defender_context()
 
-		# Pills superiores del HUD
+		# Pills superiores del HUD en modo defensor
 		if pos.y <= 48.0:
-			if pos.x >= 195.0 and pos.x <= 335.0:
-				quarantine_mode = false
-				firewall_mode = false
-				defender_toggle_quarantine.emit()
-				_mensaje_temp("Modo Aristas activo [1]: Haz clic en las líneas para bloquear.")
-				return true
-			elif pos.x >= 340.0 and pos.x <= 455.0:
-				quarantine_mode = false
-				defender_toggle_firewall.emit()
-				return true
-			elif pos.x >= 460.0 and pos.x <= 595.0:
-				firewall_mode = false
-				quarantine_mode = not quarantine_mode
-				defender_toggle_quarantine.emit()
-				return true
-			elif pos.x >= 600.0 and pos.x <= 710.0:
-				toggle_optimal_route.emit()
-				return true
-			elif pos.x >= 715.0 and pos.x <= 840.0:
-				if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
-					game._terminal_overlay.toggle()
-					game.queue_redraw()
-				return true
+			var p_fnt: Font = game.font if (game != null and "font" in game) else null
+			var p_fsz: int = game.font_size if (game != null and "font_size" in game) else 14
+			var is_fog: bool = false
+			var is_telem: bool = false
+			if game != null and "_defender_brain" in game and game._defender_brain != null:
+				is_fog = game._defender_brain.get("fog_of_war", false)
+				is_telem = game._defender_brain.get("telemetry_intercepted", false)
+			var pill_rects := GameRendererClass.get_defender_pill_rects(vp_size, p_fnt, p_fsz, is_fog, is_telem)
+			for p in pill_rects:
+				var r: Rect2 = p["rect"]
+				if r.grow(4.0).has_point(pos):
+					match p["id"]:
+						"edges":
+							quarantine_mode = false
+							firewall_mode = false
+							defender_toggle_quarantine.emit()
+							_mensaje_temp("Modo Aristas activo [1]: Haz clic en las líneas para bloquear.")
+							return true
+						"firewall":
+							quarantine_mode = false
+							defender_toggle_firewall.emit()
+							return true
+						"quarantine":
+							firewall_mode = false
+							quarantine_mode = not quarantine_mode
+							defender_toggle_quarantine.emit()
+							return true
+						"radar":
+							toggle_optimal_route.emit()
+							return true
+						"terminal":
+							if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
+								game._terminal_overlay.toggle()
+								game.queue_redraw()
+							return true
 
 	return false
 

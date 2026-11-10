@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "comments": [
+    {
+      "id": "aefu99k8",
+      "file": "01-unified-tactical-dock.html",
+      "selector": "#canvas-area > svg",
+      "excerpt": "HTTPS INTERNAL DMZ YOU WebServer Δ COSTE: 1.0 → [MOVER] Mail Server App Server DB Server Admin Panel Core",
+      "comment": "falta el panel de los perks",
+      "createdAt": "2026-11-09T22:44:33.956Z",
+      "status": "resolved",
+      "sentAt": "2026-11-09T22:44:33.976Z",
+      "resolvedAt": "2026-11-09T22:49:11.894Z"
+    },
+    {
+      "id": "xaplwwna",
+      "file": "01-unified-tactical-dock.html",
+      "selector": "#canvas-area > svg",
+      "excerpt": "HTTPS INTERNAL DMZ YOU WebServer Δ COSTE: 1.0 → [MOVER] Mail Server App Server DB Server Admin Panel Core",
+      "comment": "falta el panel de firewall, cuarentena y bloqueo",
+      "createdAt": "2026-11-09T22:45:04.167Z",
+      "status": "resolved",
+      "sentAt": "2026-11-09T22:45:04.198Z",
+      "resolvedAt": "2026-11-09T22:49:11.894Z"
+    }
+  ]
+}
