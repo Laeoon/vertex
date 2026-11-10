@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "chosen": "01-unified-tactical-dock.html",
+  "chosen": "07-level-select-3d-spine-tunnel.html",
   "handoffs": {
     "01-unified-tactical-dock.html": {
       "status": "implemented",
@@ -19,6 +19,14 @@
       "implementedAt": "2026-11-10T00:02:33.451Z",
       "feature": "odd/tasks/vertex-1-0-overhaul.md",
       "note": "Implementado Artboard 02 en modo Cybersecurity (islas flotantes + dock flotante sin colisiones + menú contextual en nodo)."
+    },
+    "07-level-select-3d-spine-tunnel.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-10T01:10:51.459Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-10T01:10:51.459Z",
+      "note": "Implementado Artboard 07 (3D Spine Tunnel + Audio Wave 3-pass con bass reactivity + Consola Inferior de 4 columnas + MGS Codec con malla 3D de Kain y Auto-Play 1ª vez) en level_select_screen.gd y cinematic_overlay.gd. 130/130 tests y 48/48 suites en verde."
     }
   }
 }

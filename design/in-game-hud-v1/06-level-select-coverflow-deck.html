@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VERTEX — 06 Selector 2.5D Coverflow Carousel & Full-Canvas Wave</title>
+<style>
+  :root {
+    --bg-heist: #120918;
+    --panel: rgba(22, 24, 38, 0.88);
+    --panel-solid: rgba(16, 18, 31, 0.95);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --world-heist: #bf5af2;
+    --world-hacker: #39ff88;
+    --world-cyber: #00d2ff;
+    --world-secret: #ff2a6d;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1356px;
+    height: 672px;
+    background: var(--bg-heist);
+    color: var(--text);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    position: relative;
+  }
+
+  /* 1. MINIMAL FLOATING TOP BAR */
+  header.top-nav {
+    height: 56px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 20;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: rgba(16, 18, 31, 0.75);
+  }
+  .left-group { display: flex; align-items: center; gap: 16px; }
+  .btn-back {
+    height: 34px;
+    padding: 0 14px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .mode-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .mode-name { font-size: 18px; font-weight: 700; color: var(--world-heist); letter-spacing: 1px; }
+  .mode-op { font-size: 11px; color: var(--text-dim); }
+
+  /* Center Act Switcher */
+  .act-pill-bar {
+    display: flex;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 3px;
+    gap: 4px;
+  }
+  .act-btn {
+    padding: 5px 18px;
+    border-radius: 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .act-btn.active {
+    background: var(--world-heist);
+    color: #0d0e16;
+  }
+
+  /* Right World Switcher (for testing) */
+  .theme-pills { display: flex; gap: 6px; }
+  .tp {
+    padding: 5px 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .tp.active { border-color: currentColor; color: var(--text); }
+
+  /* 2. FULL-SCREEN 2.5D COVERFLOW STAGE (No boxy right sidebar cutting the screen!) */
+  main.coverflow-stage {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1100px;
+    overflow: hidden;
+  }
+
+  /* Full-Width Background Audio Spectrum Waveform across the entire horizon */
+  svg.bg-wave {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* 2.5D Carousel Track */
+  .carousel-track {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    width: 100%;
+    padding: 0 40px;
+  }
+
+  /* Side Level Cards (Receding in 2.5D Depth) */
+  .lvl-card {
+    width: 195px;
+    height: 290px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    opacity: 0.68;
+    transform: scale(0.88);
+    transition: all 0.25s ease;
+  }
+  .lvl-card.far {
+    width: 165px;
+    height: 250px;
+    opacity: 0.42;
+    transform: scale(0.78);
+  }
+  .lvl-card:hover {
+    opacity: 0.92;
+    border-color: var(--accent);
+  }
+  .card-num { font-size: 11px; color: var(--text-dim); font-weight: 700; }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; }
+  .card-mini-graph {
+    height: 110px;
+    background: rgba(13, 14, 22, 0.8);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  /* CENTER HERO CARD (Selected Mission — Big, Bold, Mini-Map + Lore + Deploy all in one centerpiece!) */
+  .hero-card {
+    width: 470px;
+    height: 430px;
+    background: var(--panel-solid);
+    border: 2px solid var(--world-heist);
+    border-radius: 10px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 15;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.75);
+  }
+  .hero-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .hero-tag {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--world-heist);
+    letter-spacing: 0.8px;
+  }
+  .hero-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .hero-stars {
+    font-size: 18px;
+    color: var(--warning);
+    letter-spacing: 3px;
+  }
+
+  /* Hero Interactive Topology Preview */
+  .hero-map {
+    height: 155px;
+    background: rgba(10, 11, 18, 0.95);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-overlay-chips {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .map-chip {
+    background: rgba(16, 18, 31, 0.9);
+    border: 1px solid var(--panel-border);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  /* Hero Operator Briefing */
+  .hero-lore {
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 3px solid var(--world-heist);
+    padding: 10px 12px;
+    border-radius: 0 4px 4px 0;
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  /* Hero Action Buttons */
+  .hero-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-Secondary {
+    height: 42px;
+    padding: 0 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    flex: 1;
+    height: 42px;
+    background: var(--world-heist);
+    border: none;
+    color: #0d0e16;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+
+  /* 3. BOTTOM PROGRESS RAIL */
+  footer.bottom-rail {
+    height: 44px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    background: rgba(16, 18, 31, 0.75);
+    z-index: 20;
+  }
+  .dots { display: flex; gap: 10px; align-items: center; }
+  .dot {
+    width: 28px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--panel-border);
+  }
+  .dot.active {
+    width: 48px;
+    background: var(--world-heist);
+  }
+</style>
+</head>
+<body>
+
+  <header class="top-nav">
+    <div class="left-group">
+      <button class="btn-back">◂ [ESC] MUNDOS</button>
+      <div class="mode-header">
+        <span class="mode-name" id="c-mode-name">HEIST</span>
+        <span class="mode-op" id="c-mode-op">// OPERADORA: VEX · VECTOR SHAMIR EXFIL</span>
+      </div>
+    </div>
+
+    <div class="act-pill-bar">
+      <button class="act-btn active" id="c-act1">ACTO I (N1–N5)</button>
+      <button class="act-btn" id="c-act2">ACTO II (N6–N10)</button>
+    </div>
+
+    <div class="theme-pills">
+      <button class="tp active" style="color:var(--world-heist);" onclick="setTheme('heist')">HEIST</button>
+      <button class="tp" style="color:var(--world-hacker);" onclick="setTheme('hacker')">HACKER</button>
+      <button class="tp" style="color:var(--world-cyber);" onclick="setTheme('cyber')">CYBER</button>
+      <button class="tp" style="color:var(--world-secret);" onclick="setTheme('secret')">SECTOR 0</button>
+    </div>
+  </header>
+
+  <main class="coverflow-stage">
+    <!-- Full-Screen Horizon Audio Wave (Unobstructed across the whole 1356px width!) -->
+    <svg class="bg-wave" viewBox="0 0 1356 572">
+      <!-- Perspective Floor Grid -->
+      <line x1="0" y1="470" x2="1356" y2="470" stroke="#2a2e4a" stroke-width="1" opacity="0.4"/>
+      <line x1="0" y1="520" x2="1356" y2="520" stroke="#2a2e4a" stroke-width="1" opacity="0.4"/>
+      <line x1="678" y1="286" x2="100" y2="572" stroke="#2a2e4a" stroke-width="1" opacity="0.25"/>
+      <line x1="678" y1="286" x2="400" y2="572" stroke="#2a2e4a" stroke-width="1" opacity="0.25"/>
+      <line x1="678" y1="286" x2="956" y2="572" stroke="#2a2e4a" stroke-width="1" opacity="0.25"/>
+      <line x1="678" y1="286" x2="1256" y2="572" stroke="#2a2e4a" stroke-width="1" opacity="0.25"/>
+
+      <!-- Symmetrical Audio Spectrum Wave across full screen -->
+      <path id="full-wave-1" d="M 0 286 Q 170 140 340 286 T 678 210 T 1016 286 T 1356 240" fill="none" stroke="#bf5af2" stroke-width="3" opacity="0.75"/>
+      <path id="full-wave-2" d="M 0 286 Q 170 430 340 286 T 678 360 T 1016 286 T 1356 330" fill="none" stroke="#bf5af2" stroke-width="1.5" opacity="0.35"/>
+      <!-- Spectrum Bars -->
+      <g id="full-bars" stroke="#bf5af2" stroke-width="4" opacity="0.35">
+        <line x1="90" y1="230" x2="90" y2="340"/>
+        <line x1="140" y1="195" x2="140" y2="375"/>
+        <line x1="190" y1="220" x2="190" y2="350"/>
+        <line x1="390" y1="205" x2="390" y2="365"/>
+        <line x1="430" y1="170" x2="430" y2="400"/>
+        <line x1="925" y1="175" x2="925" y2="395"/>
+        <line x1="965" y1="210" x2="965" y2="360"/>
+        <line x1="1165" y1="200" x2="1165" y2="370"/>
+        <line x1="1215" y1="235" x2="1215" y2="335"/>
+      </g>
+    </svg>
+
+    <!-- 2.5D Coverflow Card Deck -->
+    <div class="carousel-track">
+      <!-- Card N01 (Far Left) -->
+      <div class="lvl-card far">
+        <div>
+          <div class="card-num">MISIÓN 01</div>
+          <div class="card-title">Bóveda Alfa</div>
+        </div>
+        <div class="card-mini-graph">
+          <svg width="110" height="60" viewBox="0 0 110 60">
+            <line x1="15" y1="30" x2="55" y2="15" stroke="#bf5af2" stroke-width="1.5"/>
+            <line x1="55" y1="15" x2="95" y2="30" stroke="#bf5af2" stroke-width="1.5"/>
+            <circle cx="15" cy="30" r="4" fill="#00e5ff"/>
+            <circle cx="55" cy="15" r="4" fill="#bf5af2"/>
+            <circle cx="95" cy="30" r="4" fill="#ff4757"/>
+          </svg>
+        </div>
+        <div class="card-foot">
+          <span style="color:var(--warning);">★★★</span>
+          <span style="color:var(--success);font-size:10px;">COMPLETADO</span>
+        </div>
+      </div>
+
+      <!-- Card N02 (Near Left) -->
+      <div class="lvl-card">
+        <div>
+          <div class="card-num">MISIÓN 02</div>
+          <div class="card-title">La Ruta del Oro</div>
+        </div>
+        <div class="card-mini-graph">
+          <svg width="130" height="75" viewBox="0 0 130 75">
+            <line x1="15" y1="38" x2="55" y2="18" stroke="#bf5af2" stroke-width="1.5"/>
+            <line x1="15" y1="38" x2="55" y2="58" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="55" y1="18" x2="115" y2="38" stroke="#bf5af2" stroke-width="1.5"/>
+            <line x1="55" y1="58" x2="115" y2="38" stroke="#2a2e4a" stroke-width="1.5"/>
+            <circle cx="15" cy="38" r="4" fill="#00e5ff"/>
+            <circle cx="55" cy="18" r="4" fill="#bf5af2"/>
+            <circle cx="55" cy="58" r="4" fill="#2a2e4a"/>
+            <circle cx="115" cy="38" r="5" fill="#ff4757"/>
+          </svg>
+        </div>
+        <div class="card-foot">
+          <span style="color:var(--warning);">★★★</span>
+          <span style="color:var(--text-dim);font-size:10px;">RÉCORD: 4T</span>
+        </div>
+      </div>
+
+      <!-- CENTER HERO CARD (Misión 03 — Active Focus) -->
+      <div class="hero-card" id="hero-card">
+        <div class="hero-top">
+          <div>
+            <div class="hero-tag" id="h-tag">MISIÓN 03 // SHAMIR SHARD #3</div>
+            <div class="hero-name" id="h-name">Cámara Fría</div>
+          </div>
+          <div class="hero-stars">★★☆</div>
+        </div>
+
+        <div class="hero-map">
+          <svg width="100%" height="100%" viewBox="0 0 420 155">
+            <line x1="45" y1="78" x2="125" y2="35" stroke="#bf5af2" stroke-width="2"/>
+            <line x1="45" y1="78" x2="125" y2="120" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="125" y1="35" x2="215" y2="35" stroke="#bf5af2" stroke-width="2"/>
+            <line x1="125" y1="35" x2="215" y2="78" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="125" y1="120" x2="215" y2="78" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="215" y1="35" x2="305" y2="55" stroke="#bf5af2" stroke-width="2"/>
+            <line x1="215" y1="78" x2="305" y2="110" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="305" y1="55" x2="375" y2="78" stroke="#bf5af2" stroke-width="2.5"/>
+            <line x1="305" y1="110" x2="375" y2="78" stroke="#2a2e4a" stroke-width="1.5"/>
+            <circle cx="45" cy="78" r="7" fill="#00e5ff"/>
+            <circle cx="125" cy="35" r="6" fill="#bf5af2"/>
+            <circle cx="125" cy="120" r="5" fill="#2a2e4a"/>
+            <circle cx="215" cy="35" r="6" fill="#ffc857"/>
+            <circle cx="215" cy="78" r="5" fill="#2a2e4a"/>
+            <circle cx="305" cy="55" r="6" fill="#bf5af2"/>
+            <circle cx="305" cy="110" r="5" fill="#2a2e4a"/>
+            <circle cx="375" cy="78" r="8" fill="#ff4757"/>
+          </svg>
+          <div class="map-overlay-chips">
+            <span class="map-chip">11 NODOS · deg(G)=3.2</span>
+            <span class="map-chip">LATENCIA: 14 ms</span>
+            <span class="map-chip" style="color:var(--warning);">DIFICULTAD ///</span>
+          </div>
+        </div>
+
+        <div class="hero-lore" id="h-lore">
+          <strong style="color:var(--world-heist);" id="h-op">[VEX]:</strong> «El consorcio pide extraer el 3er archivo de esta bóveda criogénica. Pero el hash es un fragmento Shamir de 4096 bits. Trazá la ruta Dijkstra antes de que cierre el anillo.»
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn-Secondary">🎬 CODEC</button>
+          <button class="btn-primary" id="h-btn">▶ DESPLEGAR OPERACIÓN [ENTER]</button>
+        </div>
+      </div>
+
+      <!-- Card N04 (Near Right) -->
+      <div class="lvl-card">
+        <div>
+          <div class="card-num">MISIÓN 04</div>
+          <div class="card-title">Nexo Suizo</div>
+        </div>
+        <div class="card-mini-graph">
+          <svg width="130" height="75" viewBox="0 0 130 75">
+            <line x1="15" y1="38" x2="65" y2="18" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="15" y1="38" x2="65" y2="58" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="65" y1="18" x2="115" y2="38" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="65" y1="58" x2="115" y2="38" stroke="#2a2e4a" stroke-width="1.5"/>
+            <circle cx="15" cy="38" r="4" fill="#00e5ff"/>
+            <circle cx="65" cy="18" r="4" fill="#2a2e4a"/>
+            <circle cx="65" cy="58" r="4" fill="#2a2e4a"/>
+            <circle cx="115" cy="38" r="5" fill="#ff4757"/>
+          </svg>
+        </div>
+        <div class="card-foot">
+          <span style="color:var(--text-dim);">☆☆☆</span>
+          <span style="color:var(--accent);font-size:10px;">DISPONIBLE</span>
+        </div>
+      </div>
+
+      <!-- Card N05 (Far Right Boss) -->
+      <div class="lvl-card far" style="border-color:rgba(255,42,109,0.5);">
+        <div>
+          <div class="card-num" style="color:var(--world-secret);">MISIÓN 05 // BOSS</div>
+          <div class="card-title">La Bifurcación</div>
+        </div>
+        <div class="card-mini-graph">
+          <span style="font-size:20px;">🔒</span>
+        </div>
+        <div class="card-foot">
+          <span style="color:var(--text-dim);">☆☆☆</span>
+          <span style="color:var(--world-secret);font-size:10px;">CLÍMAX ACTO I</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bottom-rail">
+    <span>[◂ / ▸] o [SWIPE] Cambiar Misión  ·  [TAB] Acto I / II  ·  [ENTER / TAP] Jugar</span>
+    <div class="dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot active" id="active-dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <span>ESTRELLAS DEL MUNDO: <strong style="color:var(--warning);">8 / 15 ★</strong></span>
+  </footer>
+
+<script>
+  const themes = {
+    heist: { name: "HEIST", op: "// OPERADORA: VEX · VECTOR SHAMIR EXFIL", color: "#bf5af2", bg: "#120918", handle: "[VEX]:" },
+    hacker: { name: "HACKER", op: "// OPERADOR: N0X · VECTOR ZERO-DAY FUZZ", color: "#39ff88", bg: "#09120e", handle: "[N0X]:" },
+    cyber: { name: "CYBERSECURITY", op: "// COMANDANTE: AEGIS · VECTOR MIN-CUT CORDON", color: "#00d2ff", bg: "#081018", handle: "[AEGIS]:" },
+    secret: { name: "SECTOR 0", op: "// ARCHITECT-0: KAIN · PRECUELA ROOT GENESIS", color: "#ff2a6d", bg: "#14080e", handle: "[KAIN]:" }
+  };
+  function setTheme(k) {
+    const t = themes[k];
+    document.querySelectorAll('.tp').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.body.style.backgroundColor = t.bg;
+    document.getElementById('c-mode-name').textContent = t.name;
+    document.getElementById('c-mode-name').style.color = t.color;
+    document.getElementById('c-mode-op').textContent = t.op;
+    document.getElementById('c-act1').style.backgroundColor = t.color;
+    document.getElementById('hero-card').style.borderColor = t.color;
+    document.getElementById('h-tag').style.color = t.color;
+    document.getElementById('h-lore').style.borderLeftColor = t.color;
+    document.getElementById('h-op').style.color = t.color;
+    document.getElementById('h-op').textContent = t.handle;
+    document.getElementById('h-btn').style.backgroundColor = t.color;
+    document.getElementById('active-dot').style.backgroundColor = t.color;
+    document.getElementById('full-wave-1').setAttribute('stroke', t.color);
+    document.getElementById('full-wave-2').setAttribute('stroke', t.color);
+    document.getElementById('full-bars').setAttribute('stroke', t.color);
+  }
+</script>
+</body>
+</html>

@@ -15,7 +15,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 1,
 				"act": 1,
 				"operator": "VEX",
-				"briefing": "Acceso perimetral a la red de sucursales. Navega por caminos mínimos de Dijkstra evitando la contención.",
+				"cinematic_id": "act1_heist_intro",
+				"briefing": "Bypass perimetral a la red de bóvedas frías. Localizá y exfiltrá el primer fragmento criptográfico de Shamir (Shard Alpha) de la Tríada Genesis antes de que el daemon de contención bloquee los routers troncales.",
 			},
 			{
 				"path": "res://juego/heist/heist_n2.json",
@@ -23,7 +24,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 2,
 				"act": 1,
 				"operator": "VEX",
-				"briefing": "Canales de transferencia interbancaria. Sigue el flujo de capital hacia los servidores de compensación.",
+				"cinematic_id": "codec_heist_n2",
+				"briefing": "Canales troncales de transferencia interbancaria. Seguí las rutas de latencia mínima de Dijkstra y desviá las tablas BGP para exfiltrar el flujo de datos del consorcio financiero sin detonar las trampas del SOC.",
 			},
 			{
 				"path": "res://juego/heist/heist_n3.json",
@@ -31,7 +33,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 3,
 				"act": 1,
 				"operator": "VEX",
-				"briefing": "Subredes de apuestas en tiempo real. Utiliza desvíos lógicos y waypoints para eludir el rastreo de seguridad.",
+				"cinematic_id": "codec_heist_n3",
+				"briefing": "Subredes estocásticas de apuestas en alta frecuencia. Utilizá waypoints encubiertos para burlar la heurística de dispersión y sincronizá el segundo shard de Shamir antes del corte de enlaces.",
 			},
 			{
 				"path": "res://juego/heist/heist_n4.json",
@@ -39,7 +42,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 4,
 				"act": 1,
 				"operator": "VEX",
-				"briefing": "Caída de generadores auxiliares en el data center. La visibilidad disminuye y la latencia crítica aumenta.",
+				"cinematic_id": "codec_heist_n4",
+				"briefing": "Apagón masivo inducido en el centro de datos subterráneo. Navegá en memoria volátil bajo latencia crítica; el daemon de exfiltración debe recuperar la traza de Genesis antes de la purga total.",
 			},
 			{
 				"path": "res://juego/heist/heist_n5.json",
@@ -47,7 +51,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 5,
 				"act": 1,
 				"operator": "VEX",
-				"briefing": "Encrucijada troncal del sistema financiero. Una sola decisión errónea alertará a la seguridad federal.",
+				"cinematic_id": "codec_heist_n5",
+				"briefing": "Troncal intersectorial donde las subredes bancarias colisionan con la DMZ. Una sola decisión errónea alertará al Centinela; asegurá el vector de escape hacia el Sector 0.",
 			},
 		]
 	},
@@ -62,7 +67,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 2,
 				"act": 1,
 				"operator": "N0X",
-				"briefing": "Infiltración desde la DMZ exterior hacia los servidores internos de aplicaciones mediante bypass y escaneo.",
+				"cinematic_id": "act1_hacker_intro",
+				"briefing": "Infiltración inicial desde la DMZ exterior hacia los servidores internos de aplicaciones. Desplegá fuzzing Zero-Day y señuelos tácticos para mapear los nodos de autenticación de la Tríada Genesis.",
 			},
 			{
 				"path": "res://juego/hacker/hacker_n2.json",
@@ -70,7 +76,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 3,
 				"act": 1,
 				"operator": "N0X",
-				"briefing": "Escalada de credenciales a través de servidores web comprometidos y bases de datos intermedias.",
+				"cinematic_id": "codec_hacker_n2",
+				"briefing": "Desbordamiento de búfer en pasarelas intermedias. Escalá privilegios en servidores web comprometidos y abrí sockets encubiertos hacia la red interna corporativa.",
 			},
 			{
 				"path": "res://juego/hacker/hacker_n3.json",
@@ -78,7 +85,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 3,
 				"act": 1,
 				"operator": "N0X",
-				"briefing": "Instalación de sockets encubiertos en servidores de autenticación LDAP para resistir reinicios.",
+				"cinematic_id": "codec_hacker_n3",
+				"briefing": "Instalación de persistencia encubierta en controladores de acceso LDAP. Neutralizá las alertas del SIEM y decodificá los payloads fragmentados de la Tríada.",
 			},
 			{
 				"path": "res://juego/hacker/hacker_n4.json",
@@ -86,7 +94,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 4,
 				"act": 1,
 				"operator": "N0X",
-				"briefing": "Detección de honeypots corporativos mientras se despliegan señuelos propios para engañar al analista de seguridad.",
+				"cinematic_id": "codec_hacker_n4",
+				"briefing": "Mapeo de la infraestructura corporativa plagada de honeypots. Desplegá señuelos propios para engañar los sensores del analista y evadí el rastreo heurístico del Centinela.",
 			},
 			{
 				"path": "res://juego/hacker/hacker_n5.json",
@@ -94,7 +103,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 5,
 				"act": 1,
 				"operator": "N0X",
-				"briefing": "Asalto final al controlador de dominio y bóveda cuántica central del conglomerado corporativo.",
+				"cinematic_id": "codec_hacker_n5",
+				"briefing": "Asalto coordinado al controlador de dominio central. Comprometé la bóveda cuántica y extraé el shard nuclear de la Tríada Genesis antes del bloqueo por cuarentena.",
 			},
 		]
 	},
@@ -109,7 +119,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 1,
 				"act": 1,
 				"operator": "AEGIS",
-				"briefing": "Contención perimetral de paquetes hostiles entrantes desde la interfaz externa aplicando bloqueo en tiempo real.",
+				"cinematic_id": "act1_cyber_intro",
+				"briefing": "Bloqueo defensivo perimetral ante una intrusión multifocal masiva. Calculá el corte mínimo con Edmonds-Karp y aislá los enlaces externos para contener la propagación del malware.",
 			},
 			{
 				"path": "res://juego/cyber/cyber_n1.json",
@@ -117,7 +128,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 2,
 				"act": 1,
 				"operator": "AEGIS",
-				"briefing": "Microsegmentación y filtrado dinámico para mitigar el avance del atacante hacia la base de datos.",
+				"cinematic_id": "codec_cyber_n1",
+				"briefing": "Microsegmentación estricta y filtrado adaptativo en tiempo real. Mitigá el avance de los paquetes maliciosos hacia los servidores de bases de datos críticas de la Tríada.",
 			},
 			{
 				"path": "res://juego/cyber/cyber_n2.json",
@@ -125,7 +137,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 3,
 				"act": 1,
 				"operator": "AEGIS",
-				"briefing": "Detección temprana y aislamiento de nodos comprometidos en el segmento interno de servidores.",
+				"cinematic_id": "codec_cyber_n2",
+				"briefing": "Detección temprana de movimientos laterales hostiles en la subred de servidores. Aplicá cuarentena inmediata sobre hosts comprometidos antes de que alcancen el gateway interno.",
 			},
 			{
 				"path": "res://juego/cyber/cyber_n3.json",
@@ -133,7 +146,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 4,
 				"act": 1,
 				"operator": "AEGIS",
-				"briefing": "Operación defensiva bajo telemetría parcial. Despliega canarios, sondeos e intercepción para revelar rutas.",
+				"cinematic_id": "codec_cyber_n3",
+				"briefing": "Operación de respuesta a incidentes bajo visibilidad degradada. Desplegá sondas de telemetría y señuelos canario para revelar las rutas de ataque encubiertas del intruso.",
 			},
 			{
 				"path": "res://juego/cyber/cyber_n4.json",
@@ -141,7 +155,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 5,
 				"act": 1,
 				"operator": "AEGIS",
-				"briefing": "Validación continua de privilegios y cálculo de corte mínimo ante una intrusión multifocal masiva.",
+				"cinematic_id": "codec_cyber_n4",
+				"briefing": "Política estricta Zero Trust y reconfiguración dinámica de topología. Neutralizá la brecha terminal antes de que el exploit maestro alcance el núcleo del sistema.",
 			},
 		]
 	},
@@ -156,7 +171,8 @@ const WORLDS: Dictionary = {
 				"difficulty": 5,
 				"act": 1,
 				"operator": "ZERO",
-				"briefing": "Cámara profunda del kernel primigenio. Estructura de panal hiperconectada donde la IA predice cada movimiento.",
+				"cinematic_id": "prologue_root_genesis",
+				"briefing": "Cámara profunda del kernel primigenio. Estructura hiperconectada del Anillo 0 donde se gestó la purga del 99.4% del error humano mediante el protocolo autónomo BGP de Kain.",
 			},
 		]
 	},

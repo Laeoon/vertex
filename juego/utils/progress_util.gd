@@ -26,12 +26,18 @@ static func cargar_progreso() -> Dictionary:
 	var cfg := ConfigFile.new()
 	var err: int = cfg.load(get_progress_file_path())
 	if err != OK:
-		return {}
+		return {"seen_cinematics": {}}
 	var result: Dictionary = {}
 	for k in cfg.get_section_keys("estrellas"):
 		if k.ends_with("_mejor_coste"):
 			continue
 		result[k] = cfg.get_value("estrellas", k, 0)
+	var seen: Dictionary = {}
+	if cfg.has_section("seen_cinematics"):
+		for k in cfg.get_section_keys("seen_cinematics"):
+			if cfg.get_value("seen_cinematics", k, false):
+				seen[k] = true
+	result["seen_cinematics"] = seen
 	return result
 
 
@@ -124,3 +130,35 @@ static func get_world_lock_reason(world_id: String, progress: Dictionary) -> Str
 			if progress.get("tut_defensa_1", 0) <= 0 or progress.get("tut_defensa_2", 0) <= 0:
 				return "REQ: TUTORIAL DEFENSOR (MODULOS 1 Y 2)"
 	return ""
+
+
+## Comprueba si el jugador ya vio una cinemática o transmisión Codec.
+static func has_seen_cinematic(cin_id: String, progress_data: Dictionary = {}) -> bool:
+	if cin_id.is_empty():
+		return true
+	if not progress_data.is_empty():
+		if progress_data.has("seen_cinematics") and progress_data["seen_cinematics"] is Dictionary:
+			return bool(progress_data["seen_cinematics"].get(cin_id, false))
+		if progress_data.has(cin_id):
+			return bool(progress_data.get(cin_id, false))
+		return false
+	var cfg := ConfigFile.new()
+	if cfg.load(get_progress_file_path()) == OK:
+		return bool(cfg.get_value("seen_cinematics", cin_id, false))
+	return false
+
+
+## Marca una cinemática como vista (tanto en memoria como persistida en progress.cfg).
+static func mark_cinematic_seen(cin_id: String, progress_data: Dictionary = {}) -> void:
+	if cin_id.is_empty():
+		return
+	if not progress_data.is_empty():
+		if not progress_data.has("seen_cinematics") or not (progress_data["seen_cinematics"] is Dictionary):
+			progress_data["seen_cinematics"] = {}
+		progress_data["seen_cinematics"][cin_id] = true
+	var path := get_progress_file_path()
+	var cfg := ConfigFile.new()
+	cfg.load(path)
+	cfg.set_value("seen_cinematics", cin_id, true)
+	cfg.save(path)
+

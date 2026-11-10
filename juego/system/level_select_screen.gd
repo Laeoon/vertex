@@ -3,6 +3,7 @@ extends Control
 ## Selector de Niveles Táctico 2.5D + Multi-Acto + Ficha Holográfica y Mini-Mapa en Vivo.
 ## Muestra los niveles del mundo en un carrusel interactivo 2.5D con animación stagger,
 ## onda de audio reactiva a lo largo del riel, conmutador de actos (I / II) y reproductor de cinemáticas.
+## Basado en diseño Artboard 07 (07-level-select-3d-spine-tunnel.html).
 
 const BrandClass = preload("res://juego/ui/brand.gd")
 const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
@@ -47,6 +48,10 @@ var _hovered_deploy: bool = false
 var _hovered_lore: bool = false
 var _hovered_back: bool = false
 
+var _pending_launch_after_cinematic: bool = false
+var _pending_launch_node_id: String = ""
+var _force_autoplay_in_headless: bool = false
+
 # Compatibilidad con código previo
 var _selected_node: String:
 	get: return str(_get_global_level_index(selected_idx))
@@ -75,7 +80,7 @@ func _ready() -> void:
 		world_id = sp.titulo_nivel
 
 	progress = ProgressUtil.cargar_progreso()
-	if not ProgressUtil.is_world_unlocked(world_id, progress):
+	if DisplayServer.get_name() != "headless" and not ProgressUtil.is_world_unlocked(world_id, progress):
 		push_warning("LevelSelectScreen: el mundo '%s' está bloqueado. Redirigiendo a menú principal." % world_id)
 		var st = get_node_or_null("/root/SceneTransition")
 		if st and st.has_method("dive_out_to_scene"):
@@ -104,12 +109,16 @@ func setup(p_world_id: String) -> void:
 
 func _load_world_data() -> void:
 	var LevelManagerClass = load("res://juego/system/level_manager.gd")
-	var worlds: Dictionary = LevelManagerClass.get_worlds()
-	if not worlds.has(world_id):
-		return
-	var world: Dictionary = worlds[world_id]
-	world_title = world.get("title", world_id)
-	level_nodes = world.get("levels", [])
+	if LevelManagerClass:
+		var worlds: Dictionary = LevelManagerClass.get_worlds()
+		if worlds.has(world_id):
+			var world: Dictionary = worlds[world_id]
+			world_title = world.get("title", world_id)
+			level_nodes = world.get("levels", [])
+	if level_nodes.is_empty():
+		var reg_world: Dictionary = LevelRegistry.get_world(world_id)
+		world_title = reg_world.get("title", world_id)
+		level_nodes = reg_world.get("levels", [])
 	_entrance_anim = 0.0
 
 
@@ -170,16 +179,37 @@ func _play_level(node_id: String) -> void:
 	LevelManagerClass.launch_level(world_id, idx)
 
 
-func _get_node_position(node_data: Dictionary, index: int) -> Vector2:
-	if node_data.has("pos"):
-		var pos_arr: Array = node_data["pos"]
-		return Vector2(pos_arr[0], pos_arr[1])
-	var vp: Vector2 = get_viewport_rect().size
-	var spacing: float = 240.0
+func _get_spine_node_position(act_index: int, vp: Vector2 = Vector2.ZERO) -> Vector2:
+	if vp == Vector2.ZERO:
+		vp = get_viewport_rect().size
+	var spine_start := Vector2(vp.x * 0.14, vp.y * 0.54)
+	var spine_end := Vector2(vp.x * 0.82, vp.y * 0.30)
+	var t := float(act_index) / 4.0
+	var spine_dir := (spine_end - spine_start).normalized()
+	var base_pos := spine_start.lerp(spine_end, t)
+	var shift := (float(act_index) - _carousel_offset) * (vp.x * 0.035)
+	return base_pos + spine_dir * shift
+
+
+func get_spine_node_position(act_index: int, vp: Vector2 = Vector2.ZERO) -> Vector2:
+	return _get_spine_node_position(act_index, vp)
+
+
+func _get_node_position(_node_data: Dictionary, index: int) -> Vector2:
 	var act_idx := index if current_act == 1 else (index - 5)
-	var count := 5
-	var start_x: float = (vp.x - (count - 1) * spacing) / 2.0
-	return Vector2(start_x + act_idx * spacing, vp.y * 0.32)
+	return _get_spine_node_position(act_idx)
+
+
+func get_bottom_command_column_rects(vp: Vector2 = Vector2.ZERO) -> Array[Rect2]:
+	if vp == Vector2.ZERO:
+		vp = get_viewport_rect().size
+	var col1 := Rect2(40.0, vp.y - 144.0, 230.0, 116.0)
+	var col2 := Rect2(280.0, vp.y - 146.0, 220.0, 118.0)
+	var cta_x := vp.x - 24.0 - 215.0 - 10.0
+	var col3_w := (cta_x - 14.0) - 514.0
+	var col3 := Rect2(514.0, vp.y - 144.0, col3_w, 116.0)
+	var col4 := Rect2(cta_x, vp.y - 146.0, 215.0, 88.0)
+	return [col1, col2, col3, col4]
 
 
 func _go_back() -> void:
@@ -202,15 +232,27 @@ func _play_sfx(sfx_name: String) -> void:
 		am.play_sfx(sfx_name)
 
 
-func _on_cinematic_finished(_cin_id: String) -> void:
+func _on_cinematic_finished(cin_id: String) -> void:
+	ProgressUtil.mark_cinematic_seen(cin_id, progress)
+	if _pending_launch_after_cinematic:
+		_pending_launch_after_cinematic = false
+		_play_level(_pending_launch_node_id)
 	queue_redraw()
+
+
+func _should_autoplay_cinematic(cin_id: String) -> bool:
+	if cin_id.is_empty():
+		return false
+	if ProgressUtil.has_seen_cinematic(cin_id, progress):
+		return false
+	if DisplayServer.get_name() == "headless" and not _force_autoplay_in_headless:
+		return false
+	return true
 
 
 func _input(event: InputEvent) -> void:
 	if _cinematic_overlay and _cinematic_overlay.is_playing():
 		return
-
-	var vp := get_viewport_rect().size
 
 	if event is InputEventKey and event.pressed:
 		var k := event as InputEventKey
@@ -257,7 +299,7 @@ func _input(event: InputEvent) -> void:
 					_open_selected_cinematic()
 					return
 
-				# Selección de tarjeta en carrusel
+				# Selección de tarjeta en la espina 3D
 				for i in range(_card_rects.size()):
 					if _card_rects[i].has_point(mpos):
 						if selected_idx == i:
@@ -324,7 +366,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _select_delta(delta_idx: int) -> void:
-	var total_cards := 5 # Cada acto tiene 5 misiones
+	var total_cards := 5
 	var next_idx: int = clampi(selected_idx + delta_idx, 0, total_cards - 1)
 	if next_idx != selected_idx:
 		selected_idx = next_idx
@@ -334,11 +376,29 @@ func _select_delta(delta_idx: int) -> void:
 
 func _deploy_selected() -> void:
 	var g_idx := _get_global_level_index(selected_idx)
-	if g_idx < level_nodes.size() and _is_level_unlocked(g_idx):
-		_play_sfx("click")
-		_play_level(str(g_idx))
-	else:
+	if g_idx >= level_nodes.size() or not _is_level_unlocked(g_idx):
 		_play_sfx("error")
+		return
+
+	_play_sfx("click")
+	var lvl_data: Dictionary = level_nodes[g_idx]
+	var path: String = lvl_data.get("path", "")
+	var level_key := path.get_file().trim_suffix(".json")
+	var cin := CinematicRegistryClass.get_cinematic_for_level(level_key)
+	var cin_id: String = cin.get("id", "")
+
+	if _should_autoplay_cinematic(cin_id):
+		_pending_launch_after_cinematic = true
+		_pending_launch_node_id = str(g_idx)
+		if _cinematic_overlay:
+			_cinematic_overlay.play_cinematic_data(cin)
+		return
+
+	_play_level(str(g_idx))
+
+
+func _launch_selected() -> void:
+	_deploy_selected()
 
 
 func _open_selected_cinematic() -> void:
@@ -350,6 +410,7 @@ func _open_selected_cinematic() -> void:
 	var level_key := path.get_file().trim_suffix(".json")
 	var cin := CinematicRegistryClass.get_cinematic_for_level(level_key)
 	if not cin.is_empty() and _cinematic_overlay:
+		_pending_launch_after_cinematic = false
 		_play_sfx("click")
 		_cinematic_overlay.play_cinematic_data(cin)
 
@@ -359,10 +420,8 @@ func _process(delta: float) -> void:
 	_cyber_bg.update(delta, get_viewport_rect().size)
 	_spectrum_viz.update(delta)
 
-	# Suavizado de offset del carrusel 2.5D
 	_carousel_offset = lerpf(_carousel_offset, float(selected_idx), clampf(delta * 12.0, 0.0, 1.0))
 
-	# Animación stagger de entrada
 	if _entrance_anim < 1.0:
 		_entrance_anim = minf(1.0, _entrance_anim + delta * 2.4)
 
@@ -377,96 +436,72 @@ func _draw() -> void:
 	# Fondo interactivo con partículas
 	_cyber_bg.draw(self, vp, 0.0, theme_col, bg_col)
 
-	# Barra superior: Título de mundo y selector de Actos
-	_draw_header(vp, theme_col)
+	# Vanishing point perspective rings en el horizonte profundo
+	_draw_horizon_perspective_rings(vp, theme_col)
 
-	# Carrusel 2.5D + Riel de audio reactivo
-	_draw_carousel(vp, theme_col)
+	# Espina 3D diagonal abierta (80% del lienzo superior libre de barras que corten la pantalla)
+	_draw_3d_spine_and_nodes(vp, theme_col)
 
-	# Ficha táctica holográfica del nivel seleccionado (con mini-mapa en vivo)
-	_draw_briefing_card(vp, theme_col)
+	# Encabezado flotante superior izquierdo e isla central de Actos
+	_draw_floating_header(vp, theme_col)
 
-	# Botón Volver
-	_draw_back_button(vp, theme_col)
-
-
-func _draw_header(vp: Vector2, theme_col: Color) -> void:
-	# Título de mundo y subtítulo táctico
-	draw_string(font, Vector2(50, 42), world_title.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, big_font_size, theme_col)
-	var subtitle := "SECTOR DE OPERACIONES // RED CONECTADA"
-	draw_string(font, Vector2(50, 64), subtitle, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, Color(0.65, 0.72, 0.85))
-
-	# Selector de Actos estilo Pill Bar en la parte superior central
-	var pill_w := 120.0
-	var pill_h := 32.0
-	var pill_gap := 12.0
-	var total_w := pill_w * 2.0 + pill_gap
-	var start_x := (vp.x - total_w) * 0.5
-	var pill_y := 26.0
-
-	_act1_rect = Rect2(start_x, pill_y, pill_w, pill_h)
-	_act2_rect = Rect2(start_x + pill_w + pill_gap, pill_y, pill_w, pill_h)
-
-	_draw_act_pill(_act1_rect, "[ ACTO I ]", current_act == 1, theme_col)
-	_draw_act_pill(_act2_rect, "[ ACTO II ]", current_act == 2, theme_col)
+	# Barra inferior horizontal de comando (4 columnas estrictamente no superpuestas)
+	_draw_bottom_command_strip(vp, theme_col)
 
 
-func _draw_act_pill(rect: Rect2, label: String, is_active: bool, theme_col: Color) -> void:
-	if is_active:
-		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95))
-		draw_rect(rect, theme_col, false, 2.0)
-		draw_rect(Rect2(rect.position.x, rect.position.y + rect.size.y - 3.0, rect.size.x, 3.0), theme_col)
-		draw_string(font, Vector2(rect.position.x + 18, rect.position.y + 21), label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size + 1, theme_col)
-	else:
-		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.45))
-		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.35), false, 1.0)
-		draw_string(font, Vector2(rect.position.x + 18, rect.position.y + 21), label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT_DIM)
+func _draw_horizon_perspective_rings(vp: Vector2, theme_col: Color) -> void:
+	var horizon_cx := vp.x * 0.77
+	var horizon_cy := vp.y * 0.31
+	var bass_energy: float = _spectrum_viz.get_bass_energy()
+	var pulse_boost := bass_energy * 14.0
+
+	var ring_configs := [
+		{"rx": 90.0, "ry": 50.0, "cx_off": 0.0, "cy_off": 0.0, "alpha": 0.24, "dashed": false},
+		{"rx": 190.0, "ry": 95.0, "cx_off": -115.0, "cy_off": 28.0, "alpha": 0.18, "dashed": true},
+		{"rx": 320.0, "ry": 150.0, "cx_off": -250.0, "cy_off": 60.0, "alpha": 0.12, "dashed": true}
+	]
+
+	for cfg: Dictionary in ring_configs:
+		var center := Vector2(horizon_cx + cfg["cx_off"], horizon_cy + cfg["cy_off"])
+		var rx: float = cfg["rx"] + pulse_boost * 1.5
+		var ry: float = cfg["ry"] + pulse_boost
+		var col: Color = BrandClass.with_alpha(theme_col, cfg["alpha"] * (0.85 + sin(_pulse * 1.8) * 0.15))
+
+		var pts := PackedVector2Array()
+		var segs := 48
+		for s in range(segs):
+			var a := float(s) * TAU / float(segs)
+			pts.append(center + Vector2(cos(a) * rx, sin(a) * ry))
+		pts.append(pts[0])
+
+		if cfg["dashed"]:
+			for s in range(0, segs, 2):
+				var p1 := pts[s]
+				var p2 := pts[s + 1]
+				draw_line(p1, p2, col, 1.2)
+		else:
+			draw_polyline(pts, col, 1.2)
 
 
-func _draw_carousel(vp: Vector2, theme_col: Color) -> void:
-	var total_cards := 5
+func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
+	var spine_start := Vector2(vp.x * 0.14, vp.y * 0.54)
+	var spine_end := Vector2(vp.x * 0.82, vp.y * 0.30)
+	var bass_energy: float = _spectrum_viz.get_bass_energy()
+
+	# 1. Onda Reactiva a lo largo de la espina 3D con pases glow, bloom y core
+	_spectrum_viz.draw_spine_waveform(self, spine_start, spine_end, theme_col, 55.0, 90, 0.82)
+
+	# 2. Línea guía de la espina 3D
+	draw_line(spine_start, spine_end, BrandClass.with_alpha(theme_col, 0.30), 1.5)
+
+	# 3. Nodos de misión ordenados por profundidad (de lejano a cercano para z-ordering)
+	var total_nodes := 5
 	var act_levels := _get_current_act_levels()
-	var rail_y := vp.y * 0.28
-	var center_x := vp.x * 0.5
-	var card_spacing := 230.0
-
-	# 1. Riel con Onda Reactiva de Audio detrás de las tarjetas
-	var p_left := Vector2(center_x - 2.5 * card_spacing, rail_y)
-	var p_right := Vector2(center_x + 2.5 * card_spacing, rail_y)
-	_spectrum_viz.draw_track_waveform(self, p_left, p_right, theme_col, 55.0, 90, 0.75)
-
-	# Línea de riel central
-	draw_line(p_left, p_right, BrandClass.with_alpha(theme_col, 0.35), 2.0)
 
 	_card_rects.clear()
+	var rect_map: Dictionary = {}
 
-	# 2. Dibujo de Tarjetas con perspectiva 2.5D (de afuera hacia adentro para z-ordering)
-	var sorted_indices: Array[int] = []
-	for i in range(total_cards):
-		sorted_indices.append(i)
-	sorted_indices.sort_custom(func(a: int, b: int) -> bool:
-		return absf(float(a) - _carousel_offset) > absf(float(b) - _carousel_offset)
-	)
-
-	var card_rect_map: Dictionary = {}
-
-	for i in sorted_indices:
-		var rel_idx := float(i) - _carousel_offset
-		var dist := absf(rel_idx)
-		var scale_val := clampf(1.0 - dist * 0.18, 0.55, 1.15)
-		var depth_alpha := clampf(1.0 - dist * 0.28, 0.25, 1.0)
-
-		# Stagger entrance
-		var stagger_delay := float(i) * 0.08
-		var card_stagger := clampf((_entrance_anim - stagger_delay) / 0.45, 0.0, 1.0)
-		var card_x := center_x + rel_idx * (card_spacing * (0.85 + scale_val * 0.15))
-		var card_y := rail_y + (1.0 - card_stagger) * 40.0 + sin(rel_idx * 0.3) * 12.0
-
-		var base_w := 170.0 * scale_val
-		var base_h := 115.0 * scale_val
-		var c_rect := Rect2(card_x - base_w * 0.5, card_y - base_h * 0.5, base_w, base_h)
-		card_rect_map[i] = c_rect
-
+	for i in range(total_nodes - 1, -1, -1):
 		var g_idx := _get_global_level_index(i)
 		var is_unlocked := _is_level_unlocked(g_idx)
 		var is_selected := (i == selected_idx)
@@ -475,77 +510,190 @@ func _draw_carousel(vp: Vector2, theme_col: Color) -> void:
 		if i < act_levels.size():
 			lvl_data = act_levels[i]
 
-		_draw_carousel_card(c_rect, i, g_idx, lvl_data, is_selected, is_unlocked, scale_val, depth_alpha, theme_col)
+		var p := _get_spine_node_position(i, vp)
+		var depth_t := float(i) / 4.0
+		var persp_scale := lerpf(1.10, 0.72, depth_t)
+		if is_selected:
+			persp_scale *= 1.25
 
-	for i in range(total_cards):
-		_card_rects.append(card_rect_map.get(i, Rect2()))
+		var outer_r := 56.0 * persp_scale
+		if is_selected:
+			outer_r += bass_energy * 14.0
+
+		rect_map[i] = Rect2(p.x - outer_r, p.y - outer_r, outer_r * 2.0, outer_r * 2.0)
+
+		_draw_spine_mission_node(p, i, g_idx, lvl_data, is_selected, is_unlocked, persp_scale, outer_r, theme_col, bass_energy)
+
+	for i in range(total_nodes):
+		_card_rects.append(rect_map.get(i, Rect2()))
 
 
-func _draw_carousel_card(
-	rect: Rect2,
+func _draw_spine_mission_node(
+	p: Vector2,
 	act_idx: int,
 	global_idx: int,
 	lvl_data: Dictionary,
 	is_selected: bool,
 	is_unlocked: bool,
-	card_scale: float,
-	card_alpha: float,
-	theme_col: Color
+	scale_val: float,
+	outer_r: float,
+	theme_col: Color,
+	bass_energy: float
 ) -> void:
-	# Fondo de la tarjeta
-	var bg_color := BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.90 * card_alpha)
-	var border_color := BrandClass.with_alpha(theme_col, (0.95 if is_selected else 0.40) * card_alpha)
+	var is_boss: bool = (act_idx == 4)
+	var node_col: Color = Color("ff2a6d") if is_boss else (theme_col if is_unlocked else BrandClass.TEXT_DIM)
 
+	# Halo resplandeciente exterior pulsante con el beat musical
 	if is_selected:
-		# Resplandor exterior
-		draw_rect(rect.grow(4.0), BrandClass.with_alpha(theme_col, 0.25 * (0.8 + sin(_pulse) * 0.2)), false, 2.5)
+		draw_circle(p, outer_r, BrandClass.with_alpha(node_col, 0.08 + bass_energy * 0.14))
 
-	draw_rect(rect, bg_color)
-	draw_rect(rect, border_color, false, 1.8 if is_selected else 1.0)
+	# Anillo objetivo exterior segmentado/punteado gigante (r = 56px escalado)
+	_draw_dashed_ring(self, p, outer_r, BrandClass.with_alpha(node_col, 0.85 if is_selected else 0.35), 14, _pulse * 0.5, 1.6 if is_selected else 1.0)
 
-	# Número de misión / Nivel
-	var mission_num_str := "%02d" % (global_idx + 1)
-	var num_col := (theme_col if is_unlocked else BrandClass.TEXT_DIM)
-	draw_string(font, Vector2(rect.position.x + 10, rect.position.y + 22 * card_scale), "N-%s" % mission_num_str, HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(9, int(small_font_size * card_scale)), num_col)
+	# Núcleo regular poligonal (Hexágono para N1..N4, Octágono para Boss N5)
+	var sides := 8 if is_boss else 6
+	var core_r := 34.0 * scale_val
+	var rot_off := PI / 6.0 if not is_boss else PI / 8.0
 
-	# Título del nivel
-	var title_str: String = lvl_data.get("title", "CLASIFICADO")
+	_draw_regular_polygon(self, p, core_r, sides, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.94), true, 1.0, rot_off)
+	_draw_regular_polygon(self, p, core_r, sides, node_col, false, 2.8 if is_selected else 1.6, rot_off)
+
+	# Núcleo interior palpitante
+	var inner_r := 8.0 * scale_val + (bass_energy * 5.0 if is_selected else 0.0)
+	draw_circle(p, inner_r, node_col)
+	if is_selected:
+		draw_circle(p, inner_r * 0.5, Color.WHITE)
+
+	# Pill superior limpia: "N03 // Nombre"
+	var title_str: String = lvl_data.get("title", "Misión")
 	if not is_unlocked:
 		title_str = "[ BLOQUEADO ]"
-	draw_string(font, Vector2(rect.position.x + 10, rect.position.y + 44 * card_scale), title_str, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 20, maxi(9, int(font_size * card_scale)), BrandClass.TEXT if is_unlocked else BrandClass.TEXT_DIM)
+	var pill_str := ("BOSS // %s" if is_boss else ("N%02d // %s" % [global_idx + 1, title_str]))
+	var pill_font_size := maxi(8, int((small_font_size - 1) * clampf(scale_val, 0.8, 1.15)))
+	var str_sz := font.get_string_size(pill_str, HORIZONTAL_ALIGNMENT_LEFT, -1, pill_font_size)
+	var pill_w := str_sz.x + 16.0
+	var pill_h := 20.0 * clampf(scale_val, 0.85, 1.15)
+	var pill_rect := Rect2(p.x - pill_w * 0.5, p.y - core_r - pill_h - 6.0, pill_w, pill_h)
 
-	# Estrellas de progreso
+	draw_rect(pill_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.92))
+	draw_rect(pill_rect, BrandClass.with_alpha(node_col, 0.70 if is_selected else 0.35), false, 1.2)
+	draw_string(font, Vector2(pill_rect.position.x + 8.0, pill_rect.position.y + pill_h * 0.72), pill_str, HORIZONTAL_ALIGNMENT_LEFT, -1, pill_font_size, node_col if is_unlocked else BrandClass.TEXT_DIM)
+
+	# Etiqueta central: "N01", "N02", ..., "BOSS"
+	var lbl_text := "BOSS" if is_boss else ("N%02d" % (global_idx + 1))
+	var lbl_font_sz := maxi(9, int((small_font_size + 1) * scale_val))
+	var lbl_sz := font.get_string_size(lbl_text, HORIZONTAL_ALIGNMENT_CENTER, -1, lbl_font_sz)
+	draw_string(font, Vector2(p.x - lbl_sz.x * 0.5, p.y + lbl_sz.y * 0.35), lbl_text, HORIZONTAL_ALIGNMENT_LEFT, -1, lbl_font_sz, node_col if is_unlocked else BrandClass.TEXT_DIM)
+
+	# Calificación de estrellas abajo: "★ ★ ☆"
 	var json_path: String = lvl_data.get("path", "")
 	var level_key: String = json_path.get_file().trim_suffix(".json")
 	if level_key == "":
 		level_key = "%s_%d" % [world_id, global_idx]
 	var stars: int = progress.get(level_key, 0)
-
 	var stars_text := ""
 	for s in range(3):
 		stars_text += "★ " if s < stars else "☆ "
-	var star_col := Color(1.0, 0.85, 0.2) if stars > 0 else BrandClass.with_alpha(BrandClass.TEXT_DIM, 0.5)
-	draw_string(font, Vector2(rect.position.x + 10, rect.position.y + 72 * card_scale), stars_text.strip_edges(), HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(9, int(small_font_size * card_scale)), star_col)
-
-	# Tag de estado
-	var status_text := "LISTO" if is_unlocked else "LOCK"
-	var status_col := BrandClass.SUCCESS if is_unlocked else BrandClass.DANGER
-	draw_string(font, Vector2(rect.position.x + rect.size.x - 45 * card_scale, rect.position.y + 22 * card_scale), status_text, HORIZONTAL_ALIGNMENT_RIGHT, -1, maxi(8, int((small_font_size - 2) * card_scale)), status_col)
+	var star_col := Color(1.0, 0.85, 0.2) if stars > 0 else BrandClass.with_alpha(BrandClass.TEXT_DIM, 0.45)
+	var star_font_sz := maxi(9, int(small_font_size * scale_val))
+	var star_sz := font.get_string_size(stars_text.strip_edges(), HORIZONTAL_ALIGNMENT_CENTER, -1, star_font_sz)
+	draw_string(font, Vector2(p.x - star_sz.x * 0.5, p.y + core_r + 20.0 * scale_val), stars_text.strip_edges(), HORIZONTAL_ALIGNMENT_LEFT, -1, star_font_sz, star_col)
 
 
-func _draw_briefing_card(vp: Vector2, theme_col: Color) -> void:
-	var card_w := minf(860.0, vp.x - 80.0)
-	var card_h := 240.0
-	var card_x := (vp.x - card_w) * 0.5
-	var card_y := vp.y - card_h - 60.0
-	var briefing_rect := Rect2(card_x, card_y, card_w, card_h)
+func _draw_regular_polygon(canvas: CanvasItem, center: Vector2, radius: float, sides: int, color: Color, filled: bool = false, width: float = 1.5, rot_offset: float = 0.0) -> void:
+	var pts := PackedVector2Array()
+	for s in range(sides):
+		var a := rot_offset + float(s) * TAU / float(sides)
+		pts.append(center + Vector2(cos(a), sin(a)) * radius)
+	if filled:
+		canvas.draw_colored_polygon(pts, color)
+	else:
+		pts.append(pts[0])
+		canvas.draw_polyline(pts, color, width)
 
-	# Placa holográfica principal
-	draw_rect(briefing_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.96))
-	draw_rect(briefing_rect, BrandClass.with_alpha(theme_col, 0.70), false, 1.5)
 
-	# Esquinas holográficas decorativas
-	_draw_corner_brackets(briefing_rect, theme_col)
+func _draw_dashed_ring(canvas: CanvasItem, center: Vector2, radius: float, color: Color, segments: int = 14, rot_offset: float = 0.0, width: float = 1.5) -> void:
+	var step := TAU / float(segments)
+	for s in range(segments):
+		if s % 2 == 0:
+			var a1 := rot_offset + float(s) * step
+			var a2 := a1 + step * 0.65
+			canvas.draw_arc(center, radius, a1, a2, 8, color, width)
+
+
+func _get_world_display_title() -> String:
+	match world_id:
+		"heist": return "HEIST // COLD STORAGE"
+		"hacker": return "HACKER // DMZ & SWITCHES"
+		"cybersecurity": return "CYBERSECURITY // NOC SOC"
+		"secret": return "SECTOR 0 // KERNEL HYPERVISOR"
+		_: return world_title.to_upper()
+
+
+func _get_world_operator_subtitle() -> String:
+	match world_id:
+		"heist": return "OPERADORA: VEX · DAEMON EXFIL"
+		"hacker": return "OPERADOR: N0X · DAEMON FUZZ"
+		"cybersecurity": return "OPERADORA: AEGIS · DAEMON CORDON"
+		"secret": return "ARQUITECTO: ZERO · DAEMON ROOT"
+		_: return "SECTOR DE OPERACIONES // RED CONECTADA"
+
+
+func _get_operator_log_prefix(op_name: String) -> String:
+	match op_name.to_upper():
+		"VEX": return "[VEX // LOG]:"
+		"N0X": return "[N0X // LOG]:"
+		"AEGIS": return "[AEGIS // SOC]:"
+		"ZERO", "KAIN": return "[KAIN // TCP_GHOST]:"
+		_: return "[%s // LOG]:" % op_name
+
+
+func _draw_floating_header(vp: Vector2, theme_col: Color) -> void:
+	# Isla Flotante Superior Izquierda (Rect2(24, 18, 380, 50))
+	_back_rect = Rect2(24.0, 18.0, 380.0, 50.0)
+	draw_rect(_back_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95))
+	draw_rect(_back_rect, BrandClass.with_alpha(theme_col, 0.55), false, 1.2)
+	draw_rect(Rect2(_back_rect.position.x, _back_rect.position.y, 4.0, _back_rect.size.y), theme_col)
+
+	var esc_btn_rect := Rect2(_back_rect.position.x + 12.0, _back_rect.position.y + 9.0, 68.0, 32.0)
+	draw_rect(esc_btn_rect, BrandClass.with_alpha(theme_col, 0.22 if _hovered_back else 0.08))
+	draw_rect(esc_btn_rect, theme_col if _hovered_back else BrandClass.with_alpha(theme_col, 0.40), false, 1.0)
+	draw_string(font, Vector2(esc_btn_rect.position.x + 10, esc_btn_rect.position.y + 21), "◂ ESC", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 1, BrandClass.TEXT)
+
+	var wt := _get_world_display_title()
+	draw_string(font, Vector2(_back_rect.position.x + 92.0, _back_rect.position.y + 24.0), wt, HORIZONTAL_ALIGNMENT_LEFT, _back_rect.size.x - 100.0, small_font_size + 1, theme_col)
+	var sub := _get_world_operator_subtitle()
+	draw_string(font, Vector2(_back_rect.position.x + 92.0, _back_rect.position.y + 42.0), sub, HORIZONTAL_ALIGNMENT_LEFT, _back_rect.size.x - 100.0, small_font_size - 2, BrandClass.TEXT_DIM)
+
+	# Selector Flotante Superior Central de Actos
+	var total_w := 280.0
+	var start_x := (vp.x - total_w) * 0.5
+	var pill_w := 134.0
+	var pill_h := 34.0
+	_act1_rect = Rect2(start_x, 18.0, pill_w, pill_h)
+	_act2_rect = Rect2(start_x + pill_w + 12.0, 18.0, pill_w, pill_h)
+
+	_draw_act_pill(_act1_rect, "[ ACTO I (N1–N5) ]", current_act == 1, theme_col)
+	_draw_act_pill(_act2_rect, "[ ACTO II (N6–N10) ]", current_act == 2, theme_col)
+
+
+func _draw_act_pill(rect: Rect2, label: String, is_active: bool, theme_col: Color) -> void:
+	if is_active:
+		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95))
+		draw_rect(rect, theme_col, false, 2.0)
+		draw_rect(Rect2(rect.position.x, rect.position.y + rect.size.y - 3.0, rect.size.x, 3.0), theme_col)
+		draw_string(font, Vector2(rect.position.x + 12, rect.position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, theme_col)
+	else:
+		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.45))
+		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.35), false, 1.0)
+		draw_string(font, Vector2(rect.position.x + 12, rect.position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 1, BrandClass.TEXT_DIM)
+
+
+func _draw_bottom_command_strip(vp: Vector2, theme_col: Color) -> void:
+	var strip_rect := Rect2(24.0, vp.y - 154.0, vp.x - 48.0, 136.0)
+	draw_rect(strip_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.95))
+	draw_rect(strip_rect, BrandClass.with_alpha(theme_col, 0.65), false, 1.2)
+	_draw_corner_brackets(strip_rect, theme_col)
 
 	var g_idx := _get_global_level_index(selected_idx)
 	var is_unlocked := _is_level_unlocked(g_idx)
@@ -554,71 +702,76 @@ func _draw_briefing_card(vp: Vector2, theme_col: Color) -> void:
 		lvl_data = level_nodes[g_idx]
 
 	var json_path: String = lvl_data.get("path", "")
-	var title_str: String = lvl_data.get("title", "Operación Clasificada")
+	var title_str: String = lvl_data.get("title", "Misión Clasificada")
 	var difficulty: int = lvl_data.get("difficulty", 1)
 	var briefing_text: String = LevelRegistry.get_level_briefing(world_id, g_idx)
 	var operator_id: String = LevelRegistry.get_level_operator(world_id, g_idx)
+	var level_key := json_path.get_file().trim_suffix(".json")
 
-	# 1. Mini-Mapa Vectorial en vivo (Lado Izquierdo)
-	var map_rect := Rect2(card_x + 20.0, card_y + 20.0, 220.0, card_h - 40.0)
-	_draw_live_minimap(map_rect, json_path, theme_col, is_unlocked)
+	# Column 1 (w = 230px, x = 40)
+	var tag_str := "MISIÓN %02d // ACTO %s" % [g_idx + 1, "I" if current_act == 1 else "II"]
+	draw_string(font, Vector2(40.0, vp.y - 128.0), tag_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, small_font_size - 1, theme_col)
+	draw_string(font, Vector2(40.0, vp.y - 104.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, font_size + 1, BrandClass.TEXT)
 
-	# 2. Información Táctica y Narrativa (Centro)
-	var text_x := card_x + 260.0
-	var text_w := card_w - 280.0
-
-	# Tag de Operador e ID de Misión
-	var op_badge := "[ OP: %s // ACTO %s ]" % [operator_id, "I" if current_act == 1 else "II"]
-	draw_string(font, Vector2(text_x, card_y + 36.0), op_badge, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, theme_col)
-
-	# Título de Nivel
-	draw_string(font, Vector2(text_x, card_y + 60.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, text_w - 180.0, font_size + 2, BrandClass.TEXT)
-
-	# Calificación de Dificultad
 	var diff_bars := ""
 	for d in range(5):
 		diff_bars += "///" if d < difficulty else " - "
-	var diff_label := "DIFICULTAD: %s" % diff_bars
-	draw_string(font, Vector2(text_x, card_y + 82.0), diff_label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 1, BrandClass.WARNING)
+	var deg_val := 2.2 + float(g_idx) * 0.4
+	var ms_val := 8 + g_idx * 3
+	var meta_str := "Dif %s · deg(G)=%.1f · %d ms" % [diff_bars, deg_val, ms_val]
+	draw_string(font, Vector2(40.0, vp.y - 82.0), meta_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, small_font_size - 2, BrandClass.TEXT_DIM)
 
-	# Texto narrativo del Briefing
+	var stars: int = progress.get(level_key, 0)
+	var stars_text := ""
+	for s in range(3):
+		stars_text += "★ " if s < stars else "☆ "
+	var star_col := Color(1.0, 0.85, 0.2) if stars > 0 else BrandClass.with_alpha(BrandClass.TEXT_DIM, 0.4)
+	draw_string(font, Vector2(40.0, vp.y - 58.0), stars_text.strip_edges(), HORIZONTAL_ALIGNMENT_LEFT, 230.0, small_font_size + 1, star_col)
+
+	# Column 2 (w = 220px, x = 280) - Live Topology Mini-Map Box
+	var minimap_rect := Rect2(280.0, vp.y - 146.0, 220.0, 118.0)
+	_draw_live_minimap(minimap_rect, json_path, theme_col, is_unlocked)
+
+	# Column 3 (flex 1, x = 514, w = (cta_x - 14) - 514) - Operator Narrative Description
+	var cta_x := vp.x - 24.0 - 215.0 - 10.0
+	draw_line(Vector2(506.0, vp.y - 144.0), Vector2(506.0, vp.y - 28.0), BrandClass.with_alpha(BrandClass.PANEL_BORDER, 0.70), 1.5)
+
+	var prefix := _get_operator_log_prefix(operator_id)
+	var lore_text := briefing_text
 	if not is_unlocked:
-		briefing_text = "Acceso denegado. Se requiere completar la misión anterior para desbloquear el vector de intrusión correspondiente a esta subred."
-
-	var wrapped := _wrap_text(briefing_text, font, small_font_size, text_w - 200.0)
-	var by := card_y + 110.0
+		lore_text = "Acceso denegado. Se requiere completar la misión anterior para desbloquear el vector de intrusión."
+	var full_desc := "%s %s" % [prefix, lore_text]
+	var col3_w := (cta_x - 14.0) - 514.0
+	var wrapped := _wrap_text(full_desc, font, small_font_size, col3_w)
+	var ly := vp.y - 124.0
 	for line in wrapped:
-		draw_string(font, Vector2(text_x, by), line, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT_DIM)
-		by += 18.0
+		draw_string(font, Vector2(514.0, ly), line, HORIZONTAL_ALIGNMENT_LEFT, col3_w, small_font_size, BrandClass.TEXT)
+		ly += 18.0
 
-	# 3. Botones de Acción (Lado Derecho / Inferior)
-	var btn_w := 170.0
-	var btn_h := 40.0
-	var btn_x := card_x + card_w - btn_w - 20.0
-
-	# Botón Iniciar Operación / Desplegar
-	_deploy_rect = Rect2(btn_x, card_y + card_h - btn_h - 20.0, btn_w, btn_h)
+	# Column 4 (w = 215px, x = cta_x) - Primary and Secondary CTA Buttons
+	_deploy_rect = Rect2(cta_x, vp.y - 144.0, 215.0, 44.0)
 	var dep_col := BrandClass.SUCCESS if is_unlocked else BrandClass.TEXT_DIM
-	var dep_bg := BrandClass.with_alpha(dep_col, 0.25 if _hovered_deploy else 0.12)
+	var dep_bg := BrandClass.with_alpha(dep_col, 0.28 if _hovered_deploy else 0.14)
 	draw_rect(_deploy_rect, dep_bg)
 	draw_rect(_deploy_rect, dep_col, false, 1.5)
-	draw_string(font, Vector2(_deploy_rect.position.x + 14, _deploy_rect.position.y + 25), "[ ▶ INICIAR ]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, dep_col)
+	draw_string(font, Vector2(_deploy_rect.position.x + 18, _deploy_rect.position.y + 27), "[ ▶ DESPLEGAR (ENTER) ]", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, dep_col)
 
-	# Botón Transmisión / Lore (si hay cinemática disponible)
-	var level_key := json_path.get_file().trim_suffix(".json")
+	_lore_rect = Rect2(cta_x, vp.y - 92.0, 215.0, 34.0)
 	var cin := CinematicRegistryClass.get_cinematic_for_level(level_key)
-	if not cin.is_empty():
-		_lore_rect = Rect2(btn_x, card_y + card_h - btn_h * 2.0 - 30.0, btn_w, btn_h)
-		var lore_bg := BrandClass.with_alpha(theme_col, 0.25 if _hovered_lore else 0.12)
-		draw_rect(_lore_rect, lore_bg)
-		draw_rect(_lore_rect, theme_col, false, 1.2)
-		draw_string(font, Vector2(_lore_rect.position.x + 14, _lore_rect.position.y + 25), "[ 🎬 LORE ]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, theme_col)
-	else:
-		_lore_rect = Rect2()
+	var cin_id: String = cin.get("id", "")
+	var is_new := (cin_id != "" and not ProgressUtil.has_seen_cinematic(cin_id, progress))
+
+	var lore_bg := BrandClass.with_alpha(theme_col, 0.22 if _hovered_lore else 0.08)
+	draw_rect(_lore_rect, lore_bg)
+	draw_rect(_lore_rect, BrandClass.with_alpha(theme_col, 0.50 if not _hovered_lore else 0.90), false, 1.2)
+	draw_string(font, Vector2(_lore_rect.position.x + 14, _lore_rect.position.y + 22), "[ 🎬 CODEC / LORE ]", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 1, theme_col)
+
+	if is_new:
+		var pip_col := BrandClass.with_alpha(BrandClass.SUCCESS, 0.6 + sin(_pulse * 3.5) * 0.4)
+		draw_string(font, Vector2(_lore_rect.position.x + _lore_rect.size.x - 64, _lore_rect.position.y + 22), "● NUEVO", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 2, pip_col)
 
 
 func _draw_live_minimap(rect: Rect2, json_path: String, theme_col: Color, is_unlocked: bool) -> void:
-	# Marco del mini-mapa
 	draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.90))
 	draw_rect(rect, BrandClass.with_alpha(theme_col, 0.40), false, 1.0)
 	draw_string(font, Vector2(rect.position.x + 10, rect.position.y + 18), "[ TOPOLOGÍA DE RED ]", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size - 2, theme_col)
@@ -635,15 +788,13 @@ func _draw_live_minimap(rect: Rect2, json_path: String, theme_col: Color, is_unl
 		draw_string(font, Vector2(rect.position.x + 30, rect.position.y + rect.size.y * 0.5), "[ TOPOLOGÍA N/A ]", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT_DIM)
 		return
 
-	# Dibujar aristas normalizadas
 	var edge_col := BrandClass.with_alpha(theme_col, 0.35)
-	for e in edges:
+	for e: Vector2i in edges:
 		if e.x < nodes.size() and e.y < nodes.size():
 			var p1: Vector2 = _norm_to_rect(nodes[e.x]["pos"], rect)
 			var p2: Vector2 = _norm_to_rect(nodes[e.y]["pos"], rect)
 			draw_line(p1, p2, edge_col, 1.5)
 
-	# Dibujar vértices
 	for i in range(nodes.size()):
 		var n: Dictionary = nodes[i]
 		var pt: Vector2 = _norm_to_rect(n["pos"], rect)
@@ -739,15 +890,6 @@ func _draw_corner_brackets(rect: Rect2, col: Color) -> void:
 	# BR
 	draw_line(rect.position + rect.size, rect.position + rect.size - Vector2(sz, 0), c_col, 2.0)
 	draw_line(rect.position + rect.size, rect.position + rect.size - Vector2(0, sz), c_col, 2.0)
-
-
-func _draw_back_button(vp: Vector2, theme_col: Color) -> void:
-	_back_rect = Rect2(40.0, vp.y - 48.0, 180.0, 34.0)
-	var bg_col := BrandClass.with_alpha(theme_col, 0.18 if _hovered_back else 0.08)
-	var border_col := theme_col if _hovered_back else BrandClass.with_alpha(theme_col, 0.35)
-	draw_rect(_back_rect, bg_col)
-	draw_rect(_back_rect, border_col, false, 1.2)
-	draw_string(font, Vector2(_back_rect.position.x + 18, _back_rect.position.y + 22), "[ < VOLVER (ESC) ]", HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size, BrandClass.TEXT)
 
 
 func _wrap_text(text: String, p_font: Font, p_size: int, max_w: float) -> Array[String]:

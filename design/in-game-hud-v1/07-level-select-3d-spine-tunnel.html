@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VERTEX — 07 Selector 2.5D Deep Node Tunnel & Floating Glass Dossier</title>
+<style>
+  :root {
+    --bg-cyber: #081018;
+    --panel: rgba(22, 24, 38, 0.86);
+    --panel-solid: rgba(16, 18, 31, 0.94);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --world-heist: #bf5af2;
+    --world-hacker: #39ff88;
+    --world-cyber: #00d2ff;
+    --world-secret: #ff2a6d;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1356px;
+    height: 672px;
+    background: var(--bg-cyber);
+    color: var(--text);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    position: relative;
+    user-select: none;
+  }
+
+  /* Full-Screen 3D Perspective Network Canvas */
+  svg.tunnel-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Floating Top-Left World Header */
+  .float-header {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-left: 3px solid var(--world-cyber);
+    padding: 10px 18px;
+    border-radius: 6px;
+  }
+  .btn-esc {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* Floating Top-Center Act Selector */
+  .float-acts {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 4px;
+    display: flex;
+    gap: 6px;
+  }
+  .act-chip {
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-dim);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .act-chip.active {
+    background: rgba(0, 210, 255, 0.16);
+    border-color: var(--world-cyber);
+    color: var(--world-cyber);
+  }
+
+  /* Floating Bottom HUD Dossier Bar (Wide Horizontal Command Strip — Leaves the 3D Spine 100% open!) */
+  .bottom-command-deck {
+    position: absolute;
+    bottom: 20px;
+    left: 24px;
+    right: 24px;
+    height: 138px;
+    background: var(--panel-solid);
+    border: 1px solid var(--world-cyber);
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: grid;
+    grid-template-columns: 230px 220px 1fr 220px;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .col-title .tag { font-size: 10px; color: var(--world-cyber); font-weight: 700; }
+  .col-title .name { font-size: 20px; font-weight: 700; margin: 4px 0; }
+  .col-title .meta { font-size: 11px; color: var(--text-dim); }
+
+  .col-minimap {
+    height: 106px;
+    background: rgba(8, 12, 20, 0.95);
+    border: 1px solid var(--panel-border);
+    border-radius: 5px;
+    padding: 6px;
+  }
+
+  .col-lore {
+    border-left: 2px solid var(--panel-border);
+    padding-left: 16px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .col-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cta-deploy {
+    height: 46px;
+    background: rgba(0, 210, 255, 0.2);
+    border: 1.5px solid var(--world-cyber);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .cta-codec {
+    height: 34px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Full-Screen 3D Spine / Backbone Tunnel with Audio Wave -->
+  <svg class="tunnel-canvas" viewBox="0 0 1356 672">
+    <!-- Vanishing Point Perspective Rings (Deep Z Horizon at 1050, 220) -->
+    <g opacity="0.22">
+      <ellipse cx="1050" cy="210" rx="90" ry="50" fill="none" stroke="#00d2ff" stroke-width="1"/>
+      <ellipse cx="820" cy="250" rx="190" ry="95" fill="none" stroke="#00d2ff" stroke-width="1" stroke-dasharray="6,6"/>
+      <ellipse cx="560" cy="295" rx="320" ry="150" fill="none" stroke="#00d2ff" stroke-width="1" stroke-dasharray="4,8"/>
+    </g>
+
+    <!-- Audio Reactive Waveform pulsing along the 3D Z-Spine -->
+    <path d="M 120 370 Q 250 280 390 330 T 670 270 T 910 235 T 1120 205" fill="none" stroke="#00d2ff" stroke-width="8" opacity="0.18"/>
+    <path d="M 120 370 Q 250 280 390 330 T 670 270 T 910 235 T 1120 205" fill="none" stroke="#00d2ff" stroke-width="2.5"/>
+
+    <!-- Audio Spectrum Vertical Bars scaling in 3D perspective along the spine -->
+    <g stroke="#00d2ff" opacity="0.45">
+      <line x1="210" y1="290" x2="210" y2="390" stroke-width="4"/>
+      <line x1="260" y1="260" x2="260" y2="410" stroke-width="4"/>
+      <line x1="320" y1="285" x2="320" y2="380" stroke-width="3.5"/>
+      <line x1="470" y1="230" x2="470" y2="365" stroke-width="3.5"/>
+      <line x1="530" y1="195" x2="530" y2="385" stroke-width="4"/>
+      <line x1="600" y1="220" x2="600" y2="350" stroke-width="3"/>
+      <line x1="760" y1="195" x2="760" y2="310" stroke-width="3"/>
+      <line x1="830" y1="180" x2="830" y2="305" stroke-width="2.5"/>
+      <line x1="990" y1="180" x2="990" y2="255" stroke-width="2"/>
+    </g>
+
+    <!-- 3D Depth Nodes receding from Foreground (Left) to Deep Horizon (Right) -->
+    <!-- N01 (Foreground Left) -->
+    <g transform="translate(180, 360)" style="cursor:pointer;">
+      <polygon points="0,-34 30,-17 30,17 0,34 -30,17 -30,-17" fill="#10121f" stroke="#39ff88" stroke-width="2"/>
+      <text x="0" y="5" fill="#39ff88" font-size="13" font-weight="700" text-anchor="middle">N01</text>
+      <text x="0" y="-44" fill="#eaecf5" font-size="12" font-weight="700" text-anchor="middle">Perímetro</text>
+      <text x="0" y="52" fill="#ffc857" font-size="12" text-anchor="middle">★★★</text>
+    </g>
+
+    <!-- N02 -->
+    <g transform="translate(390, 330)" style="cursor:pointer;">
+      <polygon points="0,-34 30,-17 30,17 0,34 -30,17 -30,-17" fill="#10121f" stroke="#39ff88" stroke-width="2"/>
+      <text x="0" y="5" fill="#39ff88" font-size="13" font-weight="700" text-anchor="middle">N02</text>
+      <text x="0" y="-44" fill="#eaecf5" font-size="12" font-weight="700" text-anchor="middle">Defensa Capas</text>
+      <text x="0" y="52" fill="#ffc857" font-size="12" text-anchor="middle">★★★</text>
+    </g>
+
+    <!-- N03 (ACTIVE SELECTED NODE IN 3D SPACE — Giant Glowing Core!) -->
+    <g transform="translate(650, 275)" style="cursor:pointer;">
+      <circle r="68" fill="rgba(0,210,255,0.08)" stroke="#00d2ff" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <polygon points="0,-48 42,-24 42,24 0,48 -42,24 -42,-24" fill="#10121f" stroke="#00d2ff" stroke-width="3"/>
+      <circle r="10" fill="#00d2ff"/>
+      <rect x="-85" y="-76" width="170" height="22" rx="4" fill="#10121f" stroke="#00d2ff" stroke-width="1.5"/>
+      <text x="0" y="-61" fill="#00d2ff" font-size="12" font-weight="700" text-anchor="middle">N03 // Contención Activa</text>
+      <text x="0" y="68" fill="#ffc857" font-size="14" text-anchor="middle">★ ★ ☆</text>
+    </g>
+
+    <!-- N04 (Receding in depth) -->
+    <g transform="translate(890, 235) scale(0.82)" style="cursor:pointer;">
+      <polygon points="0,-34 30,-17 30,17 0,34 -30,17 -30,-17" fill="#10121f" stroke="#2a2e4a" stroke-width="2"/>
+      <text x="0" y="5" fill="#8a90b8" font-size="13" font-weight="700" text-anchor="middle">N04</text>
+      <text x="0" y="-44" fill="#8a90b8" font-size="12" text-anchor="middle">Red Fantasma</text>
+    </g>
+
+    <!-- N05 (Deep Horizon Boss) -->
+    <g transform="translate(1090, 205) scale(0.72)" style="cursor:pointer;">
+      <polygon points="0,-38 33,-19 33,19 0,38 -33,19 -33,-19" fill="#10121f" stroke="#ff2a6d" stroke-width="2.5"/>
+      <text x="0" y="5" fill="#ff2a6d" font-size="13" font-weight="700" text-anchor="middle">BOSS</text>
+      <text x="0" y="-48" fill="#ff2a6d" font-size="12" font-weight="700" text-anchor="middle">Zero Trust</text>
+    </g>
+  </svg>
+
+  <!-- Floating Top-Left World Header -->
+  <div class="float-header">
+    <button class="btn-esc">◂ ESC</button>
+    <div>
+      <div style="font-size:15px;font-weight:700;color:var(--world-cyber);">CYBERSECURITY // NOC SOC</div>
+      <div style="font-size:10px;color:var(--text-dim);">OPERADORA: AEGIS · DAEMON CORDON</div>
+    </div>
+  </div>
+
+  <!-- Floating Top-Center Act Switcher -->
+  <div class="float-acts">
+    <button class="act-chip active">ACTO I (N1–N5)</button>
+    <button class="act-chip">ACTO II (N6–N10)</button>
+  </div>
+
+  <!-- Bottom Wide Command Deck (Leaves 80% of the screen open for the 3D Spine & Audio Wave!) -->
+  <aside class="bottom-command-deck">
+    <div class="col-title">
+      <div class="tag">MISIÓN 03 // ACTO I</div>
+      <div class="name">Contención Activa</div>
+      <div class="meta">Dificultad ///  ·  deg(G)=3.4  ·  11 ms</div>
+      <div style="color:var(--warning);font-size:14px;margin-top:6px;">★ ★ ☆</div>
+    </div>
+
+    <div class="col-minimap">
+      <svg width="100%" height="100%" viewBox="0 0 200 90">
+        <line x1="20" y1="45" x2="75" y2="20" stroke="#00d2ff" stroke-width="1.5"/>
+        <line x1="20" y1="45" x2="75" y2="70" stroke="#2a2e4a" stroke-width="1.5"/>
+        <line x1="75" y1="20" x2="135" y2="45" stroke="#00d2ff" stroke-width="1.5"/>
+        <line x1="75" y1="70" x2="135" y2="45" stroke="#2a2e4a" stroke-width="1.5"/>
+        <line x1="135" y1="45" x2="180" y2="45" stroke="#ff4757" stroke-width="2"/>
+        <circle cx="20" cy="45" r="5" fill="#ff2e88"/>
+        <circle cx="75" cy="20" r="4" fill="#00d2ff"/>
+        <circle cx="75" cy="70" r="4" fill="#2a2e4a"/>
+        <circle cx="135" cy="45" r="5" fill="#00d2ff"/>
+        <circle cx="180" cy="45" r="6" fill="#ff4757"/>
+      </svg>
+    </div>
+
+    <div class="col-lore">
+      <strong style="color:var(--world-cyber);">[AEGIS // SOC LOG]:</strong> «Detectamos movimiento lateral en dos subredes críticas. Aplicá corte mínimo (Edmonds-Karp) y aislá el host comprometido con Cuarentena [3] antes de que el atacante alcance el núcleo.»
+    </div>
+
+    <div class="col-cta">
+      <button class="cta-deploy">▶ DESPLEGAR [ENTER]</button>
+      <button class="cta-codec">🎬 TRANSMISIÓN CODEC</button>
+    </div>
+  </aside>
+
+</body>
+</html>

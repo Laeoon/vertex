@@ -1,26 +1,33 @@
 {
-  "title": "VERTEX In-Game HUD Consolidation & Sector 0 Root Genesis Overhaul",
-  "brief": "Eliminate duplicated boxes and colliding buttons across Heist, Hacker, Cybersecurity, and redesign Sector 0: Root Genesis with Triad Daemon visual identity",
+  "title": "VERTEX In-Game HUD Consolidation & 2.5D Level Selector Directions",
+  "brief": "Definitive HUD (Top Perks + Compact Numeric Chips) and 3 distinct 2.5D Level Selector architectures",
   "feature": "odd/tasks/vertex-1-0-overhaul.md",
   "artboards": [
     {
-      "file": "01-unified-tactical-dock.html",
-      "title": "Unified Tactical Dock (Heist & Hacker Modes)",
-      "tradeoff": "Maximum screen clarity: Top bar is strictly read-only telemetry; Bottom bar holds all clickable/touchable actions with dynamic flex spacing and zero duplicate panels.",
+      "file": "04-top-perks-compact-hud.html",
+      "title": "04 — DEFINITIVE IN-GAME HUD: Top Perks + Pure Numeric Chips (No Bars) + Full-Screen Mode Styling",
+      "tradeoff": "Eliminates redundant progress bars (Presupuesto & Ruido are crisp numeric chips), places ALL Perks/Tools in the Top Bar, frees the bottom bar completely, and applies Sector 0's rich background & ring styling to all 4 modes.",
       "width": 1356,
       "height": 672
     },
     {
-      "file": "02-floating-radial-pill.html",
-      "title": "Floating Pills + Direct Node Radial Context (Cybersecurity Mode)",
-      "tradeoff": "More open canvas in the corners via floating islands and direct node radial actions; tailored for Blue Team SOC command.",
+      "file": "05-level-select-25d-isometric.html",
+      "title": "05 — Selector Opción A: Rack Isométrico + Sidebar Derecha",
+      "tradeoff": "Split screen with right sidebar dossier.",
       "width": 1356,
       "height": 672
     },
     {
-      "file": "03-sector-zero-root-genesis.html",
-      "title": "Sector 0: Root Genesis (The Triad Breach — Architect-0 / Kain)",
-      "tradeoff": "Replaces the flat gray cement background and colliding labels with a deep crimson/triad hypervisor canvas, curved non-overlapping CROSS_SYNC edges, distinct octagonal/hexagonal daemon nodes, and Kain's TCP steganography hints.",
+      "file": "06-level-select-coverflow-deck.html",
+      "title": "06 — Selector Opción B: 2.5D Coverflow Card Deck (Full-Screen Audio Wave + Hero Center Card)",
+      "tradeoff": "No sidebar cutting the screen: full-width audio wave across the horizon and a huge central Hero Card that holds the live mini-map, lore, and deploy button right in the middle while side missions recede in 2.5D scale.",
+      "width": 1356,
+      "height": 672
+    },
+    {
+      "file": "07-level-select-3d-spine-tunnel.html",
+      "title": "07 — Selector Opción C: 3D Depth Spine Tunnel + Bottom Command Strip",
+      "tradeoff": "Leaves 80% of the canvas open for a diagonal 3D network spine receding into a vanishing point with the audio wave riding the cable, and puts the mini-map + lore in a sleek horizontal cockpit strip at the bottom.",
       "width": 1356,
       "height": 672
     }

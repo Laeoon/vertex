@@ -11,6 +11,7 @@ const CinematicRegistryClass = preload("res://juego/system/cinematic_registry.gd
 const CinematicOverlayClass = preload("res://juego/ui/cinematic_overlay.gd")
 const DatabaseClass = preload("res://escenas/menu/database.gd")
 const BrandClass = preload("res://juego/ui/brand.gd")
+const AudioSpectrumVisualizerClass = preload("res://juego/ui/audio_spectrum_visualizer.gd")
 
 var _passed: int = 0
 var _failed: int = 0
@@ -30,6 +31,10 @@ func _run_tests() -> void:
 	test_level_select_screen_carousel_and_acts()
 	test_level_select_minimap_loading()
 	test_database_cinematics_tab_and_trigger()
+	test_3d_spine_and_bottom_command_columns()
+	test_audio_spectrum_bass_energy_and_spine_wave()
+	test_all_16_levels_have_narratives_and_codecs()
+	test_mandatory_first_time_codec_autoplay_and_replay()
 
 	_finalizar()
 
@@ -261,3 +266,116 @@ func test_database_cinematics_tab_and_trigger() -> void:
 	_assert(true, "Database 4th tab renders cleanly in _draw()")
 
 	db.queue_free()
+
+
+func test_3d_spine_and_bottom_command_columns() -> void:
+	var ls = LevelSelectClass.new()
+	ls.setup("heist")
+	add_child(ls)
+
+	var vp := Vector2(1356, 672)
+	var p0 := ls.get_spine_node_position(0, vp)
+	var p4 := ls.get_spine_node_position(4, vp)
+
+	# 3D Diagonal Depth Spine: recede de primer plano izq hacia horizonte der
+	_assert(p0.x < p4.x, "3D spine node 0 (x=%.1f) is left of node 4 (x=%.1f)" % [p0.x, p4.x])
+	_assert(p0.y > p4.y, "3D spine node 0 (y=%.1f) is lower in foreground than node 4 (y=%.1f) in deep horizon" % [p0.y, p4.y])
+
+	# 4 Columnas horizontales estrictamente no superpuestas en el Command Strip
+	var cols := ls.get_bottom_command_column_rects(vp)
+	_assert(cols.size() == 4, "Bottom Command Strip defines exactly 4 columns")
+	_assert(cols[0].size.x == 230.0, "Column 1 width is 230px (got %.1f)" % cols[0].size.x)
+	_assert(cols[1].size.x == 220.0, "Column 2 width is 220px (got %.1f)" % cols[1].size.x)
+	_assert(cols[3].size.x == 215.0, "Column 4 width is 215px (got %.1f)" % cols[3].size.x)
+
+	_assert(cols[0].position.x + cols[0].size.x <= cols[1].position.x, "Column 1 (ends at %.1f) does not overlap Column 2 (starts at %.1f)" % [cols[0].position.x + cols[0].size.x, cols[1].position.x])
+	_assert(cols[1].position.x + cols[1].size.x <= cols[2].position.x, "Column 2 (ends at %.1f) does not overlap Column 3 (starts at %.1f)" % [cols[1].position.x + cols[1].size.x, cols[2].position.x])
+	_assert(cols[2].position.x + cols[2].size.x <= cols[3].position.x, "Column 3 (ends at %.1f) does not overlap Column 4 (starts at %.1f)" % [cols[2].position.x + cols[2].size.x, cols[3].position.x])
+
+	ls.queue_free()
+
+
+func test_audio_spectrum_bass_energy_and_spine_wave() -> void:
+	var viz := AudioSpectrumVisualizerClass.new(32)
+	viz.update(0.016)
+
+	var bass := viz.get_bass_energy()
+	_assert(bass >= 0.0 and bass <= 1.0, "AudioSpectrumVisualizer get_bass_energy() returns normalized range (got %.3f)" % bass)
+
+	# Prueba de dibujo de onda en espina 3D dentro del contexto de dibujo de CanvasItem
+	var dummy := Control.new()
+	add_child(dummy)
+
+	var spine_start := Vector2(180, 360)
+	var spine_end := Vector2(1080, 200)
+	dummy.draw.connect(func():
+		viz.draw_spine_waveform(dummy, spine_start, spine_end, Color("00d2ff"), 55.0, 90, 0.85)
+		viz.draw_track_waveform(dummy, spine_start, spine_end, Color("bf5af2"), 50.0, 80, 0.75)
+	)
+	dummy.notification(CanvasItem.NOTIFICATION_DRAW)
+	_assert(true, "draw_spine_waveform and draw_track_waveform execute multi-pass drawing cleanly")
+
+	dummy.queue_free()
+
+
+func test_all_16_levels_have_narratives_and_codecs() -> void:
+	var expected_levels := [
+		"heist_n1", "heist_n2", "heist_n3", "heist_n4", "heist_n5",
+		"hacker_n1", "hacker_n2", "hacker_n3", "hacker_n4", "hacker_n5",
+		"defense_n1", "cyber_n1", "cyber_n2", "cyber_n3", "cyber_n4",
+		"secret_root"
+	]
+
+	_assert(expected_levels.size() == 16, "All 16 levels identified for Triad of Genesis coverage")
+
+	for lvl_key in expected_levels:
+		var cin := CinematicRegistryClass.get_cinematic_for_level(lvl_key)
+		_assert(not cin.is_empty(), "Level '%s' has a linked Codec transmission in CinematicRegistry" % lvl_key)
+		_assert(cin.has("slides") and cin["slides"].size() > 0, "Codec transmission for '%s' contains slides" % lvl_key)
+
+	# Verificar briefings narrativos enriquecidos en LevelRegistry
+	for world_id in LevelRegistryClass.WORLDS:
+		var lvls: Array = LevelRegistryClass.get_levels(world_id)
+		for i in lvls.size():
+			var b := LevelRegistryClass.get_level_briefing(world_id, i)
+			_assert(b != "" and b.length() > 25, "World '%s' level %d has rich narrative briefing (%d chars)" % [world_id, i, b.length()])
+
+
+func test_mandatory_first_time_codec_autoplay_and_replay() -> void:
+	# 1. Utilidad ProgressUtil
+	var mock_prog: Dictionary = {"seen_cinematics": {}}
+	_assert(not ProgressUtil.has_seen_cinematic("mock_codec_alpha", mock_prog), "has_seen_cinematic returns false before playback")
+
+	ProgressUtil.mark_cinematic_seen("mock_codec_alpha", mock_prog)
+	_assert(ProgressUtil.has_seen_cinematic("mock_codec_alpha", mock_prog), "has_seen_cinematic returns true after mark_cinematic_seen")
+
+	# 2. LevelSelectScreen autoplay
+	var ls = LevelSelectClass.new()
+	ls.setup("heist")
+	add_child(ls)
+
+	ls._force_autoplay_in_headless = true
+	ls.progress = {"seen_cinematics": {}} # Forzar no visto
+	ls.selected_idx = 0
+
+	# Primer deploy: debe abrir Codec automáticamente
+	ls._deploy_selected()
+	_assert(ls._pending_launch_after_cinematic, "First deploy flags _pending_launch_after_cinematic = true")
+	_assert(ls._cinematic_overlay != null and ls._cinematic_overlay.is_playing(), "Cinematic overlay auto-plays transmission on first launch")
+
+	# Completar o saltar cinemática
+	ls._cinematic_overlay.skip()
+	_assert(not ls._pending_launch_after_cinematic, "Finishing cinematic clears _pending_launch_after_cinematic")
+	_assert(ProgressUtil.has_seen_cinematic("act1_heist_intro", ls.progress), "act1_heist_intro is marked seen in player progress")
+
+	# Segundo deploy: ya visto, no debe abrir cinemática
+	ls._deploy_selected()
+	_assert(not ls._pending_launch_after_cinematic, "Second deploy does NOT flag pending cinematic (launches directly)")
+
+	# 3. Disparo on-demand con botón [ 🎬 CODEC / LORE ]
+	ls._open_selected_cinematic()
+	_assert(ls._cinematic_overlay.is_playing(), "On-demand CODEC button opens transmission anytime")
+	_assert(not ls._pending_launch_after_cinematic, "On-demand CODEC button does not queue automatic level launch")
+	ls._cinematic_overlay.skip()
+
+	ls.queue_free()

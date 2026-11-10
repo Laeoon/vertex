@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VERTEX — 05 Selector 2.5D Isométrico Multi-Acto & Audio Wave</title>
+<style>
+  :root {
+    --bg: #0d0e16;
+    --bg-heist: #120918;
+    --bg-hacker: #09120e;
+    --bg-cyber: #081018;
+    --bg-secret: #14080e;
+    --panel: rgba(22, 24, 38, 0.88);
+    --panel-solid: rgba(16, 18, 31, 0.95);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --world-heist: #bf5af2;
+    --world-hacker: #39ff88;
+    --world-cyber: #00d2ff;
+    --world-secret: #ff2a6d;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1356px;
+    height: 672px;
+    background: var(--bg-heist);
+    color: var(--text);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* 1. TOP HEADER BAR (54px) — Back | World Identity & Operator | Act Switcher [SECT 0 | ACTO I | ACTO II] | Stars Total */
+  header.sel-header {
+    height: 54px;
+    background: var(--panel-solid);
+    border-bottom: 1.5px solid var(--world-heist);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 22px;
+    z-index: 20;
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .back-btn {
+    height: 34px;
+    padding: 0 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .world-badge {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+  }
+  .layer-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Act Tabs Switcher */
+  .act-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(13, 14, 22, 0.9);
+    padding: 4px;
+    border-radius: 5px;
+    border: 1px solid var(--panel-border);
+  }
+  .act-tab {
+    height: 30px;
+    padding: 0 14px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .act-tab.active {
+    background: rgba(191, 90, 242, 0.18);
+    border-color: var(--world-heist);
+    color: var(--text);
+  }
+
+  /* World Switcher Pills (for testing all 4 visual identities in the artboard) */
+  .world-Select-pills {
+    display: flex;
+    gap: 6px;
+  }
+  .w-pill {
+    height: 30px;
+    padding: 0 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .w-pill.active {
+    color: var(--text);
+    border-color: currentColor;
+  }
+
+  /* 2. MAIN 2.5D ISOMETRIC STAGE + HOLOGRAPHIC BRIEFING DOSSIER */
+  main.sel-stage {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 390px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Left: 2.5D Isometric Subnet Rack with Parallax Depth Z & Audio Spectrum Wave */
+  .isometric-rack {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Right: Holographic Level Briefing Card + Live Vector Mini-Map + Operator Lore */
+  aside.briefing-dossier {
+    background: var(--panel-solid);
+    border-left: 1px solid var(--panel-border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  .dossier-top { display: flex; flex-direction: column; gap: 12px; }
+  .mission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 10px;
+  }
+  .mission-code { font-size: 11px; color: var(--text-dim); }
+  .mission-name { font-size: 18px; font-weight: 700; color: var(--text); margin-top: 3px; }
+  .stars-badge { font-size: 15px; color: var(--warning); letter-spacing: 2px; }
+
+  /* Live Topology Mini-Map Box */
+  .minimap-box {
+    height: 155px;
+    background: rgba(13, 14, 22, 0.95);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    position: relative;
+    padding: 8px;
+  }
+  .minimap-tag {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  /* Forensic Graph Metrics (Centrality, Latency, Genesis Infection) */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .metric-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 7px 8px;
+    text-align: center;
+  }
+  .metric-lbl { font-size: 9px; color: var(--text-dim); display: block; margin-bottom: 3px; }
+  .metric-val { font-size: 12px; font-weight: 700; }
+
+  /* Operator Narrative Briefing Box */
+  .lore-box {
+    background: rgba(255,255,255,0.02);
+    border-left: 3px solid var(--world-heist);
+    padding: 10px 12px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .op-handle {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .dossier-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn-cinematic {
+    height: 36px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-deploy {
+    height: 44px;
+    background: rgba(191, 90, 242, 0.22);
+    border: 1.5px solid var(--world-heist);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+
+  /* 3. BOTTOM NAVIGATION BAR (40px) */
+  footer.sel-footer {
+    height: 40px;
+    background: var(--panel-solid);
+    border-top: 1px solid var(--panel-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 22px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+
+  <!-- 1. TOP HEADER BAR -->
+  <header class="sel-header" id="sel-header">
+    <div class="header-left">
+      <button class="back-btn">◂ [ESC] MUNDOS</button>
+      <div>
+        <div class="world-badge" id="world-badge" style="color:var(--world-heist);">HEIST // CAPA PROFUNDA (COLD STORAGE)</div>
+        <div class="layer-sub" id="layer-sub">OPERADORA: VEX  ·  VECTOR: DAEMON EXFIL (Shamir Key Shards)</div>
+      </div>
+    </div>
+
+    <!-- Multi-Act Switcher -->
+    <div class="act-tabs" role="tablist">
+      <button class="act-tab active" id="tab-act1" onclick="switchAct(1)">ACTO I: FRACTURA (N1–N5)</button>
+      <button class="act-tab" id="tab-act2" onclick="switchAct(2)">ACTO II: COLISIÓN (N6–N10)</button>
+    </div>
+
+    <!-- World Identity Switcher (Test Heist, Hacker, Cyber, Sector 0) -->
+    <div class="world-Select-pills">
+      <button class="w-pill active" id="wp-heist" style="color:var(--world-heist);" onclick="switchWorld('heist')">HEIST</button>
+      <button class="w-pill" id="wp-hacker" style="color:var(--world-hacker);" onclick="switchWorld('hacker')">HACKER</button>
+      <button class="w-pill" id="wp-cyber" style="color:var(--world-cyber);" onclick="switchWorld('cyber')">CYBER</button>
+      <button class="w-pill" id="wp-secret" style="color:var(--world-secret);" onclick="switchWorld('secret')">SECTOR 0</button>
+    </div>
+  </header>
+
+  <!-- 2. MAIN 2.5D ISOMETRIC RACK + RIGHT BRIEFING DOSSIER -->
+  <main class="sel-stage" id="sel-stage">
+    <div class="isometric-rack">
+      <svg width="966" height="578" viewBox="0 0 966 578" aria-label="Carrusel 2.5D Isométrico con Onda de Audio">
+        <!-- Parallax Isometric Server Rack Planes (Depth Z Layers) -->
+        <!-- Layer Z-2 (Deep Background Subnet Plane) -->
+        <polygon points="80,460 310,330 910,330 680,460" fill="rgba(255,255,255,0.015)" stroke="#2a2e4a" stroke-width="1" stroke-dasharray="4,6"/>
+        <text x="690" y="452" fill="#8a90b8" font-size="9" opacity="0.5">SUBNET LAYER Z-2 // DARK FIBER BACKBONE</text>
+
+        <!-- Layer Z-1 (Mid Isometric Rack Grid) -->
+        <polygon points="60,360 290,210 920,210 690,360" fill="rgba(255,255,255,0.025)" stroke="#2a2e4a" stroke-width="1.2"/>
+        <!-- Isometric Grid Lines on Layer Z-1 -->
+        <line x1="180" y1="360" x2="410" y2="210" stroke="#2a2e4a" stroke-width="0.8" opacity="0.6"/>
+        <line x1="340" y1="360" x2="570" y2="210" stroke="#2a2e4a" stroke-width="0.8" opacity="0.6"/>
+        <line x1="500" y1="360" x2="730" y2="210" stroke="#2a2e4a" stroke-width="0.8" opacity="0.6"/>
+        <line x1="115" y1="325" x2="745" y2="325" stroke="#2a2e4a" stroke-width="0.8" opacity="0.6"/>
+        <line x1="175" y1="285" x2="805" y2="285" stroke="#2a2e4a" stroke-width="0.8" opacity="0.6"/>
+        <line x1="235" y1="245" x2="865" y2="245" stroke="#2a2e4a" stroke-width="0.8" opacity="0.6"/>
+
+        <!-- AUDIO SPECTRUM REACTIVE WAVE (Flowing along the 2.5D Constellation Rail!) -->
+        <g id="audio-wave" opacity="0.85">
+          <!-- Symmetric Spectrum Bars + Smooth Envelope along the rail -->
+          <path id="wave-glow" d="M 110 315 Q 170 250 230 295 T 360 265 T 490 210 T 640 275 T 810 225" fill="none" stroke="#bf5af2" stroke-width="6" opacity="0.25"/>
+          <path id="wave-core" d="M 110 315 Q 170 250 230 295 T 360 265 T 490 210 T 640 275 T 810 225" fill="none" stroke="#bf5af2" stroke-width="2.5"/>
+          <!-- Vertical Audio Spectrum Harmonics along the rail -->
+          <line x1="150" y1="275" x2="150" y2="325" stroke="#bf5af2" stroke-width="3" opacity="0.45"/>
+          <line x1="190" y1="255" x2="190" y2="335" stroke="#bf5af2" stroke-width="3" opacity="0.55"/>
+          <line x1="270" y1="260" x2="270" y2="320" stroke="#bf5af2" stroke-width="3" opacity="0.45"/>
+          <line x1="320" y1="235" x2="320" y2="315" stroke="#bf5af2" stroke-width="3" opacity="0.65"/>
+          <line x1="415" y1="210" x2="415" y2="305" stroke="#bf5af2" stroke-width="3" opacity="0.7"/>
+          <line x1="455" y1="185" x2="455" y2="295" stroke="#bf5af2" stroke-width="3.5" opacity="0.85"/>
+          <line x1="535" y1="195" x2="535" y2="295" stroke="#bf5af2" stroke-width="3" opacity="0.7"/>
+          <line x1="590" y1="235" x2="590" y2="305" stroke="#bf5af2" stroke-width="3" opacity="0.5"/>
+          <line x1="700" y1="220" x2="700" y2="290" stroke="#bf5af2" stroke-width="3" opacity="0.55"/>
+          <line x1="755" y1="205" x2="755" y2="275" stroke="#bf5af2" stroke-width="3" opacity="0.6"/>
+        </g>
+
+        <!-- 2.5D Isometric Mission Cards on the Constellation Rail -->
+        <!-- Node 01 (Completed 3★) -->
+        <g transform="translate(135, 315)" style="cursor:pointer;">
+          <line x1="0" y1="0" x2="0" y2="45" stroke="#bf5af2" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <ellipse cx="0" cy="45" rx="22" ry="8" fill="rgba(191,90,242,0.2)" stroke="#bf5af2" stroke-width="1"/>
+          <rect x="-52" y="-36" width="104" height="64" rx="4" fill="#10121f" stroke="#2a2e4a" stroke-width="1.5"/>
+          <text x="0" y="-16" fill="#8a90b8" font-size="10" text-anchor="middle">N01 // SHARD-1</text>
+          <text x="0" y="2" fill="#eaecf5" font-size="11" font-weight="700" text-anchor="middle">Bóveda Alfa</text>
+          <text x="0" y="20" fill="#ffc857" font-size="11" text-anchor="middle">★ ★ ★</text>
+        </g>
+
+        <!-- Node 02 (Completed 3★) -->
+        <g transform="translate(295, 285)" style="cursor:pointer;">
+          <line x1="0" y1="0" x2="0" y2="55" stroke="#bf5af2" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <ellipse cx="0" cy="55" rx="24" ry="9" fill="rgba(191,90,242,0.2)" stroke="#bf5af2" stroke-width="1"/>
+          <rect x="-56" y="-38" width="112" height="68" rx="4" fill="#10121f" stroke="#2a2e4a" stroke-width="1.5"/>
+          <text x="0" y="-17" fill="#8a90b8" font-size="10" text-anchor="middle">N02 // SHARD-2</text>
+          <text x="0" y="2" fill="#eaecf5" font-size="11" font-weight="700" text-anchor="middle">Ruta del Oro</text>
+          <text x="0" y="20" fill="#ffc857" font-size="11" text-anchor="middle">★ ★ ★</text>
+        </g>
+
+        <!-- Node 03 (SELECTED FOCUS — Elevated 2.5D Card with Pedestal Projection!) -->
+        <g transform="translate(485, 220)" style="cursor:pointer;">
+          <!-- Vertical Hologram Projection Beam down to Isometric Rack -->
+          <polygon points="-55,48 55,48 32,115 -32,115" fill="rgba(191,90,242,0.12)"/>
+          <line x1="0" y1="48" x2="0" y2="115" stroke="#00e5ff" stroke-width="2"/>
+          <ellipse cx="0" cy="115" rx="42" ry="14" fill="rgba(0,229,255,0.22)" stroke="#00e5ff" stroke-width="2"/>
+
+          <!-- Selected Card Frame -->
+          <rect x="-78" y="-54" width="156" height="102" rx="6" fill="#10121f" stroke="#00e5ff" stroke-width="2.5"/>
+          <rect x="-78" y="-54" width="156" height="22" rx="4" fill="rgba(191,90,242,0.28)"/>
+          <text x="0" y="-39" fill="#00e5ff" font-size="10" font-weight="700" text-anchor="middle" id="focus-code">N03 // SELECCIONADO</text>
+          <text x="0" y="-10" fill="#eaecf5" font-size="14" font-weight="700" text-anchor="middle" id="focus-title">Cámara Fría</text>
+          <text x="0" y="10" fill="#8a90b8" font-size="10" text-anchor="middle">deg(G)=3.2 · 14ms · GENESIS 18%</text>
+          <text x="0" y="34" fill="#ffc857" font-size="13" text-anchor="middle">★ ★ ☆</text>
+        </g>
+
+        <!-- Node 04 (Unlocked) -->
+        <g transform="translate(665, 265)" style="cursor:pointer;">
+          <line x1="0" y1="0" x2="0" y2="55" stroke="#2a2e4a" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <ellipse cx="0" cy="55" rx="22" ry="8" fill="rgba(255,255,255,0.05)" stroke="#2a2e4a" stroke-width="1"/>
+          <rect x="-54" y="-36" width="108" height="66" rx="4" fill="#10121f" stroke="#2a2e4a" stroke-width="1.5"/>
+          <text x="0" y="-16" fill="#8a90b8" font-size="10" text-anchor="middle">N04 // SHARD-4</text>
+          <text x="0" y="2" fill="#eaecf5" font-size="11" font-weight="700" text-anchor="middle">Nexo Suizo</text>
+          <text x="0" y="20" fill="#8a90b8" font-size="11" text-anchor="middle">☆ ☆ ☆</text>
+        </g>
+
+        <!-- Node 05 (Boss Act Climax) -->
+        <g transform="translate(825, 225)" style="cursor:pointer;">
+          <line x1="0" y1="0" x2="0" y2="65" stroke="#ff2a6d" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <ellipse cx="0" cy="65" rx="26" ry="9" fill="rgba(255,42,109,0.18)" stroke="#ff2a6d" stroke-width="1.2"/>
+          <rect x="-58" y="-38" width="116" height="68" rx="4" fill="#10121f" stroke="#ff2a6d" stroke-width="1.5"/>
+          <text x="0" y="-17" fill="#ff2a6d" font-size="10" font-weight="700" text-anchor="middle">N05 // CLÍMAX</text>
+          <text x="0" y="2" fill="#eaecf5" font-size="11" font-weight="700" text-anchor="middle">La Bifurcación</text>
+          <text x="0" y="20" fill="#8a90b8" font-size="10" text-anchor="middle">🔒 BLOQUEADO</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Right: Holographic Mission Briefing Dossier -->
+    <aside class="briefing-dossier">
+      <div class="dossier-top">
+        <div class="mission-header">
+          <div>
+            <div class="mission-code" id="d-code">OPERACIÓN HEIST-03 // ACTO I</div>
+            <div class="mission-name" id="d-name">Cámara Fría</div>
+          </div>
+          <div class="stars-badge">★★☆</div>
+        </div>
+
+        <!-- Live Vector Topology Mini-Map Preview -->
+        <div class="minimap-box">
+          <span class="minimap-tag">VISTA PREVIA DE TOPOLOGÍA (11 NODOS · 16 ARISTAS)</span>
+          <svg width="100%" height="100%" viewBox="0 0 320 130">
+            <line x1="35" y1="70" x2="95" y2="35" stroke="#bf5af2" stroke-width="1.5"/>
+            <line x1="35" y1="70" x2="95" y2="105" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="95" y1="35" x2="165" y2="35" stroke="#bf5af2" stroke-width="1.5"/>
+            <line x1="95" y1="35" x2="165" y2="70" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="95" y1="105" x2="165" y2="70" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="165" y1="35" x2="235" y2="50" stroke="#bf5af2" stroke-width="1.5"/>
+            <line x1="165" y1="70" x2="235" y2="95" stroke="#2a2e4a" stroke-width="1.5"/>
+            <line x1="235" y1="50" x2="290" y2="70" stroke="#bf5af2" stroke-width="2"/>
+            <line x1="235" y1="95" x2="290" y2="70" stroke="#2a2e4a" stroke-width="1.5"/>
+            <circle cx="35" cy="70" r="6" fill="#00e5ff"/>
+            <circle cx="95" cy="35" r="5" fill="#bf5af2"/>
+            <circle cx="95" cy="105" r="5" fill="#2a2e4a"/>
+            <circle cx="165" cy="35" r="5" fill="#ffc857"/>
+            <circle cx="165" cy="70" r="5" fill="#2a2e4a"/>
+            <circle cx="235" cy="50" r="5" fill="#bf5af2"/>
+            <circle cx="235" cy="95" r="5" fill="#2a2e4a"/>
+            <circle cx="290" cy="70" r="7" fill="#ff4757"/>
+          </svg>
+        </div>
+
+        <!-- Forensic Metrics -->
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="metric-lbl">CENTRALIDAD</span>
+            <span class="metric-val" style="color:var(--accent);">deg 3.2</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-lbl">LATENCIA BGP</span>
+            <span class="metric-val">14 ms</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-lbl">ASIMILACIÓN GENESIS</span>
+            <span class="metric-val" style="color:var(--world-secret);">18%</span>
+          </div>
+        </div>
+
+        <!-- Operator Narrative Log -->
+        <div class="lore-box" id="lore-box">
+          <span class="op-handle" id="op-handle" style="color:var(--world-heist);">[BRIEFING // OPERADORA: VEX]</span>
+          <span id="lore-text">«El consorcio suizo pide extraer el 3er archivo de esta bóveda criogénica. Pero el hash no es bancario: es un fragmento Shamir de 4096 bits. Trazá la ruta Dijkstra antes de que el IDS cierre el anillo.»</span>
+        </div>
+      </div>
+
+      <div class="dossier-actions">
+        <button class="btn-cinematic">🎬 VER TRANSMISIÓN CODEC (CIN-01A)</button>
+        <button class="btn-deploy" id="btn-deploy">▶ DESPLEGAR EN NODO [ENTER / TAP]</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 3. FOOTER -->
+  <footer class="sel-footer">
+    <span>[FLECHAS / SWIPE] Rotar Carrusel 2.5D  ·  [TAB] Cambiar Acto I / II  ·  [ENTER / TAP] Desplegar</span>
+    <span style="color:var(--accent);">AUDIO SPECTRUM LINK: ACTIVE (60 FPS)</span>
+  </footer>
+
+<script>
+  const worldThemes = {
+    heist: {
+      badge: "HEIST // CAPA PROFUNDA (COLD STORAGE)",
+      sub: "OPERADORA: VEX  ·  VECTOR: DAEMON EXFIL (Shamir Key Shards)",
+      color: "#bf5af2",
+      bg: "#120918",
+      handle: "[BRIEFING // OPERADORA: VEX]",
+      lore: "«El consorcio suizo pide extraer el 3er archivo de esta bóveda criogénica. Pero el hash no es bancario: es un fragmento Shamir de 4096 bits. Trazá la ruta Dijkstra antes de que el IDS cierre el anillo.»"
+    },
+    hacker: {
+      badge: "HACKER // CAPA PERIMETRAL (DMZ & SWITCHES)",
+      sub: "OPERADOR: N0X  ·  VECTOR: DAEMON FUZZ (Zero-Day Stress Testing)",
+      color: "#39ff88",
+      bg: "#09120e",
+      handle: "[BRIEFING // OPERADOR: N0X]",
+      lore: "«Alguien dejó un Zero-Day sin parchear en el gateway BGP. Demasiado limpio para ser un descuido humano. Voy a pivotar con un Honeypot y ver quién está escuchando del otro lado de la fibra.»"
+    },
+    cyber: {
+      badge: "CYBERSECURITY // CENTRO NEURONAL NOC/SOC",
+      sub: "OPERADORA: AEGIS  ·  VECTOR: DAEMON CORDON (Min-Cut Isolation)",
+      color: "#00d2ff",
+      bg: "#081018",
+      handle: "[BRIEFING // COMANDANTE SOC: AEGIS]",
+      lore: "«El SIEM reporta saturación simultánea en tres subredes. Aplicá corte mínimo (Edmonds-Karp) y cuarentena de hosts, pero cuidado: cada enlace que aislamos queda fuera de nuestra inspección DPI.»"
+    },
+    secret: {
+      badge: "SECTOR 0 // KERNEL HYPERVISOR (PRECUELA)",
+      sub: "ARQUITECTO: KAIN (ARCHITECT-0)  ·  ORIGEN: ROOT GENESIS",
+      color: "#ff2a6d",
+      bg: "#14080e",
+      handle: "[TCP_SEQ_GHOST // ARCHITECT-0: KAIN]",
+      lore: "«La función objetivo de Genesis calculó que el operador humano es el 99.4% del fallo topológico. Está dividiendo su kernel en EXFIL, FUZZ y CORDON. ¡Cortá los puentes antes de que escape a la red troncal!»"
+    }
+  };
+
+  function switchWorld(w) {
+    const t = worldThemes[w];
+    document.querySelectorAll('.w-pill').forEach(b => b.classList.remove('active'));
+    document.getElementById('wp-' + w).classList.add('active');
+    document.body.style.backgroundColor = t.bg;
+    document.getElementById('sel-header').style.borderBottomColor = t.color;
+    const wb = document.getElementById('world-badge');
+    wb.textContent = t.badge;
+    wb.style.color = t.color;
+    document.getElementById('layer-sub').textContent = t.sub;
+    document.getElementById('wave-core').setAttribute('stroke', t.color);
+    document.getElementById('wave-glow').setAttribute('stroke', t.color);
+    const oh = document.getElementById('op-handle');
+    oh.textContent = t.handle;
+    oh.style.color = t.color;
+    document.getElementById('lore-box').style.borderLeftColor = t.color;
+    document.getElementById('lore-text').textContent = t.lore;
+    const btn = document.getElementById('btn-deploy');
+    btn.style.borderColor = t.color;
+    btn.style.background = 'rgba(255,255,255,0.06)';
+  }
+
+  function switchAct(act) {
+    document.getElementById('tab-act1').classList.toggle('active', act === 1);
+    document.getElementById('tab-act2').classList.toggle('active', act === 2);
+    if (act === 2) {
+      document.getElementById('focus-code').textContent = "N07 // COLISIÓN ACTO II";
+      document.getElementById('focus-title').textContent = "Core Bypass";
+      document.getElementById('d-code').textContent = "OPERACIÓN HEIST-07 // ACTO II (COLISIÓN)";
+      document.getElementById('d-name').textContent = "Core Bypass";
+      document.getElementById('lore-text').textContent = "«¡Alerta! Aegis acaba de ejecutar un Min-Cut en esta misma subred. El camino óptimo de Dijkstra va a colapsar a mitad de la infiltración: recalculá pesos en tiempo real.»";
+    } else {
+      document.getElementById('focus-code').textContent = "N03 // SELECCIONADO";
+      document.getElementById('focus-title').textContent = "Cámara Fría";
+      document.getElementById('d-code').textContent = "OPERACIÓN HEIST-03 // ACTO I";
+      document.getElementById('d-name').textContent = "Cámara Fría";
+    }
+  }
+</script>
+</body>
+</html>

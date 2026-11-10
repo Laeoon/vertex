@@ -17,6 +17,9 @@ var idle_wave_enabled: bool = true
 var _current_mags: PackedFloat32Array = PackedFloat32Array()
 var _peak_mags: PackedFloat32Array = PackedFloat32Array()
 var _time: float = 0.0
+var _bass_energy: float = 0.0
+var _mid_energy: float = 0.0
+var _high_energy: float = 0.0
 
 
 func _init(p_band_count: int = 32) -> void:
@@ -61,6 +64,31 @@ func update(delta: float) -> void:
 			_peak_mags[i] = _current_mags[i]
 		else:
 			_peak_mags[i] = maxf(0.0, _peak_mags[i] - peak_decay_speed * delta)
+
+	# Actualizar métricas acumuladas de bandas
+	var n_mags := _current_mags.size()
+	if n_mags > 0:
+		var b_tot: float = 0.0
+		var m_tot: float = 0.0
+		var h_tot: float = 0.0
+		var q1 := maxi(1, n_mags / 4)
+		var q2 := maxi(q1 + 1, (n_mags * 3) / 4)
+		for b in range(n_mags):
+			var v := _current_mags[b]
+			if b < q1:
+				b_tot += v
+			elif b < q2:
+				m_tot += v
+			else:
+				h_tot += v
+		_bass_energy = b_tot / float(q1)
+		_mid_energy = m_tot / float(maxi(1, q2 - q1))
+		_high_energy = h_tot / float(maxi(1, n_mags - q2))
+
+
+## Devuelve la energía actual del rango de bajos (0.0..1.0) para pulsos reactivos.
+func get_bass_energy() -> float:
+	return _bass_energy
 
 
 func _fetch_magnitudes_from_audio_server() -> PackedFloat32Array:
@@ -189,13 +217,121 @@ func draw_track_waveform(
 		var bar_col := BrandClass.with_alpha(theme_color, bar_alpha)
 		canvas.draw_line(Vector2(x, top_y), Vector2(x, bot_y), bar_col, 1.6)
 
-	# 2. Contorno superior e inferior brillante (líneas de envolvente)
-	var glow_col := BrandClass.with_alpha(theme_color.lightened(0.40), 0.85 * alpha_mult)
-	var inner_col := BrandClass.with_alpha(theme_color, 0.40 * alpha_mult)
+	# 2. Contorno superior e inferior brillante multi-pase (glow ancho, bloom medio y núcleo brillante)
+	var glow_wide_col := BrandClass.with_alpha(theme_color, 0.20 * alpha_mult)
+	var bloom_med_col := BrandClass.with_alpha(theme_color.lightened(0.25), 0.45 * alpha_mult)
+	var core_bright_col := BrandClass.with_alpha(theme_color.lightened(0.60), 0.95 * alpha_mult)
+	var inner_col := BrandClass.with_alpha(theme_color, 0.35 * alpha_mult)
 
+	# Pase 1: Resplandor amplio suave (width = 8.0, alpha = 0.20)
 	for j in range(top_pts.size() - 1):
-		canvas.draw_line(top_pts[j], top_pts[j + 1], glow_col, 1.8)
-		canvas.draw_line(bot_pts[j], bot_pts[j + 1], glow_col, 1.8)
+		canvas.draw_line(top_pts[j], top_pts[j + 1], glow_wide_col, 8.0)
+		canvas.draw_line(bot_pts[j], bot_pts[j + 1], glow_wide_col, 8.0)
+
+	# Pase 2: Bloom medio (width = 4.0, alpha = 0.45)
+	for j in range(top_pts.size() - 1):
+		canvas.draw_line(top_pts[j], top_pts[j + 1], bloom_med_col, 4.0)
+		canvas.draw_line(bot_pts[j], bot_pts[j + 1], bloom_med_col, 4.0)
+
+	# Pase 3: Núcleo brillante concentrado (width = 2.5, alpha = 0.95)
+	for j in range(top_pts.size() - 1):
+		canvas.draw_line(top_pts[j], top_pts[j + 1], core_bright_col, 2.5)
+		canvas.draw_line(bot_pts[j], bot_pts[j + 1], core_bright_col, 2.5)
+		canvas.draw_line(inner_top_pts[j], inner_top_pts[j + 1], inner_col, 1.0)
+		canvas.draw_line(inner_bot_pts[j], inner_bot_pts[j + 1], inner_col, 1.0)
+
+
+## Dibuja la onda reactiva a lo largo de una espina diagonal 3D con perspectiva de profundidad.
+func draw_spine_waveform(
+	canvas: CanvasItem,
+	from_pos: Vector2,
+	to_pos: Vector2,
+	theme_color: Color = Color("00e5ff"),
+	max_amplitude: float = 60.0,
+	slice_count: int = 90,
+	alpha_mult: float = 1.0
+) -> void:
+	if slice_count < 4:
+		return
+
+	var spine_vec := to_pos - from_pos
+	var spine_len := spine_vec.length()
+	if spine_len < 10.0:
+		return
+
+	var spine_dir := spine_vec / spine_len
+	# Vector perpendicular normalizado en 2D (arriba a la izquierda relativo a la espina)
+	var perp := Vector2(-spine_dir.y, spine_dir.x)
+
+	var top_pts: PackedVector2Array = PackedVector2Array()
+	var bot_pts: PackedVector2Array = PackedVector2Array()
+	var inner_top_pts: PackedVector2Array = PackedVector2Array()
+	var inner_bot_pts: PackedVector2Array = PackedVector2Array()
+
+	var n_mags := _current_mags.size()
+
+	for i in range(slice_count):
+		var t := float(i) / float(slice_count - 1)
+		# Escala de perspectiva: mayor en primer plano (t=0), menor en el horizonte profundo (t=1)
+		var persp_scale := lerpf(1.15, 0.42, t)
+
+		var base_p := from_pos.lerp(to_pos, t)
+
+		# Muestreo simétrico
+		var dist_to_center := absf(t - 0.45) * 2.0
+		var sym_t := clampf(1.0 - dist_to_center, 0.0, 1.0)
+		var band_f := sym_t * float(band_count - 1)
+		var b_idx0 := clampi(int(floor(band_f)), 0, band_count - 1)
+		var b_idx1 := clampi(b_idx0 + 1, 0, band_count - 1)
+		var frac := band_f - float(b_idx0)
+
+		var m0 := _current_mags[b_idx0] if b_idx0 < n_mags else 0.0
+		var m1 := _current_mags[b_idx1] if b_idx1 < n_mags else 0.0
+		var local_spec := lerpf(m0, m1, frac)
+
+		var audio_env := local_spec * 0.45 + _bass_energy * 0.35 + (_mid_energy + _high_energy) * 0.20
+		var ripple := sin(_time * 3.4 + t * 16.0) * 0.06
+		var energy := clampf(audio_env + ripple, 0.04, 1.0)
+
+		var edge_fade := sin(t * PI)
+		edge_fade = pow(edge_fade, 0.45)
+
+		var h := energy * max_amplitude * persp_scale * edge_fade
+		h = maxf(h, 2.0 * persp_scale)
+
+		var p_top := base_p - perp * h
+		var p_bot := base_p + perp * h
+
+		top_pts.append(p_top)
+		bot_pts.append(p_bot)
+		inner_top_pts.append(base_p - perp * (h * 0.45))
+		inner_bot_pts.append(base_p + perp * (h * 0.45))
+
+		# Barras verticales/perpendiculares del espectro
+		var bar_alpha := clampf((0.15 + energy * 0.55) * alpha_mult * edge_fade, 0.04, 0.85)
+		var bar_col := BrandClass.with_alpha(theme_color, bar_alpha)
+		canvas.draw_line(p_top, p_bot, bar_col, maxf(1.0, 2.2 * persp_scale))
+
+	# Contornos multi-pase a lo largo de la espina
+	var glow_wide_col := BrandClass.with_alpha(theme_color, 0.20 * alpha_mult)
+	var bloom_med_col := BrandClass.with_alpha(theme_color.lightened(0.25), 0.45 * alpha_mult)
+	var core_bright_col := BrandClass.with_alpha(theme_color.lightened(0.60), 0.95 * alpha_mult)
+	var inner_col := BrandClass.with_alpha(theme_color, 0.35 * alpha_mult)
+
+	# Pase 1: Resplandor amplio (width = 8.0)
+	for j in range(top_pts.size() - 1):
+		canvas.draw_line(top_pts[j], top_pts[j + 1], glow_wide_col, 8.0)
+		canvas.draw_line(bot_pts[j], bot_pts[j + 1], glow_wide_col, 8.0)
+
+	# Pase 2: Bloom medio (width = 4.0)
+	for j in range(top_pts.size() - 1):
+		canvas.draw_line(top_pts[j], top_pts[j + 1], bloom_med_col, 4.0)
+		canvas.draw_line(bot_pts[j], bot_pts[j + 1], bloom_med_col, 4.0)
+
+	# Pase 3: Núcleo brillante (width = 2.5)
+	for j in range(top_pts.size() - 1):
+		canvas.draw_line(top_pts[j], top_pts[j + 1], core_bright_col, 2.5)
+		canvas.draw_line(bot_pts[j], bot_pts[j + 1], core_bright_col, 2.5)
 		canvas.draw_line(inner_top_pts[j], inner_top_pts[j + 1], inner_col, 1.0)
 		canvas.draw_line(inner_bot_pts[j], inner_bot_pts[j + 1], inner_col, 1.0)
 
