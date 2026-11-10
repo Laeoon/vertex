@@ -78,42 +78,56 @@ static func resolve_node_display_name(nid: Variant, node_cache: Dictionary) -> S
 	return str(nid)
 
 
-static func get_defender_pill_rects(
+static func get_top_perk_rects(
 	vp_size: Vector2,
-	p_font: Font,
-	p_font_size: int,
+	mode: String,
 	fog_of_war: bool = false,
-	telemetry_intercepted: bool = false
+	telemetry_intercepted: bool = false,
+	p_font: Font = null,
+	p_font_size: int = 14,
+	hacker_state: Dictionary = {}
 ) -> Array[Dictionary]:
-	var pills_info: Array[Dictionary] = [
-		{"id": "edges", "text": "[1] SEGMENTAR ARISTA", "color": BrandClass.ACCENT},
-		{"id": "firewall", "text": "[2] FIREWALL", "color": Color(0.2, 0.7, 1.0)},
-		{"id": "quarantine", "text": "[3] CUARENTENA", "color": Color(1.0, 0.75, 0.0)},
-	]
-	if fog_of_war or telemetry_intercepted:
+	var pills_info: Array[Dictionary] = []
+	if mode == "hacker" or mode == "secret":
+		var exps: Dictionary = hacker_state.get("exploits", {}) if hacker_state.has("exploits") else hacker_state
+		var byp_cnt: int = exps.get("bypass", 0)
+		var esc_cnt: int = exps.get("escalate", 0)
+		var per_cnt: int = exps.get("persist", 0)
+		var dec_cnt: int = exps.get("decoy", 0)
+
+		pills_info.append({"id": "scan", "text": "[X] SCAN", "color": BrandClass.SUCCESS})
+		pills_info.append({"id": "bypass", "text": "[1] BYPASS x%d" % byp_cnt, "color": BrandClass.ACCENT})
+		pills_info.append({"id": "escalate", "text": "[2] ESCALATE x%d" % esc_cnt, "color": Color(0.4, 0.7, 1.0)})
+		pills_info.append({"id": "persist", "text": "[3] PERSIST x%d" % per_cnt, "color": Color(0.9, 0.5, 1.0)})
+		pills_info.append({"id": "decoy", "text": "[4] HONEYPOT x%d" % dec_cnt, "color": Color(1.0, 0.75, 0.0)})
+	elif mode == "defender":
+		pills_info.append({"id": "edges", "text": "[1] SEGMENTAR ARISTA", "color": BrandClass.ACCENT})
+		pills_info.append({"id": "firewall", "text": "[2] FIREWALL", "color": Color(0.2, 0.7, 1.0)})
+		pills_info.append({"id": "quarantine", "text": "[3] CUARENTENA", "color": Color(1.0, 0.75, 0.0)})
 		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[4] RADAR"
 		pills_info.append({"id": "radar", "text": p_label, "color": BrandClass.WARNING if telemetry_intercepted else Color("80d8ff")})
 	else:
-		pills_info.append({"id": "radar", "text": "[4] RADAR", "color": Color("80d8ff")})
-	pills_info.append({"id": "terminal", "text": "[~] CLI", "color": Color("00e5ff")})
+		# Heist mode
+		pills_info.append({"id": "tab_neighbor", "text": "[TAB] VECINO", "color": BrandClass.SUCCESS})
+		pills_info.append({"id": "optimal_route", "text": "[P] RUTA DIJKSTRA", "color": BrandClass.ACCENT})
 
 	var pill_h := 36.0
-	var gap := 12.0
+	var gap := 8.0
 	var total_w := 0.0
 	var widths: Array[float] = []
 
 	for p in pills_info:
 		var txt: String = p["text"]
-		var tw: float = 80.0
+		var tw: float = 70.0
 		if p_font != null:
 			tw = p_font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, p_font_size - 3).x
-		var w := tw + 24.0
+		var w := tw + 20.0
 		widths.append(w)
 		total_w += w
-	total_w += gap * float(pills_info.size() - 1)
+	total_w += gap * float(maxi(0, pills_info.size() - 1))
 
 	var start_x := (vp_size.x - total_w) / 2.0
-	var pill_y := 6.0
+	var pill_y := 8.0
 
 	var result: Array[Dictionary] = []
 	var cur_x := start_x
@@ -129,6 +143,16 @@ static func get_defender_pill_rects(
 		cur_x += w + gap
 
 	return result
+
+
+static func get_defender_pill_rects(
+	vp_size: Vector2,
+	p_font: Font,
+	p_font_size: int,
+	fog_of_war: bool = false,
+	telemetry_intercepted: bool = false
+) -> Array[Dictionary]:
+	return get_top_perk_rects(vp_size, "defender", fog_of_war, telemetry_intercepted, p_font, p_font_size)
 
 
 ## Sub-header ribbon dedicado para telemetría secundaria / Kain ghost stream (y = 48..76)
@@ -162,20 +186,44 @@ func draw_frame(d: Dictionary) -> void:
 	var zoom: float = d.get("topology_zoom", 1.0)
 	var has_transform: bool = pan != Vector2.ZERO or not is_equal_approx(zoom, 1.0)
 
+	var is_secret_sector: bool = str(d.get("level_key", "")).begins_with("secret") or d.get("world", "") == "secret" or str(d.get("titulo_nivel", "")).find("Sector 0") != -1 or d.node_positions.has(&"GenesisCore") or d.node_positions.has("GenesisCore")
+
+	var mode: String = "heist"
+	var mode_color := Color("#bf5af2")
+	var bg_color := Color("#120918")
+
+	if is_secret_sector:
+		mode = "secret"
+		mode_color = Color("#ff2a6d")
+		bg_color = Color("#14080e")
+	elif d.defender_mode:
+		mode = "defender"
+		mode_color = Color("#00d2ff")
+		bg_color = Color("#081018")
+	elif d.get("hacker_mode", false):
+		mode = "hacker"
+		mode_color = Color("#39ff88")
+		bg_color = Color("#09120e")
+
+	# BEFORE calling draw_set_transform: Full-Screen Mode Background in screen coordinates
+	_canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	draw_fullscreen_mode_background(d.vp_size, mode, mode_color, bg_color, pan, zoom, is_secret_sector)
+
 	# 1. Capa de topología: sujeta a pan y zoom
 	if has_transform:
 		_canvas.draw_set_transform(pan, 0.0, Vector2(zoom, zoom))
 
-	var is_secret_sector: bool = str(d.get("level_key", "")).begins_with("secret") or d.get("world", "") == "secret" or str(d.get("titulo_nivel", "")).find("Sector 0") != -1 or d.node_positions.has(&"GenesisCore") or d.node_positions.has("GenesisCore")
-	var core_pos: Vector2 = d.node_positions.get(&"GenesisCore", d.node_positions.get("GenesisCore", Vector2(935, 272))) as Vector2
-	if is_secret_sector:
-		_draw_kernel_void_background(d.vp_size, pan, zoom, core_pos)
-	else:
-		draw_background_grid(d.vp_size, pan, zoom)
+	# Anillos concéntricos de gravedad en torno al nodo meta en los 4 modos
+	var target_node: StringName = d.brain_enemy_target if d.defender_mode else d.target
+	if target_node == &"" and is_secret_sector:
+		target_node = &"GenesisCore" if d.node_positions.has(&"GenesisCore") else &"HexNode_1"
+	if d.node_positions.has(target_node):
+		var target_pos: Vector2 = d.node_positions[target_node] as Vector2
+		_draw_concentric_target_rings(target_pos, mode_color)
 
 	var hidden_nodes: Array = d.get("hidden_nodes", [])
 	var should_draw_enemy_path: bool = d.get("brain_path_revealed", true) if d.defender_mode else false
-	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if should_draw_enemy_path else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor, is_secret_sector)
+	draw_edges(d.graph, d.node_positions, d.blocked_edges, d.blocked_keys, d.current_path, d.node_radius, d.game_over, d.brain_hovered_edge if d.defender_mode else "", d.brain_enemy_path if should_draw_enemy_path else [], d.turn, d.unblock_flash_time, d.unblock_flash_edge, hidden_nodes, d.player_pos, d.selected_neighbor, is_secret_sector, mode)
 	if d.defender_mode:
 		var q_mode_active: bool = d.get("quarantine_mode", false)
 		var enemy_start_node: StringName = d.graph.nodes[0].id if d.graph != null and d.graph.nodes.size() > 0 else &""
@@ -208,11 +256,6 @@ func draw_frame(d: Dictionary) -> void:
 	else:
 		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display, d.get("node_cache", {}), d.get("hacker_state", {}), d.get("hacker_mode", false), is_secret_sector)
 
-	# Sub-header ribbon dedicado para estado / Kain stream (y = 48..76, fuera del canvas)
-	var mensaje_estado: String = d.get("mensaje_estado", "")
-	if (mensaje_estado != "" and not mensaje_estado.begins_with("Ve hacia")) or is_secret_sector:
-		draw_sub_header_ribbon(d.vp_size, mensaje_estado, is_secret_sector)
-
 	if d.mensaje_tutorial != "" and not d.game_over:
 		draw_tutorial_text(d.mensaje_tutorial)
 	if d.selected_neighbor != &"" and not d.game_over:
@@ -226,52 +269,80 @@ func draw_frame(d: Dictionary) -> void:
 	draw_tactical_action_dock(d)
 
 
-## Fondo Abisal de Kernel Panic / Glitch Void para el Sector 0 secreto (Artboard 03)
-func _draw_kernel_void_background(vp_size: Vector2, _pan: Vector2, _zoom: float, core_pos: Vector2 = Vector2(935, 272)) -> void:
-	# Fondo Crimson / Void Hypervisor profundo (#14080e)
-	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), Color("14080e"))
+## Fondo de pantalla completa con grilla infinita que jamás se encoje con zoom out
+func draw_fullscreen_mode_background(
+	vp_size: Vector2,
+	mode: String,
+	mode_color: Color,
+	bg_color: Color,
+	pan: Vector2,
+	zoom: float,
+	is_secret_sector: bool
+) -> void:
+	# 1. Relleno total del viewport
+	draw_rect(Rect2(0, 0, vp_size.x, vp_size.y), bg_color)
 
-	# Cuadrícula sutil crimson (espaciado 48px)
-	var grid_color := Color(1.0, 0.16, 0.42, 0.07)
-	var spacing := 48.0
-	var x: float = 0.0
-	while x <= vp_size.x:
-		draw_line(Vector2(x, 0), Vector2(x, vp_size.y), grid_color, 1.0)
-		x += spacing
-	var y: float = 0.0
-	while y <= vp_size.y:
-		draw_line(Vector2(0, y), Vector2(vp_size.x, y), grid_color, 1.0)
-		y += spacing
+	# 2. Grilla infinita que responde a pan y zoom
+	var z := zoom if zoom > 0.0 else 1.0
+	var spacing: float = 48.0 * z
+	while spacing < 32.0:
+		spacing *= 2.0
+	while spacing > 120.0:
+		spacing *= 0.5
 
-	# Anillos concéntricos de gravedad hipervisor centrados en GenesisCore (935, 272)
+	var grid_alpha := 0.08
+	var grid_col := Color(mode_color.r, mode_color.g, mode_color.b, grid_alpha)
+
+	var start_x := fmod(pan.x, spacing)
+	if start_x < 0.0:
+		start_x += spacing
+	while start_x <= vp_size.x:
+		draw_line(Vector2(start_x, 0), Vector2(start_x, vp_size.y), grid_col, 1.0)
+		start_x += spacing
+
+	var start_y := fmod(pan.y, spacing)
+	if start_y < 0.0:
+		start_y += spacing
+	while start_y <= vp_size.y:
+		draw_line(Vector2(0, start_y), Vector2(vp_size.x, start_y), grid_col, 1.0)
+		start_y += spacing
+
+	# 3. Lluvia de memoria y escaneo para Sector 0
+	if is_secret_sector:
+		var t: float = Time.get_ticks_msec() * 0.001
+		var hex_words: Array[String] = [
+			"0xDEADBEEF", "0xC001CAFE", "0x00000000", "0xFFFFFFFF",
+			"SEGFAULT", "KERNEL_PANIC", "STACK_DUMP", "NULL_PTR",
+			"PAGE_FAULT", "ROOT_EXPLOIT", "MEM_CORRUPT", "0x89AB_CDEF"
+		]
+		var col_w: float = 140.0
+		var num_cols := int(vp_size.x / col_w) + 1
+		for col in range(num_cols):
+			var col_x := float(col) * col_w + 10.0
+			var seed_speed := 35.0 + float((col * 17) % 25)
+			var y_offset := fmod((t * seed_speed) + float(col * 85), vp_size.y + 120.0) - 60.0
+			var word_idx: int = (col + int(t * 0.5)) % hex_words.size()
+			var text := hex_words[word_idx]
+			var hex_alpha := 0.08 + sin(t * 2.0 + float(col)) * 0.04
+			draw_string(Vector2(col_x, y_offset), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1.0, 0.2, 0.35, hex_alpha))
+
+		var glitch_y := fmod(t * 90.0, vp_size.y)
+		draw_line(Vector2(0, glitch_y), Vector2(vp_size.x, glitch_y), Color(1.0, 0.1, 0.3, 0.18), 1.5)
+
+
+func _draw_concentric_target_rings(center: Vector2, mode_color: Color) -> void:
 	var t: float = Time.get_ticks_msec() * 0.001
-	draw_circle(core_pos, 76.0, Color(1.0, 0.16, 0.42, 0.25), false, 1.5)
-	draw_circle(core_pos, 130.0, Color(0.75, 0.35, 0.95, 0.18), false, 1.2)
-	draw_circle(core_pos, 190.0, Color(1.0, 0.16, 0.42, 0.12), false, 1.0)
+	var r1 := 48.0 + sin(t * 2.0) * 3.0
+	var r2 := 84.0
+	var r3 := 128.0
+	draw_circle(center, r1, Color(mode_color.r, mode_color.g, mode_color.b, 0.18), false, 1.5)
+	draw_circle(center, r2, Color(mode_color.r, mode_color.g, mode_color.b, 0.12), false, 1.2)
+	draw_circle(center, r3, Color(mode_color.r, mode_color.g, mode_color.b, 0.07), false, 1.0)
 
-	# Lluvia volumétrica de memoria (Hex Dump y registros de fallo del kernel)
-	var hex_words: Array[String] = [
-		"0xDEADBEEF", "0xC001CAFE", "0x00000000", "0xFFFFFFFF",
-		"SEGFAULT", "KERNEL_PANIC", "STACK_DUMP", "NULL_PTR",
-		"PAGE_FAULT", "ROOT_EXPLOIT", "MEM_CORRUPT", "0x89AB_CDEF"
-	]
 
-	var col_w: float = 140.0
-	var num_cols := int(vp_size.x / col_w) + 1
-	for col in range(num_cols):
-		var col_x := float(col) * col_w + 10.0
-		var seed_speed := 35.0 + float((col * 17) % 25)
-		var y_offset := fmod((t * seed_speed) + float(col * 85), vp_size.y + 120.0) - 60.0
-		var word_idx: int = (col + int(t * 0.5)) % hex_words.size()
-		var text := hex_words[word_idx]
-
-		var hex_alpha := 0.12 + sin(t * 2.0 + float(col)) * 0.06
-		draw_string(Vector2(col_x, y_offset), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1.0, 0.2, 0.35, hex_alpha))
-
-	# Líneas de cuadrícula corrompidas / Glitch scan
-	var glitch_y := fmod(t * 90.0, vp_size.y)
-	draw_line(Vector2(0, glitch_y), Vector2(vp_size.x, glitch_y), Color(1.0, 0.1, 0.3, 0.25), 1.5)
-	draw_line(Vector2(0, glitch_y + 4.0), Vector2(vp_size.x, glitch_y + 4.0), Color(0.2, 1.0, 0.8, 0.15), 1.0)
+## Fondo Abisal de Kernel Panic / Glitch Void para el Sector 0 secreto (Artboard 03)
+func _draw_kernel_void_background(vp_size: Vector2, pan: Vector2, zoom: float, _core_pos: Vector2 = Vector2(935, 272)) -> void:
+	draw_fullscreen_mode_background(vp_size, "secret", Color("#ff2a6d"), Color("#14080e"), pan, zoom, true)
 
 
 func draw_background_grid(vp_size: Vector2, pan: Vector2 = Vector2.ZERO, zoom: float = 1.0) -> void:
@@ -308,6 +379,18 @@ func draw_background_grid(vp_size: Vector2, pan: Vector2 = Vector2.ZERO, zoom: f
 		cy += spacing
 
 
+func _draw_numeric_chip(pos: Vector2, label: String, val_text: String, val_color: Color) -> float:
+	var lbl_sz := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4) if font else Vector2(50.0, 12.0)
+	var val_sz := font.get_string_size(val_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2) if font else Vector2(40.0, 14.0)
+	var chip_w := lbl_sz.x + val_sz.x + 20.0
+	var chip_rect := Rect2(pos.x, pos.y, chip_w, 32.0)
+	draw_rect(chip_rect, Color(1.0, 1.0, 1.0, 0.03))
+	draw_rect(chip_rect, BrandClass.PANEL_BORDER, false, 1.0)
+	draw_string(Vector2(pos.x + 8.0, pos.y + 20.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+	draw_string(Vector2(pos.x + 8.0 + lbl_sz.x + 6.0, pos.y + 20.0), val_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, val_color)
+	return chip_w
+
+
 func draw_hud(
 	vp_size: Vector2,
 	titulo_nivel: String,
@@ -315,11 +398,11 @@ func draw_hud(
 	player_pos: StringName,
 	target: StringName,
 	player_total_cost: float,
-	max_turns: int,
+	_max_turns: int,
 	waypoints: Array,
 	current_waypoint_idx: int,
-	pursuers: Array,
-	alerted_nodes: Array,
+	_pursuers: Array,
+	_alerted_nodes: Array,
 	movement_points: int,
 	max_movement_points: int,
 	_budget_display: float = 0.0,
@@ -328,49 +411,42 @@ func draw_hud(
 	hacker_mode: bool = false,
 	is_secret: bool = false
 ) -> void:
-	var bar_h: float = 48.0
+	var bar_h: float = 52.0
+	var mode := "heist"
+	var theme_col: Color = BrandClass.WORLD_HEIST
+	if is_secret:
+		mode = "secret"
+		theme_col = BrandClass.WORLD_SECRET
+	elif hacker_mode:
+		mode = "hacker"
+		theme_col = BrandClass.WORLD_HACKER
 
-	# ZONA 1: Barra superior con fondo (Artboard 01 / 03)
+	# Barra superior con fondo unificado
 	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
-	draw_rect(Rect2(0, bar_h, vp_size.x, 1.5), BrandClass.accent_dim(0.4))
+	draw_rect(Rect2(0, bar_h - 1.5, vp_size.x, 1.5), theme_col)
 
-	# Título del nivel (izquierda)
-	draw_string(Vector2(16, 20), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 3, BrandClass.ACCENT)
+	# 1. Left Cluster (x = 16.0)
+	# Line 1 (y = 20): Level Title
+	draw_string(Vector2(16.0, 20.0), titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, theme_col)
 
-	# Indicadores principales (centro)
-	var center_x: float = vp_size.x / 2.0
-	var ind_y: float = 20.0
+	# Line 2 (y = 38): Subtitle
+	var sub_text := "TURNO %d" % turn
+	if waypoints.size() > 0:
+		sub_text = "TURNO %d  ·  WP: %d/%d" % [turn, current_waypoint_idx + 1, waypoints.size()]
+	draw_string(Vector2(16.0, 38.0), sub_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
 
-	# Turno
-	var turn_text: String = "TURNO %d" % turn
-	var turn_w: float = font.get_string_size(turn_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 2).x
-	draw_string(Vector2(center_x - turn_w / 2.0 - 130, ind_y), "TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
-	draw_string(Vector2(center_x - turn_w / 2.0 - 130 + font.get_string_size("TURNO ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x, ind_y), "%d" % turn, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, Color.WHITE)
+	var title_w := font.get_string_size(titulo_nivel, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1).x if font else 120.0
+	var sub_w := font.get_string_size(sub_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 100.0
+	var stack_end_x: float = 16.0 + maxf(title_w, sub_w)
 
-	# Puntos de movimiento con barra visual
-	if max_movement_points > 0:
-		var pts_label_x: float = center_x - 70
-		var pts_color: Color = Color(0.0, 1.0, 0.5) if movement_points > max_movement_points * 0.3 else BrandClass.WARNING if movement_points > max_movement_points * 0.1 else BrandClass.DANGER
-		draw_string(Vector2(pts_label_x, ind_y), "PUNTOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	# Divisor
+	draw_line(Vector2(stack_end_x + 10.0, 10.0), Vector2(stack_end_x + 10.0, 42.0), BrandClass.PANEL_BORDER, 1.0)
 
-		# Barra de progreso
-		var bar_x: float = pts_label_x + 50
-		var bar_w: float = 80.0
-		var bar_y: float = ind_y - 10
-		var bar_h_inner: float = 12.0
-		var fill_ratio: float = _budget_display / float(max_movement_points)
-		draw_rect(Rect2(bar_x, bar_y, bar_w, bar_h_inner), Color(0.1, 0.12, 0.18))
-		draw_rect(Rect2(bar_x, bar_y, bar_w * fill_ratio, bar_h_inner), pts_color)
-		draw_rect(Rect2(bar_x, bar_y, bar_w, bar_h_inner), Color(0.3, 0.35, 0.45), false, 1.0)
-
-		# Texto sobre la barra
-		var pts_text: String = "%d/%d" % [movement_points, max_movement_points]
-		draw_string(Vector2(bar_x + bar_w + 8, ind_y), pts_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, pts_color)
-
-	# Noise IDS meter integrado en barra superior (en lugar del panel derecho duplicado)
+	# Pure Numeric Chips (NO progress bars!)
+	var chip_x: float = stack_end_x + 18.0
+	var pts_col: Color = BrandClass.SUCCESS if movement_points > int(max_movement_points * 0.3) else BrandClass.WARNING
 	if hacker_mode or is_secret:
 		var noise: int = hacker_state.get("noise", 0)
-		var max_noise: int = hacker_state.get("max_noise", 100)
 		var noise_col: Color = BrandClass.SUCCESS
 		if noise >= 85:
 			noise_col = BrandClass.DANGER
@@ -379,68 +455,46 @@ func draw_hud(
 		elif noise >= 30:
 			noise_col = BrandClass.WARNING
 
-		var nm_x := center_x + (85.0 if max_movement_points > 0 else -60.0)
-		draw_string(Vector2(nm_x, ind_y), "RUIDO IDS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
-		var nm_bar_x := nm_x + 68.0
-		var nm_bar_w := 80.0
-		var nm_fill_w := nm_bar_w * clampf(float(noise) / float(maxi(1, max_noise)), 0.0, 1.0)
-		draw_rect(Rect2(nm_bar_x, ind_y - 10.0, nm_bar_w, 12.0), Color(0.1, 0.12, 0.18))
-		if nm_fill_w > 0:
-			draw_rect(Rect2(nm_bar_x, ind_y - 10.0, nm_fill_w, 12.0), noise_col)
-		draw_rect(Rect2(nm_bar_x, ind_y - 10.0, nm_bar_w, 12.0), Color(0.3, 0.35, 0.45), false, 1.0)
-		draw_string(Vector2(nm_bar_x + nm_bar_w + 8.0, ind_y), "%d/%d" % [noise, max_noise], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, noise_col)
+		var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "PRESUPUESTO", "%d pts" % movement_points, pts_col)
+		_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "RUIDO IDS", "%d%%" % noise, noise_col)
+	else:
+		var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "PRESUPUESTO", "%d pts" % movement_points, pts_col)
+		_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "COSTE", "%.1f" % player_total_cost, Color.WHITE)
 
-	# Indicadores secundarios (debajo)
-	var sec_y: float = 38.0
-	var sec_x: float = 16.0
+	# 2. Center Cluster: ALL Perks / Tools in Top Bar (y = 8.0, height = 36.0)
+	var top_perks := get_top_perk_rects(vp_size, mode, false, false, font, font_size, hacker_state)
+	for p in top_perks:
+		var is_act := false
+		if hacker_mode or is_secret:
+			if p["id"] == "scan":
+				is_act = true
+			else:
+				var exps: Dictionary = hacker_state.get("exploits", {}) if hacker_state.has("exploits") else hacker_state
+				is_act = exps.get(p["id"], 0) > 0
+		else:
+			if p["id"] == "tab_neighbor":
+				is_act = true
+		_draw_hud_pill(p["rect"].position, p["text"], is_act, p["color"])
 
-	# Posición con nombre legible de nodo
+	# 3. Right Cluster (right-aligned at vp_size.x - 16.0)
 	var pos_display: String = resolve_node_display_name(player_pos, node_cache)
-	var pos_text: String = "POS: %s" % pos_display
-	draw_string(Vector2(sec_x, sec_y), pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
-	sec_x += font.get_string_size(pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 18.0
-
-	# Coste
-	var cost_text: String = "COSTE: %.1f" % player_total_cost
-	draw_string(Vector2(sec_x, sec_y), cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
-	sec_x += font.get_string_size(cost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 18.0
-
-	# Turnos restantes
-	if max_turns > 0:
-		var rem_text: String = "RESTANTE: %d" % (max_turns - turn)
-		var rem_color: Color = Color(0.0, 1.0, 0.5) if (max_turns - turn) > max_turns * 0.3 else BrandClass.WARNING
-		draw_string(Vector2(sec_x, sec_y), rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, rem_color)
-		sec_x += font.get_string_size(rem_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x + 18.0
-
-	# Waypoints
-	if waypoints.size() > 0:
-		var wp_text: String = "WP: %d/%d" % [current_waypoint_idx + 1, waypoints.size()]
-		draw_string(Vector2(sec_x, sec_y), wp_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
-
-	# Indicador de amenaza (derecha)
-	var alert_x: float = vp_size.x - 16.0
-	var badge_left: float = vp_size.x - 16.0
-	if pursuers.size() > 0:
-		var p_text: String = "PERSEGUIDORES: %d" % pursuers.size()
-		var pw: float = font.get_string_size(p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
-		alert_x -= pw + 8.0
-		badge_left = alert_x - 6.0
-		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(0.8, 0.05, 0.02, 0.4))
-		draw_rect(Rect2(alert_x - 6, ind_y - 14, pw + 12, 20), Color(1.0, 0.2, 0.1, 0.7), false, 1.0)
-		draw_string(Vector2(alert_x, ind_y), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.DANGER)
-	elif alerted_nodes.size() > 0:
-		var a_text: String = "ALERTAS: %d" % alerted_nodes.size()
-		var aw: float = font.get_string_size(a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
-		alert_x -= aw + 8.0
-		badge_left = alert_x
-		draw_string(Vector2(alert_x, ind_y), a_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.WARNING)
-
-	# Meta con nombre legible de nodo (a la izquierda de las insignias de amenaza, sin colisión)
 	var target_display: String = resolve_node_display_name(target, node_cache)
-	var meta_text: String = "META: %s" % target_display
-	var meta_w: float = font.get_string_size(meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1).x
-	var meta_x: float = badge_left - 16.0 - meta_w
-	draw_string(Vector2(meta_x, ind_y), meta_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, BrandClass.DANGER)
+
+	var pos_lbl := "POS: "
+	var pos_lbl_w := font.get_string_size(pos_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 30.0
+	var pos_val_w := font.get_string_size(pos_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 60.0
+	var pos_total_w := pos_lbl_w + pos_val_w
+
+	draw_string(Vector2(vp_size.x - 16.0 - pos_total_w, 20.0), pos_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	draw_string(Vector2(vp_size.x - 16.0 - pos_total_w + pos_lbl_w, 20.0), pos_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color.WHITE)
+
+	var meta_lbl := "META: "
+	var meta_lbl_w := font.get_string_size(meta_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x if font else 40.0
+	var meta_val_w := font.get_string_size(target_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x if font else 70.0
+	var meta_total_w := meta_lbl_w + meta_val_w
+
+	draw_string(Vector2(vp_size.x - 16.0 - meta_total_w, 38.0), meta_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	draw_string(Vector2(vp_size.x - 16.0 - meta_total_w + meta_lbl_w, 38.0), target_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color("#ff4757"))
 
 
 ## Legacy helper — el panel derecho duplicado fue eliminado.
@@ -467,70 +521,41 @@ func draw_defender_hud(
 	quarantine_mode: bool = false,
 	node_cache: Dictionary = {}
 ) -> void:
-	# Barra de fondo sutil (Artboard 02)
-	draw_rect(Rect2(0, 0, vp_size.x, 48.0), Color(0.02, 0.03, 0.07, 0.94))
-	draw_rect(Rect2(0, 48.0, vp_size.x, 1.5), Color(0.15, 0.65, 0.95, 0.7))
+	var bar_h: float = 52.0
+	var theme_col: Color = BrandClass.WORLD_CYBER
 
-	# 1. Isla Flotante Superior Izquierda (BLUE TEAM // T#, BLOQUEOS, RASTREO EDR)
-	var island_left_w: float = 330.0
-	var island_left := Rect2(12.0, 5.0, island_left_w, 38.0)
-	draw_rect(island_left, Color(0.04, 0.06, 0.12, 0.94))
-	draw_rect(island_left, Color(0.15, 0.65, 0.95, 0.6), false, 1.0)
-	draw_rect(Rect2(12.0, 5.0, 3.0, 38.0), BrandClass.ACCENT)
+	# Barra superior con fondo unificado
+	draw_rect(Rect2(0, 0, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
+	draw_rect(Rect2(0, bar_h - 1.5, vp_size.x, 1.5), theme_col)
 
-	draw_string(Vector2(22, 23), "BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.ACCENT)
-	var turn_txt := " // T%d" % turn
-	var t_sz := font.get_string_size("BLUE TEAM", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2)
-	draw_string(Vector2(22 + t_sz.x, 23), turn_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+	# 1. Left Cluster (x = 16.0)
+	var title_str := "Blue Team — Defensa Perimetral"
+	draw_string(Vector2(16.0, 20.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, theme_col)
 
-	# Presupuesto de bloqueos (Pips gráficos ● ● ○)
-	var pips_x := 125.0
+	var sub_str := "TURNO %d  ·  SOC ACTIVO" % turn
+	draw_string(Vector2(16.0, 38.0), sub_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+
+	var title_w := font.get_string_size(title_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1).x if font else 150.0
+	var sub_w := font.get_string_size(sub_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 110.0
+	var stack_end_x: float = 16.0 + maxf(title_w, sub_w)
+
+	# Divisor
+	draw_line(Vector2(stack_end_x + 10.0, 10.0), Vector2(stack_end_x + 10.0, 42.0), BrandClass.PANEL_BORDER, 1.0)
+
+	# Pure Numeric Chips (NO progress bars!)
+	var chip_x: float = stack_end_x + 18.0
 	var blocks_avail := maxi(0, blocks_per_turn - blocks_placed)
-	draw_string(Vector2(pips_x, 18), "BLOQUEOS", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 5, BrandClass.TEXT_DIM)
+	var pips_str := ""
 	for b in range(maxi(1, blocks_per_turn)):
-		var pip_pos := Vector2(pips_x + b * 12.0 + 4.0, 29.0)
-		var is_ready := b < blocks_avail
-		draw_circle(pip_pos, 3.5, Color(0.0, 0.9, 0.6) if is_ready else Color(0.25, 0.28, 0.35))
-		if is_ready:
-			draw_circle(pip_pos, 5.5, Color(0.0, 0.9, 0.6, 0.25), false, 1.0)
+		pips_str += "● " if b < blocks_avail else "○ "
+	pips_str += "(%d/%d)" % [blocks_avail, blocks_per_turn]
 
-	# RASTREO EDR Forensics Trace (barra compacta)
-	var trace_box_x := 185.0
-	var trace_box_w := 135.0
-	var trace_label := "RASTREO EDR: %.0f%%" % forensics_trace
-	draw_string(Vector2(trace_box_x, 18), trace_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, Color("b388ff"))
+	var w1 := _draw_numeric_chip(Vector2(chip_x, 10.0), "BLOQUEOS", pips_str.strip_edges(), BrandClass.SUCCESS if blocks_avail > 0 else BrandClass.DANGER)
+	_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "EDR TRACE", "%.0f%%" % forensics_trace, Color("#00d2ff"))
 
-	var tb_bg := Rect2(trace_box_x, 24, trace_box_w, 8.0)
-	draw_rect(tb_bg, Color(0.08, 0.08, 0.15, 0.8))
-	draw_rect(tb_bg, Color(0.4, 0.3, 0.7, 0.4), false, 1.0)
-	var tb_fill_w := trace_box_w * clampf(forensics_trace / 100.0, 0.0, 1.0)
-	if tb_fill_w > 0:
-		draw_rect(Rect2(trace_box_x, 24, tb_fill_w, 8.0), Color("b388ff"))
-
-	# 2. Isla Flotante Superior Derecha (INTRUSO & NÚCLEO con nombres humanos)
-	var enemy_display: String = resolve_node_display_name(enemy_pos, node_cache)
-	var target_display: String = resolve_node_display_name(enemy_target, node_cache)
-
-	var intruso_text := "INTRUSO: %s" % enemy_display
-	var nucleo_text := "NÚCLEO: %s" % target_display
-
-	var iw: float = maxf(
-		font.get_string_size(intruso_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x,
-		font.get_string_size(nucleo_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
-	) + 24.0
-	var island_right_w: float = maxf(190.0, iw)
-	var island_right := Rect2(vp_size.x - island_right_w - 12.0, 5.0, island_right_w, 38.0)
-	draw_rect(island_right, Color(0.04, 0.06, 0.12, 0.94))
-	draw_rect(island_right, Color(0.15, 0.65, 0.95, 0.6), false, 1.0)
-	draw_rect(Rect2(vp_size.x - 15.0, 5.0, 3.0, 38.0), Color(1.0, 0.35, 0.25))
-
-	var rx: float = island_right.position.x + 10.0
-	draw_string(Vector2(rx, 20), intruso_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.35, 0.25))
-	draw_string(Vector2(rx, 35), nucleo_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.1, 0.85, 0.95))
-
-	# 3. Dock Centrado Flotante de Acciones Defender (Dynamic Width Measurement & 12px gap)
-	var pill_rects := get_defender_pill_rects(vp_size, font, font_size, fog_of_war, telemetry_intercepted)
-	for p in pill_rects:
+	# 2. Center Cluster: ALL Perks / Tools in Top Bar
+	var top_perks := get_top_perk_rects(vp_size, "defender", fog_of_war, telemetry_intercepted, font, font_size)
+	for p in top_perks:
 		var is_active := false
 		var is_pulse := false
 		match p["id"]:
@@ -543,15 +568,33 @@ func draw_defender_hud(
 				is_pulse = true
 			"radar":
 				is_active = telemetry_intercepted
-			"terminal":
-				is_active = false
 		_draw_hud_pill(p["rect"].position, p["text"], is_active, p["color"], is_pulse)
+
+	# 3. Right Cluster (right-aligned at vp_size.x - 16.0)
+	var enemy_display: String = resolve_node_display_name(enemy_pos, node_cache)
+	var target_display: String = resolve_node_display_name(enemy_target, node_cache)
+
+	var intruso_lbl := "INTRUSO: "
+	var intruso_lbl_w := font.get_string_size(intruso_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 45.0
+	var intruso_val_w := font.get_string_size(enemy_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 70.0
+	var intruso_total_w := intruso_lbl_w + intruso_val_w
+
+	draw_string(Vector2(vp_size.x - 16.0 - intruso_total_w, 20.0), intruso_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	draw_string(Vector2(vp_size.x - 16.0 - intruso_total_w + intruso_lbl_w, 20.0), enemy_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(1.0, 0.35, 0.25))
+
+	var nucleo_lbl := "NÚCLEO: "
+	var nucleo_lbl_w := font.get_string_size(nucleo_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x if font else 45.0
+	var nucleo_val_w := font.get_string_size(target_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x if font else 70.0
+	var nucleo_total_w := nucleo_lbl_w + nucleo_val_w
+
+	draw_string(Vector2(vp_size.x - 16.0 - nucleo_total_w, 38.0), nucleo_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.TEXT_DIM)
+	draw_string(Vector2(vp_size.x - 16.0 - nucleo_total_w + nucleo_lbl_w, 38.0), target_display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color(0.0, 0.82, 1.0))
 
 
 func _draw_hud_pill(pos: Vector2, text: String, active: bool, color: Color, pulse: bool = false) -> void:
-	var t_w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x
+	var t_w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 70.0
 	var pill_h := 36.0  # Altura cómoda >= 36px para touch y mouse
-	var pill_w := t_w + 24.0
+	var pill_w := t_w + 20.0
 	var pill_rect := Rect2(pos.x, pos.y, pill_w, pill_h)
 
 	var bg_col := BrandClass.with_alpha(color, 0.25 if active else 0.08)
@@ -563,7 +606,7 @@ func _draw_hud_pill(pos: Vector2, text: String, active: bool, color: Color, puls
 
 	draw_rect(pill_rect, bg_col)
 	draw_rect(pill_rect, border_col, false, 1.2)
-	draw_string(Vector2(pos.x + 12.0, pos.y + 23.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color if active else BrandClass.TEXT_DIM)
+	draw_string(Vector2(pos.x + 10.0, pos.y + 23.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color if active else BrandClass.TEXT_DIM)
 
 
 func draw_edges(
@@ -582,7 +625,8 @@ func draw_edges(
 	hidden_nodes: Array = [],
 	player_pos: StringName = &"",
 	selected_neighbor: StringName = &"",
-	is_secret_sector: bool = false
+	is_secret_sector: bool = false,
+	mode: String = ""
 ) -> void:
 	# Pre-pasada: set de claves para detectar pares bidireccionales (A→B + B→A)
 	# y curvarlos aparte — dibujados rectos se superponen exactamente y las
@@ -667,8 +711,19 @@ func draw_edges(
 				edge_color = Color("#ff2a6d")
 			line_width = 2.0
 		else:
-			edge_color = Color(0.35, 0.5, 0.7, 0.9)
-			line_width = 1.5
+			match mode:
+				"heist":
+					edge_color = Color(0.75, 0.35, 0.95, 0.75)
+					line_width = 2.0
+				"hacker":
+					edge_color = Color(0.22, 1.0, 0.53, 0.75)
+					line_width = 2.0
+				"defender":
+					edge_color = Color(0.0, 0.82, 1.0, 0.75)
+					line_width = 2.0
+				_:
+					edge_color = Color(0.35, 0.5, 0.7, 0.9)
+					line_width = 1.8
 
 		var tip: Vector2 = to_pos - dir * node_radius
 		var inicio: Vector2 = from_pos + dir * node_radius
@@ -702,6 +757,8 @@ func draw_edges(
 				var t := s / 14.0
 				puntos.append(inicio.lerp(ctrl, t).lerp(ctrl.lerp(tip, t), t))
 
+		# Sutil halo o glow temático
+		draw_polyline(puntos, Color(edge_color.r, edge_color.g, edge_color.b, 0.16), line_width + 2.5)
 		draw_polyline(puntos, edge_color, line_width)
 
 		# VFX: Pulso de fotones de datos viajando a lo largo de aristas activas no bloqueadas
@@ -1211,9 +1268,14 @@ func draw_node_info_panel(
 	var display_title: String = resolve_node_display_name(selected_neighbor, node_cache)
 	draw_string(Vector2(px, py), display_title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.SUCCESS)
 
-	var id_tag: String = "#%s" % str(selected_neighbor)
-	var tag_sz := font.get_string_size(id_tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4).x
-	draw_string(Vector2(panel_x + panel_w - tag_sz - 12.0, py), id_tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
+	var id_str := str(selected_neighbor)
+	var title_w := font.get_string_size(display_title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x if font else 80.0
+	var id_tag: String = "#%s" % id_str
+	var tag_sz := font.get_string_size(id_tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4).x if font else 40.0
+
+	var is_redundant: bool = id_str.to_lower() == display_title.to_lower() or (title_w + tag_sz > panel_w - 24.0)
+	if not is_redundant:
+		draw_string(Vector2(panel_x + panel_w - tag_sz - 12.0, py), id_tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 4, BrandClass.TEXT_DIM)
 	py += line_h + 2.0
 
 	var meta: Dictionary = node_res.metadata
@@ -1408,62 +1470,66 @@ func draw_status_bar(
 	draw_tactical_action_dock(d)
 
 
-## Dock Táctico Inferior Unificado (Touch + Mouse + Teclado)
+## Dock Táctico Inferior Unificado (Artboard 04: Status izq | Confirm centro | Controles der)
 func draw_tactical_action_dock(d: Dictionary) -> void:
 	var vp_size: Vector2 = d.get("vp_size", Vector2(1280, 720))
-	var bar_h: float = 52.0
+	var bar_h: float = 44.0
 	var bar_y: float = vp_size.y - bar_h
 
 	# Fondo del dock táctico
-	draw_rect(Rect2(0, bar_y, vp_size.x, bar_h), Color(0.02, 0.03, 0.07, 0.95))
-	draw_rect(Rect2(0, bar_y, vp_size.x, 1.5), BrandClass.accent_dim(0.35))
+	draw_rect(Rect2(0, bar_y, vp_size.x, bar_h), BrandClass.PANEL_SOLID)
+	draw_rect(Rect2(0, bar_y, vp_size.x, 1.5), BrandClass.PANEL_BORDER)
 
-	# 1. Controles táctiles de cámara y pausa en la esquina derecha
-	var c_y := bar_y + 6.0
-	var c_h := 40.0
-	_draw_dock_button(Rect2(vp_size.x - 240.0, c_y, 75.0, c_h), "[⟲ CENTRAR]", Color(0.3, 0.7, 0.9))
-	_draw_dock_button(Rect2(vp_size.x - 160.0, c_y, 40.0, c_h), "[-]", Color(0.3, 0.7, 0.9))
-	_draw_dock_button(Rect2(vp_size.x - 115.0, c_y, 40.0, c_h), "[+]", Color(0.3, 0.7, 0.9))
-	_draw_dock_button(Rect2(vp_size.x - 70.0, c_y, 56.0, c_h), "[⏸]", BrandClass.WARNING)
+	var is_secret_sector: bool = str(d.get("level_key", "")).begins_with("secret") or d.get("world", "") == "secret" or str(d.get("titulo_nivel", "")).find("Sector 0") != -1 or d.node_positions.has(&"GenesisCore") or d.node_positions.has("GenesisCore")
 
-	# 2. Modo Hacker: Barra táctica de Exploits y Scan (min height 42px)
-	if d.get("hacker_mode", false) and not d.get("game_over", false):
-		var hs: Dictionary = d.get("hacker_state", {})
-		var exps: Dictionary = hs.get("exploits", {})
-		var byp_cnt: int = exps.get("bypass", 0)
-		var esc_cnt: int = exps.get("escalate", 0)
-		var per_cnt: int = exps.get("persist", 0)
-		var dec_cnt: int = exps.get("decoy", 0)
+	# 1. Left Cluster: Single status / operator log line
+	var tag := "[EXFIL // VEX]: "
+	var tag_col: Color = BrandClass.WORLD_HEIST
+	var def_msg := "Tu turno: seleccioná un nodo adyacente para exfiltrar el fragmento Shamir."
 
-		var h_y := bar_y + 5.0
-		var h_h := 42.0
+	if is_secret_sector:
+		tag = "[TCP_SEQ_GHOST // KAIN]: "
+		tag_col = BrandClass.WORLD_SECRET
+		def_msg = "«IA bloqueó una ruta al inicio. Inyectá [1] BYPASS o pivotá por Celda Gamma.»"
+	elif d.defender_mode:
+		tag = "[CORDON // AEGIS]: "
+		tag_col = BrandClass.WORLD_CYBER
+		def_msg = "Contén al intruso. Cada bloqueo avanza el turno y el rastreo forense EDR."
+	elif d.get("hacker_mode", false):
+		tag = "[FUZZ // N0X]: "
+		tag_col = BrandClass.WORLD_HACKER
+		def_msg = "IA bloqueó una ruta al inicio. Usá tus Perks arriba o pivotá por otro nodo."
 
-		_draw_dock_button(Rect2(16.0, h_y, 95.0, h_h), "[X] SCAN", BrandClass.SUCCESS, true)
-		_draw_dock_button(Rect2(116.0, h_y, 110.0, h_h), "[1] BYPASS x%d" % byp_cnt, BrandClass.ACCENT if byp_cnt > 0 else BrandClass.TEXT_DIM, byp_cnt > 0)
-		_draw_dock_button(Rect2(231.0, h_y, 120.0, h_h), "[2] ESCALATE x%d" % esc_cnt, Color(0.4, 0.7, 1.0) if esc_cnt > 0 else BrandClass.TEXT_DIM, esc_cnt > 0)
-		_draw_dock_button(Rect2(356.0, h_y, 115.0, h_h), "[3] PERSIST x%d" % per_cnt, Color(0.9, 0.5, 1.0) if per_cnt > 0 else BrandClass.TEXT_DIM, per_cnt > 0)
-		_draw_dock_button(Rect2(476.0, h_y, 130.0, h_h), "[4] HONEYPOT x%d" % dec_cnt, Color(1.0, 0.75, 0.0) if dec_cnt > 0 else BrandClass.TEXT_DIM, dec_cnt > 0)
+	var msg_text: String = d.get("mensaje_estado", "")
+	if msg_text == "" or msg_text.begins_with("Ve hacia"):
+		msg_text = def_msg
 
-	# 3. Modo Heist / Atacante: Botón prominente de confirmar movimiento
-	elif not d.get("defender_mode", false) and not d.get("game_over", false):
+	var tag_w := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3).x if font else 90.0
+	var max_msg_w := (vp_size.x - 280.0) * 0.5 - 20.0 - tag_w
+	draw_string(Vector2(16.0, bar_y + 26.0), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, tag_col)
+	draw_string(Vector2(16.0 + tag_w, bar_y + 26.0), msg_text, HORIZONTAL_ALIGNMENT_LEFT, max_msg_w, font_size - 3, BrandClass.TEXT)
+
+	# 2. Center: Prominent green confirm move button when selected_neighbor != &"" in Attacker/Hacker
+	if not d.get("defender_mode", false) and not d.get("game_over", false):
 		var sel_n: StringName = d.get("selected_neighbor", &"")
 		if sel_n != &"":
-			var m_btn := Rect2((vp_size.x - 280.0) / 2.0, bar_y + 5.0, 280.0, 42.0)
-			var pulse := 0.6 + sin(Time.get_ticks_msec() * 0.008) * 0.35
-			draw_rect(m_btn, Color(0.0, 0.35, 0.25, 0.95))
-			draw_rect(m_btn, Color(0.0, 1.0, 0.6, pulse), false, 2.0)
-			draw_rect(m_btn.grow(2.0), Color(0.0, 1.0, 0.6, pulse * 0.35), false, 1.2)
-			var m_txt := "⏭ CONFIRMAR: %s" % str(sel_n)
-			var m_sz := font.get_string_size(m_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1)
-			draw_string(Vector2(m_btn.position.x + (m_btn.size.x - m_sz.x) / 2.0, m_btn.position.y + 26.0), m_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 1, Color.WHITE)
+			var sel_display: String = resolve_node_display_name(sel_n, d.get("node_cache", {}))
+			var m_btn := Rect2((vp_size.x - 260.0) * 0.5, bar_y + 5.0, 260.0, 34.0)
+			var pulse := 0.7 + sin(Time.get_ticks_msec() * 0.008) * 0.3
+			draw_rect(m_btn, Color(0.0, 0.25, 0.15, 0.95))
+			draw_rect(m_btn, Color(0.22, 1.0, 0.53, pulse), false, 1.5)
+			var m_txt := "⏭ CONFIRMAR: %s" % sel_display
+			var m_sz := font.get_string_size(m_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2) if font else Vector2(120.0, 14.0)
+			draw_string(Vector2(m_btn.position.x + (m_btn.size.x - m_sz.x) * 0.5, bar_y + 23.0), m_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color.WHITE)
 
-		var kb_text := "[Flechas] Sel  [Enter/Clic] Mover  [P] Ruta"
-		draw_string(Vector2(16, bar_y + 30.0), kb_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
-
-	# 4. Modo Defensor
-	elif d.get("defender_mode", false):
-		var d_text := "[~] CLI  [1..3] Herramientas  [WASD/Drag] Cámara"
-		draw_string(Vector2(16, bar_y + 30.0), d_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, BrandClass.TEXT_DIM)
+	# 3. Right Cluster: [~] CLI, [⟲ CENTRAR], [-], [+], [⏸]
+	var btn_y := bar_y + 5.0
+	var btn_h := 34.0
+	_draw_dock_button(Rect2(vp_size.x - 295.0, btn_y, 55.0, btn_h), "[~] CLI", Color("00e5ff"))
+	_draw_dock_button(Rect2(vp_size.x - 235.0, btn_y, 85.0, btn_h), "[⟲ CENTRAR]", Color(0.3, 0.7, 0.9))
+	_draw_dock_button(Rect2(vp_size.x - 145.0, btn_y, 32.0, btn_h), "[-]", Color(0.3, 0.7, 0.9))
+	_draw_dock_button(Rect2(vp_size.x - 108.0, btn_y, 32.0, btn_h), "[+]", Color(0.3, 0.7, 0.9))
+	_draw_dock_button(Rect2(vp_size.x - 71.0, btn_y, 55.0, btn_h), "[⏸]", BrandClass.WARNING)
 
 
 func _draw_dock_button(rect: Rect2, text: String, color: Color, active: bool = false) -> void:
@@ -1471,8 +1537,8 @@ func _draw_dock_button(rect: Rect2, text: String, color: Color, active: bool = f
 	var border_col := BrandClass.with_alpha(color, 0.85 if active else 0.35)
 	draw_rect(rect, bg_col)
 	draw_rect(rect, border_col, false, 1.5 if active else 1.0)
-	var t_sz := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3)
-	var t_pos := Vector2(rect.position.x + (rect.size.x - t_sz.x) / 2.0, rect.position.y + 25.0)
+	var t_sz := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3) if font else Vector2(20.0, 12.0)
+	var t_pos := Vector2(rect.position.x + (rect.size.x - t_sz.x) * 0.5, rect.position.y + rect.size.y * 0.68)
 	draw_string(t_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, color if active else BrandClass.TEXT_DIM)
 
 

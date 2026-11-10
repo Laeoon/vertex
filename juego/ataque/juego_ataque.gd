@@ -247,6 +247,7 @@ func _ready() -> void:
 		GameLogger.info("JuegoAtaque", "Enemigo: %s → %s" % [enemy_start_node, enemy_target_node])
 		GameLogger.info("JuegoAtaque", "Bloques/turno: %d, Duración: %d" % [defender_blocks_per_turn, defender_block_duration])
 
+	reset_pan_zoom()
 	_start_level_music()
 
 
@@ -755,7 +756,8 @@ func _draw() -> void:
 	# Dibujar terminal CLI encima si está activa (garantizando transform neutral de pantalla)
 	if _terminal_overlay != null and _terminal_overlay.is_terminal_open:
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		_terminal_overlay.draw_terminal(self, vp_size, font, font_size)
+		var f: Font = font if font != null else BrandClass.font_regular()
+		_terminal_overlay.draw_terminal(self, vp_size, f, font_size)
 
 
 # ─── Cámara & Screen Shake ────────────────────────────────────────
@@ -824,6 +826,34 @@ func pan_by(delta: Vector2) -> void:
 
 
 func reset_pan_zoom() -> void:
-	topology_pan = Vector2.ZERO
-	topology_zoom = 1.0
+	var vp_size := get_viewport_rect().size
+	var is_tutorial_graph: bool = tutorial_path != "" or graph_path.find("tut") != -1 or (tutorial_player != null and is_instance_valid(tutorial_player))
+	if not is_tutorial_graph and node_positions != null and node_positions.size() > 0:
+		var min_pos := Vector2(INF, INF)
+		var max_pos := Vector2(-INF, -INF)
+		for p in node_positions.values():
+			if p is Vector2:
+				min_pos.x = minf(min_pos.x, p.x)
+				min_pos.y = minf(min_pos.y, p.y)
+				max_pos.x = maxf(max_pos.x, p.x)
+				max_pos.y = maxf(max_pos.y, p.y)
+		var span := max_pos - min_pos
+		var safe_left: float = 110.0
+		var safe_right: float = maxf(safe_left + 100.0, vp_size.x - 255.0)
+		var safe_top: float = 95.0
+		var safe_bottom: float = maxf(safe_top + 100.0, vp_size.y - 75.0)
+		var safe_w := safe_right - safe_left
+		var safe_h := safe_bottom - safe_top
+
+		if span.x > 10.0 and span.y > 10.0:
+			topology_zoom = clampf(minf(safe_w / span.x, safe_h / span.y), 0.55, 1.15)
+			var center_world := (min_pos + max_pos) * 0.5
+			var center_screen := Vector2(safe_left + safe_w * 0.5, safe_top + safe_h * 0.5)
+			topology_pan = center_screen - center_world * topology_zoom
+		else:
+			topology_pan = Vector2.ZERO
+			topology_zoom = 1.0
+	else:
+		topology_pan = Vector2.ZERO
+		topology_zoom = 1.0
 	queue_redraw()

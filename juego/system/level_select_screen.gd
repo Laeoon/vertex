@@ -196,10 +196,7 @@ func _get_spine_node_position(act_index: int, vp: Vector2 = Vector2.ZERO) -> Vec
 	var spine_start := Vector2(vp.x * 0.19, vp.y * 0.53)
 	var spine_end := Vector2(vp.x * 0.81, vp.y * 0.29)
 	var t := float(act_index) / float(maxi(1, total_nodes - 1))
-	var spine_dir := (spine_end - spine_start).normalized()
-	var base_pos := spine_start.lerp(spine_end, t)
-	var shift := (float(act_index) - _carousel_offset) * (vp.x * 0.025)
-	var pos := base_pos + spine_dir * shift
+	var pos := spine_start.lerp(spine_end, t)
 	pos.x = clampf(pos.x, 130.0, vp.x - 130.0)
 	return pos
 
@@ -537,8 +534,17 @@ func _draw_horizon_perspective_rings(vp: Vector2, theme_col: Color) -> void:
 
 
 func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
-	var spine_start := Vector2(vp.x * 0.19, vp.y * 0.53)
-	var spine_end := Vector2(vp.x * 0.81, vp.y * 0.29)
+	var act_levels := _get_current_act_levels()
+	var total_nodes := act_levels.size()
+
+	if total_nodes == 0:
+		var msg := "[ ACTO II: COLISIÓN — EN PREPARACIÓN ]"
+		var msg_sz := font.get_string_size(msg, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 2) if font else Vector2(280.0, 24.0)
+		draw_string(font, Vector2((vp.x - msg_sz.x) * 0.5, vp.y * 0.45), msg, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 2, BrandClass.TEXT_DIM)
+		return
+
+	var spine_start := _get_spine_node_position(0, vp)
+	var spine_end := _get_spine_node_position(total_nodes - 1, vp)
 	var bass_energy: float = _spectrum_viz.get_bass_energy()
 
 	# 1. Onda Reactiva a lo largo de la espina 3D con pases glow, bloom y core
@@ -548,9 +554,6 @@ func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
 	draw_line(spine_start, spine_end, BrandClass.with_alpha(theme_col, 0.30), 1.5)
 
 	# 3. Nodos de misión ordenados por profundidad (de lejano a cercano para z-ordering)
-	var act_levels := _get_current_act_levels()
-	var total_nodes := maxi(1, act_levels.size())
-
 	_card_rects.clear()
 	var rect_map: Dictionary = {}
 
@@ -771,7 +774,7 @@ func _draw_floating_header(vp: Vector2, theme_col: Color) -> void:
 	# Selector Flotante Superior Central de Actos
 	_calculate_act_rects(vp)
 
-	if world_id == "secret" or _get_total_act_count() <= 1:
+	if world_id == "secret":
 		_draw_act_pill(_act1_rect, "[ PRECUELA // SECTOR 0 ]", true, theme_col)
 	else:
 		_draw_act_pill(_act1_rect, "[ ACTO I (N1–N5) ]", current_act == 1, theme_col)
@@ -818,7 +821,10 @@ func _draw_bottom_command_strip(vp: Vector2, theme_col: Color) -> void:
 	# Column 1 (w = 230px, x = 40)
 	var tag_str := "MISIÓN %02d // ACTO %s" % [g_idx + 1, "I" if current_act == 1 else "II"]
 	draw_string(font, Vector2(40.0, vp.y - 128.0), tag_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, small_font_size - 1, theme_col)
-	draw_string(font, Vector2(40.0, vp.y - 104.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, font_size + 1, BrandClass.TEXT)
+	var title_font_sz := font_size + 1
+	if font != null and font.get_string_size(title_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1).x > 225.0:
+		title_font_sz = small_font_size
+	draw_string(font, Vector2(40.0, vp.y - 104.0), title_str, HORIZONTAL_ALIGNMENT_LEFT, 230.0, title_font_sz, BrandClass.TEXT)
 
 	var deg_val := 2.2 + float(g_idx) * 0.4
 	var ms_val := 8 + g_idx * 3

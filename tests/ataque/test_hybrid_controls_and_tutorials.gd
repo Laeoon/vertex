@@ -11,6 +11,7 @@ extends Node
 
 const InputHandlerClass = preload("res://juego/ataque/input_handler.gd")
 const GameRendererClass = preload("res://juego/ataque/game_renderer.gd")
+const TerminalOverlayClass = preload("res://juego/ui/terminal_overlay.gd")
 
 var passed: int = 0
 var failed: int = 0
@@ -49,6 +50,9 @@ class MockGame extends Node:
 
 	func reset_pan_zoom() -> void:
 		reset_pan_zoom_called = true
+
+	func queue_redraw() -> void:
+		pass
 
 	func zoom_in(_center: Vector2 = Vector2.ZERO) -> void:
 		zoom_in_called = true
@@ -89,6 +93,8 @@ func _ready() -> void:
 
 func _run_tests() -> void:
 	print("--- START TEST HYBRID CONTROLS & TUTORIAL OVERHAUL ---")
+	_test_terminal_overlay_mouse_and_draw()
+	_test_top_perks_rects_all_modes()
 	_test_hacker_dock_mouse_and_touch()
 	_test_attacker_dock_confirm_and_camera()
 	_test_defender_pills_and_contextual_menu()
@@ -114,6 +120,84 @@ func _finish() -> void:
 	print("Results: %d passed, %d failed" % [passed, failed])
 	await get_tree().create_timer(0.05).timeout
 	get_tree().quit(0 if failed == 0 else 1)
+
+
+func _test_terminal_overlay_mouse_and_draw() -> void:
+	var mock_game = MockGame.new()
+	add_child(mock_game)
+
+	var term = TerminalOverlayClass.new()
+	term.setup(mock_game)
+	add_child(term)
+	var vp := Vector2(1280, 720)
+
+	term.open()
+	_assert(term.is_terminal_open, "Terminal starts open")
+
+	# Mouse motion should return false so it doesn't freeze hover states
+	var ev_motion = InputEventMouseMotion.new()
+	ev_motion.position = Vector2(300.0, 150.0)
+	var handled_motion := term.handle_input(ev_motion)
+	_assert(not handled_motion, "Mouse motion returns false without trapping input")
+
+	# Click inside terminal area keeps terminal open and returns true
+	var ev_inside = InputEventMouseButton.new()
+	ev_inside.button_index = MOUSE_BUTTON_LEFT
+	ev_inside.pressed = true
+	ev_inside.position = Vector2(100.0, 150.0)
+	var handled_inside := term.handle_input(ev_inside)
+	_assert(handled_inside and term.is_terminal_open, "Click inside terminal consumes event and leaves terminal open")
+
+	# Click on close button closes terminal
+	var close_rect := term.get_close_button_rect(vp)
+	var ev_close = InputEventMouseButton.new()
+	ev_close.button_index = MOUSE_BUTTON_LEFT
+	ev_close.pressed = true
+	ev_close.position = close_rect.get_center()
+	var handled_close := term.handle_input(ev_close)
+	_assert(handled_close and not term.is_terminal_open, "Click on [ ✕ CERRAR ] button closes terminal cleanly")
+
+	# Re-open and test click outside terminal rect
+	term.open()
+	var ev_outside = InputEventMouseButton.new()
+	ev_outside.button_index = MOUSE_BUTTON_LEFT
+	ev_outside.pressed = true
+	ev_outside.position = Vector2(640.0, 600.0)
+	var handled_outside := term.handle_input(ev_outside)
+	_assert(handled_outside and not term.is_terminal_open, "Click outside terminal rect closes terminal cleanly")
+
+	# Test draw_terminal with font = null does not crash
+	term.open()
+	var dummy = Control.new()
+	add_child(dummy)
+	dummy.draw.connect(func():
+		term.draw_terminal(dummy, vp, null, 14)
+	)
+	dummy.notification(CanvasItem.NOTIFICATION_DRAW)
+	_assert(true, "draw_terminal with font = null succeeds without crashing")
+
+	dummy.queue_free()
+	term.queue_free()
+	mock_game.queue_free()
+
+
+func _test_top_perks_rects_all_modes() -> void:
+	var vp := Vector2(1280, 720)
+	var modes := ["hacker", "defender", "heist"]
+
+	for m in modes:
+		var perks := GameRendererClass.get_top_perk_rects(vp, m)
+		_assert(perks.size() >= 2, "Mode '%s' returns at least 2 top perks" % m)
+		for p in perks:
+			var r: Rect2 = p["rect"]
+			_assert(r.position.y < 52.0 and r.position.y + r.size.y <= 52.0, "Perk '%s' in mode '%s' is inside Top Bar (y=%.1f, h=%.1f)" % [p["id"], m, r.position.y, r.size.y])
+
+		# Non-overlapping check
+		for i in range(perks.size()):
+			for j in range(i + 1, perks.size()):
+				var r_i: Rect2 = perks[i]["rect"]
+				var r_j: Rect2 = perks[j]["rect"]
+				_assert(not r_i.intersects(r_j), "Top perks non-overlapping in mode '%s': %s vs %s" % [m, perks[i]["id"], perks[j]["id"]])
 
 
 func _test_hacker_dock_mouse_and_touch() -> void:

@@ -4,6 +4,8 @@ class_name TerminalOverlay extends Control
 ## Consola de comandos táctica in-game estilo UNIX/Cyberpunk para VERTEX.
 ## Se abre con [~], [T] o [F1] y permite ejecutar diagnósticos y telemetría de red.
 
+const BrandClass = preload("res://juego/ui/brand.gd")
+
 signal terminal_visibility_changed(is_visible: bool)
 
 var is_terminal_open: bool = false
@@ -42,46 +44,97 @@ func open() -> void:
 	is_terminal_open = true
 	_input_text = ""
 	terminal_visibility_changed.emit(true)
-	if _game != null:
+	if _game != null and _game.has_method("queue_redraw"):
 		_game.queue_redraw()
 
 
 func close() -> void:
 	is_terminal_open = false
 	terminal_visibility_changed.emit(false)
-	if _game != null:
+	if _game != null and _game.has_method("queue_redraw"):
 		_game.queue_redraw()
+
+
+func get_terminal_rect(vp_size: Vector2 = Vector2.ZERO) -> Rect2:
+	var vp := vp_size
+	if vp == Vector2.ZERO:
+		if is_inside_tree() and get_viewport() != null:
+			vp = get_viewport_rect().size
+		elif _game != null and _game.is_inside_tree() and _game.get_viewport() != null:
+			vp = _game.get_viewport_rect().size
+		else:
+			vp = Vector2(1280.0, 720.0)
+	var term_h := clampf(vp.y * 0.42, 220.0, 320.0)
+	return Rect2(20.0, 50.0, vp.x - 40.0, term_h)
+
+
+func get_close_button_rect(vp_size: Vector2 = Vector2.ZERO) -> Rect2:
+	var term_rect := get_terminal_rect(vp_size)
+	var btn_w := 148.0
+	var btn_h := 20.0
+	return Rect2(term_rect.position.x + term_rect.size.x - btn_w - 6.0, term_rect.position.y + 2.0, btn_w, btn_h)
 
 
 func handle_input(event: InputEvent) -> bool:
 	if not is_terminal_open:
 		return false
 
-	if event is InputEventKey and event.pressed:
+	var vp_size := Vector2.ZERO
+	if is_inside_tree() and get_viewport() != null:
+		vp_size = get_viewport_rect().size
+	elif _game != null and _game.is_inside_tree() and _game.get_viewport() != null:
+		vp_size = _game.get_viewport_rect().size
+	else:
+		vp_size = Vector2(1280.0, 720.0)
+
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+			if get_close_button_rect(vp_size).has_point(mb.position) or not get_terminal_rect(vp_size).has_point(mb.position):
+				close()
+				return true
+			if get_terminal_rect(vp_size).has_point(mb.position):
+				return true
+		return false
+
+	if event is InputEventScreenTouch:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			if get_close_button_rect(vp_size).has_point(st.position) or not get_terminal_rect(vp_size).has_point(st.position):
+				close()
+				return true
+			if get_terminal_rect(vp_size).has_point(st.position):
+				return true
+		return false
+
+	if event is InputEventMouseMotion:
+		return false
+
+	if event is InputEventKey:
 		var k: InputEventKey = event as InputEventKey
-		match k.keycode:
-			KEY_QUOTELEFT, KEY_ASCIITILDE:
-				close()
-				return true
-			KEY_ESCAPE:
-				close()
-				return true
-			KEY_ENTER, KEY_KP_ENTER:
-				_execute_command(_input_text)
-				_input_text = ""
-				queue_redraw()
-				return true
-			KEY_BACKSPACE:
-				if _input_text.length() > 0:
-					_input_text = _input_text.substr(0, _input_text.length() - 1)
-					queue_redraw()
-				return true
-			_:
-				if k.unicode > 31 and k.unicode < 127:
-					_input_text += char(k.unicode)
+		if k.pressed:
+			match k.keycode:
+				KEY_QUOTELEFT, KEY_ASCIITILDE, KEY_ESCAPE:
+					close()
+					return true
+				KEY_ENTER, KEY_KP_ENTER:
+					_execute_command(_input_text)
+					_input_text = ""
 					queue_redraw()
 					return true
-	return true
+				KEY_BACKSPACE:
+					if _input_text.length() > 0:
+						_input_text = _input_text.substr(0, _input_text.length() - 1)
+						queue_redraw()
+					return true
+				_:
+					if k.unicode > 31 and k.unicode < 127:
+						_input_text += char(k.unicode)
+						queue_redraw()
+						return true
+		return true
+
+	return false
 
 
 func _execute_command(raw_cmd: String) -> void:
@@ -161,9 +214,11 @@ func draw_terminal(canvas: CanvasItem, vp: Vector2, font: Font, font_size: int) 
 	if not is_terminal_open:
 		return
 
+	var f: Font = font if font != null else BrandClass.font_regular()
+	var f_sz: int = font_size if font_size > 0 else 14
+
 	_cursor_blink += 0.016
-	var term_h := clampf(vp.y * 0.42, 220.0, 320.0)
-	var term_rect := Rect2(20.0, 50.0, vp.x - 40.0, term_h)
+	var term_rect := get_terminal_rect(vp)
 
 	# Fondo translúcido profundo con borde cian táctico
 	canvas.draw_rect(term_rect, Color(0.02, 0.04, 0.07, 0.94))
@@ -172,7 +227,13 @@ func draw_terminal(canvas: CanvasItem, vp: Vector2, font: Font, font_size: int) 
 	# Barra de título superior
 	var header_rect := Rect2(term_rect.position.x, term_rect.position.y, term_rect.size.x, 24.0)
 	canvas.draw_rect(header_rect, Color(0.05, 0.12, 0.18, 0.95))
-	canvas.draw_string(font, Vector2(header_rect.position.x + 12.0, header_rect.position.y + 16.0), "TERMINAL TÁCTICA // [~] o [ESC] para cerrar", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 3, Color(0.0, 1.0, 0.83))
+	canvas.draw_string(f, Vector2(header_rect.position.x + 12.0, header_rect.position.y + 16.0), "TERMINAL TÁCTICA // [~] o [ESC] para cerrar", HORIZONTAL_ALIGNMENT_LEFT, -1, f_sz - 3, Color(0.0, 1.0, 0.83))
+
+	# Botón visible [ ✕ CERRAR (ESC) ]
+	var close_rect := get_close_button_rect(vp)
+	canvas.draw_rect(close_rect, Color(0.8, 0.15, 0.2, 0.25))
+	canvas.draw_rect(close_rect, Color(1.0, 0.35, 0.45, 0.75), false, 1.0)
+	canvas.draw_string(f, Vector2(close_rect.position.x + 8.0, close_rect.position.y + 14.0), "[ ✕ CERRAR (ESC) ]", HORIZONTAL_ALIGNMENT_LEFT, -1, f_sz - 4, Color(1.0, 0.7, 0.7))
 
 	# Contenido de líneas de salida
 	var start_y := header_rect.position.y + 44.0
@@ -183,15 +244,15 @@ func draw_terminal(canvas: CanvasItem, vp: Vector2, font: Font, font_size: int) 
 			line_col = Color(0.0, 1.0, 0.6)
 		elif line.begins_with("ERR:"):
 			line_col = Color(1.0, 0.35, 0.25)
-		canvas.draw_string(font, Vector2(term_rect.position.x + 14.0, start_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, line_col)
+		canvas.draw_string(f, Vector2(term_rect.position.x + 14.0, start_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, f_sz - 2, line_col)
 		start_y += line_spacing
 
 	# Prompt y cursor
 	var prompt_str := PROMPT + _input_text
-	canvas.draw_string(font, Vector2(term_rect.position.x + 14.0, term_rect.position.y + term_rect.size.y - 12.0), prompt_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, Color("39ff88"))
+	canvas.draw_string(f, Vector2(term_rect.position.x + 14.0, term_rect.position.y + term_rect.size.y - 12.0), prompt_str, HORIZONTAL_ALIGNMENT_LEFT, -1, f_sz - 2, Color("39ff88"))
 
 	if fmod(_cursor_blink, 0.8) < 0.4:
-		var pw := font.get_string_size(prompt_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2).x
+		var pw := f.get_string_size(prompt_str, HORIZONTAL_ALIGNMENT_LEFT, -1, f_sz - 2).x
 		var cursor_x := term_rect.position.x + 14.0 + pw + 2.0
 		var cursor_y := term_rect.position.y + term_rect.size.y - 22.0
 		canvas.draw_rect(Rect2(cursor_x, cursor_y, 7.0, 14.0), Color("39ff88"))

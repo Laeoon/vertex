@@ -36,6 +36,7 @@ func _run_tests() -> void:
 	test_all_16_levels_have_narratives_and_codecs()
 	test_mandatory_first_time_codec_autoplay_and_replay()
 	test_act_pills_dimensions_and_no_collision()
+	test_wave_start_and_end_anchored_to_nodes()
 	test_spine_nodes_and_pills_in_bounds()
 	test_boss_pill_text_no_literal_specifier()
 	test_database_cinematics_list_scrolling()
@@ -395,6 +396,7 @@ func test_act_pills_dimensions_and_no_collision() -> void:
 	var r2: Rect2 = ls.get_act2_rect(vp)
 	_assert(r1.size.x >= 175.0, "Act 1 pill width >= 175px (got %.1f)" % r1.size.x)
 	_assert(r2.size.x >= 175.0, "Act 2 pill width >= 175px (got %.1f)" % r2.size.x)
+	_assert(r1.size.x > 0.0 and r2.size.x > 0.0, "Heist shows both Act I and Act II pills (never PRECUELA)")
 	var gap := r2.position.x - (r1.position.x + r1.size.x)
 	_assert(gap >= 16.0, "Act pills do not collide with at least 16px gap (got %.1f)" % gap)
 	ls.queue_free()
@@ -406,6 +408,25 @@ func test_act_pills_dimensions_and_no_collision() -> void:
 	var r2_sec: Rect2 = ls_sec.get_act2_rect(vp)
 	_assert(r2_sec.size.x == 0.0, "Sector 0 hides Act II pill (Act 2 width is 0)")
 	ls_sec.queue_free()
+
+
+func test_wave_start_and_end_anchored_to_nodes() -> void:
+	var ls = LevelSelectClass.new()
+	ls.setup("heist")
+	add_child(ls)
+	var vp := Vector2(1356, 672)
+
+	var act_levels := ls._get_current_act_levels()
+	var total_nodes := act_levels.size()
+	var p_start := ls.get_spine_node_position(0, vp)
+	var p_end := ls.get_spine_node_position(total_nodes - 1, vp)
+
+	var expected_start := Vector2(vp.x * 0.19, vp.y * 0.53)
+	var expected_end := Vector2(vp.x * 0.81, vp.y * 0.29)
+	_assert(p_start.is_equal_approx(expected_start), "Wave start matches get_spine_node_position(0) 100%% (%s vs %s)" % [p_start, expected_start])
+	_assert(p_end.is_equal_approx(expected_end), "Wave end matches get_spine_node_position(total_nodes - 1) 100%% (%s vs %s)" % [p_end, expected_end])
+
+	ls.queue_free()
 
 
 func test_spine_nodes_and_pills_in_bounds() -> void:

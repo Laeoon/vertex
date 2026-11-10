@@ -479,151 +479,184 @@ func _is_tutorial_touch(pos: Vector2) -> bool:
 
 
 func _handle_hud_click(pos: Vector2, vp_size: Vector2) -> bool:
-	# 1. Controles táctiles de cámara y pausa en la esquina inferior derecha
-	var btn_center := Rect2(vp_size.x - 240.0, vp_size.y - 48.0, 75.0, 42.0)
-	var btn_zoom_out := Rect2(vp_size.x - 160.0, vp_size.y - 48.0, 40.0, 42.0)
-	var btn_zoom_in := Rect2(vp_size.x - 115.0, vp_size.y - 48.0, 40.0, 42.0)
-	var btn_pause := Rect2(vp_size.x - 70.0, vp_size.y - 48.0, 56.0, 42.0)
+	# 1. Menú contextual abierto sobre un nodo (Defensor)
+	if defender_mode and _defender_context_node != &"" and game != null and "node_positions" in game:
+		var npos: Vector2 = game.node_positions.get(_defender_context_node, Vector2.ZERO) as Vector2
+		var screen_pos: Vector2 = _world_to_screen(npos)
+		var btn_fw := Rect2(screen_pos.x - 110.0, screen_pos.y - 50.0, 105.0, 36.0)
+		var btn_q := Rect2(screen_pos.x + 5.0, screen_pos.y - 50.0, 115.0, 36.0)
+		var btn_close := Rect2(screen_pos.x + 125.0, screen_pos.y - 50.0, 32.0, 36.0)
 
-	if btn_center.has_point(pos):
-		if game != null and game.has_method("reset_pan_zoom"):
-			game.reset_pan_zoom()
-		return true
-	elif btn_zoom_out.has_point(pos):
-		if game != null and game.has_method("zoom_out"):
-			game.zoom_out(vp_size / 2.0)
-		return true
-	elif btn_zoom_in.has_point(pos):
-		if game != null and game.has_method("zoom_in"):
-			game.zoom_in(vp_size / 2.0)
-		return true
-	elif btn_pause.has_point(pos):
-		pause_toggle_requested.emit()
-		return true
-
-	# 2. Dock táctico en modo Hacker: Exploit & Scan bar
-	if hacker_mode and not game_over:
-		var scan_rect := Rect2(16.0, vp_size.y - 48.0, 95.0, 42.0)
-		var bypass_rect := Rect2(116.0, vp_size.y - 48.0, 110.0, 42.0)
-		var escalate_rect := Rect2(231.0, vp_size.y - 48.0, 120.0, 42.0)
-		var persist_rect := Rect2(356.0, vp_size.y - 48.0, 115.0, 42.0)
-		var decoy_rect := Rect2(476.0, vp_size.y - 48.0, 130.0, 42.0)
-
-		if scan_rect.has_point(pos):
+		if btn_fw.has_point(pos):
+			var target := _defender_context_node
+			_defender_context_node = &""
+			_sync_defender_context()
 			if _tutorial_blocks("input"):
 				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 				return true
-			scan_requested.emit()
+			defender_place_firewall.emit(target)
 			return true
-		elif bypass_rect.has_point(pos):
+		elif btn_q.has_point(pos):
+			var target := _defender_context_node
+			_defender_context_node = &""
+			_sync_defender_context()
 			if _tutorial_blocks("input"):
 				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 				return true
-			exploit_used.emit("bypass")
+			defender_quarantine_node.emit(target)
 			return true
-		elif escalate_rect.has_point(pos):
-			if _tutorial_blocks("input"):
+		elif btn_close.has_point(pos):
+			_defender_context_node = &""
+			_sync_defender_context()
+			return true
+		else:
+			_defender_context_node = &""
+			_sync_defender_context()
+
+	# 2. Perks / Herramientas en la Barra Superior (y <= 52.0)
+	if pos.y <= 52.0:
+		var current_mode := "heist"
+		if game != null and "level_key" in game and (str(game.level_key).begins_with("secret") or ("world" in game and str(game.world).find("secret") != -1)):
+			current_mode = "secret"
+		elif hacker_mode:
+			current_mode = "hacker"
+		elif defender_mode:
+			current_mode = "defender"
+
+		var is_fog: bool = false
+		var is_telem: bool = false
+		if defender_mode and game != null and "_defender_brain" in game and game._defender_brain != null:
+			is_fog = game._defender_brain.get("fog_of_war", false)
+			is_telem = game._defender_brain.get("telemetry_intercepted", false)
+
+		var hs: Dictionary = game.hacker_state if (game != null and "hacker_state" in game and game.hacker_state != null) else {}
+		var p_fnt: Font = game.font if (game != null and "font" in game) else null
+		var p_fsz: int = game.font_size if (game != null and "font_size" in game) else 14
+
+		var perk_pills := GameRendererClass.get_top_perk_rects(vp_size, current_mode, is_fog, is_telem, p_fnt, p_fsz, hs)
+		for p in perk_pills:
+			var r: Rect2 = p["rect"]
+			if r.grow(4.0).has_point(pos):
+				match p["id"]:
+					"scan":
+						if _tutorial_blocks("input"):
+							_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+							return true
+						scan_requested.emit()
+						return true
+					"bypass", "escalate", "persist", "decoy":
+						if _tutorial_blocks("input"):
+							_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+							return true
+						exploit_used.emit(p["id"])
+						return true
+					"edges":
+						quarantine_mode = false
+						firewall_mode = false
+						defender_toggle_quarantine.emit()
+						_mensaje_temp("Modo Aristas activo [1]: Haz clic en las líneas para bloquear.")
+						return true
+					"firewall":
+						quarantine_mode = false
+						defender_toggle_firewall.emit()
+						return true
+					"quarantine":
+						firewall_mode = false
+						quarantine_mode = not quarantine_mode
+						defender_toggle_quarantine.emit()
+						return true
+					"radar":
+						toggle_optimal_route.emit()
+						return true
+					"tab_neighbor":
+						cycle_neighbor.emit(1)
+						return true
+					"optimal_route":
+						toggle_optimal_route.emit()
+						return true
+					"terminal":
+						if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
+							game._terminal_overlay.toggle()
+							game.queue_redraw()
+						return true
+				return true
+
+	# 3. Barra Inferior Táctica (y >= vp_size.y - 48.0)
+	if pos.y >= vp_size.y - 48.0:
+		var btn_cli := Rect2(vp_size.x - 295.0, vp_size.y - 42.0, 55.0, 38.0)
+		var btn_center := Rect2(vp_size.x - 235.0, vp_size.y - 42.0, 85.0, 38.0)
+		var btn_zoom_out := Rect2(vp_size.x - 145.0, vp_size.y - 42.0, 32.0, 38.0)
+		var btn_zoom_in := Rect2(vp_size.x - 108.0, vp_size.y - 42.0, 32.0, 38.0)
+		var btn_pause := Rect2(vp_size.x - 71.0, vp_size.y - 42.0, 55.0, 38.0)
+		var confirm_rect := Rect2((vp_size.x - 260.0) * 0.5, vp_size.y - 42.0, 260.0, 38.0)
+
+		if btn_cli.has_point(pos):
+			if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
+				game._terminal_overlay.toggle()
+				game.queue_redraw()
+			return true
+		elif btn_center.has_point(pos):
+			if game != null and game.has_method("reset_pan_zoom"):
+				game.reset_pan_zoom()
+			return true
+		elif btn_zoom_out.has_point(pos):
+			if game != null and game.has_method("zoom_out"):
+				game.zoom_out(vp_size / 2.0)
+			return true
+		elif btn_zoom_in.has_point(pos):
+			if game != null and game.has_method("zoom_in"):
+				game.zoom_in(vp_size / 2.0)
+			return true
+		elif btn_pause.has_point(pos):
+			pause_toggle_requested.emit()
+			return true
+		elif selected_neighbor != &"" and not defender_mode and not game_over and confirm_rect.has_point(pos):
+			if _tutorial_blocks("move"):
 				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 				return true
-			exploit_used.emit("escalate")
-			return true
-		elif persist_rect.has_point(pos):
-			if _tutorial_blocks("input"):
-				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
-				return true
-			exploit_used.emit("persist")
-			return true
-		elif decoy_rect.has_point(pos):
-			if _tutorial_blocks("input"):
-				_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
-				return true
-			exploit_used.emit("decoy")
+			move_requested.emit(selected_neighbor)
 			return true
 
-	# 3. Dock táctico en modo Heist / Atacante
-	if not defender_mode and not hacker_mode and not game_over:
-		if selected_neighbor != &"":
-			var confirm_rect := Rect2((vp_size.x - 260.0) / 2.0, vp_size.y - 48.0, 260.0, 42.0)
-			if confirm_rect.has_point(pos):
-				if _tutorial_blocks("move"):
-					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
-					return true
-				move_requested.emit(selected_neighbor)
-				return true
+		# Fallback legacy para clicks inferiores en modo Hacker
+		if hacker_mode and not game_over:
+			var scan_rect := Rect2(16.0, vp_size.y - 48.0, 95.0, 42.0)
+			var bypass_rect := Rect2(116.0, vp_size.y - 48.0, 110.0, 42.0)
+			var escalate_rect := Rect2(231.0, vp_size.y - 48.0, 120.0, 42.0)
+			var persist_rect := Rect2(356.0, vp_size.y - 48.0, 115.0, 42.0)
+			var decoy_rect := Rect2(476.0, vp_size.y - 48.0, 130.0, 42.0)
 
-	# 4. Modo Defensor: pills superiores y menú contextual
-	if defender_mode:
-		# Menú contextual abierto sobre un nodo
-		if _defender_context_node != &"" and game != null and "node_positions" in game:
-			var npos: Vector2 = game.node_positions.get(_defender_context_node, Vector2.ZERO) as Vector2
-			var screen_pos: Vector2 = _world_to_screen(npos)
-			var btn_fw := Rect2(screen_pos.x - 110.0, screen_pos.y - 50.0, 105.0, 36.0)
-			var btn_q := Rect2(screen_pos.x + 5.0, screen_pos.y - 50.0, 115.0, 36.0)
-			var btn_close := Rect2(screen_pos.x + 125.0, screen_pos.y - 50.0, 32.0, 36.0)
-
-			if btn_fw.has_point(pos):
-				var target := _defender_context_node
-				_defender_context_node = &""
-				_sync_defender_context()
+			if scan_rect.has_point(pos):
 				if _tutorial_blocks("input"):
 					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 					return true
-				defender_place_firewall.emit(target)
+				scan_requested.emit()
 				return true
-			elif btn_q.has_point(pos):
-				var target := _defender_context_node
-				_defender_context_node = &""
-				_sync_defender_context()
+			elif bypass_rect.has_point(pos):
 				if _tutorial_blocks("input"):
 					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
 					return true
-				defender_quarantine_node.emit(target)
+				exploit_used.emit("bypass")
 				return true
-			elif btn_close.has_point(pos):
-				_defender_context_node = &""
-				_sync_defender_context()
+			elif escalate_rect.has_point(pos):
+				if _tutorial_blocks("input"):
+					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+					return true
+				exploit_used.emit("escalate")
 				return true
-			else:
-				_defender_context_node = &""
-				_sync_defender_context()
+			elif persist_rect.has_point(pos):
+				if _tutorial_blocks("input"):
+					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+					return true
+				exploit_used.emit("persist")
+				return true
+			elif decoy_rect.has_point(pos):
+				if _tutorial_blocks("input"):
+					_mensaje_temp("[!] Tutorial: completa la acción indicada en el recordatorio primero")
+					return true
+				exploit_used.emit("decoy")
+				return true
 
-		# Pills superiores del HUD en modo defensor
-		if pos.y <= 48.0:
-			var p_fnt: Font = game.font if (game != null and "font" in game) else null
-			var p_fsz: int = game.font_size if (game != null and "font_size" in game) else 14
-			var is_fog: bool = false
-			var is_telem: bool = false
-			if game != null and "_defender_brain" in game and game._defender_brain != null:
-				is_fog = game._defender_brain.get("fog_of_war", false)
-				is_telem = game._defender_brain.get("telemetry_intercepted", false)
-			var pill_rects := GameRendererClass.get_defender_pill_rects(vp_size, p_fnt, p_fsz, is_fog, is_telem)
-			for p in pill_rects:
-				var r: Rect2 = p["rect"]
-				if r.grow(4.0).has_point(pos):
-					match p["id"]:
-						"edges":
-							quarantine_mode = false
-							firewall_mode = false
-							defender_toggle_quarantine.emit()
-							_mensaje_temp("Modo Aristas activo [1]: Haz clic en las líneas para bloquear.")
-							return true
-						"firewall":
-							quarantine_mode = false
-							defender_toggle_firewall.emit()
-							return true
-						"quarantine":
-							firewall_mode = false
-							quarantine_mode = not quarantine_mode
-							defender_toggle_quarantine.emit()
-							return true
-						"radar":
-							toggle_optimal_route.emit()
-							return true
-						"terminal":
-							if game != null and "_terminal_overlay" in game and game._terminal_overlay != null:
-								game._terminal_overlay.toggle()
-								game.queue_redraw()
-							return true
+	return false
 
 	return false
 
