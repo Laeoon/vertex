@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERTEX — Comparativa Directa: ANTES vs DESPUÉS (Heist, Defender, Hacker)</title>
+<style>
+  :root {
+    --bg: #0b0c14;
+    --panel-solid: rgba(16, 18, 31, 0.96);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --world-heist: #bf5af2;
+    --world-hacker: #39ff88;
+    --world-cyber: #00d2ff;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1356px;
+    height: 960px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    user-select: none;
+    overflow-y: auto;
+  }
+
+  /* Header principal de la maqueta */
+  .mockup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .mockup-header h1 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  .mockup-header .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .badge-red {
+    background: rgba(255, 71, 87, 0.2);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+  .badge-green {
+    background: rgba(57, 255, 136, 0.2);
+    border: 1px solid var(--success);
+    color: var(--success);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+
+  /* Contenedor de cada modo */
+  .mode-section {
+    background: #10121d;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .mode-section-header {
+    background: #161828;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .mode-section-header.heist { color: var(--world-heist); }
+  .mode-section-header.defender { color: var(--world-cyber); }
+  .mode-section-header.hacker { color: var(--world-hacker); }
+  .mode-section-header .summary {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 400;
+  }
+
+  .comparison-row {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .comparison-row:not(:last-child) {
+    border-bottom: 1px dashed rgba(255,255,255,0.08);
+  }
+  .row-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .row-meta.before { color: var(--danger); }
+  .row-meta.after { color: var(--success); }
+
+  /* BARRAS DE HUD (Simulación exacta 1:1 de 48px de alto) */
+  .hud-bar {
+    height: 48px;
+    background: rgba(14, 16, 26, 0.98);
+    border-radius: 4px;
+    padding: 0 14px;
+    position: relative;
+    display: grid;
+    align-items: center;
+  }
+  .hud-bar.heist { border-bottom: 2px solid var(--world-heist); }
+  .hud-bar.defender { border-bottom: 2px solid var(--world-cyber); }
+  .hud-bar.hacker { border-bottom: 2px solid var(--world-hacker); }
+
+  /* HUD BAR EN ESTADO ANTES (usa coordenadas absolutas para replicar el bug real) */
+  .hud-bar.is-before {
+    display: flex;
+    justify-content: space-between;
+  }
+  .is-before .left-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .is-before .right-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  /* Centro en ANTES con el desfase hardcodeado en safe_left = 445 */
+  .is-before .center-cluster-heist {
+    position: absolute;
+    left: 650px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .is-before .center-cluster-defender {
+    position: absolute;
+    left: 480px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .is-before .center-cluster-hacker {
+    position: absolute;
+    left: 445px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ZONA DE HUECO RESALTADA EN ROJO */
+  .empty-void-indicator {
+    position: absolute;
+    left: 290px;
+    width: 350px;
+    height: 32px;
+    border: 1.5px dashed var(--danger);
+    background: rgba(255, 71, 87, 0.10);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--danger);
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    animation: flashVoid 2s infinite ease-in-out;
+  }
+
+  /* HUD BAR EN ESTADO DESPUÉS (usa Grid simétrico de 3 columnas fluidas) */
+  .hud-bar.is-after {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+  }
+  .is-after .left-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .is-after .center-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .is-after .right-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  /* Componentes comunes de la barra */
+  .level-title-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-right: 10px;
+    border-right: 1px solid var(--panel-border);
+  }
+  .title-text {
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .sub-text {
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .badge-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--panel-border);
+    border-radius: 3px;
+    background: rgba(0,0,0,0.4);
+    height: 26px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .badge-box span {
+    padding: 0 6px;
+  }
+  .badge-box span:not(:last-child) {
+    border-right: 1px solid var(--panel-border);
+  }
+
+  /* Píldoras de botones */
+  .btn-pill {
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .btn-pill.success { border-color: var(--success); color: var(--success); }
+  .btn-pill.accent { border-color: var(--accent); color: var(--accent); }
+  .btn-pill.info { border-color: #66b3ff; color: #66b3ff; }
+  .btn-pill.magenta { border-color: #e680ff; color: #e680ff; }
+  .btn-pill.warning { border-color: var(--warning); color: var(--warning); }
+
+  /* Píldoras de Telemetría Nuevas (Glow verde/cyan) */
+  .telemetry-chip {
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 4px;
+    background: rgba(18, 22, 38, 0.95);
+    border: 1.5px solid var(--success);
+    color: var(--text);
+    white-space: nowrap;
+    box-shadow: 0 0 10px rgba(57, 255, 136, 0.25);
+    position: relative;
+  }
+  .telemetry-chip.cyan {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
+  }
+  .telemetry-chip.threat {
+    border-color: var(--danger);
+    color: var(--danger);
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+  }
+  .chip-tag {
+    font-size: 8px;
+    color: var(--text-dim);
+    margin-right: 4px;
+  }
+  .new-tag {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    background: var(--warning);
+    color: #000;
+    font-size: 7px;
+    font-weight: 900;
+    padding: 1px 3px;
+    border-radius: 2px;
+  }
+
+  .pos-txt, .meta-txt {
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .pos-txt span, .meta-txt span {
+    color: var(--text-dim);
+    font-size: 9px;
+  }
+
+  @keyframes flashVoid {
+    0%, 100% { opacity: 0.8; border-color: var(--danger); }
+    50% { opacity: 0.3; border-color: rgba(255, 71, 87, 0.4); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="mockup-header">
+    <div>
+      <h1>VERTEX — Comparativa Directa 1:1: Top Bar en los 3 Modos</h1>
+      <p style="font-size:11px; color:var(--text-dim); margin-top:2px;">
+        Solución al vacío de 400px en Heist, balanceo en Defender y centrado anti-colisión en Hacker.
+      </p>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="badge-red">ROJO</span> Estado actual con hueco muerto</div>
+      <div class="legend-item"><span class="badge-green">VERDE</span> Propuesta equilibrada con telemetría</div>
+    </div>
+  </header>
+
+  <!-- CASO 1: HEIST (ESCAPE DEL CASINO) -->
+  <section class="mode-section">
+    <div class="mode-section-header heist">
+      <span>1. MODO HEIST (Escape del Casino)</span>
+      <span class="summary">Problema principal: Al achicar botones, quedó un agujero de ~350-400px en el medio.</span>
+    </div>
+
+    <!-- ANTES -->
+    <div class="comparison-row">
+      <div class="row-meta before">
+        <span>🔴 ANTES (ACTUAL EN GODOT):</span>
+        <span>Botones desplazados a la derecha por centrado rígido en caja de 700px. Hueco muerto enorme.</span>
+      </div>
+      <div class="hud-bar heist is-before">
+        <div class="left-cluster">
+          <div class="level-title-box">
+            <span class="title-text" style="color:var(--world-heist);">Heist — Escape del Casino</span>
+            <span class="sub-text">T2 · WP 1/2</span>
+          </div>
+          <div class="badge-box">
+            <span>PTS <strong style="color:var(--success);">17</strong></span>
+            <span>COSTE <strong style="color:var(--accent);">3.0</strong></span>
+          </div>
+        </div>
+
+        <!-- INDICADOR DEL HUECO REAL -->
+        <div class="empty-void-indicator">
+          ◄── VACÍO MUERTO DE ~400 PX (Donde apuntaste con el mouse) ──►
+        </div>
+
+        <!-- BOTONES DESPLAZADOS -->
+        <div class="center-cluster-heist">
+          <div class="btn-pill success">[TAB] VECINO</div>
+          <div class="btn-pill accent">[P] RUTA DIJKSTRA</div>
+        </div>
+
+        <div class="right-cluster">
+          <div class="pos-txt"><span>POS: </span>Puesto de seguridad</div>
+          <div class="meta-txt" style="color:var(--danger);"><span>META: </span>Centro de datos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESPUÉS -->
+    <div class="comparison-row">
+      <div class="row-meta after">
+        <span>🟢 DESPUÉS (PROPUESTA CON TELEMETRÍA):</span>
+        <span>Se incorporan 2 chips tácticos pasivos. El hueco se cierra y el jugador ve Alerta y Distancia en saltos.</span>
+      </div>
+      <div class="hud-bar heist is-after">
+        <div class="left-cluster">
+          <div class="level-title-box">
+            <span class="title-text" style="color:var(--world-heist);">Heist — Escape del Casino</span>
+            <span class="sub-text">T2 · WP 1/2</span>
+          </div>
+          <div class="badge-box">
+            <span>PTS <strong style="color:var(--success);">17</strong></span>
+            <span>COSTE <strong style="color:var(--accent);">3.0</strong></span>
+          </div>
+        </div>
+
+        <div class="center-cluster">
+          <div class="btn-pill success">[TAB] VECINO</div>
+          <div class="btn-pill accent">[P] RUTA DIJKSTRA</div>
+          <div class="telemetry-chip">
+            <span class="new-tag">+CHIP</span>
+            <span class="chip-tag">ALERTA IDS:</span>0%
+          </div>
+          <div class="telemetry-chip cyan">
+            <span class="new-tag">+CHIP</span>
+            <span class="chip-tag">DISTANCIA:</span>3 SALTOS A META
+          </div>
+        </div>
+
+        <div class="right-cluster">
+          <div class="pos-txt"><span>POS: </span>Puesto de seguridad</div>
+          <div class="meta-txt" style="color:var(--danger);"><span>META: </span>Centro de datos</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CASO 2: DEFENDER (DEFENSA PERIMETRAL) -->
+  <section class="mode-section">
+    <div class="mode-section-header defender">
+      <span>2. MODO DEFENDER (Defensa Perimetral / SOC)</span>
+      <span class="summary">Problema: 4 botones con aire irregular respecto a Hacker.</span>
+    </div>
+
+    <!-- ANTES -->
+    <div class="comparison-row">
+      <div class="row-meta before">
+        <span>🔴 ANTES (ACTUAL EN GODOT):</span>
+        <span>4 herramientas tácticas (`[1]` a `[4]`). Falta el dato de proximidad del intruso al Core.</span>
+      </div>
+      <div class="hud-bar defender is-before">
+        <div class="left-cluster">
+          <div class="level-title-box">
+            <span class="title-text" style="color:var(--world-cyber);">Defensa Perimetral</span>
+            <span class="sub-text">T0 · SOC ACTIVO</span>
+          </div>
+          <div class="badge-box">
+            <span>BLOQ <strong style="color:var(--accent);">2/2</strong></span>
+            <span>EDR <strong style="color:var(--warning);">0%</strong></span>
+          </div>
+        </div>
+
+        <div class="center-cluster-defender">
+          <div class="btn-pill accent">[1] SEGMENTAR ARISTA</div>
+          <div class="btn-pill info">[2] FIREWALL</div>
+          <div class="btn-pill warning">[3] CUARENTENA</div>
+          <div class="btn-pill info">[4] RADAR</div>
+        </div>
+
+        <div class="right-cluster">
+          <div class="pos-txt"><span>INTRUSO: </span>Punto Infiltración</div>
+          <div class="meta-txt" style="color:var(--danger);"><span>NÚCLEO: </span>Crown Jewels</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESPUÉS -->
+    <div class="comparison-row">
+      <div class="row-meta after">
+        <span>🟢 DESPUÉS (PROPUESTA CON TELEMETRÍA SOC):</span>
+        <span>Se suma el chip de amenaza en saltos. Defender pasa a 5 píldoras (mismo peso y ancho exacto que Hacker).</span>
+      </div>
+      <div class="hud-bar defender is-after">
+        <div class="left-cluster">
+          <div class="level-title-box">
+            <span class="title-text" style="color:var(--world-cyber);">Defensa Perimetral</span>
+            <span class="sub-text">T0 · SOC ACTIVO</span>
+          </div>
+          <div class="badge-box">
+            <span>BLOQ <strong style="color:var(--accent);">2/2</strong></span>
+            <span>EDR <strong style="color:var(--warning);">0%</strong></span>
+          </div>
+        </div>
+
+        <div class="center-cluster">
+          <div class="btn-pill accent">[1] SEGMENTAR ARISTA</div>
+          <div class="btn-pill info">[2] FIREWALL</div>
+          <div class="btn-pill warning">[3] CUARENTENA</div>
+          <div class="btn-pill info">[4] RADAR</div>
+          <div class="telemetry-chip threat">
+            <span class="new-tag">+SOC</span>
+            <span class="chip-tag">AMENAZA:</span>3 SALTOS AL NÚCLEO
+          </div>
+        </div>
+
+        <div class="right-cluster">
+          <div class="pos-txt"><span>INTRUSO: </span>Punto Infiltración</div>
+          <div class="meta-txt" style="color:var(--danger);"><span>NÚCLEO: </span>Crown Jewels</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CASO 3: HACKER (BRECHA EN LA RED) -->
+  <section class="mode-section">
+    <div class="mode-section-header hacker">
+      <span>3. MODO HACKER (Brecha en la Red)</span>
+      <span class="summary">Problema: Ya tiene 5 botones (`SCAN` + 4 exploits). No entra otro botón en el centro sin chocar.</span>
+    </div>
+
+    <!-- ANTES -->
+    <div class="comparison-row">
+      <div class="row-meta before">
+        <span>🔴 ANTES (ACTUAL EN GODOT):</span>
+        <span>Anclado con `safe_left = 445px`. Si agregás chips en el centro se superpone contra `PTS / RUIDO`.</span>
+      </div>
+      <div class="hud-bar hacker is-before">
+        <div class="left-cluster">
+          <div class="level-title-box">
+            <span class="title-text" style="color:var(--world-hacker);">Hacker — Brecha en la Red</span>
+            <span class="sub-text">T0 · WP 1/2</span>
+          </div>
+          <div class="badge-box">
+            <span>PTS <strong style="color:var(--success);">0</strong></span>
+            <span>RUIDO <strong style="color:var(--warning);">0%</strong></span>
+          </div>
+        </div>
+
+        <div class="center-cluster-hacker">
+          <div class="btn-pill success">[X] SCAN</div>
+          <div class="btn-pill accent">[1] BYPASS x1</div>
+          <div class="btn-pill info">[2] ESCALATE x1</div>
+          <div class="btn-pill magenta">[3] PERSIST x0</div>
+          <div class="btn-pill warning">[4] HONEYPOT x1</div>
+        </div>
+
+        <div class="right-cluster">
+          <div class="pos-txt"><span>POS: </span>Inicio</div>
+          <div class="meta-txt" style="color:var(--danger);"><span>META: </span>DMZ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESPUÉS -->
+    <div class="comparison-row">
+      <div class="row-meta after">
+        <span>🟢 DESPUÉS (CENTRADOR DINÁMICO ANTI-COLISIÓN):</span>
+        <span>Cero chips extras en el centro para evitar colisiones. Centrado simétrico puro y micro-tag en subtítulo.</span>
+      </div>
+      <div class="hud-bar hacker is-after">
+        <div class="left-cluster">
+          <div class="level-title-box">
+            <span class="title-text" style="color:var(--world-hacker);">Hacker — Brecha en la Red</span>
+            <span class="sub-text">T0 · WP 1/2 · <strong style="color:var(--success);">● PROXY TOR-04</strong></span>
+          </div>
+          <div class="badge-box">
+            <span>PTS <strong style="color:var(--success);">0</strong></span>
+            <span>RUIDO <strong style="color:var(--warning);">0%</strong></span>
+          </div>
+        </div>
+
+        <div class="center-cluster">
+          <div class="btn-pill success">[X] SCAN</div>
+          <div class="btn-pill accent">[1] BYPASS x1</div>
+          <div class="btn-pill info">[2] ESCALATE x1</div>
+          <div class="btn-pill magenta">[3] PERSIST x0</div>
+          <div class="btn-pill warning">[4] HONEYPOT x1</div>
+        </div>
+
+        <div class="right-cluster">
+          <div class="pos-txt"><span>POS: </span>Inicio</div>
+          <div class="meta-txt" style="color:var(--danger);"><span>META: </span>DMZ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

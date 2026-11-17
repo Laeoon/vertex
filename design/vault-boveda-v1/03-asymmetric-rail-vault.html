@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VERTEX // LA BÓVEDA // PERFIL - Riel Vertical de Módulos</title>
+<style>
+  :root {
+    --bg: #0d0e16;
+    --panel: rgba(22, 24, 38, 0.88);
+    --panel-solid: rgba(16, 18, 31, 0.95);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --purple: #bf5af2;
+    --cyan: #00d2ff;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-mono); }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    width: 1356px;
+    height: 672px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .viewport-frame {
+    width: 1356px;
+    height: 672px;
+    background: radial-gradient(circle at 30% 50%, #151828 0%, #0d0e16 85%);
+    border: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Left Vertical Rail (280px) */
+  .left-rail {
+    width: 280px;
+    height: 100%;
+    background: var(--panel-solid);
+    border-right: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 10px;
+    z-index: 10;
+  }
+  .rail-profile-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+  .rank-emblem-sm {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--purple);
+    border-radius: 50%;
+    background: rgba(191,90,242,0.1);
+    color: var(--purple);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .rail-stats {
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 8px;
+  }
+  .r-val { color: var(--success); font-weight: bold; }
+
+  /* Spine Cards (48px tall) */
+  .spine-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .spine-card {
+    min-height: 48px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-left: 4px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+  .spine-card.active {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: var(--accent);
+    border-left: 4px solid var(--accent);
+    color: var(--accent);
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+  }
+  .spine-card:hover { border-color: var(--accent); color: var(--text); }
+
+  .back-btn-rail {
+    margin-top: auto;
+    min-height: 44px;
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .back-btn-rail:hover { background: rgba(0, 229, 255, 0.25); }
+
+  /* Right Full-Height Stage (1076 x 672px) */
+  .right-stage {
+    flex: 1;
+    height: 100%;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage-top-bar {
+    height: 44px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .stage-body {
+    flex: 1;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .module-content {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .module-content.active { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Tab 1: Insignias */
+  .insignias-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+    height: 100%;
+  }
+  .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 72px;
+    gap: 8px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .badge-item {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .badge-item:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); }
+  .badge-item.selected { border-color: var(--accent); background: rgba(0,229,255,0.15); box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+  .badge-item.locked { opacity: 0.5; }
+  .badge-icon { font-size: 18px; margin-bottom: 2px; }
+  .badge-name { font-size: 10px; color: var(--text); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  
+  .badge-inspector {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .inspector-emblem {
+    width: 72px;
+    height: 72px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,229,255,0.1);
+    font-size: 28px;
+    color: var(--accent);
+  }
+  .inspector-title { font-size: 13px; font-weight: bold; color: var(--accent); text-align: center; }
+  .inspector-status { font-size: 11px; text-align: center; padding: 4px; border-radius: 4px; }
+  .inspector-status.unlocked { background: rgba(57,255,136,0.15); color: var(--success); border: 1px solid var(--success); }
+  .inspector-status.locked { background: rgba(255,71,87,0.15); color: var(--danger); border: 1px solid var(--danger); }
+  .inspector-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; text-align: center; }
+
+  /* Tab 2: Archivos .ENC & RobCo Terminal */
+  .enc-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 16px;
+    height: 100%;
+  }
+  .enc-sidebar { display: flex; flex-direction: column; gap: 8px; }
+  .enc-file-btn {
+    min-height: 44px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    padding: 10px;
+    text-align: left;
+    font-size: 11px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .enc-file-btn.active { background: rgba(0,229,255,0.15); border-color: var(--accent); color: var(--accent); font-weight: bold; }
+  
+  .robco-terminal {
+    background: var(--bg);
+    border: 1px solid var(--success);
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--success);
+  }
+  .robco-header { font-size: 13px; font-weight: bold; border-bottom: 1px solid rgba(57,255,136,0.3); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .robco-body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px; }
+  .hex-dump { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; border: 1px solid rgba(57,255,136,0.2); font-family: var(--font-mono); line-height: 1.6; }
+  .hex-token { color: var(--success); cursor: pointer; display: inline-block; min-height: 24px; }
+  .hex-token:hover { background: rgba(57,255,136,0.3); color: #fff; }
+  .hex-trap { color: var(--warning); cursor: pointer; display: inline-block; }
+  .robco-log { background: rgba(0,0,0,0.6); border: 1px solid rgba(57,255,136,0.3); padding: 10px; border-radius: 4px; height: 160px; overflow-y: auto; font-size: 11px; }
+
+  /* Tab 3: Academia CLI */
+  .cli-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+    height: 100%;
+  }
+  .lesson-list { display: flex; flex-direction: column; gap: 8px; }
+  .lesson-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    min-height: 44px;
+  }
+  .lesson-card.active { border-color: var(--accent); background: rgba(0,229,255,0.1); color: var(--accent); }
+  
+  .terminal-box {
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .terminal-titlebar { background: rgba(0,229,255,0.1); border-bottom: 1px solid var(--accent); padding: 8px 12px; font-size: 11px; color: var(--accent); display: flex; justify-content: space-between; align-items: center; }
+  .terminal-screen { flex: 1; padding: 12px; overflow-y: auto; font-size: 12px; color: var(--success); display: flex; flex-direction: column; gap: 6px; }
+  .terminal-input-bar { display: flex; border-top: 1px solid var(--panel-border); padding: 8px; background: var(--panel); gap: 8px; }
+  .terminal-prompt { color: var(--accent); font-weight: bold; display: flex; align-items: center; }
+  .terminal-input { flex: 1; background: var(--bg); border: 1px solid var(--panel-border); color: var(--text); padding: 8px; font-size: 12px; border-radius: 4px; }
+  .quick-exec-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--panel-border); }
+  .quick-btn {
+    min-height: 44px;
+    min-width: 44px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* Tab 4: MusicBox */
+  .music-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+    height: 100%;
+  }
+  .music-main { display: flex; flex-direction: column; gap: 12px; }
+  .spectrum-canvas { width: 100%; height: 160px; background: var(--bg); border: 1px solid var(--panel-border); border-radius: 6px; }
+  .track-list { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .track-row {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--panel-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .track-row.active { background: rgba(0,229,255,0.15); color: var(--accent); font-weight: bold; border-left: 3px solid var(--accent); }
+  .music-controls-panel { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+  .transport-btns { display: flex; gap: 8px; justify-content: center; }
+  .transport-btn {
+    min-height: 44px;
+    min-width: 44px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pin-btn {
+    min-height: 44px;
+    background: rgba(191, 90, 242, 0.15);
+    border: 1px solid var(--purple);
+    color: var(--purple);
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  /* Tab 5: Cosméticos */
+  .cosmetics-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 16px;
+    height: 100%;
+  }
+  .cosmetics-sidebar { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .section-group { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .group-title { font-size: 12px; color: var(--accent); font-weight: bold; }
+  .skin-btn, .color-btn {
+    min-height: 44px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .skin-btn.active, .color-btn.active { border-color: var(--accent); background: rgba(0,229,255,0.15); color: var(--accent); font-weight: bold; }
+  .color-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+
+  .live-canvas-container {
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  #nodeCanvas { width: 100%; height: 320px; background: #08090f; border-radius: 4px; border: 1px solid var(--panel-border); }
+  .equip-btn {
+    min-height: 44px;
+    width: 100%;
+    background: rgba(57, 255, 136, 0.15);
+    border: 1px solid var(--success);
+    color: var(--success);
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+<div class="viewport-frame">
+  <!-- Left Vertical Rail -->
+  <aside class="left-rail">
+    <div class="rail-profile-card">
+      <div class="rank-emblem-sm">V</div>
+      <div style="font-size:11px; font-weight:bold; color:var(--purple);">FANTASMA DE RED</div>
+      <div class="rail-stats"><span>★ 32/45</span><span>Win: 75.0%</span></div>
+    </div>
+
+    <div class="spine-stack">
+      <div class="spine-card active" onclick="switchTab(1)" role="tab" aria-selected="true" id="spine-1">
+        <span>01 // INSIGNIAS</span> <span>▶</span>
+      </div>
+      <div class="spine-card" onclick="switchTab(2)" role="tab" aria-selected="false" id="spine-2">
+        <span>02 // ARCHIVOS .ENC</span> <span>▶</span>
+      </div>
+      <div class="spine-card" onclick="switchTab(3)" role="tab" aria-selected="false" id="spine-3">
+        <span>03 // ACADEMIA CLI</span> <span>▶</span>
+      </div>
+      <div class="spine-card" onclick="switchTab(4)" role="tab" aria-selected="false" id="spine-4">
+        <span>04 // MUSICBOX</span> <span>▶</span>
+      </div>
+      <div class="spine-card" onclick="switchTab(5)" role="tab" aria-selected="false" id="spine-5">
+        <span>05 // COSMÉTICOS</span> <span>▶</span>
+      </div>
+    </div>
+
+    <button class="back-btn-rail" onclick="alert('Volviendo al Menú Principal...')">[ ◄ VOLVER AL MENÚ ]</button>
+  </aside>
+
+  <!-- Right Full-Height Stage -->
+  <main class="right-stage">
+    <div class="stage-top-bar">
+      <span id="stageTitle">01 // VITRINA TÁCTICA DE INSIGNIAS (24)</span>
+      <span style="font-size:11px; color:var(--text-dim);">RACHA: 5 | SLOT 1 ACTIVO</span>
+    </div>
+
+    <div class="stage-body">
+      <!-- TAB 1 -->
+      <section id="tab-1" class="module-content active" role="tabpanel">
+        <div class="insignias-layout">
+          <div class="badges-grid" id="badgesGrid"></div>
+          <div class="badge-inspector">
+            <div class="inspector-emblem" id="inspectorIcon">★</div>
+            <div class="inspector-title" id="inspectorTitle">SELECCIONA UNA INSIGNIA</div>
+            <div class="inspector-status unlocked" id="inspectorStatus">[✓ DESBLOQUEADA]</div>
+            <div class="inspector-desc" id="inspectorDesc">Riel vertical con 48px de altura por ficha de módulo. Haz clic en las insignias.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2 -->
+      <section id="tab-2" class="module-content" role="tabpanel">
+        <div class="enc-layout">
+          <div class="enc-sidebar">
+            <h2 style="font-size:12px; color:var(--success); margin-bottom:4px;">EXPEDIENTES ROBCO</h2>
+            <button class="enc-file-btn active" onclick="loadEncFile(0)">SEC_0_KERNEL_SNAPSHOT.enc</button>
+            <button class="enc-file-btn" onclick="loadEncFile(1)">DOSSIER_VEX.enc</button>
+            <button class="enc-file-btn" onclick="loadEncFile(2)">DOSSIER_NOX.enc</button>
+            <button class="enc-file-btn" onclick="loadEncFile(3)">DOSSIER_AEGIS.enc</button>
+          </div>
+          <div class="robco-terminal">
+            <div class="robco-header">
+              <span>ROBCO INDUSTRIES TERMLINK v4.08</span>
+              <span id="robcoAttempts">INTENTOS: ■ ■ ■ ■ (4/4)</span>
+            </div>
+            <div class="robco-body">
+              <div class="hex-dump">
+                0x7F40 <span class="hex-token" onclick="guessPassword('TOPOLOGY')">TOPOLOGY</span> <span class="hex-trap" onclick="hitTrap()">[#?$!]</span><br>
+                0x7F50 <span class="hex-token" onclick="guessPassword('DEADLOCK')">DEADLOCK</span> <span class="hex-trap" onclick="hitTrap()">(^*&amp;)</span>
+              </div>
+              <div class="hex-dump">
+                0x7F80 <span class="hex-token" onclick="guessPassword('SHAMIRKY')">SHAMIRKY</span> <span class="hex-trap" onclick="hitTrap()">[#&amp;?!]</span><br>
+                0x7FA0 <span class="hex-token" onclick="guessPassword('DIJKSTRA')">DIJKSTRA</span> <span class="hex-trap" onclick="hitTrap()">{%*#@}</span>
+              </div>
+            </div>
+            <div class="robco-log" id="robcoLog">&gt; TERMINAL ROBCO ACTIVO. CLAVE: DIJKSTRA</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3 -->
+      <section id="tab-3" class="module-content" role="tabpanel">
+        <div class="cli-layout">
+          <div class="lesson-list">
+            <h2 style="font-size:12px; color:var(--accent); margin-bottom:4px;">MÓDULOS DE ACADEMIA</h2>
+            <div class="lesson-card active" onclick="selectLesson(1)">Módulo 1: Navegación ls/cd/pwd/cat</div>
+            <div class="lesson-card" onclick="selectLesson(2)">Módulo 2: Filtrado Forense grep y |</div>
+            <div class="lesson-card" onclick="selectLesson(3)">Módulo 3: Procesos ps/kill y chmod</div>
+            <div class="lesson-card" onclick="selectLesson(4)">Módulo 4: Esteganografía base64 y red</div>
+          </div>
+          <div class="terminal-box">
+            <div class="terminal-titlebar"><span>operator@vertex-vault:~$</span><span>[ACTIVO]</span></div>
+            <div class="terminal-screen" id="cliScreen"><div>&gt; pwd<br>/home/operator/vertex_vault</div></div>
+            <div class="quick-exec-bar">
+              <button class="quick-btn" onclick="runCliCmd('pwd')">[▶ pwd]</button>
+              <button class="quick-btn" onclick="runCliCmd('ls -l')">[▶ ls -l]</button>
+              <button class="quick-btn" onclick="runCliCmd('cat /var/log/siem/auth.log | grep FAIL')">[▶ cat auth.log | grep FAIL]</button>
+              <button class="quick-btn" onclick="runCliCmd('ps aux | grep daemon')">[▶ ps aux | grep daemon]</button>
+              <button class="quick-btn" onclick="runCliCmd('base64 -d /srv/vault_shamir/secret.b64')">[▶ base64 -d secret.b64]</button>
+            </div>
+            <div class="terminal-input-bar">
+              <span class="terminal-prompt">operator@vertex:~$</span>
+              <input type="text" class="terminal-input" id="cliInput" placeholder="Comando UNIX..." onkeydown="handleCliKey(event)" aria-label="Consola CLI">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4 -->
+      <section id="tab-4" class="module-content" role="tabpanel">
+        <div class="music-layout">
+          <div class="music-main">
+            <canvas class="spectrum-canvas" id="spectrumCanvas" width="700" height="160"></canvas>
+            <div style="display:flex; gap:8px;">
+              <button class="spine-card" style="min-height:44px; height:44px; padding:0 12px; background:var(--panel);" onclick="filterMusic('all')">TODOS (22)</button>
+              <button class="spine-card" style="min-height:44px; height:44px; padding:0 12px; background:var(--panel);" onclick="filterMusic('pink')">PINK BLOOM (10)</button>
+              <button class="spine-card" style="min-height:44px; height:44px; padding:0 12px; background:var(--panel);" onclick="filterMusic('code')">CODE INJECTION (12)</button>
+            </div>
+            <div class="track-list" id="trackList"></div>
+          </div>
+          <div class="music-controls-panel">
+            <h2 style="font-size:13px; color:var(--accent); text-align:center;" id="currentTrackTitle">Pink Bloom - Cyber Theme 1</h2>
+            <div style="text-align:center; font-size:11px; color:var(--text-dim);" id="currentTrackInfo">DavidKBD | 3:42</div>
+            <div class="transport-btns">
+              <button class="transport-btn" onclick="prevTrack()" aria-label="Pista anterior">⏮</button>
+              <button class="transport-btn" id="playPauseBtn" onclick="togglePlay()" aria-label="Reproducir o pausar">⏸</button>
+              <button class="transport-btn" onclick="nextTrack()" aria-label="Pista siguiente">⏭</button>
+            </div>
+            <button class="pin-btn" onclick="alert('Pista fijada.')">📌 FIJAR EN MENÚ / PARTIDA</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5 -->
+      <section id="tab-5" class="module-content" role="tabpanel">
+        <div class="cosmetics-layout">
+          <div class="cosmetics-sidebar">
+            <div class="section-group">
+              <span class="group-title">GEOMETRÍA DE NODO</span>
+              <button class="skin-btn active" onclick="setSkin('circle')">Círculo Estándar</button>
+              <button class="skin-btn" onclick="setSkin('hexagon')">Hexágono Táctico</button>
+              <button class="skin-btn" onclick="setSkin('diamond')">Diamante Criptográfico</button>
+              <button class="skin-btn" onclick="setSkin('octagon')">Octágono de Defensa</button>
+              <button class="skin-btn" onclick="setSkin('root_star')">Estrella Root Genesis</button>
+            </div>
+            <div class="section-group">
+              <span class="group-title">ESTELA & COLOR</span>
+              <button class="color-btn active" onclick="setColor('cyan', '#00e5ff')">Cian Vertex <span class="color-dot" style="background:#00e5ff"></span></button>
+              <button class="color-btn" onclick="setColor('purple', '#bf5af2')">Púrpura Vex <span class="color-dot" style="background:#bf5af2"></span></button>
+              <button class="color-btn" onclick="setColor('success', '#39ff88')">Verde N0X <span class="color-dot" style="background:#39ff88"></span></button>
+            </div>
+          </div>
+          <div class="live-canvas-container">
+            <canvas id="nodeCanvas" width="600" height="280"></canvas>
+            <button class="equip-btn" onclick="alert('Skin equipado.')">✓ EQUIPAR SKIN EN PERFIL</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+  const badgesData = [
+    {id: "initiate_link", title: "ENLACE INICIAL", desc: "Primer nodo conectado con éxito en VERTEX.", unlocked: true, icon: "◈"},
+    {id: "dijkstra_master", title: "OPTIMIZADOR DIJKSTRA", desc: "Ruta más corta calculada con precisión óptima.", unlocked: true, icon: "⬡"},
+    {id: "heist_clear", title: "GOLPE MAESTRO", desc: "Sector Heist completado al 100%.", unlocked: true, icon: "❖"},
+    {id: "hacker_elite", title: "INTRUSO DE ÉLITE", desc: "Sector Hacker dominado sin alertas.", unlocked: true, icon: ">_"},
+    {id: "cyber_shield", title: "ESCUDO CIBERNÉTICO", desc: "Cybersecurity asegurado frente a Daemons.", unlocked: true, icon: "⬢"},
+    {id: "root_genesis", title: "ROOT GENESIS", desc: "Acceso al Sector 0 obtenido.", unlocked: true, icon: "Ω"},
+    {id: "terminal_master", title: "MAESTRO UNIX", desc: "Los 4 módulos de la Academia completados.", unlocked: true, icon: "⌘"},
+    {id: "enc_decrypted", title: "DESCODIFICADOR ROBCO", desc: "Primer archivo .ENC descifrado.", unlocked: true, icon: "▣"},
+    {id: "musicbox_fan", title: "AUDIÓFILO CIBERNÉTICO", desc: "Las 22 pistas de DavidKBD reproducidas.", unlocked: true, icon: "♫"},
+    {id: "node_customizer", title: "ESTETA DE NODOS", desc: "Skin y estela de nodo personalizados.", unlocked: true, icon: "✦"},
+    {id: "streak_5", title: "RACHA TÁCTICA 5", desc: "5 victorias consecutivas en red.", unlocked: true, icon: "▲"},
+    {id: "speed_run", title: "VELOCIDAD LUZ", desc: "Nivel completado en menos de 30 segundos.", unlocked: true, icon: "◉"},
+    {id: "no_loss", title: "IMPERTURBABLE", desc: "Cero fallos en secuencia de enrutamiento.", unlocked: false, icon: "⊕"},
+    {id: "pipe_wizard", title: "MAGO DE PIPES", desc: "Uso avanzado de tuberías UNIX (|) y grep.", unlocked: true, icon: "║"},
+    {id: "shamir_secret", title: "SECRETO DE SHAMIR", desc: "Recuperación de fragmentos de clave criptográfica.", unlocked: true, icon: "⚿"},
+    {id: "kernel_snapshot", title: "KERNEL SNAPSHOT", desc: "Primer plano del Kernel Sector 0 analizado.", unlocked: true, icon: "⊞"},
+    {id: "vex_dossier", title: "DOSSIER VEX", desc: "Archivos confidenciales de Vex desbloqueados.", unlocked: true, icon: "◢"},
+    {id: "nox_dossier", title: "DOSSIER N0X", desc: "Memorias cifradas de N0X leídas.", unlocked: true, icon: "◉"},
+    {id: "aegis_dossier", title: "DOSSIER AEGIS", desc: "Registros de defensa Aegis decodificados.", unlocked: true, icon: "⛨"},
+    {id: "ghost_tier", title: "FANTASMA DE RED", desc: "Rango V alcanzado en telemetría de operador.", unlocked: true, icon: "◈"},
+    {id: "doom_slayer", title: "KERNEL DOOM", desc: "Easter egg Kernel DOOM completado.", unlocked: false, icon: "✕"},
+    {id: "free_ops", title: "OPERACIONES LIBRES", desc: "10 misiones de operaciones libres ejecutadas.", unlocked: true, icon: "△"},
+    {id: "golden_node", title: "NODO DORADO", desc: "Jefe de Acto superado con estela dorada.", unlocked: false, icon: "★"},
+    {id: "omni_master", title: "OMNI-OPERADOR", desc: "100% de logros y coleccionables completados.", unlocked: false, icon: "♛"}
+  ];
+
+  const encFiles = [
+    {file: "SEC_0_KERNEL_SNAPSHOT.enc", title: "Kain - Snapshot del Kernel Sector 0", pass: "DIJKSTRA", content: "REGISTRO NÚCLEO 0x000: El sistema ha alcanzado el umbral de entropía crítica."},
+    {file: "DOSSIER_VEX.enc", title: "Vex - Archivos Confidenciales", pass: "TOPOLOGY", content: "DOSSIER VEX: Ex-ingeniera de contramedidas de red."},
+    {file: "DOSSIER_NOX.enc", title: "N0X - Memorias Cifradas", pass: "DEADLOCK", content: "MEMORIAS N0X: Fantasma digital operando en las sombras."},
+    {file: "DOSSIER_AEGIS.enc", title: "Aegis - Registros de Defensa", pass: "FIREWALL", content: "REGISTRO AEGIS: Protocolo de contención autónomo."}
+  ];
+
+  let currentEncIndex = 0;
+  let attempts = 4;
+
+  function loadEncFile(idx) {
+    currentEncIndex = idx;
+    attempts = 4;
+    document.querySelectorAll('.enc-file-btn').forEach((btn, i) => btn.classList.toggle('active', i === idx));
+    document.getElementById('robcoAttempts').innerText = `INTENTOS: ■ ■ ■ ■ (${attempts}/4)`;
+    document.getElementById('robcoLog').innerHTML += `<br>&gt; CARGANDO ${encFiles[idx].file}...`;
+  }
+
+  function guessPassword(word) {
+    const target = encFiles[currentEncIndex].pass;
+    const log = document.getElementById('robcoLog');
+    if (word === target) {
+      log.innerHTML += `<br>&gt; CORRECTO (${word}): ${encFiles[currentEncIndex].content}`;
+    } else {
+      attempts--;
+      log.innerHTML += `<br>&gt; DENEGADO: ${word} (Coincidencia: 3/8)`;
+    }
+    document.getElementById('robcoAttempts').innerText = `INTENTOS: ${'■ '.repeat(Math.max(0, attempts))}(${attempts}/4)`;
+  }
+
+  function hitTrap(type) {
+    attempts = 4;
+    document.getElementById('robcoLog').innerHTML += `<br>&gt; TRAMPA ACTIVADA: Intentos restaurados.`;
+    document.getElementById('robcoAttempts').innerText = `INTENTOS: ■ ■ ■ ■ (4/4)`;
+  }
+
+  const musicTracks = [
+    {id: "track_01", name: "Pink Bloom - Cyber Theme 1", pack: "Pink Bloom", duration: "3:42"},
+    {id: "track_02", name: "Neon Subroutines", pack: "Pink Bloom", duration: "4:15"},
+    {id: "track_03", name: "Synthetic Memory", pack: "Pink Bloom", duration: "3:10"},
+    {id: "track_04", name: "Zero Trust Protocol", pack: "Pink Bloom", duration: "5:02"},
+    {id: "track_05", name: "Shamir's Secret Flow", pack: "Pink Bloom", duration: "3:55"},
+    {id: "track_06", name: "Overclocked Pulse", pack: "Pink Bloom", duration: "4:20"},
+    {id: "track_07", name: "Data Stream Whispers", pack: "Pink Bloom", duration: "3:30"},
+    {id: "track_08", name: "Subnet Awakening", pack: "Pink Bloom", duration: "4:05"},
+    {id: "track_09", name: "Ghost in the Daemon", pack: "Pink Bloom", duration: "4:50"},
+    {id: "track_10", name: "Terminal Horizon", pack: "Pink Bloom", duration: "3:15"},
+    {id: "track_11", name: "Code Injection Alpha", pack: "Code Injection", duration: "3:50"},
+    {id: "track_12", name: "Binary Riot", pack: "Code Injection", duration: "4:10"},
+    {id: "track_13", name: "Packet Storm", pack: "Code Injection", duration: "3:25"},
+    {id: "track_14", name: "Buffer Overflow", pack: "Code Injection", duration: "4:40"},
+    {id: "track_15", name: "Root Privilege", pack: "Code Injection", duration: "3:40"},
+    {id: "track_16", name: "Daemon Core", pack: "Code Injection", duration: "5:12"},
+    {id: "track_17", name: "Cyber Warfare", pack: "Code Injection", duration: "4:00"},
+    {id: "track_18", name: "Firewall Breach", pack: "Code Injection", duration: "3:35"},
+    {id: "track_19", name: "Neural Link Active", pack: "Code Injection", duration: "4:25"},
+    {id: "track_20", name: "Runtime Error 404", pack: "Code Injection", duration: "3:20"},
+    {id: "track_21", name: "Kernel Panic", pack: "Code Injection", duration: "4:55"},
+    {id: "track_22", name: "Final Descent (Root Genesis)", pack: "Code Injection", duration: "6:15"}
+  ];
+
+  const titles = [
+    "01 // VITRINA TÁCTICA DE INSIGNIAS (24)",
+    "02 // ARCHIVOS .ENC & TERMINAL ROBCO",
+    "03 // ACADEMIA CLI & LABORATORIO UNIX",
+    "04 // MUSICBOX & ANALIZADOR DE ESPECTRO (22)",
+    "05 // COSMÉTICOS & SIMULADOR EN VIVO"
+  ];
+
+  function switchTab(num) {
+    document.querySelectorAll('.spine-card').forEach((c, i) => {
+      c.classList.toggle('active', (i + 1) === num);
+      c.setAttribute('aria-selected', (i + 1) === num ? 'true' : 'false');
+    });
+    document.querySelectorAll('.module-content').forEach((s, i) => s.classList.toggle('active', (i + 1) === num));
+    document.getElementById('stageTitle').innerText = titles[num - 1];
+  }
+
+  function renderBadges() {
+    const grid = document.getElementById('badgesGrid');
+    grid.innerHTML = '';
+    badgesData.forEach(b => {
+      const div = document.createElement('div');
+      div.className = `badge-item ${b.unlocked ? '' : 'locked'}`;
+      div.setAttribute('role', 'button');
+      div.setAttribute('tabindex', '0');
+      div.innerHTML = `<span class="badge-icon">${b.icon}</span><span class="badge-name">${b.title}</span>`;
+      div.onclick = () => {
+        document.getElementById('inspectorIcon').innerText = b.icon;
+        document.getElementById('inspectorTitle').innerText = b.title;
+        document.getElementById('inspectorDesc').innerText = b.desc;
+        const statusEl = document.getElementById('inspectorStatus');
+        statusEl.innerText = b.unlocked ? '[✓ DESBLOQUEADA]' : '[🔒 BLOQUEADA]';
+        statusEl.className = `inspector-status ${b.unlocked ? 'unlocked' : 'locked'}`;
+      };
+      grid.appendChild(div);
+    });
+  }
+
+  function renderMusicTracks(filter = 'all') {
+    const list = document.getElementById('trackList');
+    list.innerHTML = '';
+    musicTracks.filter(t => filter === 'all' || (filter === 'pink' && t.pack === 'Pink Bloom') || (filter === 'code' && t.pack === 'Code Injection')).forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = `track-row ${i === 0 ? 'active' : ''}`;
+      row.innerHTML = `<span>${t.name}</span> <span style="color:var(--text-dim);">${t.pack} (${t.duration})</span>`;
+      row.onclick = () => {
+        document.querySelectorAll('.track-row').forEach(r => r.classList.remove('active'));
+        row.classList.add('active');
+        document.getElementById('currentTrackTitle').innerText = t.name;
+        document.getElementById('currentTrackInfo').innerText = `${t.pack} | ${t.duration}`;
+      };
+      list.appendChild(row);
+    });
+  }
+
+  function filterMusic(f) { renderMusicTracks(f); }
+
+  let isPlaying = true;
+  function togglePlay() { isPlaying = !isPlaying; document.getElementById('playPauseBtn').innerText = isPlaying ? '⏸' : '▶'; }
+  function prevTrack() {}
+  function nextTrack() {}
+
+  // Spectrum
+  const spectrumCanvas = document.getElementById('spectrumCanvas');
+  const specCtx = spectrumCanvas.getContext('2d');
+  function drawSpec() {
+    specCtx.fillStyle = '#0d0e16';
+    specCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+    const w = spectrumCanvas.width / 24;
+    for (let i = 0; i < 24; i++) {
+      const h = Math.random() * 110 + 10;
+      specCtx.fillStyle = i % 2 === 0 ? '#00e5ff' : '#bf5af2';
+      specCtx.fillRect(i * w + 2, spectrumCanvas.height - h, w - 4, h);
+    }
+    requestAnimationFrame(drawSpec);
+  }
+  requestAnimationFrame(drawSpec);
+
+  // Node Sim
+  const nodeCanvas = document.getElementById('nodeCanvas');
+  const nodeCtx = nodeCanvas.getContext('2d');
+  let currentSkin = 'circle';
+  let currentColor = '#00e5ff';
+  let angle = 0;
+
+  function setSkin(s) { currentSkin = s; document.querySelectorAll('.skin-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(s))); }
+  function setColor(n, hex) { currentColor = hex; document.querySelectorAll('.color-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(n))); }
+
+  function drawNode() {
+    nodeCtx.fillStyle = '#08090f';
+    nodeCtx.fillRect(0, 0, nodeCanvas.width, nodeCanvas.height);
+    const cx = nodeCanvas.width / 2, cy = nodeCanvas.height / 2;
+    nodeCtx.strokeStyle = currentColor; nodeCtx.lineWidth = 2;
+    nodeCtx.beginPath(); nodeCtx.arc(cx, cy, 80, 0, Math.PI * 2); nodeCtx.stroke();
+    angle += 0.03;
+    const px = cx + Math.cos(angle) * 80, py = cy + Math.sin(angle) * 80;
+    nodeCtx.fillStyle = currentColor;
+    nodeCtx.beginPath(); nodeCtx.arc(px, py, 5, 0, Math.PI * 2); nodeCtx.fill();
+    requestAnimationFrame(drawNode);
+  }
+  requestAnimationFrame(drawNode);
+
+  function selectLesson(mod) { document.querySelectorAll('.lesson-card').forEach((c, i) => c.classList.toggle('active', (i + 1) === mod)); }
+  function runCliCmd(cmd) { document.getElementById('cliScreen').innerHTML += `<br>&gt; ${cmd}<br><span style="color:var(--success);">[OK] [✓ PASO COMPLETADO]</span>`; }
+  function handleCliKey(e) {
+    if (e.key === 'Enter') {
+      const inp = document.getElementById('cliInput');
+      if (inp.value) { runCliCmd(inp.value); inp.value = ''; }
+    }
+  }
+
+  window.onload = () => { renderBadges(); renderMusicTracks('all'); };
+</script>
+</body>
+</html>

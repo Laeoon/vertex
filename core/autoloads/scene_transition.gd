@@ -134,6 +134,11 @@ func fade_in(duration: float = 0.28) -> void:
 func dive_in_to_scene(path: String, origin_pos: Vector2 = Vector2.ZERO, duration: float = 0.38) -> void:
 	if _is_transitioning:
 		return
+
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("dive_in")
+
 	if DisplayServer.get_name() == "headless":
 		fade_to_scene(path, 0.12)
 		return
@@ -175,6 +180,11 @@ func dive_in_to_scene(path: String, origin_pos: Vector2 = Vector2.ZERO, duration
 func dive_out_to_scene(path: String, origin_pos: Vector2 = Vector2.ZERO, duration: float = 0.38) -> void:
 	if _is_transitioning:
 		return
+
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("dive_out")
+
 	if DisplayServer.get_name() == "headless":
 		fade_to_scene(path, 0.12)
 		return

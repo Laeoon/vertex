@@ -571,7 +571,7 @@ func _handle_hud_click(pos: Vector2, vp_size: Vector2) -> bool:
 					"tab_neighbor":
 						cycle_neighbor.emit(1)
 						return true
-					"optimal_route":
+					"optimal_route", "distance_target":
 						toggle_optimal_route.emit()
 						return true
 					"terminal":

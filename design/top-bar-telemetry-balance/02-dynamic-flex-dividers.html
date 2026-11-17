@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERTEX — Dirección B: Layout Flotante Puro + Divisores Cyberpunk</title>
+<style>
+  :root {
+    --bg-heist: #120918;
+    --bg-hacker: #09120e;
+    --bg-cyber: #081018;
+    --panel-solid: rgba(16, 18, 31, 0.95);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --world-heist: #bf5af2;
+    --world-hacker: #39ff88;
+    --world-cyber: #00d2ff;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1356px;
+    height: 672px;
+    background: var(--bg-heist);
+    color: var(--text);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+
+  /* Control Dock flotante para comparar ANTES vs DESPUÉS y cambiar de modo */
+  .demo-toolbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    background: rgba(10, 12, 22, 0.95);
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(0, 229, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    backdrop-filter: blur(8px);
+  }
+  .demo-toolbar .group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .demo-toolbar .label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .btn-chip {
+    background: #1a1d2e;
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-chip:hover {
+    color: var(--text);
+    border-color: rgba(255,255,255,0.3);
+  }
+  .btn-chip.active {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-chip.toggle-diff {
+    background: rgba(255, 200, 87, 0.15);
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+
+  /* HEADER TOP BAR — 48px exact height con divisores sutiles de rejilla */
+  header.top-bar {
+    height: 48px;
+    background: var(--panel-solid);
+    border-bottom: 1.5px solid var(--world-heist);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 16px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    gap: 20px;
+    transition: border-color 0.3s ease;
+  }
+
+  /* 1. ZONA IZQUIERDA */
+  .bar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .level-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-right: 12px;
+    border-right: 1px solid var(--panel-border);
+  }
+  .level-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--world-heist);
+    transition: color 0.3s ease;
+  }
+  .level-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+  .stat-badge {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--panel-border);
+    border-radius: 3px;
+    overflow: hidden;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.3);
+    height: 28px;
+  }
+  .stat-badge .stat-item {
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+  }
+  .stat-badge .stat-item:not(:last-child) {
+    border-right: 1px solid var(--panel-border);
+  }
+  .stat-badge .stat-lbl {
+    color: var(--text-dim);
+    font-size: 9px;
+  }
+  .stat-badge .stat-val {
+    color: var(--text);
+  }
+  .stat-val.pts { color: var(--success); }
+  .stat-val.cost { color: var(--accent); }
+  .stat-val.noise { color: var(--warning); }
+  .stat-val.blocks { color: var(--accent); }
+
+  /* 2. ZONA CENTRAL: Enmarcada con separadores y etiquetas completas */
+  .bar-center-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: relative;
+  }
+
+  .zone-divider {
+    color: rgba(255, 255, 255, 0.18);
+    font-size: 14px;
+    font-weight: 300;
+    user-select: none;
+  }
+
+  .tactical-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+
+  /* Píldoras interactivas */
+  .pill-btn {
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    background: rgba(14, 18, 30, 0.85);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    transition: all 0.15s ease;
+  }
+  .pill-btn:hover {
+    background: rgba(0, 229, 255, 0.15);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+  }
+  .pill-btn.success { border-color: var(--success); color: var(--success); }
+  .pill-btn.accent { border-color: var(--accent); color: var(--accent); }
+  .pill-btn.info { border-color: #66b3ff; color: #66b3ff; }
+  .pill-btn.magenta { border-color: #e680ff; color: #e680ff; }
+  .pill-btn.warning { border-color: var(--warning); color: var(--warning); }
+
+  /* 3. ZONA DERECHA */
+  .bar-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .pos-line, .target-line {
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .pos-line .lbl, .target-line .lbl {
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+  .pos-line .val {
+    color: var(--text);
+  }
+  .target-line .val {
+    color: var(--danger);
+  }
+
+  /* CANVAS MOCKUP DEL GRAFO */
+  .graph-canvas {
+    flex: 1;
+    position: relative;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .graph-canvas svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .callout-overlay {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(14, 18, 32, 0.92);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-size: 11px;
+    max-width: 820px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    pointer-events: none;
+    line-height: 1.5;
+  }
+  .callout-overlay strong {
+    color: var(--accent);
+  }
+</style>
+</head>
+<body id="appBody">
+
+  <!-- TOP BAR -->
+  <header class="top-bar" id="topBar">
+    <!-- IZQUIERDA -->
+    <div class="bar-left">
+      <div class="level-info">
+        <div class="level-title" id="lblTitle">Heist — Escape del Casino</div>
+        <div class="level-sub" id="lblSub">T2 · WP 1/2</div>
+      </div>
+      <div class="stat-badge" id="statBadge">
+        <div class="stat-item">
+          <span class="stat-lbl">PTS</span>
+          <span class="stat-val pts" id="valPts">17</span>
+        </div>
+        <div class="stat-item" id="statSecondary">
+          <span class="stat-lbl">COSTE</span>
+          <span class="stat-val cost" id="valCost">3.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTRO: Grid Centered con Tactical Cluster y Divisores -->
+    <div class="bar-center-wrapper">
+      <span class="zone-divider">│</span>
+      <div class="tactical-cluster" id="tacticalCluster">
+        <!-- Inyectado dinámicamente -->
+      </div>
+      <span class="zone-divider">│</span>
+    </div>
+
+    <!-- DERECHA -->
+    <div class="bar-right">
+      <div class="pos-line">
+        <span class="lbl" id="lblPosName">POS: </span>
+        <span class="val" id="valPos">Puesto de seguridad</span>
+      </div>
+      <div class="target-line" id="targetLine">
+        <span class="lbl" id="lblMetaName">META: </span>
+        <span class="val" id="valMeta">Centro de datos</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CANVAS MOCKUP DEL GRAFO -->
+  <main class="graph-canvas">
+    <div class="callout-overlay" id="calloutText">
+      <strong>DIRECCIÓN B — CLUSTER TÁCTICO FLOTANTE CON DIVISORES:</strong> En lugar de llenar con chips de texto, las acciones se agrupan en un contenedor táctico unificado con bordes tenues y divisores de zona <code>│</code>, expandiendo las etiquetas cortas en Heist para dar presencia y balance sin saturar.
+    </div>
+
+    <svg viewBox="0 0 1356 624">
+      <!-- Mismo fondo táctico -->
+      <g stroke="#2d3356" stroke-width="2" opacity="0.6">
+        <line x1="160" y1="360" x2="380" y2="280" />
+        <line x1="160" y1="360" x2="340" y2="440" />
+        <line x1="380" y1="280" x2="680" y2="340" />
+        <line x1="340" y1="440" x2="680" y2="340" />
+        <line x1="680" y1="340" x2="980" y2="260" stroke="#ff2e88" stroke-width="2.5" stroke-dasharray="4 4" />
+      </g>
+      <circle cx="160" cy="360" r="28" fill="#0c1d2e" stroke="#00e5ff" stroke-width="3"/>
+      <polygon points="160,345 172,368 148,368" fill="#00e5ff"/>
+      <text x="160" y="405" fill="#00e5ff" font-size="12" font-family="JetBrains Mono" text-anchor="middle" font-weight="700">YOU (Oficinas)</text>
+
+      <circle cx="680" cy="340" r="32" fill="#2d101c" stroke="#ff4757" stroke-width="3"/>
+      <rect x="668" y="328" width="24" height="24" fill="#ff4757"/>
+      <text x="680" y="390" fill="#ff4757" font-size="12" font-family="JetBrains Mono" text-anchor="middle" font-weight="800">TARGET (Centro de datos)</text>
+    </svg>
+  </main>
+
+  <!-- DEMO TOOLBAR -->
+  <footer class="demo-toolbar">
+    <div class="group">
+      <span class="label">MODO:</span>
+      <button class="btn-chip active" id="btnModeHeist" onclick="setMode('heist')">1. Heist (Escape)</button>
+      <button class="btn-chip" id="btnModeDefender" onclick="setMode('defender')">2. Defender (SOC)</button>
+      <button class="btn-chip" id="btnModeHacker" onclick="setMode('hacker')">3. Hacker (Brecha)</button>
+    </div>
+  </footer>
+
+  <script>
+    let currentMode = 'heist';
+
+    const MODES_DATA = {
+      heist: {
+        title: "Heist — Escape del Casino",
+        sub: "T2 · WP 1/2",
+        color: "#bf5af2",
+        bg: "#120918",
+        stat1: { lbl: "PTS", val: "17", cls: "pts" },
+        stat2: { lbl: "COSTE", val: "3.0", cls: "cost" },
+        pos: "Puesto de seguridad",
+        meta: "Centro de datos",
+        pills: [
+          { text: "[TAB] NODO VECINO", cls: "pill-btn success" },
+          { text: "[P] RUTA ÓPTIMA DIJKSTRA", cls: "pill-btn accent" }
+        ]
+      },
+      defender: {
+        title: "Defensa Perimetral",
+        sub: "T0 · SOC ACTIVO",
+        color: "#00d2ff",
+        bg: "#081018",
+        stat1: { lbl: "BLOQ", val: "2/2", cls: "blocks" },
+        stat2: { lbl: "EDR", val: "0%", cls: "noise" },
+        pos: "Punto de Infiltración",
+        meta: "Crown Jewels Vault",
+        pills: [
+          { text: "[1] SEGMENTAR ARISTA", cls: "pill-btn accent" },
+          { text: "[2] FIREWALL", cls: "pill-btn info" },
+          { text: "[3] CUARENTENA", cls: "pill-btn warning" },
+          { text: "[4] RADAR", cls: "pill-btn info" }
+        ]
+      },
+      hacker: {
+        title: "Hacker — Brecha en la Red",
+        sub: "T0 · WP 1/2",
+        color: "#39ff88",
+        bg: "#09120e",
+        stat1: { lbl: "PTS", val: "0", cls: "pts" },
+        stat2: { lbl: "RUIDO", val: "0%", cls: "noise" },
+        pos: "Inicio",
+        meta: "DMZ",
+        pills: [
+          { text: "[X] SCAN", cls: "pill-btn success" },
+          { text: "[1] BYPASS x1", cls: "pill-btn accent" },
+          { text: "[2] ESCALATE x1", cls: "pill-btn info" },
+          { text: "[3] PERSIST x0", cls: "pill-btn magenta" },
+          { text: "[4] HONEYPOT x1", cls: "pill-btn warning" }
+        ]
+      }
+    };
+
+    function render() {
+      const data = MODES_DATA[currentMode];
+      const body = document.getElementById('appBody');
+      const topBar = document.getElementById('topBar');
+      const cluster = document.getElementById('tacticalCluster');
+      const lblTitle = document.getElementById('lblTitle');
+      const lblSub = document.getElementById('lblSub');
+      const valPts = document.getElementById('valPts');
+      const statSecondary = document.getElementById('statSecondary');
+      const valPos = document.getElementById('valPos');
+      const valMeta = document.getElementById('valMeta');
+
+      body.style.background = data.bg;
+      topBar.style.borderBottomColor = data.color;
+      lblTitle.innerText = data.title;
+      lblTitle.style.color = data.color;
+      lblSub.innerText = data.sub;
+
+      valPts.innerText = data.stat1.val;
+      statSecondary.innerHTML = `<span class="stat-lbl">${data.stat2.lbl}</span><span class="stat-val ${data.stat2.cls}">${data.stat2.val}</span>`;
+
+      valPos.innerText = data.pos;
+      valMeta.innerText = data.meta;
+
+      let html = '';
+      data.pills.forEach(p => {
+        html += `<div class="${p.cls}">${p.text}</div>`;
+      });
+      cluster.innerHTML = html;
+
+      document.getElementById('btnModeHeist').classList.toggle('active', currentMode === 'heist');
+      document.getElementById('btnModeDefender').classList.toggle('active', currentMode === 'defender');
+      document.getElementById('btnModeHacker').classList.toggle('active', currentMode === 'hacker');
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

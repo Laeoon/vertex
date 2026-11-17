@@ -1,6 +1,7 @@
 class_name GameRenderer extends RefCounted
 
 const BrandClass = preload("res://juego/ui/brand.gd")
+const DefensivePathfinderClass = preload("res://core/agents/defensive_pathfinder.gd")
 
 ## Capa de rendering separada de la lógica de juego.
 ## Recibe un CanvasItem (Node2D) como target de dibujo y todo el estado
@@ -87,7 +88,8 @@ static func get_top_perk_rects(
 	telemetry_intercepted: bool = false,
 	p_font: Font = null,
 	p_font_size: int = 14,
-	hacker_state: Dictionary = {}
+	hacker_state: Dictionary = {},
+	extra_context: Dictionary = {}
 ) -> Array[Dictionary]:
 	var pills_info: Array[Dictionary] = []
 	if mode == "hacker" or mode == "secret":
@@ -97,21 +99,29 @@ static func get_top_perk_rects(
 		var per_cnt: int = exps.get("persist", 0)
 		var dec_cnt: int = exps.get("decoy", 0)
 
-		pills_info.append({"id": "scan", "text": "[X] SCAN", "color": BrandClass.SUCCESS})
-		pills_info.append({"id": "bypass", "text": "[1] BYPASS x%d" % byp_cnt, "color": BrandClass.ACCENT})
-		pills_info.append({"id": "escalate", "text": "[2] ESCALATE x%d" % esc_cnt, "color": Color(0.4, 0.7, 1.0)})
-		pills_info.append({"id": "persist", "text": "[3] PERSIST x%d" % per_cnt, "color": Color(0.9, 0.5, 1.0)})
-		pills_info.append({"id": "decoy", "text": "[4] HONEYPOT x%d" % dec_cnt, "color": Color(1.0, 0.75, 0.0)})
+		pills_info.append({"id": "scan", "text": "[X] SCAN", "color": BrandClass.SUCCESS, "is_action": true})
+		pills_info.append({"id": "bypass", "text": "[1] BYPASS x%d" % byp_cnt, "color": BrandClass.ACCENT, "is_action": true})
+		pills_info.append({"id": "escalate", "text": "[2] ESCALATE x%d" % esc_cnt, "color": Color(0.4, 0.7, 1.0), "is_action": true})
+		pills_info.append({"id": "persist", "text": "[3] PERSIST x%d" % per_cnt, "color": Color(0.9, 0.5, 1.0), "is_action": true})
+		pills_info.append({"id": "decoy", "text": "[4] HONEYPOT x%d" % dec_cnt, "color": Color(1.0, 0.75, 0.0), "is_action": true})
 	elif mode == "defender":
-		pills_info.append({"id": "edges", "text": "[1] SEGMENTAR ARISTA", "color": BrandClass.ACCENT})
-		pills_info.append({"id": "firewall", "text": "[2] FIREWALL", "color": Color(0.2, 0.7, 1.0)})
-		pills_info.append({"id": "quarantine", "text": "[3] CUARENTENA", "color": Color(1.0, 0.75, 0.0)})
+		pills_info.append({"id": "edges", "text": "[1] SEGMENTAR ARISTA", "color": BrandClass.ACCENT, "is_action": true})
+		pills_info.append({"id": "firewall", "text": "[2] FIREWALL", "color": Color(0.2, 0.7, 1.0), "is_action": true})
+		pills_info.append({"id": "quarantine", "text": "[3] CUARENTENA", "color": Color(1.0, 0.75, 0.0), "is_action": true})
 		var p_label := "REVELADO (2★)" if telemetry_intercepted else "[4] RADAR"
-		pills_info.append({"id": "radar", "text": p_label, "color": BrandClass.WARNING if telemetry_intercepted else Color("80d8ff")})
+		pills_info.append({"id": "radar", "text": p_label, "color": BrandClass.WARNING if telemetry_intercepted else Color("80d8ff"), "is_action": true})
+		var threat_hops: int = int(extra_context.get("threat_hops", 3))
+		pills_info.append({"id": "soc_threat", "text": "[AMENAZA: %d SALTOS]" % threat_hops, "color": BrandClass.DANGER, "is_action": false})
 	else:
 		# Heist mode
-		pills_info.append({"id": "tab_neighbor", "text": "[TAB] VECINO", "color": BrandClass.SUCCESS})
-		pills_info.append({"id": "optimal_route", "text": "[P] RUTA DIJKSTRA", "color": BrandClass.ACCENT})
+		pills_info.append({"id": "tab_neighbor", "text": "[TAB] VECINO", "color": BrandClass.SUCCESS, "is_action": true})
+		pills_info.append({"id": "optimal_route", "text": "[P] RUTA DIJKSTRA", "color": BrandClass.ACCENT, "is_action": true})
+		var alert_str: String = str(extra_context.get("ids_alert", "0%"))
+		var alert_num: float = float(extra_context.get("alert_num", 0.0))
+		var alert_col: Color = BrandClass.SUCCESS if alert_num <= 0.0 else (BrandClass.WARNING if alert_num < 0.3 else BrandClass.DANGER)
+		pills_info.append({"id": "ids_alert", "text": "[ALERTA IDS: %s]" % alert_str, "color": alert_col, "is_action": false})
+		var hops: int = int(extra_context.get("hops_to_target", 3))
+		pills_info.append({"id": "distance_target", "text": "[DISTANCIA: %d SALTOS]" % hops, "color": BrandClass.ACCENT, "is_action": false})
 
 	var pill_h := 36.0
 	var gap := 8.0
@@ -142,6 +152,7 @@ static func get_top_perk_rects(
 			"id": pills_info[i]["id"],
 			"text": pills_info[i]["text"],
 			"color": pills_info[i]["color"],
+			"is_action": pills_info[i].get("is_action", true),
 			"rect": rect
 		})
 		cur_x += w + gap
@@ -154,9 +165,10 @@ static func get_defender_pill_rects(
 	p_font: Font,
 	p_font_size: int,
 	fog_of_war: bool = false,
-	telemetry_intercepted: bool = false
+	telemetry_intercepted: bool = false,
+	extra_context: Dictionary = {}
 ) -> Array[Dictionary]:
-	return get_top_perk_rects(vp_size, "defender", fog_of_war, telemetry_intercepted, p_font, p_font_size)
+	return get_top_perk_rects(vp_size, "defender", fog_of_war, telemetry_intercepted, p_font, p_font_size, {}, extra_context)
 
 
 ## Sub-header ribbon dedicado para telemetría secundaria / Kain ghost stream (y = 48..76)
@@ -256,9 +268,45 @@ func draw_frame(d: Dictionary) -> void:
 
 	if d.defender_mode:
 		var q_mode_active: bool = d.get("quarantine_mode", false)
-		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}), d.get("brain_fog_of_war", false), d.get("brain_telemetry_intercepted", false), q_mode_active, d.get("node_cache", {}))
+		var threat_hops := 3
+		var e_path: Array = d.get("brain_enemy_path", [])
+		if e_path.size() > 1:
+			threat_hops = e_path.size() - 1
+		draw_defender_hud(d.vp_size, d.turn, d.brain_blocks_placed, d.brain_blocks_per_turn, d.brain_enemy_pos, d.brain_enemy_target, d.max_turns, d.brain_min_cut, d.blocked_edges, d.brain_firewalls, d.brain_firewall_mode, d.get("brain_forensics_trace", 0.0), d.get("brain_quarantined_nodes", {}), d.get("brain_fog_of_war", false), d.get("brain_telemetry_intercepted", false), q_mode_active, d.get("node_cache", {}), {"threat_hops": threat_hops})
 	else:
-		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display, d.get("node_cache", {}), d.get("hacker_state", {}), d.get("hacker_mode", false), is_secret_sector)
+		var det_num: float = 0.0
+		var det_str := "0%"
+		var nc: Dictionary = d.get("node_cache", {})
+		if nc.has(d.player_pos):
+			var node_res = nc[d.player_pos]
+			var meta: Dictionary = node_res.metadata if (node_res != null and "metadata" in node_res and node_res.metadata is Dictionary) else (node_res if node_res is Dictionary else {})
+			det_num = float(meta.get("detection_chance", 0.0))
+			det_str = "%.0f%%" % (det_num * 100.0)
+		var alerted: Array = d.get("alerted_nodes", [])
+		if str(d.player_pos) in alerted:
+			det_num = 1.0
+			det_str = "100%"
+
+		var hops := int(d.get("heist_hops_to_target", 0))
+		if hops <= 0:
+			var opt_path: Array = d.get("optimal_overlay_path", [])
+			if opt_path.size() > 1:
+				hops = opt_path.size() - 1
+			elif d.get("graph", null) != null and d.player_pos != &"" and d.target != &"":
+				var path_res: Dictionary = DefensivePathfinderClass.find_path_with_cost(d.graph, d.player_pos, d.target, null)
+				if path_res.get("reachable", false) and path_res.get("path", []).size() > 1:
+					hops = path_res["path"].size() - 1
+				else:
+					hops = 3
+			else:
+				hops = 3
+
+		var heist_extra := {
+			"ids_alert": det_str,
+			"alert_num": det_num,
+			"hops_to_target": hops
+		}
+		draw_hud(d.vp_size, d.titulo_nivel, d.turn, d.player_pos, d.target, d.player_total_cost, d.max_turns, d.waypoints, d.waypoint_idx, d.pursuers, d.alerted_nodes, d.movement_points, d.max_movement_points, d.budget_display, d.get("node_cache", {}), d.get("hacker_state", {}), d.get("hacker_mode", false), is_secret_sector, heist_extra)
 
 	if d.mensaje_tutorial != "" and not d.game_over:
 		draw_tutorial_text(d.mensaje_tutorial)
@@ -413,7 +461,8 @@ func draw_hud(
 	node_cache: Dictionary = {},
 	hacker_state: Dictionary = {},
 	hacker_mode: bool = false,
-	is_secret: bool = false
+	is_secret: bool = false,
+	extra_hud_data: Dictionary = {}
 ) -> void:
 	var bar_h: float = 52.0
 	var mode := "heist"
@@ -441,6 +490,8 @@ func draw_hud(
 	var sub_text := "T%d" % turn
 	if waypoints.size() > 0:
 		sub_text = "T%d · WP %d/%d" % [turn, current_waypoint_idx + 1, waypoints.size()]
+	if hacker_mode or is_secret:
+		sub_text += " · PROXY: TOR-04"
 	draw_string(Vector2(16.0, 38.0), sub_text, HORIZONTAL_ALIGNMENT_LEFT, 220.0, font_size - 3, BrandClass.TEXT_DIM)
 
 	# Divisor at x = 244.0 (stack_end_x = 236.0)
@@ -466,10 +517,12 @@ func draw_hud(
 		_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "COSTE", "%.1f" % player_total_cost, Color.WHITE)
 
 	# 2. Center Cluster: ALL Perks / Tools in Top Bar (y = 8.0, height = 36.0)
-	var top_perks := get_top_perk_rects(vp_size, mode, false, false, font, font_size, hacker_state)
+	var top_perks := get_top_perk_rects(vp_size, mode, false, false, font, font_size, hacker_state, extra_hud_data)
 	for p in top_perks:
 		var is_act := false
-		if hacker_mode or is_secret:
+		if p.get("is_action", true) == false:
+			is_act = true
+		elif hacker_mode or is_secret:
 			if p["id"] == "scan":
 				is_act = true
 			else:
@@ -523,7 +576,8 @@ func draw_defender_hud(
 	fog_of_war: bool = false,
 	telemetry_intercepted: bool = false,
 	quarantine_mode: bool = false,
-	node_cache: Dictionary = {}
+	node_cache: Dictionary = {},
+	extra_hud_data: Dictionary = {}
 ) -> void:
 	var bar_h: float = 52.0
 	var theme_col: Color = BrandClass.WORLD_CYBER
@@ -555,20 +609,25 @@ func draw_defender_hud(
 	_draw_numeric_chip(Vector2(chip_x + w1 + 8.0, 10.0), "EDR", "%.0f%%" % forensics_trace, Color("#00d2ff"))
 
 	# 2. Center Cluster: ALL Perks / Tools in Top Bar
-	var top_perks := get_top_perk_rects(vp_size, "defender", fog_of_war, telemetry_intercepted, font, font_size)
+	var top_perks := get_top_perk_rects(vp_size, "defender", fog_of_war, telemetry_intercepted, font, font_size, {}, extra_hud_data)
 	for p in top_perks:
 		var is_active := false
 		var is_pulse := false
-		match p["id"]:
-			"edges":
-				is_active = not firewall_mode and not quarantine_mode
-			"firewall":
-				is_active = firewall_mode
-			"quarantine":
-				is_active = quarantine_mode
+		if p.get("is_action", true) == false:
+			is_active = true
+			if p["id"] == "soc_threat":
 				is_pulse = true
-			"radar":
-				is_active = telemetry_intercepted
+		else:
+			match p["id"]:
+				"edges":
+					is_active = not firewall_mode and not quarantine_mode
+				"firewall":
+					is_active = firewall_mode
+				"quarantine":
+					is_active = quarantine_mode
+					is_pulse = true
+				"radar":
+					is_active = telemetry_intercepted
 		_draw_hud_pill(p["rect"].position, p["text"], is_active, p["color"], is_pulse)
 
 	# 3. Right Cluster (right-aligned at vp_size.x - 16.0)

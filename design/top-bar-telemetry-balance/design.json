@@ -1,0 +1,20 @@
+{
+  "title": "Top Bar Telemetry & Layout Balance",
+  "brief": "Comparativa directa 1:1 en pantalla: ANTES vs DESPUÉS para Heist, Defender y Hacker resolviendo vacíos muertos con telemetría contextual y centrado anti-colisión",
+  "artboards": [
+    {
+      "file": "01-balanced-telemetry-chips.html",
+      "title": "01 — Comparativa Directa 1:1: ANTES vs DESPUÉS en los 3 Modos",
+      "tradeoff": "Visualización estática apilada directa: muestra el hueco de 400px en rojo y la solución en verde sin requerir clicks.",
+      "width": 1356,
+      "height": 960
+    },
+    {
+      "file": "02-dynamic-flex-dividers.html",
+      "title": "02 — Dirección B: Layout Flotante Puro + Divisores Cyberpunk",
+      "tradeoff": "Estética minimalista con cluster enmarcado, divisores de zona y expansión de etiquetas; menos telemetría explícita pero deja el grafo más despejado.",
+      "width": 1356,
+      "height": 672
+    }
+  ]
+}

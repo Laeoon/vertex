@@ -15,7 +15,34 @@ func _run_tests() -> void:
 	print("--- START TEST MAIN MENU LABELS & DIVE ---")
 	_test_scene_transition_api()
 	await _test_main_menu_labels()
+	await _test_world_tabs_verification()
 	_finalizar()
+
+
+func _test_world_tabs_verification() -> void:
+	var menu_scene = load("res://escenas/main_menu.tscn")
+	var menu = menu_scene.instantiate()
+	get_tree().root.add_child(menu)
+	await get_tree().process_frame
+
+	_afirmar(menu.get("_world_tab_idx") == 0, "Initial world_tab_idx is 0")
+	var t0_items: Array = menu.get("_world_tab_0_items")
+	_afirmar(t0_items.size() == 4, "Tab 0 has exactly 4 core worlds")
+	var expected_tab0_ids := ["tutorials", "heist", "hacker", "cybersecurity"]
+	for i in range(expected_tab0_ids.size()):
+		_afirmar(t0_items[i].get("id") == expected_tab0_ids[i], "Tab 0 world[%d] id is '%s'" % [i, expected_tab0_ids[i]])
+
+	menu._world_tab_idx = 1
+	menu._world_items = menu._world_tab_1_items
+	var t1_items: Array = menu.get("_world_tab_1_items")
+	_afirmar(t1_items.size() == 2, "Tab 1 has exactly 2 expansion worlds")
+	var expected_tab1_ids := ["sector0", "free_ops"]
+	var expected_tab1_icons := ["omega", "network"]
+	for i in range(expected_tab1_ids.size()):
+		_afirmar(t1_items[i].get("id") == expected_tab1_ids[i], "Tab 1 world[%d] id is '%s'" % [i, expected_tab1_ids[i]])
+		_afirmar(t1_items[i].get("vector_icon") == expected_tab1_icons[i], "Tab 1 world[%d] vector_icon is '%s'" % [i, expected_tab1_icons[i]])
+
+	menu.queue_free()
 
 
 func _test_scene_transition_api() -> void:
@@ -55,7 +82,7 @@ func _test_main_menu_labels() -> void:
 			"credits": "Créditos",
 			"database": "Database",
 			"exit": "Salir",
-			"profile": "Perfil",
+			"profile": "BÓVEDA // PERFIL",
 		},
 		"en": {
 			"play": "Play",
@@ -63,7 +90,7 @@ func _test_main_menu_labels() -> void:
 			"credits": "Credits",
 			"database": "Database",
 			"exit": "Exit",
-			"profile": "Profile",
+			"profile": "VAULT // PROFILE",
 		},
 		"pt": {
 			"play": "Jogar",
@@ -71,12 +98,12 @@ func _test_main_menu_labels() -> void:
 			"credits": "Créditos",
 			"database": "Database",
 			"exit": "Sair",
-			"profile": "Perfil",
+			"profile": "COFRE // PERFIL",
 		},
 	}
 
 	for lang in ["es", "en", "pt"]:
-		LocaleManager.set_locale(lang)
+		LocUtil.set_locale(menu, lang)
 		menu._refresh_texts()
 
 		var action_map: Dictionary = {}
@@ -98,7 +125,7 @@ func _test_main_menu_labels() -> void:
 				"[%s] accion '%s' tiene descripcion valida y localizada" % [lang, act])
 
 	# Restaurar es
-	LocaleManager.set_locale("es")
+	LocUtil.set_locale(menu, "es")
 	menu.queue_free()
 
 

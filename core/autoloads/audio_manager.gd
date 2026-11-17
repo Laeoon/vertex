@@ -16,6 +16,9 @@ const SFX_PRIORITY: Dictionary = {
 	"scalate": 60,
 	"persist": 60,
 	"decoy": 60,
+	"dive_in": 55,
+	"dive_out": 55,
+	"confirm": 50,
 	"firewall": 50,
 	"scan": 40,
 	"block": 30,
@@ -202,6 +205,8 @@ func _load_disk_sounds() -> void:
 		"captured": "res://assets/audio/sfx/captured.wav",
 		"lose": "res://assets/audio/sfx/captured.wav",
 		"win": "res://assets/audio/sfx/win.wav",
+		"dive_in": "res://assets/audio/sfx/dive_in.wav",
+		"dive_out": "res://assets/audio/sfx/dive_out.wav",
 	}
 	for key in sound_files:
 		var path: String = sound_files[key]
@@ -209,6 +214,10 @@ func _load_disk_sounds() -> void:
 			var res = load(path)
 			if res is AudioStream:
 				_disk_sounds[key] = res
+
+	# Asignación provisional para demo: dive_in hereda bypass.wav si no hay dive_in.wav en disco
+	if not _disk_sounds.has("dive_in") and _disk_sounds.has("bypass"):
+		_disk_sounds["dive_in"] = _disk_sounds["bypass"]
 
 
 func _generate_sounds() -> void:
@@ -226,6 +235,9 @@ func _generate_sounds() -> void:
 	_sounds["firewall"] = _make_tone(130.81, 0.4, sr)
 	_sounds["reset"] = _make_tone(350.0, 0.12, sr)
 	_sounds["error"] = _make_tone(146.83, 0.22, sr)
+	_sounds["dive_in"] = _make_sweep(0.38, sr)
+	_sounds["dive_out"] = _make_sweep_down(0.35, sr)
+	_sounds["confirm"] = _make_chord([523.25, 659.25], 0.12, sr)
 
 
 func _make_tone(freq: float, dur: float, sr: float) -> AudioStreamWAV:
@@ -276,6 +288,25 @@ func _make_sweep(dur: float, sr: float) -> AudioStreamWAV:
 		var freq: float = 200.0 + 1800.0 * (t / dur)
 		var s: float = sin(2.0 * PI * freq * t) * 0.3 * env
 		s += (randf() - 0.5) * 0.2 * env
+		data.encode_s16(i * 2, int(clampf(s * 16384.0, -32768.0, 32767.0)))
+	var wav := AudioStreamWAV.new()
+	wav.data = data
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = int(sr)
+	wav.stereo = false
+	return wav
+
+
+func _make_sweep_down(dur: float, sr: float) -> AudioStreamWAV:
+	var n: int = int(sr * dur)
+	var data: PackedByteArray = PackedByteArray()
+	data.resize(n * 2)
+	for i in range(n):
+		var t: float = float(i) / sr
+		var env: float = exp(-2.5 * t / dur)
+		var freq: float = 850.0 - 650.0 * (t / dur)
+		var s: float = sin(2.0 * PI * freq * t) * 0.28 * env
+		s += (randf() - 0.5) * 0.15 * env
 		data.encode_s16(i * 2, int(clampf(s * 16384.0, -32768.0, 32767.0)))
 	var wav := AudioStreamWAV.new()
 	wav.data = data

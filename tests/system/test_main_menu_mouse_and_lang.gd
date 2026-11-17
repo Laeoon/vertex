@@ -2,7 +2,7 @@ extends Node
 
 ## Test suite for main menu mouse controls and language setting isolation
 
-const MainMenuClass = preload("res://escenas/main_menu.gd")
+var MainMenuClass: GDScript = null
 
 var passed: int = 0
 var failed: int = 0
@@ -13,6 +13,7 @@ func _ready() -> void:
 
 
 func _run_tests() -> void:
+	MainMenuClass = load("res://escenas/main_menu.gd") as GDScript
 	print("--- START TEST MAIN MENU MOUSE & LANG ---")
 	_test_arrow_keys_do_not_cycle_language()
 	_test_mouse_hover_updates_selection()

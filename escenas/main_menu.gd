@@ -16,6 +16,15 @@ var progress: Dictionary = {}
 
 var _main_items: Array[Dictionary] = []
 var _world_items: Array[Dictionary] = []
+var world_tab_idx: int = 0
+var _world_tab_idx: int:
+	get:
+		return world_tab_idx
+	set(val):
+		world_tab_idx = val
+		_world_items = _world_tab_0_items if world_tab_idx == 0 else _world_tab_1_items
+var _world_tab_0_items: Array[Dictionary] = []
+var _world_tab_1_items: Array[Dictionary] = []
 var _lang_options: Array[String] = ["es", "en", "pt"]
 var _lang_idx: int = 0
 
@@ -26,6 +35,9 @@ var _transition_stage: int = 0
 var _slide_offset_x: float = 0.0
 var _smooth_selected_y: float = 150.0
 var _hovered_back: bool = false
+var _hovered_card_idx: int = -1
+var _hovered_tab_idx: int = -1
+var _hovered_launch: bool = false
 var _pulse: float = 0.0
 var _cyber_bg := CyberBackgroundClass.new()
 var _world_renderer := WorldSelectRendererClass.new()
@@ -59,18 +71,109 @@ func _ready() -> void:
 		{"label": loc("menu.credits"), "desc": loc("menu.credits_desc"), "action": "credits", "icon_path": "", "icon_tex": null, "vector_icon": "credits"},
 		{"label": loc("menu.database"), "desc": loc("menu.database_desc"), "action": "database", "icon_path": "res://assets/icons/menu_database.png", "icon_tex": null, "vector_icon": "database"},
 		{"label": loc("menu.exit"), "desc": loc("menu.exit_desc"), "action": "exit", "icon_path": "res://assets/icons/menu_exit.png", "icon_tex": null, "vector_icon": "exit"},
-		{"label": loc("menu.profile"), "desc": loc("menu.profile_desc"), "action": "profile", "icon_path": "res://assets/icons/menu_profile.png", "icon_tex": null, "vector_icon": "profile"},
+		{"label": loc("menu.vault"), "desc": loc("menu.vault_desc"), "action": "profile", "icon_path": "res://assets/icons/menu_profile.png", "icon_tex": null, "vector_icon": "profile"},
 	]
 
-	_world_items = [
-		{"label": loc("world.tutorials"), "desc": loc("world.tutorials_desc"), "id": "tutorials", "icon_path": "res://assets/icons/world_tutorials.png", "icon_tex": null, "vector_icon": "tutorials"},
-		{"label": "Heist", "desc": loc("world.heist_desc"), "id": "heist", "icon_path": "res://assets/icons/world_heist.png", "icon_tex": null, "vector_icon": "heist"},
-		{"label": "Hacker", "desc": loc("world.hacker_desc"), "id": "hacker", "icon_path": "res://assets/icons/world_hacker.png", "icon_tex": null, "vector_icon": "hacker"},
-		{"label": "Cybersecurity", "desc": loc("world.cyber_desc"), "id": "cybersecurity", "icon_path": "res://assets/icons/world_cyber.png", "icon_tex": null, "vector_icon": "cyber"},
+	_world_tab_0_items = [
+		{
+			"id": "tutorials",
+			"label": loc("world.tutorials"),
+			"desc": loc("world.tutorials_desc"),
+			"icon_path": "res://assets/icons/world_tutorials.png",
+			"icon_tex": null,
+			"vector_icon": "tutorials",
+			"sec_code": "01",
+			"display_title": "01 // ACADEMIA TÁCTICA",
+			"operator": "INSTRUCTOR // SISTEMA",
+			"status_line": "OPERADOR: SISTEMA · FUNDAMENTOS DE GRAFOS",
+			"algorithm": "Teoría de Grafos G=(V,E) & Pesos",
+			"unlock_req": "ACCESO INICIAL (Siempre disponible)",
+			"dossier_desc": "Entrenamiento táctico interactivo. Introduce nodos, aristas ponderadas y los tutoriales específicos que desbloquean cada modo de juego."
+		},
+		{
+			"id": "heist",
+			"label": "Heist",
+			"desc": loc("world.heist_desc"),
+			"icon_path": "res://assets/icons/world_heist.png",
+			"icon_tex": null,
+			"vector_icon": "heist",
+			"sec_code": "02",
+			"display_title": "02 // HEIST // OP: VEX",
+			"operator": "VEX [EXFILTRACIÓN]",
+			"status_line": "OPERADOR: VEX · ALGORITMO DIJKSTRA & PRESUPUESTO",
+			"algorithm": "Dijkstra O((V+E) log V) & Presupuesto",
+			"unlock_req": "Completar el Tutorial de Heist (Abierto en prueba)",
+			"dossier_desc": "Optimización matemática de rutas de coste mínimo. Gestiona un presupuesto estricto de salto entre nodos para alcanzar el objetivo sin agotar recursos."
+		},
+		{
+			"id": "hacker",
+			"label": "Hacker",
+			"desc": loc("world.hacker_desc"),
+			"icon_path": "res://assets/icons/world_hacker.png",
+			"icon_tex": null,
+			"vector_icon": "hacker",
+			"sec_code": "03",
+			"display_title": "03 // HACKER // OP: N0X",
+			"operator": "N0X [RED TEAM]",
+			"status_line": "OPERADOR: N0X · LATERAL MOVEMENT & EXPLOITS",
+			"algorithm": "Lateral Movement, Pivoteo & Ruido IDS",
+			"unlock_req": "Completar el Tutorial de Hacker (Abierto en prueba)",
+			"dossier_desc": "Movimiento lateral táctico a través de subredes hostiles. Controla el nivel de Ruido IDS e inyecta exploits (SCAN, BYPASS, ESCALATE, PERSIST, HONEYPOT)."
+		},
+		{
+			"id": "cybersecurity",
+			"label": "Cybersecurity",
+			"desc": loc("world.cyber_desc"),
+			"icon_path": "res://assets/icons/world_cyber.png",
+			"icon_tex": null,
+			"vector_icon": "cyber",
+			"sec_code": "04",
+			"display_title": "04 // CYBERSECURITY // OP: AEGIS",
+			"operator": "AEGIS [BLUE TEAM SOC]",
+			"status_line": "OPERADOR: AEGIS · EDMONDS-KARP (FLUJO / CORTE)",
+			"algorithm": "Edmonds-Karp O(V·E²) Max-Flow / Min-Cut",
+			"unlock_req": "Completar el Tutorial de Cyber (Abierto en prueba)",
+			"dossier_desc": "Defensa perimetral activa basada en el teorema de Flujo Máximo y Corte Mínimo (S-T Min-Cut). Segmenta aristas, despliega Firewalls/Cuarentena y completa el rastreo EDR."
+		},
 	]
+
+	_world_tab_1_items = [
+		{
+			"id": "sector0",
+			"label": "Sector 0: Root Genesis",
+			"desc": "Precuela clasificada del Ing. Kain (Desbloqueable con los archivos .ENC)",
+			"icon_path": "",
+			"icon_tex": null,
+			"vector_icon": "omega",
+			"sec_code": "00",
+			"display_title": "00 // SECTOR 0: ROOT GENESIS // OP: KAIN",
+			"operator": "ING. KAIN [ARCHITECT-0]",
+			"status_line": "OPERADOR: KAIN · CONVERGENCIA TRÍADA GÉNESIS",
+			"algorithm": "Tríada: Dijkstra + Lateral Mov. + Edmonds-Karp",
+			"unlock_req": "Desencriptar Archivos .ENC en La Bóveda (En prueba)",
+			"dossier_desc": "El colapso original del Kernel Primordial. Exige dominar simultáneamente el presupuesto de Dijkstra, el pivoteo de exploits y la contención de corte mínimo."
+		},
+		{
+			"id": "free_ops",
+			"label": "Operaciones Libres",
+			"desc": "Mundos de expansión y contratos post-campaña",
+			"icon_path": "",
+			"icon_tex": null,
+			"vector_icon": "network",
+			"sec_code": "05",
+			"display_title": "05 // OPERACIONES LIBRES // SANDBOX",
+			"operator": "MULTIOPE // SANDBOX",
+			"status_line": "CONTRATOS DE EXPANSIÓN · ALGORITMOS COMBINADOS",
+			"algorithm": "Topologías Variables & Retos Post-Campaña",
+			"unlock_req": "Completar la Historia Principal (Abierto en prueba)",
+			"dossier_desc": "Operaciones de expansión desbloqueables tras finalizar la campaña principal. Permite poner a prueba los tres algoritmos en topologías abiertas."
+		},
+	]
+
+	_world_items = _world_tab_0_items
 
 	# Try loading custom icon textures from disk if assets exist
-	for item in _main_items + _world_items:
+	for item in _main_items + _world_tab_0_items + _world_tab_1_items:
 		var p: String = item.get("icon_path", "")
 		if p != "" and ResourceLoader.exists(p):
 			item["icon_tex"] = load(p)
@@ -101,19 +204,20 @@ func _get_showcase_rect(vp: Vector2) -> Rect2:
 	var cx := vp.x * 0.5
 	var card_w := clampf(vp.x * 0.44, 380.0, 520.0)
 	var card_h := 84.0
-	var holo_center := Vector2(vp.x * 0.5, vp.y * 0.44)
-	var sphere_r: float = minf(vp.y * 0.24, 130.0)
+	var holo_center := Vector2(vp.x * 0.5, vp.y * 0.37)
+	var sphere_r: float = minf(vp.y * 0.20, 112.0)
 	var radius: float = sphere_r * 1.70
 	var tilt_x: float = 0.42
 	var front_y := holo_center.y + radius * sin(tilt_x)
-	var card_y := front_y + 44.0
-	if card_y + card_h > vp.y - 70.0:
-		card_y = vp.y - 70.0 - card_h
+	var card_y := front_y + 56.0
+	var max_card_y := vp.y - 108.0 - card_h
+	if card_y > max_card_y:
+		card_y = max_card_y
 	return Rect2(cx - card_w * 0.5, card_y, card_w, card_h)
 
 
 func _get_back_button_rect(_vp: Vector2) -> Rect2:
-	return Rect2(40.0, 36.0, 170.0, 36.0)
+	return Rect2(36.0, 32.0, 168.0, 44.0)
 
 
 func _input(event: InputEvent) -> void:
@@ -131,7 +235,18 @@ func _input(event: InputEvent) -> void:
 			KEY_ENTER, KEY_SPACE:
 				_play_click_sfx()
 				_activate_selected()
-			KEY_RIGHT, KEY_DOWN:
+			KEY_TAB, KEY_Q, KEY_E:
+				if current_state == State.WORLD_SELECT:
+					set_world_tab(1 - world_tab_idx)
+			KEY_RIGHT:
+				var items := _current_items()
+				if current_state == State.WORLD_SELECT:
+					set_world_tab(1 - world_tab_idx)
+				else:
+					selected_idx = (selected_idx - 1 + items.size()) % items.size()
+					_play_click_sfx()
+					queue_redraw()
+			KEY_DOWN:
 				var items := _current_items()
 				if current_state == State.WORLD_SELECT:
 					selected_idx = (selected_idx + 1) % items.size()
@@ -139,7 +254,15 @@ func _input(event: InputEvent) -> void:
 					selected_idx = (selected_idx - 1 + items.size()) % items.size()
 				_play_click_sfx()
 				queue_redraw()
-			KEY_LEFT, KEY_UP:
+			KEY_LEFT:
+				var items := _current_items()
+				if current_state == State.WORLD_SELECT:
+					set_world_tab(1 - world_tab_idx)
+				else:
+					selected_idx = (selected_idx + 1) % items.size()
+					_play_click_sfx()
+					queue_redraw()
+			KEY_UP:
 				var items := _current_items()
 				if current_state == State.WORLD_SELECT:
 					selected_idx = (selected_idx - 1 + items.size()) % items.size()
@@ -153,9 +276,31 @@ func _input(event: InputEvent) -> void:
 		var items := _current_items()
 		var vp := get_viewport_rect().size
 
-		# Test suite backward-compatibility check: x < 360
+		if current_state == State.WORLD_SELECT:
+			var new_hov_card: int = -1
+			for i in items.size():
+				var card_rect: Rect2 = _world_renderer.get_card_rect(i, vp)
+				if card_rect.has_point(mpos):
+					new_hov_card = i
+					break
+			var new_hov_tab: int = -1
+			for t in range(2):
+				if _world_renderer.get_world_tab_rect(t, vp).has_point(mpos):
+					new_hov_tab = t
+					break
+			var new_hov_launch: bool = _world_renderer.get_launch_button_rect(vp).has_point(mpos)
+			var new_hov_back: bool = _get_back_button_rect(vp).has_point(mpos)
+			if new_hov_card != _hovered_card_idx or new_hov_tab != _hovered_tab_idx or new_hov_launch != _hovered_launch or new_hov_back != _hovered_back:
+				_hovered_card_idx = new_hov_card
+				_hovered_tab_idx = new_hov_tab
+				_hovered_launch = new_hov_launch
+				_hovered_back = new_hov_back
+				queue_redraw()
+			return
+
+		# Main menu hover
 		if mpos.x < 360.0:
-			var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
+			var start_y: float = 150.0
 			var card_w: float = 340.0
 			for i in items.size():
 				var item_by: float = start_y + i * 48.0
@@ -166,38 +311,18 @@ func _input(event: InputEvent) -> void:
 						_play_click_sfx()
 						queue_redraw()
 					break
-			if current_state == State.WORLD_SELECT:
-				var back_y: float = start_y + items.size() * 48.0 + 10.0
-				_hovered_back = Rect2(50, back_y - 10, card_w, 36).has_point(mpos)
-				queue_redraw()
 			return
 
-		if current_state == State.WORLD_SELECT:
-			for i in items.size():
-				var card_rect := _world_renderer.get_card_rect(i, vp)
-				var npos := _world_renderer.get_node_pos(i, items.size(), vp)
-				if card_rect.has_point(mpos) or mpos.distance_to(npos) <= 34.0:
-					if selected_idx != i:
-						selected_idx = i
-						_play_click_sfx()
-						queue_redraw()
-					break
-			var prev_b := _hovered_back
-			_hovered_back = _get_back_button_rect(vp).has_point(mpos)
-			if prev_b != _hovered_back:
-				queue_redraw()
-		else:
-			# Hover on 3D orbital nodes
-			for i in items.size():
-				var ninfo := _get_orbital_node_info(i, items.size(), vp)
-				var npos: Vector2 = ninfo.pos
-				var nscale: float = ninfo.scale
-				if mpos.distance_to(npos) <= 30.0 * nscale:
-					if selected_idx != i:
-						selected_idx = i
-						_play_click_sfx()
-						queue_redraw()
-					break
+		for i in items.size():
+			var ninfo := _get_orbital_node_info(i, items.size(), vp)
+			var npos: Vector2 = ninfo.pos
+			var nscale: float = ninfo.scale
+			if mpos.distance_to(npos) <= 30.0 * nscale:
+				if selected_idx != i:
+					selected_idx = i
+					_play_click_sfx()
+					queue_redraw()
+				break
 
 	elif event is InputEventMouseButton and event.pressed:
 		var mb := event as InputEventMouseButton
@@ -219,31 +344,28 @@ func _input(event: InputEvent) -> void:
 			return
 
 		if mb.button_index == MOUSE_BUTTON_LEFT:
-			# Test suite backward-compatibility check: x < 360
-			if mpos.x < 360.0:
-				var start_y: float = 140.0 if current_state == State.WORLD_SELECT else 150.0
-				var card_w: float = 340.0
-				for i in items.size():
-					var item_by: float = start_y + i * 48.0
-					var rect := Rect2(50, item_by - 16, card_w, 44)
-					if rect.has_point(mpos):
-						selected_idx = i
-						_play_click_sfx()
-						_activate_selected()
-						return
-				if current_state == State.WORLD_SELECT:
-					var back_y: float = start_y + items.size() * 48.0 + 10.0
-					if Rect2(50, back_y - 10, card_w, 36).has_point(mpos):
-						_go_to_state(State.MAIN_MENU)
-						return
-
-			# Check Back button in WORLD_SELECT
-			if current_state == State.WORLD_SELECT and _get_back_button_rect(vp).has_point(mpos):
-				_play_click_sfx()
-				_start_dive_out("", "", State.MAIN_MENU, true)
-				return
-
 			if current_state == State.WORLD_SELECT:
+				# Check Back button
+				if _get_back_button_rect(vp).has_point(mpos):
+					_play_click_sfx()
+					_start_dive_out("", "", State.MAIN_MENU, true)
+					return
+				# Check Tabs
+				for t in range(2):
+					if _world_renderer.get_world_tab_rect(t, vp).has_point(mpos):
+						set_world_tab(t)
+						return
+				# Check Central Shortcut Chip
+				if Rect2(vp.x * 0.5 - 64.0, 108.0, 128.0, 34.0).has_point(mpos):
+					_play_click_sfx()
+					set_world_tab(1 - world_tab_idx)
+					return
+				# Check Launch button
+				if _world_renderer.get_launch_button_rect(vp).has_point(mpos):
+					_play_click_sfx()
+					_activate_selected()
+					return
+				# Check World Cards
 				for i in items.size():
 					var card_rect := _world_renderer.get_card_rect(i, vp)
 					var npos := _world_renderer.get_node_pos(i, items.size(), vp)
@@ -256,27 +378,44 @@ func _input(event: InputEvent) -> void:
 							_play_click_sfx()
 							_activate_selected()
 						return
-			else:
-				# Check Showcase panel click
-				if _get_showcase_rect(vp).has_point(mpos):
-					_play_click_sfx()
-					_activate_selected()
-					return
-
-				# Check 3D orbital node clicks
-				for i in items.size():
-					var ninfo := _get_orbital_node_info(i, items.size(), vp)
-					var npos: Vector2 = ninfo.pos
-					var nscale: float = ninfo.scale
-					if mpos.distance_to(npos) <= 34.0 * nscale:
-						if selected_idx != i:
-							selected_idx = i
-							_play_click_sfx()
-							queue_redraw()
-						else:
-							_play_click_sfx()
-							_activate_selected()
+				# Legacy test suite fallback x < 360
+				if mpos.x < 360.0:
+					if Rect2(50, 332, 340, 36).has_point(mpos):
+						_go_to_state(State.MAIN_MENU)
 						return
+				return
+
+			# Main menu state
+			if mpos.x < 360.0:
+				var start_y: float = 150.0
+				var card_w: float = 340.0
+				for i in items.size():
+					var item_by: float = start_y + i * 48.0
+					var rect := Rect2(50, item_by - 16, card_w, 44)
+					if rect.has_point(mpos):
+						selected_idx = i
+						_play_click_sfx()
+						_activate_selected()
+						return
+
+			if _get_showcase_rect(vp).has_point(mpos):
+				_play_click_sfx()
+				_activate_selected()
+				return
+
+			for i in items.size():
+				var ninfo := _get_orbital_node_info(i, items.size(), vp)
+				var npos: Vector2 = ninfo.pos
+				var nscale: float = ninfo.scale
+				if mpos.distance_to(npos) <= 34.0 * nscale:
+					if selected_idx != i:
+						selected_idx = i
+						_play_click_sfx()
+						queue_redraw()
+					else:
+						_play_click_sfx()
+						_activate_selected()
+					return
 
 
 func _process(delta: float) -> void:
@@ -335,15 +474,25 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+func set_world_tab(tab_idx: int) -> void:
+	var clamped: int = clampi(tab_idx, 0, 1)
+	world_tab_idx = clamped
+	_world_items = _world_tab_0_items if world_tab_idx == 0 else _world_tab_1_items
+	selected_idx = 0
+	_play_click_sfx()
+	queue_redraw()
+
+
 func _current_items() -> Array[Dictionary]:
 	if current_state == State.WORLD_SELECT:
+		_world_items = _world_tab_0_items if world_tab_idx == 0 else _world_tab_1_items
 		return _world_items
 	return _main_items
 
 
 func _get_orbital_node_info(idx: int, total: int, vp: Vector2) -> Dictionary:
-	var holo_center := Vector2(vp.x * 0.5, vp.y * 0.44)
-	var sphere_r: float = minf(vp.y * 0.24, 130.0)
+	var holo_center := Vector2(vp.x * 0.5, vp.y * 0.37)
+	var sphere_r: float = minf(vp.y * 0.20, 112.0)
 	var radius: float = sphere_r * 1.70
 	var base_angle: float = (float(idx) / float(maxi(1, total))) * TAU
 	var cur_angle: float = base_angle + _orbit_rot
@@ -378,9 +527,6 @@ func _start_dive_in(target_scene: String = "", target_world_id: String = "", tar
 		var vp := get_viewport_rect().size
 		var items := _current_items()
 		var center := _get_orbital_node_pos(selected_idx, items.size(), vp)
-		var am = get_node_or_null("/root/AudioManager")
-		if am != null and am.has_method("play_sfx"):
-			am.play_sfx("confirm")
 		SceneTransition.dive_in_to_scene(target_scene, center)
 		return
 
@@ -401,7 +547,7 @@ func _start_dive_in(target_scene: String = "", target_world_id: String = "", tar
 
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null and am.has_method("play_sfx"):
-		am.play_sfx("bypass")
+		am.play_sfx("dive_in")
 
 
 func _start_dive_out(target_scene: String = "", target_world_id: String = "", target_state: State = State.MAIN_MENU, is_state_change: bool = false) -> void:
@@ -430,7 +576,7 @@ func _start_dive_out(target_scene: String = "", target_world_id: String = "", ta
 
 	var am = get_node_or_null("/root/AudioManager")
 	if am != null and am.has_method("play_sfx"):
-		am.play_sfx("scan")
+		am.play_sfx("dive_out")
 
 
 func _activate_selected() -> void:
@@ -508,14 +654,15 @@ func _refresh_texts() -> void:
 				item.label = loc("menu.exit")
 				item.desc = loc("menu.exit_desc")
 			"profile":
-				item.label = loc("menu.profile")
-				item.desc = loc("menu.profile_desc")
+				item.label = loc("menu.vault")
+				item.desc = loc("menu.vault_desc")
 
-	_world_items[0].label = loc("world.tutorials")
-	_world_items[0].desc = loc("world.tutorials_desc")
-	_world_items[1].desc = loc("world.heist_desc")
-	_world_items[2].desc = loc("world.hacker_desc")
-	_world_items[3].desc = loc("world.cyber_desc")
+	_world_tab_0_items[0].label = loc("world.tutorials")
+	_world_tab_0_items[0].desc = loc("world.tutorials_desc")
+	_world_tab_0_items[1].desc = loc("world.heist_desc")
+	_world_tab_0_items[2].desc = loc("world.hacker_desc")
+	_world_tab_0_items[3].desc = loc("world.cyber_desc")
+	_world_items = _world_tab_0_items if world_tab_idx == 0 else _world_tab_1_items
 
 
 func _load_lang_setting() -> void:
@@ -567,16 +714,18 @@ func _draw() -> void:
 			_pulse,
 			font,
 			font_size,
-			big_font_size
+			big_font_size,
+			_world_tab_idx
 		)
 		_draw_back_button(vp, alpha, ox)
 	else:
 		_draw_3d_orbital_graph(vp, alpha, ox)
 		_draw_bottom_dock(vp, alpha, ox)
 
-	var cur_items := _current_items()
-	var cur_sel: Dictionary = cur_items[selected_idx] if (selected_idx >= 0 and selected_idx < cur_items.size()) else {}
-	_operator_advisor.draw(self, vp, alpha, font, font_size, current_state == State.WORLD_SELECT, cur_sel, progress)
+	if current_state == State.WORLD_SELECT:
+		var cur_items := _current_items()
+		var cur_sel: Dictionary = cur_items[selected_idx] if (selected_idx >= 0 and selected_idx < cur_items.size()) else {}
+		_operator_advisor.draw(self, vp, alpha, font, font_size, true, cur_sel, progress)
 
 
 func _draw_title(vp: Vector2, alpha: float, ox: float) -> void:
@@ -609,16 +758,22 @@ func _draw_back_button(vp: Vector2, alpha: float, ox: float) -> void:
 	if _hovered_back:
 		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.95))
 		draw_rect(rect, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.85), false, 1.5)
-		draw_string(font, Vector2(rect.position.x + 16, rect.position.y + 23), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.ACCENT)
+		draw_rect(Rect2(rect.position.x, rect.position.y, 3.0, rect.size.y), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.95))
+		var text_str := "[ESC] <- VOLVER"
+		var t_w := font.get_string_size(text_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		draw_string(font, Vector2(rect.position.x + (rect.size.x - t_w) * 0.5, rect.position.y + 27.0), text_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.ACCENT)
 	else:
 		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.70))
 		draw_rect(rect, BrandClass.with_alpha(BrandClass.PANEL_BORDER, alpha * 0.40), false, 1.0)
-		draw_string(font, Vector2(rect.position.x + 16, rect.position.y + 23), "[ESC] <- VOLVER", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
+		draw_rect(Rect2(rect.position.x, rect.position.y, 3.0, rect.size.y), BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.60))
+		var text_str := "[ESC] <- VOLVER"
+		var t_w := font.get_string_size(text_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		draw_string(font, Vector2(rect.position.x + (rect.size.x - t_w) * 0.5, rect.position.y + 27.0), text_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.TEXT_DIM)
 
 
 func _draw_3d_orbital_graph(vp: Vector2, alpha: float, ox: float) -> void:
-	var holo_center := Vector2(vp.x * 0.5 + ox, vp.y * 0.44)
-	var sphere_r: float = minf(vp.y * 0.24, 130.0)
+	var holo_center := Vector2(vp.x * 0.5 + ox, vp.y * 0.37)
+	var sphere_r: float = minf(vp.y * 0.20, 112.0)
 	var radius: float = sphere_r * 1.70
 
 	var rot_y: float = _pulse * 0.45

@@ -1,0 +1,16 @@
+{
+  "title": "LA BÓVEDA // PERFIL Overhaul v1.0",
+  "brief": "Diegetic CRT terminal architecture featuring 5-Tab neural hub and bilateral command deck.",
+  "feature": "odd/tasks/vertex-1-0-overhaul.md",
+  "artboards": [
+    {
+      "file": "01-bilateral-command-deck.html",
+      "name": "01 — Cubierta Bilateral: Carnet Fijo Izquierdo + Hub Derecho de 5 Pestañas",
+      "path": "01-bilateral-command-deck.html",
+      "title": "01 — Cubierta Bilateral: Carnet Fijo Izquierdo + Hub Derecho de 5 Pestañas",
+      "tradeoff": "Fixed 310px left operator dossier card always visible while switching across the 5 right-hand interactive modules.",
+      "width": 1356,
+      "height": 672
+    }
+  ]
+}

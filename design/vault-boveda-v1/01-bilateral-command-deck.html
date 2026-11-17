@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VERTEX // LA BÓVEDA // PERFIL - Cubierta Bilateral</title>
+<style>
+  :root {
+    --bg: #0d0e16;
+    --panel: rgba(22, 24, 38, 0.88);
+    --panel-solid: rgba(16, 18, 31, 0.98);
+    --panel-border: #2a2e4a;
+    --accent: #00e5ff;
+    --enemy: #ff2e88;
+    --success: #39ff88;
+    --warning: #ffc857;
+    --danger: #ff4757;
+    --text: #eaecf5;
+    --text-dim: #8a90b8;
+    --purple: #bf5af2;
+    --cyan: #00d2ff;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-mono); }
+  
+  /* Custom Scrollbars (4px) */
+  *::-webkit-scrollbar { width: 4px; height: 4px; }
+  *::-webkit-scrollbar-track { background: #08090f; }
+  *::-webkit-scrollbar-thumb { background: #00e5ff; border-radius: 2px; }
+  * { scrollbar-width: thin; scrollbar-color: #00e5ff #08090f; }
+
+  body {
+    background-color: #08090f;
+    color: var(--text);
+    width: 1356px;
+    height: 672px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .viewport-frame {
+    width: 1356px;
+    height: 672px;
+    background: radial-gradient(circle at 50% 30%, #151828 0%, #08090f 80%);
+    border: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* CRT Scanlines Overlay */
+  .viewport-frame::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 1000;
+  }
+  
+  /* Left Fixed ID Card (310px) */
+  .left-column {
+    width: 310px;
+    height: 100%;
+    background: var(--panel-solid);
+    border-right: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 10px;
+    z-index: 10;
+  }
+  .brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 8px;
+  }
+  .brand-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(0,229,255,0.4);
+  }
+  .back-btn {
+    min-height: 44px;
+    min-width: 44px;
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    transition: background 0.2s;
+  }
+  .back-btn:hover { background: rgba(0, 229, 255, 0.25); }
+
+  .operator-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+  .rank-emblem {
+    width: 56px;
+    height: 56px;
+    border: 2px solid var(--purple);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(191, 90, 242, 0.1);
+    color: var(--purple);
+    box-shadow: 0 0 12px rgba(191, 90, 242, 0.3);
+  }
+  .operator-rank {
+    font-size: 10px;
+    color: var(--purple);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .alias-input-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 4px;
+    align-items: center;
+  }
+  .alias-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 4px 6px;
+    font-size: 11px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  .alias-input:focus { border-color: var(--accent); outline: none; }
+  .edit-alias-btn {
+    min-height: 44px;
+    min-width: 44px;
+    background: rgba(255, 200, 87, 0.1);
+    border: 1px solid var(--warning);
+    color: var(--warning);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .featured-badge-slot {
+    background: rgba(0, 229, 255, 0.05);
+    border: 1px dashed var(--accent);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 10px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .telemetry-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 10px;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 8px;
+  }
+  .telemetry-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-dim);
+    border-bottom: 1px dashed rgba(42, 46, 74, 0.6);
+    padding-bottom: 3px;
+  }
+  .telemetry-row:last-child { border-bottom: none; }
+  .telemetry-val { color: var(--success); font-weight: bold; }
+
+  .save-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: auto;
+  }
+  .save-label { font-size: 10px; color: var(--text-dim); }
+  .slot-btns { display: flex; gap: 4px; }
+  .slot-btn {
+    flex: 1;
+    min-height: 44px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .slot-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: bold;
+  }
+  .slot-btn:hover { border-color: var(--text); color: var(--text); }
+
+  /* Right Wide Column (1046px) */
+  .right-column {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #08090f;
+  }
+  .tab-bar {
+    display: flex;
+    background: var(--panel-solid);
+    border-bottom: 1px solid var(--panel-border);
+    height: 44px;
+  }
+  .tab-pill {
+    flex: 1;
+    min-height: 44px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .tab-pill:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+  .tab-pill.active {
+    background: var(--panel);
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    text-shadow: 0 0 6px rgba(0,229,255,0.3);
+  }
+
+  .module-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  .module-content {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: none;
+    padding: 12px;
+    gap: 12px;
+  }
+  .module-content.active { display: flex; }
+
+  /* Generic Panels */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-header {
+    background: rgba(16, 18, 31, 0.9);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 0.5px;
+  }
+
+  /* 01 // INSIGNIAS */
+  #mod-badges { flex-direction: row; }
+  .badges-grid-pane { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .badges-scroll { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-right: 4px; }
+  .badge-cell {
+    background: rgba(22, 24, 38, 0.9);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 44px;
+    min-width: 44px;
+    position: relative;
+    text-align: center;
+  }
+  .badge-cell:hover { border-color: var(--accent); }
+  .badge-cell.unlocked { border-color: rgba(0, 229, 255, 0.4); background: rgba(0, 229, 255, 0.04); }
+  .badge-cell.locked { opacity: 0.45; filter: grayscale(1); }
+  .badge-cell.selected { border-color: var(--accent); box-shadow: 0 0 10px rgba(0,229,255,0.25); }
+  .badge-glyph { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .badge-cell-title { font-size: 9px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+
+  .badge-inspector { width: 320px; display: flex; flex-direction: column; gap: 8px; }
+  .inspector-card { flex: 1; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+  .inspector-emblem { width: 64px; height: 64px; border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,229,255,0.1); font-size: 28px; box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+  .inspector-status { font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; }
+  .inspector-status.unlocked { background: rgba(57,255,136,0.15); color: var(--success); border: 1px solid var(--success); }
+  .inspector-status.locked { background: rgba(255,71,87,0.15); color: var(--danger); border: 1px solid var(--danger); }
+  .inspector-rarity { font-size: 10px; color: var(--purple); font-weight: bold; }
+  .inspector-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; flex: 1; overflow-y: auto; text-align: left; width: 100%; background: rgba(8,9,15,0.5); padding: 8px; border-radius: 4px; border: 1px dashed var(--panel-border); }
+  .feature-badge-btn {
+    width: 100%;
+    min-height: 44px;
+    background: rgba(0, 229, 255, 0.15);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.2s;
+  }
+  .feature-badge-btn:hover { background: rgba(0, 229, 255, 0.3); }
+
+  /* 02 // ARCHIVOS .ENC */
+  #mod-enc { flex-direction: row; }
+  .enc-left { width: 250px; display: flex; flex-direction: column; gap: 8px; }
+  .enc-list { display: flex; flex-direction: column; gap: 4px; }
+  .enc-file-btn {
+    min-height: 44px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-size: 11px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
+  .enc-file-btn:hover { border-color: var(--accent); }
+  .enc-file-btn.active { background: rgba(0,229,255,0.1); border-color: var(--accent); color: var(--accent); font-weight: bold; }
+  .enc-meta { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px; font-size: 10px; display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
+  .enc-meta-row { display: flex; justify-content: space-between; color: var(--text-dim); }
+  .enc-meta-val { color: var(--accent); font-weight: bold; }
+
+  .enc-right { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .termlink-visor { flex: 1; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+  .termlink-header-bar { background: rgba(16,18,31,0.95); padding: 8px 12px; border-bottom: 1px solid var(--panel-border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--accent); }
+  .termlink-body { flex: 1; padding: 12px; overflow-y: auto; font-size: 11px; display: flex; flex-direction: column; gap: 10px; }
+  .hex-dump-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-family: var(--font-mono); font-size: 11px; }
+  .hex-column { background: rgba(8,9,15,0.6); border: 1px solid var(--panel-border); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .hex-row { display: flex; justify-content: space-between; color: var(--text-dim); font-size: 10px; }
+  .termlink-word { color: var(--accent); cursor: pointer; text-decoration: underline; padding: 0 2px; }
+  .termlink-word:hover { background: rgba(0,229,255,0.2); color: #fff; }
+  .termlink-trap { color: var(--danger); cursor: pointer; padding: 0 2px; }
+  .termlink-trap:hover { background: rgba(255,71,87,0.2); }
+  .termlink-console { height: 110px; background: #08090f; border-top: 1px solid var(--panel-border); padding: 8px 12px; font-size: 10px; color: var(--success); overflow-y: auto; font-family: var(--font-mono); }
+
+  /* 03 // ACADEMIA CLI */
+  #mod-cli { flex-direction: row; }
+  .cli-left { width: 290px; display: flex; flex-direction: column; gap: 8px; }
+  .module-cards { display: flex; flex-direction: column; gap: 4px; }
+  .module-card-btn {
+    min-height: 44px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-size: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .module-card-btn:hover { border-color: var(--accent); }
+  .module-card-btn.active { background: rgba(0,229,255,0.12); border-color: var(--accent); color: var(--accent); font-weight: bold; }
+  .lab-guide { flex: 1; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 10px; overflow-y: auto; }
+  .lab-title { color: var(--warning); font-weight: bold; border-bottom: 1px dashed var(--panel-border); padding-bottom: 4px; }
+  .lab-checklist { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+  .lab-check-item { display: flex; align-items: center; gap: 6px; color: var(--text-dim); }
+  .lab-check-item.completed { color: var(--success); }
+
+  .cli-right { flex: 1; display: flex; flex-direction: column; background: #08090f; border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; }
+  .cli-screen { flex: 1; padding: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--success); overflow-y: auto; line-height: 1.5; display: flex; flex-direction: column; gap: 4px; }
+  .cli-input-bar { display: flex; align-items: center; background: rgba(16,18,31,0.95); border-top: 1px solid var(--panel-border); padding: 8px 12px; gap: 8px; }
+  .cli-prompt { color: var(--accent); font-size: 11px; font-weight: bold; white-space: nowrap; }
+  .cli-input { flex: 1; background: transparent; border: none; color: var(--text); font-family: var(--font-mono); font-size: 11px; outline: none; }
+
+  /* 04 // MUSICBOX */
+  #mod-music { flex-direction: row; }
+  .music-left { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .filter-pills { display: flex; gap: 6px; }
+  .filter-pill {
+    min-height: 44px;
+    height: 44px;
+    padding: 0 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text-dim);
+    font-size: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+  }
+  .filter-pill:hover { border-color: var(--text); color: var(--text); }
+  .filter-pill.active { background: rgba(0,229,255,0.15); border-color: var(--accent); color: var(--accent); }
+  .track-table { flex: 1; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; overflow-y: auto; display: flex; flex-direction: column; }
+  .track-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px dashed rgba(42,46,74,0.6);
+    cursor: pointer;
+    font-size: 11px;
+    transition: background 0.15s;
+    min-height: 44px;
+  }
+  .track-row:hover { background: rgba(255,255,255,0.03); }
+  .track-row.active { background: rgba(0,229,255,0.1); border-left: 3px solid var(--accent); color: var(--accent); font-weight: bold; }
+  .track-tags { display: flex; gap: 4px; font-size: 9px; }
+  .track-tag { background: rgba(191,90,242,0.15); border: 1px solid var(--purple); color: var(--purple); padding: 1px 4px; border-radius: 3px; }
+
+  .music-right { width: 350px; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; display: flex; flex-direction: column; padding: 12px; gap: 10px; }
+  .led-spectrum { width: 100%; height: 90px; background: #08090f; border: 1px solid var(--panel-border); border-radius: 4px; }
+  .player-info { display: flex; flex-direction: column; gap: 4px; text-align: center; }
+  .player-title { font-size: 12px; font-weight: bold; color: var(--accent); }
+  .player-author { font-size: 10px; color: var(--text-dim); }
+  .player-progress-bar { width: 100%; height: 6px; background: #08090f; border: 1px solid var(--panel-border); border-radius: 3px; position: relative; cursor: pointer; overflow: hidden; }
+  .player-progress-fill { width: 35%; height: 100%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .player-time-row { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-dim); }
+  .transport-controls { display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .transport-btn {
+    min-height: 44px;
+    min-width: 44px;
+    background: var(--panel-solid);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .transport-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .transport-btn.play-btn { background: rgba(0,229,255,0.15); border-color: var(--accent); color: var(--accent); }
+  .volume-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text-dim); }
+  .volume-slider { flex: 1; accent-color: var(--accent); }
+  .pin-toggles { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+  .pin-toggle-btn {
+    min-height: 44px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .pin-toggle-btn:hover { background: rgba(0,229,255,0.2); }
+  .pin-toggle-btn.pinned { background: rgba(57,255,136,0.15); border-color: var(--success); color: var(--success); }
+
+  /* 05 // COSMÉTICOS */
+  #mod-cosmetics { flex-direction: row; }
+  .cosmetics-left { width: 330px; display: flex; flex-direction: column; gap: 8px; }
+  .section-label { font-size: 10px; font-weight: bold; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .skin-tile {
+    min-height: 44px;
+    height: 44px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+  .skin-tile:hover { border-color: var(--accent); }
+  .skin-tile.active { background: rgba(0,229,255,0.15); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+  .color-tile {
+    min-height: 44px;
+    height: 44px;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .color-tile:hover { transform: scale(1.05); }
+  .color-tile.active { border: 2px solid #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+  .tactical-box { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px; font-size: 10px; display: flex; flex-direction: column; gap: 4px; }
+  
+  .cosmetics-right { flex: 1; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; }
+  .node-canvas-wrapper { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #08090f; }
+  #nodeCanvas { width: 100%; height: 100%; }
+  .equip-skin-btn {
+    min-height: 44px;
+    background: rgba(57,255,136,0.15);
+    border: 1px solid var(--success);
+    color: var(--success);
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 10px;
+    transition: background 0.2s;
+  }
+  .equip-skin-btn:hover { background: rgba(57,255,136,0.3); }
+
+</style>
+</head>
+<body>
+
+<div class="viewport-frame">
+  <!-- Left Fixed ID Card (310px) -->
+  <div class="left-column">
+    <div class="brand-header">
+      <span class="brand-title">VERTEX // KERNEL_LINK v4.08</span>
+      <button class="back-btn" onclick="alert('Retornando al nodo central de Vertex...')">← BÓVEDA</button>
+    </div>
+
+    <div class="operator-card">
+      <div class="rank-emblem" id="operatorEmblem">
+        <!-- Default Hexagon SVG -->
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z"/></svg>
+      </div>
+      <div class="operator-rank" id="operatorRankTitle">OPERADOR // KERNEL_ELITE</div>
+      <div class="alias-input-wrapper">
+        <input type="text" class="alias-input" id="operatorAlias" value="OPERATOR_ZERO" />
+        <button class="edit-alias-btn" title="Guardar Alias">✎</button>
+      </div>
+      <div class="featured-badge-slot" id="featuredBadgeSlot">
+        <span>★</span>
+        <span id="featuredBadgeText" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">DESTACADA: ENLACE INICIAL</span>
+      </div>
+    </div>
+
+    <div class="telemetry-list">
+      <div class="telemetry-row"><span>ESTADO DEL NODO:</span><span class="telemetry-val">ONLINE [SECURE]</span></div>
+      <div class="telemetry-row"><span>INTEGRIDAD DE RED:</span><span class="telemetry-val">99.8%</span></div>
+      <div class="telemetry-row"><span>SHAMIR VAULT KEY:</span><span class="telemetry-val" style="color:var(--accent);">77A-OK</span></div>
+      <div class="telemetry-row"><span>INSIGNIAS:</span><span class="telemetry-val" id="badgeCount">20 / 24</span></div>
+    </div>
+
+    <div class="save-slots">
+      <span class="save-label">SESIÓN DE ENLACE ACTIVA</span>
+      <div class="slot-btns">
+        <button class="slot-btn active" onclick="switchSlot(1)">SLOT 01</button>
+        <button class="slot-btn" onclick="switchSlot(2)">SLOT 02</button>
+        <button class="slot-btn" onclick="switchSlot(3)">SLOT 03</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Wide Column (1046px) -->
+  <div class="right-column">
+    <div class="tab-bar">
+      <button class="tab-pill active" onclick="switchTab(1)" role="tab" aria-selected="true">01 // INSIGNIAS</button>
+      <button class="tab-pill" onclick="switchTab(2)" role="tab" aria-selected="false">02 // ARCHIVOS .ENC</button>
+      <button class="tab-pill" onclick="switchTab(3)" role="tab" aria-selected="false">03 // ACADEMIA CLI</button>
+      <button class="tab-pill" onclick="switchTab(4)" role="tab" aria-selected="false">04 // MUSICBOX</button>
+      <button class="tab-pill" onclick="switchTab(5)" role="tab" aria-selected="false">05 // COSMÉTICOS</button>
+    </div>
+
+    <div class="module-container">
+      <!-- TAB 1: INSIGNIAS -->
+      <div class="module-content active" id="mod-badges">
+        <div class="panel badges-grid-pane">
+          <div class="panel-header">
+            <span>REGISTRO DE CONDECORACIONES Y LOGROS TÁCTICOS</span>
+            <span style="color:var(--text-dim); font-size:10px;">24 REGISTROS TOTALES</span>
+          </div>
+          <div class="badges-scroll" id="badgesGrid"></div>
+        </div>
+        <div class="badge-inspector">
+          <div class="inspector-card">
+            <div class="inspector-emblem" id="inspectorIcon">★</div>
+            <div style="font-size:12px; font-weight:bold; color:var(--accent);" id="inspectorTitle">ENLACE INICIAL</div>
+            <div class="inspector-status unlocked" id="inspectorStatus">[✓ DESBLOQUEADA]</div>
+            <div class="inspector-rarity" id="inspectorRarity">CLASE: COMÚN // KERNEL</div>
+            <div style="font-size:10px; color:var(--text-dim);" id="inspectorDate">OBTENIDA: 2026.11.10 — 04:12 UTC</div>
+            <div class="inspector-desc" id="inspectorDesc">Conexión inicial establecida con éxito a la Red Central Vertex. El nodo operador ha demostrado estabilidad básica en el handshake de la red distribuida.</div>
+          </div>
+          <button class="feature-badge-btn" onclick="featureCurrentBadge()">[ ★ DESTACAR EN CARNET ]</button>
+        </div>
+      </div>
+
+      <!-- TAB 2: ARCHIVOS .ENC -->
+      <div class="module-content" id="mod-enc">
+        <div class="enc-left">
+          <div class="panel" style="flex:1;">
+            <div class="panel-header">ARCHIVOS CIFRADOS (.ENC)</div>
+            <div class="enc-list" style="padding:8px;" id="encFileList">
+              <button class="enc-file-btn active" onclick="selectEncFile(0)"><span>SEC_0_KERNEL_SNAPSHOT.enc</span><span>🔒</span></button>
+              <button class="enc-file-btn" onclick="selectEncFile(1)"><span>DOSSIER_VEX.enc</span><span>🔒</span></button>
+              <button class="enc-file-btn" onclick="selectEncFile(2)"><span>DOSSIER_NOX.enc</span><span>🔒</span></button>
+              <button class="enc-file-btn" onclick="selectEncFile(3)"><span>DOSSIER_AEGIS.enc</span><span>🔒</span></button>
+            </div>
+          </div>
+          <div class="enc-meta">
+            <div class="enc-meta-row"><span>PESO:</span><span class="enc-meta-val" id="metaWeight">48.4 KB</span></div>
+            <div class="enc-meta-row"><span>CIFRADO:</span><span class="enc-meta-val">AES-512-SHAMIR</span></div>
+            <div class="enc-meta-row"><span>HASH:</span><span class="enc-meta-val" id="metaHash">0x9F4A..8E21</span></div>
+            <div class="enc-meta-row"><span>ESTADO:</span><span class="enc-meta-val" id="metaStatus" style="color:var(--danger);">[CIFRADO]</span></div>
+          </div>
+        </div>
+
+        <div class="enc-right">
+          <div class="termlink-visor">
+            <div class="termlink-header-bar">
+              <span id="termlinkTitle">VERTEX // TERMLINK v4.08 — SEC_0_KERNEL_SNAPSHOT.enc</span>
+              <span id="robcoAttempts" style="color:var(--warning); font-size:10px;">INTENTOS RESTANTES: ■ ■ ■ ■ (4/4)</span>
+            </div>
+            <div class="termlink-body" id="termlinkBody">
+              <div style="color:var(--text-dim); font-size:10px;">> MEMORIA RAM VIRTUAL DISPONIBLE. SELECCIONE CANDIDATO O TRAMPA.</div>
+              <div class="hex-dump-container">
+                <div class="hex-column" id="hexCol1"></div>
+                <div class="hex-column" id="hexCol2"></div>
+              </div>
+            </div>
+            <div class="termlink-console" id="termlinkLog">
+              > KERNEL_LINK INICIADO.<br>> SELECCIONADO: SEC_0_KERNEL_SNAPSHOT.enc<br>> INGRESE CONTRASEÑA O ANULE TRAMPAS.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: ACADEMIA CLI -->
+      <div class="module-content" id="mod-cli">
+        <div class="cli-left">
+          <div class="panel">
+            <div class="panel-header">MÓDULOS DE APRENDIZAJE CLI</div>
+            <div class="module-cards" style="padding:6px;">
+              <button class="module-card-btn active" onclick="selectLesson(1)">01. Fundamentos de Navegación VFS (ls, cd, pwd)</button>
+              <button class="module-card-btn" onclick="selectLesson(2)">02. Inspección de Archivos y Tuberías (cat, grep, |)</button>
+              <button class="module-card-btn" onclick="selectLesson(3)">03. Procesos y Control del Kernel (ps aux, kill)</button>
+              <button class="module-card-btn" onclick="selectLesson(4)">04. Criptografía Shamir y Secretos en Base64</button>
+            </div>
+          </div>
+          <div class="lab-guide">
+            <div class="lab-title" id="labTitle">OBJETIVO: NAVEGACIÓN VFS</div>
+            <div style="color:var(--text-dim);" id="labDesc">Explore el sistema de archivos virtual para localizar el expediente montado de Sector 0.</div>
+            <div id="labCheatsheet" style="background:#08090f; border:1px solid var(--panel-border); padding:6px 8px; border-radius:4px; color:var(--accent); font-size:10px; white-space:pre-line;">ls -la [ruta]
+cd &lt;directorio&gt;
+pwd
+cat &lt;archivo&gt;</div>
+            <div style="font-weight:bold; color:var(--text); margin-top:4px;">CHECKLIST DE LABORATORIO:</div>
+            <div class="lab-checklist" id="labChecklist">
+              <div class="lab-check-item" id="chk1">[ ] Ejecutar <code>ls -la /home/operator</code></div>
+              <div class="lab-check-item" id="chk2">[ ] Entrar a <code>/home/operator/expedientes</code></div>
+              <div class="lab-check-item" id="chk3">[ ] Verificar lectura con <code>cat</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cli-right">
+          <div class="cli-screen" id="cliScreen">
+            VERTEX // ACADEMIA CLI v4.08 (tty1)<br>
+            Conectado al nodo local. Escriba 'help' para ver comandos permitidos.<br>
+            operator@vertex-vault:/home/operator$
+          </div>
+          <div class="cli-input-bar">
+            <span class="cli-prompt" id="cliPrompt">operator@vertex-vault:/home/operator$</span>
+            <input type="text" class="cli-input" id="cliInput" placeholder="Escriba comando (ej. ls -la, cat, grep)..." onkeydown="handleCliKey(event)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MUSICBOX -->
+      <div class="module-content" id="mod-music">
+        <div class="music-left">
+          <div class="filter-pills">
+            <button class="filter-pill active" onclick="filterMusic('all')">TODOS (22)</button>
+            <button class="filter-pill" onclick="filterMusic('pink')">PINK BLOOM (10)</button>
+            <button class="filter-pill" onclick="filterMusic('code')">CODE INJECTION (12)</button>
+          </div>
+          <div class="track-table" id="trackList"></div>
+        </div>
+
+        <div class="music-right">
+          <div class="panel-header" style="border-radius:4px;">REPRODUCTOR KERNEL</div>
+          <canvas class="led-spectrum" id="spectrumCanvas" width="326" height="90"></canvas>
+          <div class="player-info">
+            <div class="player-title" id="currentTrackTitle">Cybernetic Pulse (Main Theme)</div>
+            <div class="player-author" id="currentTrackInfo">Autor: DavidKBD | Pack: Pink Bloom (3:42)</div>
+          </div>
+          <div class="player-progress-bar" onclick="seekTrack(event)">
+            <div class="player-progress-fill" id="progressFill"></div>
+          </div>
+          <div class="player-time-row">
+            <span id="currentTime">01:15</span>
+            <span id="totalTime">03:42</span>
+          </div>
+          <div class="transport-controls">
+            <button class="transport-btn" onclick="prevTrack()" title="Pista Anterior">⏮</button>
+            <button class="transport-btn play-btn" id="playPauseBtn" onclick="togglePlay()" title="Reproducir / Pausa">⏸</button>
+            <button class="transport-btn" onclick="nextTrack()" title="Pista Siguiente">⏭</button>
+            <button class="transport-btn" onclick="toggleLoop()" title="Bucle">🔁</button>
+            <button class="transport-btn" onclick="toggleShuffle()" title="Aleatorio">🔀</button>
+          </div>
+          <div class="volume-row">
+            <span>VOL</span>
+            <input type="range" class="volume-slider" min="0" max="100" value="80" />
+            <span>80%</span>
+          </div>
+          <div class="pin-toggles">
+            <button class="pin-toggle-btn pinned" id="pinMenuBtn" onclick="togglePinMenu()">[ 📌 MENÚ PRINCIPAL ]</button>
+            <button class="pin-toggle-btn" id="pinGameBtn" onclick="togglePinGame()">[ 📌 EN PARTIDA ]</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: COSMÉTICOS -->
+      <div class="module-content" id="mod-cosmetics">
+        <div class="cosmetics-left">
+          <div class="panel" style="padding:10px; gap:8px;">
+            <div class="section-label">GEOMETRÍA DE NODO</div>
+            <div class="grid-5" id="skinGrid">
+              <div class="skin-tile active" onclick="setSkin('circle', this)" title="Círculo Cuántico">◯</div>
+              <div class="skin-tile" onclick="setSkin('hexagon', this)" title="Hexágono Táctico">⬡</div>
+              <div class="skin-tile" onclick="setSkin('diamond', this)" title="Diamante Kernel">◇</div>
+              <div class="skin-tile" onclick="setSkin('octagon', this)" title="Octágono Encriptado">⬭</div>
+              <div class="skin-tile" onclick="setSkin('root_star', this)" title="Estrella Raíz">✦</div>
+            </div>
+
+            <div class="section-label" style="margin-top:6px;">ESTELA & COLOR</div>
+            <div class="grid-5" id="colorGrid">
+              <div class="color-tile active" style="background:#00e5ff;" onclick="setColor('Cian Vertex', '#00e5ff', this)" title="Cian Vertex"></div>
+              <div class="color-tile" style="background:#bf5af2;" onclick="setColor('Púrpura Élite', '#bf5af2', this)" title="Púrpura Élite"></div>
+              <div class="color-tile" style="background:#39ff88;" onclick="setColor('Verde Terminal', '#39ff88', this)" title="Verde Terminal"></div>
+              <div class="color-tile" style="background:#ffc857;" onclick="setColor('Ámbar Siniestro', '#ffc857', this)" title="Ámbar Siniestro"></div>
+              <div class="color-tile" style="background:#ff2a6d;" onclick="setColor('Rosa Cyber', '#ff2a6d', this)" title="Rosa Cyber"></div>
+            </div>
+
+            <div class="tactical-box">
+              <div style="font-weight:bold; color:var(--accent);" id="cosmeticName">GEOMETRÍA: CÍRCULO CUÁNTICO</div>
+              <div style="color:var(--text-dim);" id="cosmeticDesc">Rango: Élite // Estado: Desbloqueado. Emite pulsos de baja latencia a través de la red distribuida.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cosmetics-right">
+          <div class="panel-header">SIMULADOR INTERACTIVO DE NODO & RED DISTRIBUIDA</div>
+          <div class="node-canvas-wrapper">
+            <canvas id="nodeCanvas" width="700" height="420"></canvas>
+          </div>
+          <button class="equip-skin-btn" onclick="equipCurrentSkin()">[ ✓ EQUIPAR SKIN EN PERFIL ]</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Shared VFS
+  const vfs = {
+    "/": ["home", "etc", "var", "srv", "proc"],
+    "/home/operator/": ["readme.txt", "expedientes", "matrix.sh"],
+    "/home/operator/readme.txt": "Bienvenido a Vertex Kernel v4.08. Mantenga la integridad de los nodos.",
+    "/home/operator/expedientes/": [],
+    "/etc/bgp/bgpd.conf": "router bgp 65001\n neighbor 10.0.0.1 remote-as 65002\n network 192.168.1.0/24",
+    "/var/log/siem/auth.log": "[2026-11-16 00:00:01] AUTH OK: operator_zero\n[2026-11-16 00:01:15] AUTH FAIL: root_guest\n[2026-11-16 00:04:30] AUTH OK: operator_zero",
+    "/srv/vault_shamir/secret.b64": "VkVSVEVYX1NIQU1JUl9LRVlfNzdB",
+    "/proc/sector0/kain_trace.log": "KAIN_TRACE: Sector 0 core stabilized. Zero anomalies detected in neural sync."
+  };
+
+  // Badges Data (24 items: 20 unlocked, 4 locked)
+  const badgesData = Array.from({length: 24}, (_, i) => {
+    const unlocked = i < 20;
+    const titles = [
+      "ENLACE INICIAL", "PRIMER HACK", "BGP MAESTRO", "SHAMIR GUARDIAN", "KRN SNAPSHOT",
+      "TERMINAL KERNEL", "CYBER PUNK", "FIREWALL BREACH", "DARKNET NODE", "SECTOR 0 HERO",
+      "PROTOCOL OMEGA", "DIJKSTRA PATH", "SYNTHWAVE VIBE", "ZERO TRACE", "ROOT ACCESS",
+      "CACHE CLEANER", "PACKET SNIFFER", "MEMORY DUMP", "AES MASTER", "SHADOW RUNNER",
+      "ÆGIS SHIELD", "NOX PROTOCOL", "VEX OVERLORD", "ULTIMA THULE"
+    ];
+    const rarities = ["COMÚN", "TÁCTICA", "ÉLITE", "MÍTICA // Ω"];
+    const icons = ["◈", "⬡", "❖", ">_", "⬢", "Ω", "⌘", "▣", "♫", "✦", "▲", "◉"];
+    return {
+      id: i + 1,
+      title: titles[i],
+      unlocked: unlocked,
+      rarity: rarities[i % rarities.length],
+      icon: icons[i % icons.length],
+      desc: unlocked 
+        ? `Insignia de mérito concedida por completar operaciones avanzadas en el sector ${i+1}.`
+        : `[BLOQUEADA] Requisito: Completar 5 rondas sin fallo en el módulo táctico ${i+1}.`,
+      req: `Requisito: Nivel de Nodo >= ${i + 1} y 0 fallos detectados.`
+    };
+  });
+
+  let selectedBadgeIndex = 0;
+
+  function renderBadges() {
+    const grid = document.getElementById('badgesGrid');
+    grid.innerHTML = '';
+    badgesData.forEach((b, idx) => {
+      const cell = document.createElement('div');
+      cell.className = `badge-cell ${b.unlocked ? 'unlocked' : 'locked'} ${idx === selectedBadgeIndex ? 'selected' : ''}`;
+      cell.setAttribute('role', 'button');
+      cell.setAttribute('tabindex', '0');
+      cell.innerHTML = `
+        <div class="badge-glyph">${b.icon}</div>
+        <span class="badge-cell-title">${b.title}</span>
+        <span style="font-size:8px; color:${b.unlocked ? 'var(--success)' : 'var(--text-dim);'}">${b.unlocked ? '[✓]' : '[🔒]'}</span>
+      `;
+      cell.onclick = () => selectBadge(idx);
+      grid.appendChild(cell);
+    });
+    selectBadge(selectedBadgeIndex);
+    document.getElementById('badgeCount').innerText = `${badgesData.filter(b => b.unlocked).length} / ${badgesData.length}`;
+  }
+
+  function selectBadge(idx) {
+    selectedBadgeIndex = idx;
+    const b = badgesData[idx];
+    document.querySelectorAll('.badge-cell').forEach((c, i) => c.classList.toggle('selected', i === idx));
+    document.getElementById('inspectorIcon').innerText = b.icon;
+    document.getElementById('inspectorTitle').innerText = b.title;
+    const statusEl = document.getElementById('inspectorStatus');
+    statusEl.innerText = b.unlocked ? '[✓ DESBLOQUEADA]' : '[🔒 BLOQUEADA]';
+    statusEl.className = `inspector-status ${b.unlocked ? 'unlocked' : 'locked'}`;
+    document.getElementById('inspectorRarity').innerText = `CLASE: ${b.rarity}`;
+    document.getElementById('inspectorDesc').innerText = b.unlocked ? b.desc : `[🔒 REQUISITO BLOQUEADO]\n${b.req}`;
+  }
+
+  function featureCurrentBadge() {
+    const b = badgesData[selectedBadgeIndex];
+    if (!b.unlocked) {
+      alert('No se puede destacar una insignia bloqueada.');
+      return;
+    }
+    document.getElementById('featuredBadgeText').innerText = `★ DESTACADA: ${b.title}`;
+    alert(`Insignia '${b.title}' fijada con éxito en el carnet del operador.`);
+  }
+
+  // Encrypted Files & Termlink Minigame
+  const encFiles = [
+    {
+      file: "SEC_0_KERNEL_SNAPSHOT.enc",
+      pass: "TOPOLOGY",
+      weight: "48.4 KB",
+      hash: "0x9F4A..8E21",
+      unlocked: false,
+      content: {
+        target: "EXPEDIENTE: KERNEL SNAPSHOT SECTOR 0",
+        affiliation: "VERTEX CENTRAL CORE",
+        classification: "RESTRICTED // OMEGA",
+        lore: "El núcleo de Sector 0 mantiene la estabilidad cuántica de la Bóveda. Cualquier fluctuación en la red neuronal desata contramedidas automáticas de aislamiento."
+      }
+    },
+    {
+      file: "DOSSIER_VEX.enc",
+      pass: "BACKBONE",
+      weight: "32.1 KB",
+      hash: "0x4C2B..11A9",
+      unlocked: false,
+      content: {
+        target: "DOSSIER OPERADOR: VEX",
+        affiliation: "SPECIAL OPERATIONS R&D",
+        classification: "CLASSIFIED // LEVEL 4",
+        lore: "Especialista en infiltración de redes de alta tensión y bypass de firewalls distribuidos. Responsable del despliegue inicial de Kernel_Link v4."
+      }
+    },
+    {
+      file: "DOSSIER_NOX.enc",
+      pass: "HYPERVIS",
+      weight: "64.0 KB",
+      hash: "0x88EE..33F4",
+      unlocked: false,
+      content: {
+        target: "DOSSIER OPERADOR: NOX",
+        affiliation: "CYBER DEFENSE SQUAD",
+        classification: "CLASSIFIED // LEVEL 5",
+        lore: "Arquitecto de contramedidas criptográficas. Experto en cifrado Shamir de 512 bits y destrucción automatizada de rastros en memoria RAM volátil."
+      }
+    },
+    {
+      file: "DOSSIER_AEGIS.enc",
+      pass: "DIJKSTRA",
+      weight: "19.8 KB",
+      hash: "0x1100..FFEE",
+      unlocked: false,
+      content: {
+        target: "DOSSIER PROTOCOLO: ÆGIS",
+        affiliation: "VERTEX GRID DEFENSE",
+        classification: "CONFIDENTIAL // KERNEL",
+        lore: "Protocolo de enrutamiento autónomo basado en grafos ponderados. Garantiza la conectividad ininterrumpida entre nodos de la red incluso bajo ataque DDoS masivo."
+      }
+    }
+  ];
+
+  let currentEncIndex = 0;
+  let attempts = 4;
+
+  const candidateWords = ["TOPOLOGY", "DEADLOCK", "BACKBONE", "HYPERVIS", "SHAMIRKY", "ZEROTRST", "DIJKSTRA", "FIREWALL", "PROTOCOL", "SYNDICAT", "MAINFRAM", "SENTINEL"];
+  const asciiGarbage = "!@#$%^&*()_+-=[]{}|;':\",./<>?~`";
+
+  function selectEncFile(index) {
+    currentEncIndex = index;
+    attempts = 4;
+    document.querySelectorAll('.enc-file-btn').forEach((b, i) => b.classList.toggle('active', i === index));
+    const ef = encFiles[index];
+    document.getElementById('metaWeight').innerText = ef.weight;
+    document.getElementById('metaHash').innerText = ef.hash;
+    document.getElementById('metaStatus').innerText = ef.unlocked ? '[DESBLOQUEADO]' : '[CIFRADO]';
+    document.getElementById('metaStatus').style.color = ef.unlocked ? 'var(--success)' : 'var(--danger)';
+    document.getElementById('termlinkTitle').innerText = `VERTEX // TERMLINK v4.08 — ${ef.file}`;
+    document.getElementById('robcoAttempts').innerText = `INTENTOS RESTANTES: ■ ■ ■ ■ (4/4)`;
+    
+    const log = document.getElementById('termlinkLog');
+    log.innerHTML = `> KERNEL_LINK INICIADO.<br>> SELECCIONADO: ${ef.file}<br>> INGRESE CONTRASEÑA O ANULE TRAMPAS.`;
+    
+    renderHexDump();
+  }
+
+  function renderHexDump() {
+    const ef = encFiles[currentEncIndex];
+    const body = document.getElementById('termlinkBody');
+    
+    if (ef.unlocked) {
+      body.innerHTML = `
+        <div style="background:rgba(0,229,255,0.06); border:1px solid var(--accent); padding:14px; border-radius:6px; display:flex; flex-direction:column; gap:8px;">
+          <div style="font-weight:bold; color:var(--accent); font-size:12px;">VISOR DE EXPEDIENTE DESENCRYPTADO: ${ef.file}</div>
+          <div style="font-size:11px; color:var(--text);"><strong>OBJETIVO:</strong> ${ef.content.target}</div>
+          <div style="font-size:11px; color:var(--text);"><strong>AFILIACIÓN:</strong> ${ef.content.affiliation}</div>
+          <div style="font-size:11px; color:var(--text);"><strong>CLASIFICACIÓN:</strong> ${ef.content.classification}</div>
+          <div style="font-size:11px; color:var(--text-dim); line-height:1.4; margin-top:4px;">${ef.content.lore}</div>
+          <div style="font-size:10px; color:var(--success); margin-top:6px;">[✓] Montado en VFS: <code>/home/operator/expedientes/${ef.file.replace('.enc', '.txt')}</code></div>
+          <button style="margin-top:8px; min-height:44px; background:rgba(0,229,255,0.15); border:1px solid var(--accent); color:var(--accent); font-weight:bold; cursor:pointer; border-radius:4px;" onclick="resetEncMatrix()">[ ↻ VOLVER A MATRIZ HEX ]</button>
+        </div>
+      `;
+      return;
+    }
+
+    body.innerHTML = `
+      <div style="font-size:10px; color:var(--text-dim);">MEMORIA RAM VIRTUAL — SELECCIONE CANDIDATO O TRAMPA.</div>
+      <div class="hex-dump-container">
+        <div class="hex-column" id="hexCol1">
+          <div class="hex-row"><span>0x7F40</span> <span class="termlink-word" onclick="guessPassword('TOPOLOGY')">TOPOLOGY</span>&amp;%*@!#$</div>
+          <div class="hex-row"><span>0x7F50</span> #?&amp;!7F4A#$8E[+*&amp;%]<span class="termlink-word" onclick="guessPassword('DEADLOCK')">DEADLOCK</span></div>
+          <div class="hex-row"><span>0x7F60</span> <span class="termlink-trap" onclick="hitTrap('dud')">(#?!)</span>########{@%~^}</div>
+          <div class="hex-row"><span>0x7F70</span> <span class="termlink-word" onclick="guessPassword('BACKBONE')">BACKBONE</span>@!*$%^&amp;</div>
+          <div class="hex-row"><span>0x7F80</span> #?&amp;!7F4A#$8E<span class="termlink-trap" onclick="hitTrap('refill')">[+*&amp;%]</span>###</div>
+          <div class="hex-row"><span>0x7F90</span> <span class="termlink-word" onclick="guessPassword('DIJKSTRA')">DIJKSTRA</span>$%^&amp;*()</div>
+          <div class="hex-row"><span>0x7FA0</span> {@%~^}#?&amp;!7F4A#$<span class="termlink-word" onclick="guessPassword('FIREWALL')">FIREWALL</span></div>
+          <div class="hex-row"><span>0x7FB0</span> <span class="termlink-word" onclick="guessPassword('PROTOCOL')">PROTOCOL</span>&amp;%*@!#$</div>
+          <div class="hex-row"><span>0x7FC0</span> #?&amp;!7F4A#$<span class="termlink-trap" onclick="hitTrap('dud')">&lt;=-_!&gt;</span>########</div>
+          <div class="hex-row"><span>0x7FD0</span> <span class="termlink-word" onclick="guessPassword('SYNDICAT')">SYNDICAT</span>@!*$%^&amp;</div>
+          <div class="hex-row"><span>0x7FE0</span> [+*&amp;%]#!&amp;!7F4A#$<span class="termlink-word" onclick="guessPassword('MAINFRAM')">MAINFRAM</span></div>
+          <div class="hex-row"><span>0x7FF0</span> <span class="termlink-word" onclick="guessPassword('SENTINEL')">SENTINEL</span>$%^&amp;*()_+</div>
+        </div>
+        <div class="hex-column" id="hexCol2">
+          <div class="hex-row"><span>0x8000</span> <span class="termlink-word" onclick="guessPassword('${ef.pass}')">${ef.pass}</span>!@#%^&amp;</div>
+          <div class="hex-row"><span>0x8010</span> {@%~^}#?&amp;!7F4A#$8E[+*&amp;%]</div>
+          <div class="hex-row"><span>0x8020</span> <span class="termlink-trap" onclick="hitTrap('refill')">[+*&amp;%]</span>#######{@%~^}</div>
+          <div class="hex-row"><span>0x8030</span> <span class="termlink-word" onclick="guessPassword('HYPERVIS')">HYPERVIS</span>%^&amp;*()_+</div>
+          <div class="hex-row"><span>0x8040</span> #?&amp;!7F4A#$8E<span class="termlink-word" onclick="guessPassword('SHAMIRKY')">SHAMIRKY</span></div>
+          <div class="hex-row"><span>0x8050</span> <span class="termlink-word" onclick="guessPassword('ZEROTRST')">ZEROTRST</span>*()_+-=[]</div>
+          <div class="hex-row"><span>0x8060</span> <span class="termlink-trap" onclick="hitTrap('dud')">&lt;=-_!&gt;</span>########@!*</div>
+          <div class="hex-row"><span>0x8070</span> $%^&amp;*()_+<span class="termlink-word" onclick="guessPassword('TOPOLOGY')">TOPOLOGY</span></div>
+          <div class="hex-row"><span>0x8080</span> #?&amp;!7F4A#$8E{@%~^}########</div>
+          <div class="hex-row"><span>0x8090</span> <span class="termlink-word" onclick="guessPassword('BACKBONE')">BACKBONE</span>[+*&amp;%]!@#</div>
+          <div class="hex-row"><span>0x80A0</span> {@%~^}#?&amp;!7F4A#$<span class="termlink-trap" onclick="hitTrap('dud')">(#?!)</span></div>
+          <div class="hex-row"><span>0x80B0</span> <span class="termlink-word" onclick="guessPassword('DIJKSTRA')">DIJKSTRA</span>&amp;%*@!#$</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function guessPassword(word) {
+    const ef = encFiles[currentEncIndex];
+    const log = document.getElementById('termlinkLog');
+    if (word === ef.pass) {
+      ef.unlocked = true;
+      // Mount into VFS
+      const vfsPath = `/home/operator/expedientes/${ef.file.replace('.enc', '.txt')}`;
+      vfs["/home/operator/expedientes/"].push(ef.file.replace('.enc', '.txt'));
+      vfs[vfsPath] = `${ef.content.target}\nAffiliation: ${ef.content.affiliation}\nLore: ${ef.content.lore}`;
+
+      document.getElementById('metaStatus').innerText = '[DESBLOQUEADO]';
+      document.getElementById('metaStatus').style.color = 'var(--success)';
+      log.innerHTML += `<br>&gt; ACCESO CONCEDIDO (${word}). EXPEDIENTE DESENCRIPTADO Y MONTADO EN VFS.`;
+      renderHexDump();
+    } else {
+      attempts--;
+      let likeness = 0;
+      for (let i = 0; i < Math.min(word.length, ef.pass.length); i++) {
+        if (word[i] === ef.pass[i]) likeness++;
+      }
+      log.innerHTML += `<br>&gt; ACCESO DENEGADO: '${word}' — COINCIDENCIA: ${likeness}/${ef.pass.length}`;
+      if (attempts <= 0) {
+        log.innerHTML += `<br>&gt; TERMINAL BLOQUEADO POR INTRUSIÓN. REINICIANDO INTENTOS...`;
+        attempts = 4;
+      }
+      document.getElementById('robcoAttempts').innerText = `INTENTOS RESTANTES: ${'■ '.repeat(Math.max(0, attempts))}(${attempts}/4)`;
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function hitTrap(type) {
+    const log = document.getElementById('termlinkLog');
+    if (type === 'dud') {
+      log.innerHTML += `<br>&gt; TRAMPA ACTIVADA: PALABRA FALSA ELIMINADA.`;
+    } else {
+      attempts = 4;
+      log.innerHTML += `<br>&gt; TRAMPA ACTIVADA: INTENTOS RESTAURADOS A 4/4.`;
+    }
+    document.getElementById('robcoAttempts').innerText = `INTENTOS RESTANTES: ${'■ '.repeat(attempts)}(${attempts}/4)`;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function resetEncMatrix() {
+    encFiles[currentEncIndex].unlocked = false;
+    attempts = 4;
+    document.getElementById('metaStatus').innerText = '[CIFRADO]';
+    document.getElementById('metaStatus').style.color = 'var(--danger)';
+    renderHexDump();
+  }
+
+  // Switch Tabs
+  function switchTab(tabNum) {
+    document.querySelectorAll('.tab-pill').forEach((p, i) => {
+      p.classList.toggle('active', (i + 1) === tabNum);
+      p.setAttribute('aria-selected', (i + 1) === tabNum ? 'true' : 'false');
+    });
+    document.querySelectorAll('.module-content').forEach((c, i) => {
+      c.classList.toggle('active', (i + 1) === tabNum);
+    });
+    if (tabNum === 2) {
+      renderHexDump();
+    }
+  }
+
+  function switchSlot(slotNum) {
+    document.querySelectorAll('.slot-btn').forEach((b, i) => {
+      b.classList.toggle('active', (i + 1) === slotNum);
+    });
+  }
+
+  // ACADEMIA CLI Handling
+  let currentLesson = 1;
+  const lessonsData = {
+    1: {
+      title: "OBJETIVO: NAVEGACIÓN VFS",
+      desc: "Explore el sistema de archivos virtual para localizar el expediente montado de Sector 0.",
+      cheatsheet: "ls -la [ruta]\ncd <directorio>\npwd\ncat <archivo>",
+      checks: ["Ejecutar ls -la /home/operator", "Entrar a /home/operator/expedientes", "Verificar lectura con cat"]
+    },
+    2: {
+      title: "OBJETIVO: TUBERÍAS Y GREP",
+      desc: "Filtre los registros de autenticación del sistema para detectar accesos fallidos.",
+      cheatsheet: "cat /var/log/siem/auth.log\ncat <archivo> | grep FAIL",
+      checks: ["Inspeccionar /var/log/siem/auth.log", "Filtrar con grep FAIL", "Analizar marca temporal"]
+    },
+    3: {
+      title: "OBJETIVO: PROCESOS DEL KERNEL",
+      desc: "Monitoree los servicios activos de red y elimine procesos colgados.",
+      cheatsheet: "ps aux\nkill -9 <PID>\nchmod +x /home/operator/matrix.sh",
+      checks: ["Listar con ps aux", "Verificar demonio BGP", "Comprobar estabilidad"]
+    },
+    4: {
+      title: "OBJETIVO: CRIPTOGRAFÍA SHAMIR",
+      desc: "Decodifique el secreto en base64 para desbloquear el acceso maestro al Vault.",
+      cheatsheet: "cat /srv/vault_shamir/secret.b64\nbase64 -d /srv/vault_shamir/secret.b64",
+      checks: ["Leer /srv/vault_shamir/secret.b64", "Ejecutar base64 -d", "Validar llave 77A"]
+    }
+  };
+
+  const cliHistory = [];
+  let historyIndex = -1;
+
+  function selectLesson(mod) {
+    currentLesson = mod;
+    document.querySelectorAll('.module-card-btn').forEach((b, i) => b.classList.toggle('active', (i + 1) === mod));
+    const ld = lessonsData[mod];
+    document.getElementById('labTitle').innerText = ld.title;
+    document.getElementById('labDesc').innerText = ld.desc;
+    document.getElementById('labCheatsheet').innerText = ld.cheatsheet;
+    
+    const chkContainer = document.getElementById('labChecklist');
+    chkContainer.innerHTML = ld.checks.map((c, i) => `<div class="lab-check-item" id="chk_${mod}_${i}">[ ] ${c}</div>`).join('');
+    
+    const screen = document.getElementById('cliScreen');
+    screen.innerHTML = `VERTEX // ACADEMIA CLI v4.08 (tty1)<br>&gt; CARGANDO MÓDULO ${mod}: ${ld.title}<br>operator@vertex-vault:${cwd}$`;
+    screen.scrollTop = screen.scrollHeight;
+  }
+
+  let cwd = "/home/operator";
+
+  function runCliCmd(cmd) {
+    const screen = document.getElementById('cliScreen');
+    screen.innerHTML += `<br>operator@vertex-vault:${cwd}$ ${cmd}<br>`;
+
+    // Support pipes '|'
+    const fullCmd = cmd.trim();
+    let subCmds = [fullCmd];
+    if (fullCmd.includes('|')) {
+      subCmds = fullCmd.split('|').map(s => s.trim());
+    }
+
+    const parts = subCmds[0].split(' ');
+    const base = parts[0];
+    const arg = parts[1];
+
+    if (base === 'clear') {
+      screen.innerHTML = `VERTEX // ACADEMIA CLI v4.08 (tty1)<br>operator@vertex-vault:${cwd}$`;
+      return;
+    } else if (base === 'help') {
+      screen.innerHTML += `<span style="color:var(--accent);">Comandos permitidos: ls, ls -la, cd, pwd, cat, grep, ps, ps aux, kill, base64 -d, clear, help</span>`;
+    } else if (base === 'pwd') {
+      screen.innerHTML += `<span style="color:var(--text);">${cwd}</span>`;
+    } else if (base === 'ls') {
+      let target = cwd;
+      if (arg) {
+        target = arg.startsWith('/') ? arg : cwd + (cwd.endsWith('/') ? '' : '/') + arg;
+      }
+      if (!target.endsWith('/')) target += '/';
+      
+      if (vfs[target]) {
+        screen.innerHTML += `<span style="color:var(--accent);">${vfs[target].join('   ')}</span>`;
+      } else if (vfs[target.slice(0, -1)]) {
+        screen.innerHTML += `<span style="color:var(--accent);">${target.slice(0, -1)}</span>`;
+      } else {
+        screen.innerHTML += `<span style="color:var(--danger);">ls: ${arg || ''}: No existe el directorio o archivo</span>`;
+      }
+      
+      if (currentLesson === 1) {
+        const el = document.getElementById('chk_1_0');
+        if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Ejecutar ls -la /home/operator"; }
+      }
+    } else if (base === 'cd') {
+      if (!arg || arg === '~') {
+        cwd = "/home/operator";
+      } else if (arg === '..') {
+        cwd = "/home";
+      } else {
+        let dest = arg.startsWith('/') ? arg : cwd + (cwd.endsWith('/') ? '' : '/') + arg;
+        if (!dest.endsWith('/')) dest += '/';
+        if (vfs[dest] || dest === '/home/operator/expedientes/') {
+          cwd = dest.slice(0, -1);
+          if (currentLesson === 1 && cwd.includes('expedientes')) {
+            const el = document.getElementById('chk_1_1');
+            if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Entrar a /home/operator/expedientes"; }
+          }
+        } else {
+          screen.innerHTML += `<span style="color:var(--danger);">cd: ${arg}: Directorio no encontrado</span>`;
+        }
+      }
+    } else if (base === 'cat') {
+      if (!arg) {
+        screen.innerHTML += `<span style="color:var(--danger);">cat: falta argumento de archivo</span>`;
+      } else {
+        let path = arg.startsWith('/') ? arg : cwd + (cwd.endsWith('/') ? '' : '/') + arg;
+        let content = vfs[path] || "";
+        if (vfs[path]) {
+          // Check if piped to grep
+          if (subCmds.length > 1 && subCmds[1].startsWith('grep')) {
+            const grepArg = subCmds[1].split(' ')[1] || '';
+            const filtered = content.split('\n').filter(line => line.includes(grepArg)).join('\n');
+            screen.innerHTML += `<span style="color:var(--success); white-space:pre-line;">${filtered || '[Sin coincidencias]'}</span>`;
+          } else {
+            screen.innerHTML += `<span style="color:var(--success); white-space:pre-line;">${content}</span>`;
+          }
+
+          if (currentLesson === 1 && path.includes('expedientes')) {
+            const el = document.getElementById('chk_1_2');
+            if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Verificar lectura con cat"; }
+          }
+          if (currentLesson === 2 && path.includes('auth.log')) {
+            const el = document.getElementById('chk_2_0');
+            if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Inspeccionar /var/log/siem/auth.log"; }
+            if (subCmds.length > 1 && subCmds[1].includes('FAIL')) {
+              const el2 = document.getElementById('chk_2_1');
+              if (el2) { el2.className = "lab-check-item completed"; el2.innerHTML = "[✓] Filtrar con grep FAIL"; }
+              const el3 = document.getElementById('chk_2_2');
+              if (el3) { el3.className = "lab-check-item completed"; el3.innerHTML = "[✓] Analizar marca temporal"; }
+            }
+          }
+          if (currentLesson === 4 && path.includes('secret.b64')) {
+            const el = document.getElementById('chk_4_0');
+            if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Leer /srv/vault_shamir/secret.b64"; }
+          }
+        } else {
+          screen.innerHTML += `<span style="color:var(--danger);">cat: ${arg}: No such file or directory</span>`;
+        }
+      }
+    } else if (base === 'grep') {
+      screen.innerHTML += `<span style="color:var(--success);">[2026-11-16 00:01:15] AUTH FAIL: root_guest (Contramedida activada)</span>`;
+    } else if (base === 'ps') {
+      let psOutput = "PID TTY TIME CMD\n 104 tty1 00:00:00 kernel_link\n 210 tty1 00:00:02 bgpd\n 315 tty1 00:00:01 siem_daemon";
+      if (subCmds.length > 1 && subCmds[1].startsWith('grep')) {
+        const term = subCmds[1].split(' ')[1] || '';
+        psOutput = psOutput.split('\n').filter(l => l.includes(term)).join('\n');
+      }
+      screen.innerHTML += `<span style="color:var(--accent); white-space:pre-line;">${psOutput}</span>`;
+      if (currentLesson === 3) {
+        const el = document.getElementById('chk_3_0');
+        if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Listar con ps aux"; }
+        const el2 = document.getElementById('chk_3_1');
+        if (el2) { el2.className = "lab-check-item completed"; el2.innerHTML = "[✓] Verificar demonio BGP"; }
+      }
+    } else if (base === 'kill') {
+      screen.innerHTML += `<span style="color:var(--warning);">[PID ${arg || '999'} terminado con éxito por el Kernel]</span>`;
+      if (currentLesson === 3) {
+        const el = document.getElementById('chk_3_2');
+        if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Comprobar estabilidad"; }
+      }
+    } else if (base === 'chmod') {
+      screen.innerHTML += `<span style="color:var(--success);">[Permisos actualizados correctamente: +x]</span>`;
+    } else if (base === 'base64') {
+      screen.innerHTML += `<span style="color:var(--warning);">VERTEX_SHAMIR_KEY_77A</span>`;
+      if (currentLesson === 4) {
+        const el = document.getElementById('chk_4_1');
+        if (el) { el.className = "lab-check-item completed"; el.innerHTML = "[✓] Ejecutar base64 -d"; }
+        const el2 = document.getElementById('chk_4_2');
+        if (el2) { el2.className = "lab-check-item completed"; el2.innerHTML = "[✓] Validar llave 77A"; }
+      }
+    } else {
+      screen.innerHTML += `<span style="color:var(--danger);">Comando no reconocido: ${base}. Escriba 'help' para asistencia.</span>`;
+    }
+
+    document.getElementById('cliPrompt').innerText = `operator@vertex-vault:${cwd}$`;
+    screen.scrollTop = screen.scrollHeight;
+  }
+
+  function handleCliKey(e) {
+    const input = document.getElementById('cliInput');
+    if (e.key === 'Enter') {
+      const val = input.value.trim();
+      if (val) {
+        cliHistory.push(val);
+        historyIndex = cliHistory.length;
+        runCliCmd(val);
+        input.value = '';
+      }
+    } else if (e.key === 'ArrowUp') {
+      if (cliHistory.length > 0 && historyIndex > 0) {
+        historyIndex--;
+        input.value = cliHistory[historyIndex];
+      }
+    } else if (e.key === 'ArrowDown') {
+      if (cliHistory.length > 0 && historyIndex < cliHistory.length - 1) {
+        historyIndex++;
+        input.value = cliHistory[historyIndex];
+      } else {
+        historyIndex = cliHistory.length;
+        input.value = '';
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      // Simple autocompletion
+      if (input.value.startsWith('ca')) input.value = 'cat ';
+      else if (input.value.startsWith('ls')) input.value = 'ls -la ';
+      else if (input.value.startsWith('cd')) input.value = 'cd /home/operator/expedientes';
+    }
+  }
+
+  // Music Tracks Data
+  const musicTracks = [
+    { name: "Cybernetic Pulse", pack: "Pink Bloom", duration: "03:42", pinnedMenu: true, pinnedGame: false },
+    { name: "Neon Substrate", pack: "Pink Bloom", duration: "04:15", pinnedMenu: false, pinnedGame: true },
+    { name: "Shamir Cipher", pack: "Code Injection", duration: "03:10", pinnedMenu: false, pinnedGame: false },
+    { name: "Vector Flow", pack: "Pink Bloom", duration: "05:02", pinnedMenu: false, pinnedGame: false },
+    { name: "Kernel Panic", pack: "Code Injection", duration: "02:55", pinnedMenu: false, pinnedGame: false },
+    { name: "BGP Routing", pack: "Code Injection", duration: "04:40", pinnedMenu: false, pinnedGame: false },
+    { name: "Neural Handshake", pack: "Pink Bloom", duration: "03:50", pinnedMenu: false, pinnedGame: false },
+    { name: "Void Runner", pack: "Code Injection", duration: "04:12", pinnedMenu: false, pinnedGame: false }
+  ];
+
+  function renderMusicTracks(filter = 'all') {
+    const list = document.getElementById('trackList');
+    list.innerHTML = '';
+    musicTracks.filter(t => filter === 'all' || (filter === 'pink' && t.pack === 'Pink Bloom') || (filter === 'code' && t.pack === 'Code Injection')).forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = `track-row ${i === 0 ? 'active' : ''}`;
+      row.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>${t.name}</span>
+          <div class="track-tags">
+            ${t.pinnedMenu ? '<span class="track-tag">MENÚ</span>' : ''}
+            ${t.pinnedGame ? '<span class="track-tag">PARTIDA</span>' : ''}
+          </div>
+        </div>
+        <span style="color:var(--text-dim);">${t.pack} (${t.duration})</span>
+      `;
+      row.onclick = () => {
+        document.querySelectorAll('.track-row').forEach(r => r.classList.remove('active'));
+        row.classList.add('active');
+        document.getElementById('currentTrackTitle').innerText = t.name;
+        document.getElementById('currentTrackInfo').innerText = `Autor: DavidKBD | Pack: ${t.pack} (${t.duration})`;
+      };
+      list.appendChild(row);
+    });
+  }
+
+  function filterMusic(f) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.innerText.toLowerCase().includes(f === 'all' ? 'todos' : f)));
+    renderMusicTracks(f);
+  }
+
+  let isPlaying = true;
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    document.getElementById('playPauseBtn').innerText = isPlaying ? '⏸' : '▶';
+  }
+  function prevTrack() { alert('Reproduciendo pista anterior.'); }
+  function nextTrack() { alert('Reproduciendo pista siguiente.'); }
+  function toggleLoop() { alert('Modo Bucle activado.'); }
+  function toggleShuffle() { alert('Modo Aleatorio activado.'); }
+  function seekTrack(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    document.getElementById('progressFill').style.width = `${pos * 100}%`;
+  }
+  function togglePinMenu() {
+    const btn = document.getElementById('pinMenuBtn');
+    btn.classList.toggle('pinned');
+    alert(btn.classList.contains('pinned') ? 'Pista fijada como música del Menú Principal.' : 'Pista deslindada del Menú Principal.');
+  }
+  function togglePinGame() {
+    const btn = document.getElementById('pinGameBtn');
+    btn.classList.toggle('pinned');
+    alert(btn.classList.contains('pinned') ? 'Pista fijada como música en Partida.' : 'Pista deslindada de Partida.');
+  }
+
+  // Spectrum Canvas LED Animation
+  const spectrumCanvas = document.getElementById('spectrumCanvas');
+  const specCtx = spectrumCanvas.getContext('2d');
+  function drawSpectrum() {
+    specCtx.fillStyle = '#08090f';
+    specCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+    const bars = 28;
+    const barWidth = spectrumCanvas.width / bars;
+    for (let i = 0; i < bars; i++) {
+      const h = Math.random() * 70 + 10;
+      specCtx.fillStyle = i % 2 === 0 ? '#00e5ff' : '#bf5af2';
+      specCtx.fillRect(i * barWidth + 2, spectrumCanvas.height - h, barWidth - 4, h);
+    }
+    requestAnimationFrame(drawSpectrum);
+  }
+  requestAnimationFrame(drawSpectrum);
+
+  // Cosmetics & Live Node Canvas Simulation
+  let selectedSkin = 'hexagon';
+  let selectedColor = '#00e5ff';
+  let nodeAngle = 0;
+
+  function setSkin(skin, el) {
+    selectedSkin = skin;
+    document.querySelectorAll('.skin-tile').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    const names = { circle: 'Círculo Cuántico', hexagon: 'Hexágono Táctico', diamond: 'Diamante Kernel', octagon: 'Octágono Encriptado', root_star: 'Estrella Raíz' };
+    document.getElementById('cosmeticName').innerText = `GEOMETRÍA: ${names[skin].toUpperCase()}`;
+  }
+
+  function setColor(name, hex, el) {
+    selectedColor = hex;
+    document.querySelectorAll('.color-tile').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function equipCurrentSkin() {
+    const emblem = document.getElementById('operatorEmblem');
+    emblem.style.borderColor = selectedColor;
+    emblem.style.boxShadow = `0 0 15px ${selectedColor}66`;
+    
+    // Render SVG into emblem
+    let svgInner = '<path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z"/>';
+    if (selectedSkin === 'circle') svgInner = '<circle cx="12" cy="12" r="9"/>';
+    else if (selectedSkin === 'diamond') svgInner = '<path d="M12 2L22 12L12 22L2 12Z"/>';
+    else if (selectedSkin === 'octagon') svgInner = '<path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/>';
+    else if (selectedSkin === 'root_star') svgInner = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
+
+    emblem.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${selectedColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svgInner}</svg>`;
+    alert('¡Skin de Nodo equipada con éxito en el carnet del operador!');
+  }
+
+  const nodeCanvas = document.getElementById('nodeCanvas');
+  const nodeCtx = nodeCanvas.getContext('2d');
+
+  function drawNodeSim() {
+    nodeCtx.fillStyle = '#08090f';
+    nodeCtx.fillRect(0, 0, nodeCanvas.width, nodeCanvas.height);
+
+    // Grid pattern
+    nodeCtx.strokeStyle = '#161826';
+    nodeCtx.lineWidth = 1;
+    for (let x = 0; x < nodeCanvas.width; x += 40) {
+      nodeCtx.beginPath(); nodeCtx.moveTo(x, 0); nodeCtx.lineTo(x, nodeCanvas.height); nodeCtx.stroke();
+    }
+    for (let y = 0; y < nodeCanvas.height; y += 40) {
+      nodeCtx.beginPath(); nodeCtx.moveTo(0, y); nodeCtx.lineTo(nodeCanvas.width, y); nodeCtx.stroke();
+    }
+
+    const cx = nodeCanvas.width / 2;
+    const cy = nodeCanvas.height / 2;
+
+    // Peripheral nodes & connections
+    const peripherals = [
+      { x: cx - 180, y: cy - 90, label: "SECTOR_0_CORE" },
+      { x: cx + 180, y: cy - 90, label: "SHAMIR_VAULT" },
+      { x: cx, y: cy + 120, label: "BGP_ROUTER" }
+    ];
+
+    nodeAngle += 0.02;
+
+    peripherals.forEach((p, idx) => {
+      nodeCtx.strokeStyle = selectedColor + '55';
+      nodeCtx.lineWidth = 1.5;
+      nodeCtx.setLineDash([4, 4]);
+      nodeCtx.beginPath();
+      nodeCtx.moveTo(cx, cy);
+      nodeCtx.lineTo(p.x, p.y);
+      nodeCtx.stroke();
+      nodeCtx.setLineDash([]);
+
+      // Data pulse particle
+      const pulseT = (Math.sin(nodeAngle + idx) + 1) / 2;
+      const pulseX = cx + (p.x - cx) * pulseT;
+      const pulseY = cy + (p.y - cy) * pulseT;
+      nodeCtx.fillStyle = selectedColor;
+      nodeCtx.beginPath();
+      nodeCtx.arc(pulseX, pulseY, 4, 0, Math.PI * 2);
+      nodeCtx.fill();
+
+      // Peripheral node circle
+      nodeCtx.fillStyle = '#10121f';
+      nodeCtx.strokeStyle = selectedColor;
+      nodeCtx.lineWidth = 2;
+      nodeCtx.beginPath();
+      nodeCtx.arc(p.x, p.y, 24, 0, Math.PI * 2);
+      nodeCtx.fill();
+      nodeCtx.stroke();
+
+      nodeCtx.fillStyle = '#eaecf5';
+      nodeCtx.font = '9px JetBrains Mono';
+      nodeCtx.textAlign = 'center';
+      nodeCtx.fillText(p.label, p.x, p.y + 36);
+    });
+
+    // Central Node
+    nodeCtx.fillStyle = '#10121f';
+    nodeCtx.strokeStyle = selectedColor;
+    nodeCtx.lineWidth = 3;
+    nodeCtx.beginPath();
+    nodeCtx.arc(cx, cy, 54, 0, Math.PI * 2);
+    nodeCtx.fill();
+    nodeCtx.stroke();
+
+    // Central Geometry Icon representation
+    nodeCtx.fillStyle = selectedColor;
+    nodeCtx.font = '22px JetBrains Mono';
+    nodeCtx.textAlign = 'center';
+    nodeCtx.textBaseline = 'middle';
+    let glyph = '⬡';
+    if (selectedSkin === 'circle') glyph = '◯';
+    else if (selectedSkin === 'diamond') glyph = '◇';
+    else if (selectedSkin === 'octagon') glyph = '⬭';
+    else if (selectedSkin === 'root_star') glyph = '✦';
+    nodeCtx.fillText(glyph, cx, cy);
+
+    requestAnimationFrame(drawNodeSim);
+  }
+  requestAnimationFrame(drawNodeSim);
+
+  // Initialize
+  window.onload = () => {
+    renderBadges();
+    renderMusicTracks('all');
+    selectLesson(1);
+  };
+</script>
+</body>
+</html>

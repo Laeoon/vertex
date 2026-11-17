@@ -88,11 +88,15 @@ func get_guidance_text(is_world_select: bool, selected_item: Dictionary, progres
 
 		match wid:
 			"heist":
-				return "[OPERADOR] Sector Heist: Infiltracion fisica, sensores de perimetro y gestion de presupuesto."
+				return "[OPERADOR] Sector Heist: Dijkstra & Presupuesto estricto de salto entre nodos."
 			"hacker":
-				return "[OPERADOR] Sector Hacker: Operaciones ofensivas, scripting de exploits y persistencia."
+				return "[OPERADOR] Sector Hacker: Lateral Movement, Pivoteo de exploits & Control de Ruido IDS."
 			"cybersecurity":
-				return "[OPERADOR] Sector Cybersecurity: Analisis de red, topologias complejas y contramedidas."
+				return "[OPERADOR] Sector Cybersecurity: Edmonds-Karp Max-Flow / Min-Cut & Contramedidas Firewall."
+			"sector0":
+				return "[OPERADOR] Sector 0: Convergencia Tríada Génesis (Dijkstra + Pivoteo + Corte Mínimo)."
+			"free_ops":
+				return "[OPERADOR] Operaciones Libres: Sandboxes y topologías de expansión combinadas."
 			_:
 				return "[OPERADOR] Sector activo y disponible para brecha."
 
@@ -106,7 +110,7 @@ func draw(canvas: CanvasItem, vp: Vector2, alpha: float, font: Font, font_size: 
 	var bar_w := clampf(vp.x - 80.0, 480.0, 960.0)
 	var bar_h := 30.0
 	var bar_x := (vp.x - bar_w) * 0.5
-	var bar_y := vp.y - (52.0 if is_world_select else 98.0)
+	var bar_y := vp.y - 44.0
 	var bar_rect := Rect2(bar_x, bar_y, bar_w, bar_h)
 
 	var theme_col: Color

@@ -1,0 +1,21 @@
+{
+  "arrangement": "row",
+  "positions": {
+    "system": {
+      "x": 0,
+      "y": 0
+    },
+    "01-bilateral-command-deck.html": {
+      "x": 1520,
+      "y": 0
+    },
+    "02-top-ribbon-full-stage.html": {
+      "x": 2956,
+      "y": 0
+    },
+    "03-asymmetric-rail-vault.html": {
+      "x": 4392,
+      "y": 0
+    }
+  }
+}
