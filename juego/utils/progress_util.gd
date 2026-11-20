@@ -26,12 +26,17 @@ static func cargar_progreso() -> Dictionary:
 	var cfg := ConfigFile.new()
 	var err: int = cfg.load(get_progress_file_path())
 	if err != OK:
-		return {"seen_cinematics": {}, "golden_nodes": {}, "konami_unlocked": false}
+		return {"seen_cinematics": {}, "golden_nodes": {}, "konami_unlocked": false, "total_stars": 0}
 	var result: Dictionary = {}
-	for k in cfg.get_section_keys("estrellas"):
-		if k.ends_with("_mejor_coste"):
-			continue
-		result[k] = cfg.get_value("estrellas", k, 0)
+	var total_stars: int = 0
+	if cfg.has_section("estrellas"):
+		for k: String in cfg.get_section_keys("estrellas"):
+			if k.ends_with("_mejor_coste") or k == "total_stars":
+				continue
+			var stars: int = maxi(0, int(cfg.get_value("estrellas", k, 0)))
+			result[k] = stars
+			total_stars += stars
+	result["total_stars"] = total_stars
 	var seen: Dictionary = {}
 	if cfg.has_section("seen_cinematics"):
 		for k in cfg.get_section_keys("seen_cinematics"):
@@ -67,6 +72,7 @@ static func guardar_progreso(level_key: String, stars: int) -> void:
 	if stars > prev:
 		cfg.set_value("estrellas", level_key, stars)
 		cfg.save(path)
+		SlotManagerClass.invalidate_cache()
 
 
 ## Carga el progreso y pobla un array de misiones con stars/completed.

@@ -10,7 +10,7 @@ const SLOTS_BASE_DIR: String = "user://slots"
 const MAX_SNAPSHOTS_PER_SLOT: int = 5
 const BAK_MAGIC_HEADER: String = "VERTEX_SAVE_BAK_v1"
 const DEFAULT_BACKUPS_DIR: String = "user://backups"
-const SLOT_FILE_NAMES: Array[String] = ["progress.cfg", "profile.cfg", "stats.cfg"]
+const SLOT_FILE_NAMES: Array[String] = ["progress.cfg", "profile.cfg", "stats.cfg", "vault.cfg"]
 const SNAPSHOT_PREFIX: String = "snapshot_"
 
 static var _active_slot: int = 1
@@ -67,25 +67,25 @@ static func get_stats_path(slot_id: int = -1) -> String:
 	return "%s/stats.cfg" % get_slot_dir(sid)
 
 
+static func get_vault_path(slot_id: int = -1) -> String:
+	var sid := _active_slot if slot_id <= 0 else slot_id
+	return "%s/vault.cfg" % get_slot_dir(sid)
+
+
 ## Resetea y borra por completo los datos de una ranura de guardado.
 static func delete_slot(slot_id: int) -> bool:
 	if slot_id < 1 or slot_id > TOTAL_SLOTS:
 		push_error("SlotManager: ID de slot inválido para borrar: %d" % slot_id)
 		return false
 
-	var p_path := get_progress_path(slot_id)
-	var prof_path := get_profile_path(slot_id)
-	var st_path := get_stats_path(slot_id)
-
 	# Snapshot preventivo: si falla (p. ej. ranura vacía) el borrado continúa.
 	create_slot_snapshot(slot_id, "pre_delete")
 
-	if FileAccess.file_exists(p_path):
-		DirAccess.remove_absolute(p_path)
-	if FileAccess.file_exists(prof_path):
-		DirAccess.remove_absolute(prof_path)
-	if FileAccess.file_exists(st_path):
-		DirAccess.remove_absolute(st_path)
+	var slot_dir: String = get_slot_dir(slot_id)
+	for fname: String in SLOT_FILE_NAMES:
+		var fpath: String = "%s/%s" % [slot_dir, fname]
+		if FileAccess.file_exists(fpath):
+			DirAccess.remove_absolute(fpath)
 
 	invalidate_cache()
 	return true

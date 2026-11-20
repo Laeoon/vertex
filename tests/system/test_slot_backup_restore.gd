@@ -142,6 +142,9 @@ func _prepare_slot(sid: int, stars: int, player: String) -> void:
 	var stats := ConfigFile.new()
 	stats.set_value("stats", "plays", stars * 10)
 	stats.save(SlotManagerClass.get_stats_path(sid))
+	var vault := ConfigFile.new()
+	vault.set_value("termlink", "unlocked_indices", [0])
+	vault.save(SlotManagerClass.get_vault_path(sid))
 
 
 func _read_cfg_value(path: String, section: String, key: String) -> Variant:

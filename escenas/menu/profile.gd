@@ -9,6 +9,7 @@ const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 const ProfileRendererClass = preload("res://escenas/menu/profile_renderer.gd")
 const ProgressUtilClass = preload("res://juego/utils/progress_util.gd")
+const VaultStoreClass = preload("res://juego/system/vault_store.gd")
 const VaultModules = preload("res://juego/ui/vault_modules.gd")
 const UnixShellEngine = preload("res://juego/system/unix_shell_engine.gd")
 const VaultIdCard = preload("res://escenas/menu/vault/vault_id_card.gd")
@@ -58,14 +59,14 @@ var _stats_cfg: ConfigFile = null
 var stats: Dictionary = {
 	"levels_completed": 0,
 	"total_stars": 0,
-	"play_time_seconds": 142,
-	"best_streak": 8,
-	"total_attempts": 24,
-	"total_wins": 20,
-	"total_losses": 4,
-	"win_rate": 83.3,
+	"play_time_seconds": 0,
+	"best_streak": 0,
+	"total_attempts": 0,
+	"total_wins": 0,
+	"total_losses": 0,
+	"win_rate": 0.0,
 	"levels_detail": [],
-	"badges": ["initiate_link", "dijkstra_master", "heist_clear", "hacker_elite"],
+	"badges": [],
 	"decrypted_enc_files": []
 }
 
@@ -189,58 +190,87 @@ func _execute_cli_command(cmd: String) -> void:
 			_cli_output_lines.append("[!] Comando no esperado para este paso.")
 
 
-static func build_level_rows(world_id: String, _progress_cfg: ConfigFile, _stats_cfg: ConfigFile) -> Array:
-	var rows: Array = []
-	for i in range(5):
+static func build_level_rows(world_id: String, progress_cfg: ConfigFile, stats_cfg: ConfigFile) -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	var world_data: Dictionary = LevelRegistryClass.WORLDS.get(world_id, {})
+	var levels: Array = world_data.get("levels", [])
+	for entry_variant in levels:
+		if not (entry_variant is Dictionary):
+			continue
+		var entry: Dictionary = entry_variant
+		var level_path: String = str(entry.get("path", ""))
+		var level_id: String = level_path.get_file().trim_suffix(".json")
+		if level_id.is_empty():
+			continue
+		var stars: int = 0
+		var best_cost: float = 0.0
+		if progress_cfg != null and progress_cfg.has_section("estrellas"):
+			stars = maxi(0, int(progress_cfg.get_value("estrellas", level_id, 0)))
+			best_cost = float(progress_cfg.get_value("estrellas", level_id + "_mejor_coste", 0.0))
+		var attempts: int = 0
+		if stats_cfg != null and stats_cfg.has_section("levels"):
+			var wins: int = int(stats_cfg.get_value("levels", level_id + "_wins", 0))
+			var losses: int = int(stats_cfg.get_value("levels", level_id + "_losses", 0))
+			attempts = wins + losses
 		rows.append({
-			"level_id": "%s_%02d" % [world_id, i + 1],
-			"title": "Misión %s 0%d" % [world_id.capitalize(), i + 1],
-			"stars": 3,
-			"completed": true
+			"level_id": level_id,
+			"title": str(entry.get("title", level_id)),
+			"stars": stars,
+			"completed": stars > 0,
+			"best_cost": best_cost,
+			"attempts": attempts,
 		})
 	return rows
 
 
 func _load_profile() -> void:
-	var cfg := ConfigFile.new()
-	var err := cfg.load("user://profile.cfg")
-	if err == OK:
-		player_name = str(cfg.get_value("profile", "player_name", "Jugador"))
-		_featured_badge_title = str(cfg.get_value("profile", "featured_badge", "ENLACE INICIAL"))
+	var profile_data: Dictionary = VaultStoreClass.load_profile()
+	player_name = str(profile_data.get("player_name", VaultStoreClass.DEFAULT_PLAYER_NAME))
+	_featured_badge_title = str(profile_data.get("featured_badge", VaultStoreClass.DEFAULT_FEATURED_BADGE))
+
+	var vault_data: Dictionary = VaultStoreClass.load_vault()
+	var loaded_enc: Variant = vault_data.get("enc_unlocked", {})
+	_enc_unlocked = loaded_enc.duplicate() if (loaded_enc is Dictionary) else {}
+	stats["decrypted_enc_files"] = VaultStoreClass.resolve_decrypted_enc_files(_enc_unlocked)
+	_pinned_menu_track = str(vault_data.get("pinned_menu_track", VaultStoreClass.DEFAULT_PINNED_MENU_TRACK))
+	_pinned_game_track = str(vault_data.get("pinned_game_track", VaultStoreClass.DEFAULT_PINNED_GAME_TRACK))
 
 
 func _save_profile() -> void:
-	var cfg := ConfigFile.new()
-	cfg.set_value("profile", "player_name", player_name)
-	cfg.set_value("profile", "featured_badge", _featured_badge_title)
-	cfg.save("user://profile.cfg")
+	VaultStoreClass.save_profile(player_name, _featured_badge_title)
+	VaultStoreClass.save_vault(_enc_unlocked, _pinned_menu_track, _pinned_game_track)
+	stats["decrypted_enc_files"] = VaultStoreClass.resolve_decrypted_enc_files(_enc_unlocked)
 
 
 func _load_stats() -> void:
 	progress = ProgressUtilClass.cargar_progreso()
 	_progress_cfg = ConfigFile.new()
-	if _progress_cfg.load(ProgressUtilClass.get_progress_file_path()) == OK:
-		var total_stars: int = 0
-		var completed_levels: int = 0
+	var completed_levels: int = 0
+	var total_stars: int = int(progress.get("total_stars", 0))
+	if _progress_cfg.load(ProgressUtilClass.get_progress_file_path()) == OK and _progress_cfg.has_section("estrellas"):
 		for key: String in _progress_cfg.get_section_keys("estrellas"):
-			if key.ends_with("_mejor_coste"):
+			if key.ends_with("_mejor_coste") or key == "total_stars":
 				continue
-			var st_cnt: int = int(_progress_cfg.get_value("estrellas", key, 0))
-			if st_cnt > 0:
+			if int(_progress_cfg.get_value("estrellas", key, 0)) > 0:
 				completed_levels += 1
-			total_stars += st_cnt
-		stats["levels_completed"] = completed_levels
-		stats["total_stars"] = total_stars
-	var sm = get_node_or_null("/root/SlotManager")
-	if sm != null and sm.has_method("get_stats_path"):
-		_stats_cfg = ConfigFile.new()
-		if _stats_cfg.load(str(sm.call("get_stats_path"))) == OK:
-			stats["play_time_seconds"] = int(_stats_cfg.get_value("stats", "play_time", 142))
-			stats["best_streak"] = int(_stats_cfg.get_value("stats", "best_streak", 8))
-			stats["total_wins"] = int(_stats_cfg.get_value("stats", "total_wins", 20))
-			stats["total_losses"] = int(_stats_cfg.get_value("stats", "total_losses", 4))
-			var tot: int = int(stats["total_wins"]) + int(stats["total_losses"])
-			stats["win_rate"] = (float(stats["total_wins"]) / float(tot)) * 100.0 if tot > 0 else 83.3
+	stats["levels_completed"] = completed_levels
+	stats["total_stars"] = total_stars
+
+	_stats_cfg = VaultStoreClass.load_stats_cfg()
+	var summary: Dictionary = VaultStoreClass.load_stats_summary()
+	stats["play_time_seconds"] = int(summary.get("play_time_seconds", 0))
+	stats["best_streak"] = int(summary.get("best_streak", 0))
+	stats["total_attempts"] = int(summary.get("total_attempts", 0))
+	stats["total_wins"] = int(summary.get("total_wins", 0))
+	stats["total_losses"] = int(summary.get("total_losses", 0))
+	stats["win_rate"] = float(summary.get("win_rate", 0.0))
+
+	for world_id: String in world_progress.keys():
+		var rows: Array[Dictionary] = build_level_rows(world_id, _progress_cfg, _stats_cfg)
+		var world_stars: int = 0
+		for row: Dictionary in rows:
+			world_stars += int(row.get("stars", 0))
+		world_progress[world_id] = {"stars": world_stars, "levels": rows}
 
 
 func _build_ui() -> void:

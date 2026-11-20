@@ -705,7 +705,9 @@ func _handle_defender_canvas_click(click_pos: Vector2) -> bool:
 		# en otro nodo abre el menú contextual.
 		var node_id: StringName = _find_node_at_pos(click_pos)
 		if node_id != &"":
-			if game != null and (node_id in game.bonus_nodes) and not (node_id in game.bonus_visitados):
+			var b_nodes: Array = game.get("bonus_nodes") if (game != null and "bonus_nodes" in game) else []
+			var b_visited: Array = game.get("bonus_visitados") if (game != null and "bonus_visitados" in game) else []
+			if (node_id in b_nodes) and not (node_id in b_visited):
 				defender_anchor_golden_node.emit(node_id)
 				return true
 			_defender_context_node = node_id
