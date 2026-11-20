@@ -171,6 +171,11 @@ func ganar() -> void:
 		perder("Debes pasar por %s primero" % str(_game.waypoints[_game.current_waypoint_idx]))
 		return
 
+	# Transición multi-grafo en vivo (Sector 0.1 y 0.2): sin pantalla de victoria intermedia
+	if _game._multi_stage != null and _game._multi_stage.has_next_stage():
+		_game._advance_multi_stage()
+		return
+
 	# Si hay tutorial activo, completarlo antes de marcar victoria
 	var is_tutorial_level: bool = _game.tutorial_player != null and is_instance_valid(_game.tutorial_player) and _game.tutorial_player.is_active
 	if is_tutorial_level:
@@ -314,6 +319,11 @@ func defender_won(stars: int) -> void:
 	AudioManager.play_sfx("win")
 	_game._progress_service.save(stars)
 	_game.queue_redraw()
+
+
+func defender_anchor_golden_node(node_id: StringName) -> void:
+	if _game.defender_mode and _game._defender_brain != null:
+		_game._defender_brain.anchor_golden_node(node_id)
 
 
 ## Puerto del body de juego_ataque._on_brain_defender_lost() (P5).

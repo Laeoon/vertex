@@ -44,6 +44,8 @@ var mensaje_tutorial: String = ""
 
 var menu_target_state: String = ""  # Breadcrumb de navegación ("world_select", etc.)
 var tutorial_track: String = ""     # Recordar track activo al volver a tutorials_menu ("general", "heist", "hacker", "defender")
+var stages: Array = []
+var multi_daemons: Array = []
 
 # ──────────────────────────────────────────────────────────────────────────────
 # IA y bloqueos
@@ -238,4 +240,6 @@ func reset() -> void:
 	node_triggers = {}
 	locked_edges = []
 	hidden_nodes = []
+	stages = []
+	multi_daemons = []
 

@@ -109,15 +109,16 @@ func setup(p_world_id: String) -> void:
 
 
 func _load_world_data() -> void:
+	var lookup_id: String = "secret" if world_id == "sector0" else world_id
 	var LevelManagerClass = load("res://juego/system/level_manager.gd")
 	if LevelManagerClass:
 		var worlds: Dictionary = LevelManagerClass.get_worlds()
-		if worlds.has(world_id):
-			var world: Dictionary = worlds[world_id]
+		if worlds.has(lookup_id):
+			var world: Dictionary = worlds[lookup_id]
 			world_title = world.get("title", world_id)
 			level_nodes = world.get("levels", [])
 	if level_nodes.is_empty():
-		var reg_world: Dictionary = LevelRegistry.get_world(world_id)
+		var reg_world: Dictionary = LevelRegistry.get_world(lookup_id)
 		world_title = reg_world.get("title", world_id)
 		level_nodes = reg_world.get("levels", [])
 	_entrance_anim = 0.0

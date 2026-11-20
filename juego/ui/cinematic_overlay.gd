@@ -220,16 +220,18 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
-func _gui_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if not is_active:
 		return
 	_handle_input_event(event)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not is_active:
-		return
-	_handle_input_event(event)
+func _gui_input(_event: InputEvent) -> void:
+	pass
+
+
+func _unhandled_input(_event: InputEvent) -> void:
+	pass
 
 
 func _handle_input_event(event: InputEvent) -> void:
@@ -354,9 +356,9 @@ func _draw_codec_mode(vp: Vector2, theme_col: Color, slide: Dictionary, op_data:
 	var caller_id: String = slide.get("caller", current_cinematic.get("caller", ""))
 	if caller_id.is_empty():
 		match op_id:
-			"VEX": caller_id = "DAEMON_EXFIL"
-			"N0X": caller_id = "DAEMON_FUZZ"
-			"AEGIS": caller_id = "DAEMON_CORDON"
+			"VEX": caller_id = "EXFIL"
+			"N0X": caller_id = "FUZZ"
+			"AEGIS": caller_id = "CORDON"
 			_: caller_id = "KAIN"
 
 	var caller_data := CinematicRegistryClass.get_operator(caller_id)

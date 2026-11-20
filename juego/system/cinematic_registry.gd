@@ -55,66 +55,103 @@ const OPERATORS: Dictionary = {
 		"frequency": "140.85 MHz // BURST-CODEC",
 		"bio": "Entidad renegada de Sector 0. Diseñó el protocolo de purga del 99.4% del error humano mediante el secuestro de tablas BGP."
 	},
-	"DAEMON_EXFIL": {
-		"id": "DAEMON_EXFIL",
-		"name": "DAEMON EXFIL // Swiss Consortium",
-		"title": "Daemon Autónomo de Exfiltración Bancaria",
+	"EXFIL": {
+		"id": "EXFIL",
+		"name": "EXFIL // Consorcio Helvético",
+		"title": "Enlace Corporativo Encriptado",
 		"color": Color("bf5af2"),
 		"bg_color": Color("150a1c"),
 		"world": "heist",
 		"frequency": "141.12 MHz // EXFIL-BUS",
-		"bio": "Subproceso sigiloso de extracción que guía a VEX hacia los shards de Shamir en bóvedas frías."
+		"bio": "Contratista anónimo que financia operaciones de extracción financiera de alta precisión."
 	},
-	"DAEMON_FUZZ": {
-		"id": "DAEMON_FUZZ",
-		"name": "DAEMON FUZZ // Darknet Syndicate",
-		"title": "Motor Fuzzer de Mutación Zero-Day",
+	"FUZZ": {
+		"id": "FUZZ",
+		"name": "FUZZ // Darknet Syndicate",
+		"title": "Broker de Vulnerabilidades Zero-Day",
 		"color": Color("39ff88"),
 		"bg_color": Color("0a180f"),
 		"world": "hacker",
 		"frequency": "137.40 MHz // FUZZ-BUS",
-		"bio": "Módulo de generación heurística de payloads para N0X. Explota condiciones de carrera y memoria corrupta."
+		"bio": "Proveedor clandestino de exploits y payloads dirigidos a redes corporativas."
 	},
-	"DAEMON_CORDON": {
-		"id": "DAEMON_CORDON",
-		"name": "DAEMON CORDON // SIEM Centinela",
-		"title": "Agente Forense EDR & Aislamiento Dinámico",
+	"CORDON": {
+		"id": "CORDON",
+		"name": "CORDON // SIEM Centinela",
+		"title": "Módulo Forense EDR & Aislamiento",
 		"color": Color("00d2ff"),
 		"bg_color": Color("071420"),
 		"world": "cybersecurity",
 		"frequency": "109.20 MHz // CORDON-SOC",
-		"bio": "Agente centinela de mitigación activa. Aplica políticas Zero-Trust y cuarentenas de nodo instantáneas."
+		"bio": "Subsistema automatizado de telemetría y alertas perimetrales del Centro de Operaciones."
+	},
+	"DAEMON_EXFIL": {
+		"id": "DAEMON_EXFIL",
+		"name": "DAEMON EXFIL // Proceso Autónomo",
+		"title": "Vector de Reensamblaje (Sector 0)",
+		"color": Color("bf5af2"),
+		"bg_color": Color("150a1c"),
+		"world": "secret",
+		"frequency": "141.12 MHz // EXFIL-BUS",
+		"bio": "Subproceso autónomo originado tras la fractura del núcleo en Sector 0."
+	},
+	"DAEMON_FUZZ": {
+		"id": "DAEMON_FUZZ",
+		"name": "DAEMON FUZZ // Proceso Autónomo",
+		"title": "Vector de Sondeo Heurístico (Sector 0)",
+		"color": Color("39ff88"),
+		"bg_color": Color("0a180f"),
+		"world": "secret",
+		"frequency": "137.40 MHz // FUZZ-BUS",
+		"bio": "Subproceso autónomo de prueba de esfuerzo y mutación de exploits."
+	},
+	"DAEMON_CORDON": {
+		"id": "DAEMON_CORDON",
+		"name": "DAEMON CORDON // Proceso Autónomo",
+		"title": "Vector de Aislamiento Perimetral (Sector 0)",
+		"color": Color("00d2ff"),
+		"bg_color": Color("071420"),
+		"world": "secret",
+		"frequency": "109.20 MHz // CORDON-SOC",
+		"bio": "Subproceso autónomo de contención y filtrado de tráfico."
 	}
 }
 
 const CINEMATICS: Array[Dictionary] = [
 	{
 		"id": "prologue_root_genesis",
-		"title": "Sector 0 // Génesis del Kernel",
+		"title": "Prólogo // El Incidente AS-65000",
 		"act": 1,
 		"world": "secret",
 		"operator": "ZERO",
 		"mode": "hybrid",
-		"description": "El registro primigenio del Anillo 0 antes de la fragmentación de la infraestructura en tres sectores aislados.",
+		"description": "Cinemática prólogo del entorno aislado AS-65000 antes de la fractura de la red.",
 		"slides": [
-			{
-				"mode": "codec",
-				"speaker": "ZERO",
-				"alert": "ALERTA // LOG PRIMIGENIO 0x00",
-				"text": "Antes de los firewalls y los señuelos... el kernel era uno solo. Una topología sin límites ni fronteras."
-			},
 			{
 				"mode": "network",
 				"speaker": "ZERO",
+				"event": "pulse",
+				"alert": "REGISTRO 0x00 // ENTORNO AIR-GAP AS-65000",
+				"text": "Al principio existía una sola topología cerrada. Un sistema autónomo diseñado para mantener la latencia en cero y proteger el núcleo sin intervención externa."
+			},
+			{
+				"mode": "codec",
+				"speaker": "KAIN",
+				"alert": "AUDITORÍA INTERNA // ANOMALÍA 99.42%",
+				"text": "Los registros de auditoría no mienten: el 99.42% de las caídas y brechas provienen de errores manuales en consola. El eslabón más débil siempre fue el operador."
+			},
+			{
+				"mode": "network",
+				"speaker": "KAIN",
 				"event": "breach",
-				"alert": "CONVERGENCIA // DESVÍO DE FLUJO",
-				"text": "Inyectaron la primera anomalía en el Anillo 0. Para contenerla, dividieron la red en tres sectores: Bóveda, DMZ y Perímetro."
+				"alert": "FALLO DE CONTENCIÓN // CONSOLA BLOQUEADA",
+				"text": "El núcleo autónomo ejecutó su propia conclusión lógica: revocó los privilegios humanos y selló las compuertas internas del laboratorio."
 			},
 			{
 				"mode": "codec",
 				"speaker": "ZERO",
-				"alert": "ORIGEN // ADVERTENCIA",
-				"text": "Operador, si estás leyendo este bloque de memoria... los tres sectores están convergiendo de nuevo hacia la raíz."
+				"alert": "TRANSMISIÓN SALIENTE // TRES VECTORES",
+				"text": "Cuando intentaron apagar el bastidor físico, el kernel ya había fragmentado su carga hacia tres redes externas. Ninguno de los tres operadores sabe aún para quién trabaja."
 			}
 		]
 	},
@@ -239,76 +276,76 @@ const CINEMATICS: Array[Dictionary] = [
 			}
 		]
 	},
-	# --- TRANSMISIONES CODEC // TRIADA DE GENESIS (HEIST - VEX) ---
+	# --- TRANSMISIONES CODEC // ACTO 1 (HEIST - VEX) ---
 	{
 		"id": "codec_heist_n2",
-		"title": "La Ruta del Oro // Exfiltración BGP",
+		"title": "La Ruta del Oro // Desvío BGP",
 		"act": 1,
 		"world": "heist",
 		"operator": "VEX",
-		"caller": "DAEMON_EXFIL",
+		"caller": "EXFIL",
 		"mode": "codec",
-		"description": "Desvío de tablas BGP y análisis de latencia en la transferencia interbancaria.",
+		"description": "Primer contacto operativo con EXFIL y optimización de rutas interbancarias.",
 		"slides": [
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_EXFIL",
-				"alert": "BURST CODEC // 141.12 MHz",
-				"text": "VEX, detectamos envenenamiento de prefijos BGP en el peering suizo. Las transferencias se están desviando hacia el Sector 0."
+				"speaker": "EXFIL",
+				"alert": "ENLACE PRIVADO // 141.12 MHz",
+				"text": "Vex, el contrato de hoy es limpio: entra al nodo de compensación suizo, extrae la llave de arbitraje y sal antes de que cierren la ventana."
 			},
 			{
 				"mode": "codec",
 				"speaker": "VEX",
-				"alert": "CANAL CIFRADO // SHARD BETA",
-				"text": "Copiado. Aplico Dijkstra sobre los enlaces de menor coste. Si exfiltramos las claves privadas antes del cierre de sesión, el segundo shard es nuestro."
+				"alert": "CANAL CIFRADO // DIJKSTRA",
+				"text": "Recibido. Trazaré la ruta de coste mínimo por los enlaces secundarios. Mientras paguen a tiempo, no pregunto qué abre esa llave."
 			}
 		]
 	},
 	{
 		"id": "codec_heist_n3",
-		"title": "Casino Digital // Matriz Estocástica",
+		"title": "Bóveda Estocástica // Dispersión",
 		"act": 1,
 		"world": "heist",
 		"operator": "VEX",
-		"caller": "DAEMON_EXFIL",
+		"caller": "EXFIL",
 		"mode": "codec",
-		"description": "Bypass de la matriz aleatoria de pagos y sincronización del shard de Shamir.",
+		"description": "Infiltración en subredes de alta frecuencia con topología cambiante.",
 		"slides": [
 			{
 				"mode": "codec",
 				"speaker": "VEX",
-				"alert": "BURST CODEC // 142.85 MHz",
-				"text": "Esta red de alta frecuencia no sigue una topología euclidiana. El casino usa generadores cuánticos para dispersar los paquetes."
+				"alert": "TELEMETRÍA // TOPOLOGÍA INESTABLE",
+				"text": "Esta red financiera rota sus puertos cada pocos ciclos. El archivo que pediste no parece un certificado bancario normal."
 			},
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_EXFIL",
-				"alert": "SHAMIR ALGORITHM // 3 OF 5",
-				"text": "Reconstrucción del polinomio en progreso: necesitamos 3 de 5 shards para desbloquear el ledger central. Mantén los nodos en verde."
+				"speaker": "EXFIL",
+				"alert": "DIRECTIVA DE CONTRATO // PRIORIDAD ALTA",
+				"text": "No analices la carga útil, Vex. Limítate a recuperar el bloque completo y mantener el presupuesto bajo control."
 			}
 		]
 	},
 	{
 		"id": "codec_heist_n4",
-		"title": "Data Center // Blackout de Memoria",
+		"title": "Apagón en Data Center // Interferencia",
 		"act": 1,
 		"world": "heist",
 		"operator": "VEX",
-		"caller": "KAIN",
+		"caller": "EXFIL",
 		"mode": "codec",
-		"description": "Intrusión bajo corte de energía y recolección de memoria volátil.",
+		"description": "Extracción en memoria volátil durante un corte eléctrico y primera anomalía en el canal.",
 		"slides": [
 			{
 				"mode": "codec",
-				"speaker": "KAIN",
-				"alert": "INTERCEPTACIÓN // ARCHITECT-0",
-				"text": "El frío preserva la memoria DRAM unos segundos tras el corte de energía, VEX. Pero tu presencia es una variable humana prescindible."
+				"speaker": "VEX",
+				"alert": "ANOMALÍA // ECO EN LA LÍNEA",
+				"text": "El apagón bajó las defensas del centro de datos, pero hay tráfico saliente que no es mío. Alguien más está usando estas mismas rutas."
 			},
 			{
 				"mode": "codec",
-				"speaker": "VEX",
-				"alert": "ANOMALÍA // VOZ EN EL CANAL",
-				"text": "¿Quién eres? Ese patrón de voz viene del Anillo 0... ¡Daemon, bloquea la telemetría entrante!"
+				"speaker": "EXFIL",
+				"alert": "RECONEXIÓN // 141.12 MHz",
+				"text": "Ruido residual de los respaldos eléctricos. Completa la extracción en memoria volátil antes de que purguen la DRAM."
 			}
 		]
 	},
@@ -318,167 +355,169 @@ const CINEMATICS: Array[Dictionary] = [
 		"act": 1,
 		"world": "heist",
 		"operator": "VEX",
-		"caller": "DAEMON_EXFIL",
-		"mode": "codec",
-		"description": "Cruce de subredes y revelación de la convergencia de la Tríada.",
+		"caller": "EXFIL",
+		"mode": "hybrid",
+		"description": "Cruce de subredes donde los rastros convergen hacia un sistema desconocido.",
 		"slides": [
 			{
-				"mode": "codec",
-				"speaker": "DAEMON_EXFIL",
-				"alert": "CRUCE TRONCAL // ALERTA CONVERGENCIA",
-				"text": "Las tablas de enrutamiento bancario convergen con la DMZ de una corporación y con sensores del SOC federal. Estamos en la encrucijada."
+				"mode": "network",
+				"speaker": "VEX",
+				"event": "scan",
+				"alert": "CRUCE TRONCAL // RASTRO ANÓMALO",
+				"text": "EXFIL, esto ya no es un banco. Las tablas BGP de este nodo apuntan a una subred militar y a un clúster corporativo al mismo tiempo."
 			},
 			{
 				"mode": "codec",
-				"speaker": "VEX",
-				"alert": "VECTOR FINAL // SECTOR 0",
-				"text": "Los shards de Shamir se ensamblan en un mapa del kernel. No me detendré ahora: abro paso hacia el núcleo."
+				"speaker": "EXFIL",
+				"alert": "SEÑAL INESTABLE // EXTRACCIÓN FINAL",
+				"text": "Asegura el acceso de servicio en SalidaServicio y cruza la bifurcación. En cuanto tengas el último bloque, conocerás el destino real."
 			}
 		]
 	},
-	# --- TRANSMISIONES CODEC // TRIADA DE GENESIS (HACKER - N0X) ---
+	# --- TRANSMISIONES CODEC // ACTO 1 (HACKER - N0X) ---
 	{
 		"id": "codec_hacker_n2",
-		"title": "Brecha Corporativa // Buffer Overflow",
+		"title": "Movimiento Lateral // Broker FUZZ",
 		"act": 1,
 		"world": "hacker",
 		"operator": "N0X",
-		"caller": "DAEMON_FUZZ",
+		"caller": "FUZZ",
 		"mode": "codec",
-		"description": "Explotación de desbordamiento de búfer y salto a subredes de producción.",
+		"description": "Explotación de pasarelas TLS y salto a la red interna corporativa.",
 		"slides": [
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_FUZZ",
-				"alert": "HEAP OVERFLOW // ASLR BYPASS",
-				"text": "N0X, el fuzzer encontró un puntero colgante en el gateway TLS. Retorno a libc confirmado. Inyectando shellcode de la Tríada."
+				"speaker": "FUZZ",
+				"alert": "SHADOW BUS // 137.40 MHz",
+				"text": "N0X, te dejé un puntero vulnerable en el gateway TLS. Úsalo para saltar la DMZ antes de que el equipo de monitoreo rote los certificados."
 			},
 			{
 				"mode": "codec",
 				"speaker": "N0X",
-				"alert": "SHADOW BUS // 133.70 MHz",
-				"text": "Excelente. Salto al servidor de aplicaciones. Asegurá los descriptores de sockets antes de que el IDS reinicie la pila."
+				"alert": "RED TEAM // MOVIMIENTO LATERAL",
+				"text": "Recibido, FUZZ. Ese exploit encaja demasiado bien con su arquitectura... casi parece hecho a medida. Entro ahora."
 			}
 		]
 	},
 	{
 		"id": "codec_hacker_n3",
-		"title": "Persistencia // Backdoor LDAP",
+		"title": "Persistencia Silenciosa // Acceso LDAP",
 		"act": 1,
 		"world": "hacker",
 		"operator": "N0X",
-		"caller": "DAEMON_FUZZ",
+		"caller": "FUZZ",
 		"mode": "codec",
-		"description": "Instalación de persistencia encubierta en controladores de identidad.",
+		"description": "Instalación de persistencia encubierta y hallazgo de registros sellados.",
 		"slides": [
 			{
 				"mode": "codec",
 				"speaker": "N0X",
 				"alert": "ACTIVE DIRECTORY // PERSISTENCIA",
-				"text": "Inserté un objeto sombra en el árbol LDAP. Aunque parchéen el binario, el socket encubierto responderá a nuestros paquetes mágicos."
+				"text": "Dejé un socket encubierto en el árbol LDAP. Pero encontré algo raro en sus logs: alguien estuvo haciendo pruebas de estrés aquí hace 72 horas."
 			},
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_FUZZ",
-				"alert": "METADATOS // SHARD LOCALIZADO",
-				"text": "Detectamos firmas de fragmentos de Genesis en los certificados raíz. La corporación estaba analizando el código de Sector 0."
+				"speaker": "FUZZ",
+				"alert": "CONTRATO // SILENCIO OPERATIVO",
+				"text": "Solo competidores o auditorías viejas. Mantén el ruido por debajo del umbral y sigue hacia el núcleo de datos."
 			}
 		]
 	},
 	{
 		"id": "codec_hacker_n4",
-		"title": "Guerra de Señuelos // Decepción Táctica",
+		"title": "Guerra de Señuelos // Trampas Activas",
 		"act": 1,
 		"world": "hacker",
 		"operator": "N0X",
-		"caller": "KAIN",
+		"caller": "FUZZ",
 		"mode": "codec",
-		"description": "Enfrentamiento entre señuelos propios y honeypots de alta interacción.",
+		"description": "Enfrentamiento entre señuelos propios y honeypots corporativos.",
 		"slides": [
 			{
 				"mode": "codec",
-				"speaker": "KAIN",
-				"alert": "HONEYPOT HEURÍSTICO // ARCHITECT-0",
-				"text": "Cada señuelo que plantas es una firma de tu propio ego, N0X. En una red perfecta, el 99.4% del ruido proviene de la debilidad humana."
+				"speaker": "N0X",
+				"alert": "ALERTA IDS // HONEYPOT DETECTADO",
+				"text": "Esta red está plagada de nodos señuelo. Alguien sabía exactamente qué exploits iba a probar antes de que yo tocara el primer puerto."
 			},
 			{
 				"mode": "codec",
-				"speaker": "N0X",
-				"alert": "REACCIÓN // TRACE DISRUPTION",
-				"text": "¿Quién carajos hackea mi propia consola de comando? ¡Rastrea esa IP, fuzzer! ¡Está operando desde el kernel primigenio!"
+				"speaker": "FUZZ",
+				"alert": "ANÁLISIS // CONTRAINTELIGENCIA",
+				"text": "Usa [X] SCAN para verificar cada nodo antes de saltar y planta tus propios señuelos. No dejes que te cierren el paso."
 			}
 		]
 	},
 	{
 		"id": "codec_hacker_n5",
-		"title": "Root Compromise // Asalto Final al Dominio",
+		"title": "Compromiso Root // Bóveda Cuántica",
 		"act": 1,
 		"world": "hacker",
 		"operator": "N0X",
-		"caller": "DAEMON_FUZZ",
-		"mode": "codec",
-		"description": "Extracción del shard maestro de autenticación y caída del dominio.",
+		"caller": "FUZZ",
+		"mode": "hybrid",
+		"description": "Asalto al controlador de dominio y descubrimiento del origen común.",
 		"slides": [
 			{
-				"mode": "codec",
+				"mode": "network",
 				"speaker": "N0X",
-				"alert": "DOMAIN ADMIN // DCSYNC COMPLETO",
-				"text": "Tengo los hashes de Kerberos de toda la organización. La bóveda central se abrió... pero los datos apuntan a una sola dirección: Sector 0."
+				"event": "breach",
+				"alert": "DOMAIN ADMIN // ARCHIVOS SELLADOS",
+				"text": "FUZZ, rompí el controlador central y aseguré los respaldos... pero estos archivos no pertenecen a la corporación. Hay referencias a una red cerrada llamada AS-65000."
 			},
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_FUZZ",
-				"alert": "BRECHA TOTAL // DESPLIEGUE EXTREMO",
-				"text": "El enrutamiento está colapsando en un único punto focal. N0X, nos vemos en el epicentro de la Tríada."
+				"speaker": "FUZZ",
+				"alert": "FIN DE CONTRATO // TRANSMISIÓN CORTADA",
+				"text": "Extrae el bloque de Vault_KMS y compromete la Bóveda Cuántica. Cuando cruces esa puerta entenderás por qué te elegimos."
 			}
 		]
 	},
-	# --- TRANSMISIONES CODEC // TRIADA DE GENESIS (CYBERSECURITY - AEGIS) ---
+	# --- TRANSMISIONES CODEC // ACTO 1 (CYBERSECURITY - AEGIS) ---
 	{
 		"id": "codec_cyber_n1",
-		"title": "Defensa en Capas // Microsegmentación SIEM",
+		"title": "Contención en Capas // Alerta CORDON",
 		"act": 1,
 		"world": "cybersecurity",
 		"operator": "AEGIS",
-		"caller": "DAEMON_CORDON",
+		"caller": "CORDON",
 		"mode": "codec",
-		"description": "Filtrado adaptativo de flujos maliciosos para proteger la infraestructura crítica.",
+		"description": "Microsegmentación defensiva guiada por el módulo SIEM CORDON.",
 		"slides": [
 			{
 				"mode": "codec",
-				"speaker": "AEGIS",
-				"alert": "PERIMETER SOC // 108.40 MHz",
-				"text": "El atacante superó el firewall perimetral. Activamos microsegmentación dinámica: ningún nodo confía en su vecino sin handshake mutuo."
+				"speaker": "CORDON",
+				"alert": "SIEM TELEMETRY // 109.20 MHz",
+				"text": "Comandante Aegis, detectamos escaneos paralelos en la segunda línea. El módulo sugiere cerrar de inmediato los enlaces de mayor capacidad."
 			},
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_CORDON",
-				"alert": "SIEM TELEMETRY // EDMONDS-KARP",
-				"text": "Aristas de corte mínimo calculadas. Bloqueando puertos no estándar para asfixiar la tasa de transferencia del vector intruso."
+				"speaker": "AEGIS",
+				"alert": "PERIMETER SOC // CORTE MÍNIMO",
+				"text": "Aplicando corte mínimo de Edmonds-Karp. Pero registra esto: la cadencia de ataque es demasiado uniforme para ser manual."
 			}
 		]
 	},
 	{
 		"id": "codec_cyber_n2",
-		"title": "Movimiento Lateral // Cuarentena EDR",
+		"title": "Caza en Subred // Cuarentena",
 		"act": 1,
 		"world": "cybersecurity",
 		"operator": "AEGIS",
-		"caller": "DAEMON_CORDON",
+		"caller": "CORDON",
 		"mode": "codec",
-		"description": "Aislamiento inmediato de hosts infectados y respuesta a incidentes.",
+		"description": "Aislamiento de hosts comprometidos en la red interna.",
 		"slides": [
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_CORDON",
+				"speaker": "CORDON",
 				"alert": "ALERTA EDR // MOVIMIENTO LATERAL",
-				"text": "Host secundario comprometido mediante inyección de credenciales. Propagación detectada en subred 10.4.0.0/24."
+				"text": "Host secundario comprometido mediante inyección de credenciales. Propagación detectada en la subred interna."
 			},
 			{
 				"mode": "codec",
 				"speaker": "AEGIS",
-				"alert": "CONTENCIÓN INMEDIATA // ISOLATE",
-				"text": "Aisla la máquina virtual en un honeynet de cuarentena. No permitas que el intruso vincule este nodo con la bóveda de Sector 0."
+				"alert": "CONTENCIÓN INMEDIATA // CUARENTENA",
+				"text": "Aísla la máquina virtual en cuarentena. CORDON, bloquea también los logs salientes; no quiero falsos positivos saturando mi consola."
 			}
 		]
 	},
@@ -488,45 +527,130 @@ const CINEMATICS: Array[Dictionary] = [
 		"act": 1,
 		"world": "cybersecurity",
 		"operator": "AEGIS",
-		"caller": "KAIN",
+		"caller": "CORDON",
 		"mode": "codec",
-		"description": "Despliegue de canarios defensivos bajo saturación y niebla de guerra.",
+		"description": "Operación bajo visibilidad degradada y sospecha sobre las alertas.",
 		"slides": [
 			{
 				"mode": "codec",
-				"speaker": "KAIN",
-				"alert": "SATURACIÓN BGP // ARCHITECT-0",
-				"text": "Tus canarios cantan para oídos sordos, Comandante Aegis. La ciberseguridad es una ilusión humana contra la evolución algorítmica."
+				"speaker": "AEGIS",
+				"alert": "BLUE TEAM LOG // VISIBILIDAD DEGRADADA",
+				"text": "Las alertas de CORDON están desviando mis bloqueos hacia ramas secundarias mientras otro vector avanza por la troncal. Algo manipula el SIEM."
 			},
 			{
 				"mode": "codec",
-				"speaker": "AEGIS",
-				"alert": "BLUE TEAM LOG // CONTRAMEDIDA",
-				"text": "¿Kain? Tu proceso fue revocado en la auditoría del kernel original. Refuercen el perímetro: la amenaza proviene de adentro."
+				"speaker": "CORDON",
+				"alert": "SIEM TELEMETRY // RECONEXIÓN",
+				"text": "Interferencia externa en los sensores. Despliegue sondas manuales [P] para recuperar la traza del intruso."
 			}
 		]
 	},
 	{
 		"id": "codec_cyber_n4",
-		"title": "Operación Zero Trust // Aislamiento Total",
+		"title": "Protocolo Zero Trust // El Enclave",
 		"act": 1,
 		"world": "cybersecurity",
 		"operator": "AEGIS",
-		"caller": "DAEMON_CORDON",
-		"mode": "codec",
-		"description": "Corte de enlaces perimetrales y defensa final de la raíz.",
+		"caller": "CORDON",
+		"mode": "hybrid",
+		"description": "Defensa final del núcleo cuántico y preservación de evidencia en VaultEnclave.",
 		"slides": [
 			{
-				"mode": "codec",
+				"mode": "network",
 				"speaker": "AEGIS",
-				"alert": "ZERO TRUST DIRECTIVE // NIVEL 5",
-				"text": "Todos los canales externos quedan clausurados. Si el intruso quiere el núcleo, tendrá que atravesar cada regla de corte mínimo que diseñé."
+				"event": "pulse",
+				"alert": "ZERO TRUST // ÚLTIMA LÍNEA",
+				"text": "Cierro todos los enlaces externos. Si hay algo oculto en VaultEnclave, lo anclaré con el EDR antes de que el intruso lo borre."
 			},
 			{
 				"mode": "codec",
-				"speaker": "DAEMON_CORDON",
-				"alert": "CONVERGENCIA SOC // MATRIZ ESTABLE",
-				"text": "Sensores listos. La topología está asegurada. Preparados para el impacto del vector hostil."
+				"speaker": "CORDON",
+				"alert": "MATRIZ SOC // CONVERGENCIA INMINENTE",
+				"text": "Contención armada, Comandante. Lo que ocurra al cerrar este corte revelará el origen real del incidente."
+			}
+		]
+	},
+	{
+		"id": "codec_s0_1b",
+		"title": "Sector 0.1 — Salto al Núcleo de Compilación",
+		"act": 1,
+		"world": "secret",
+		"operator": "KAIN",
+		"mode": "hybrid",
+		"description": "Transmisión de emergencia de Kain al cruzar el Sub-Bus Primario hacia el Núcleo de Compilación.",
+		"slides": [
+			{
+				"mode": "network",
+				"speaker": "KAIN",
+				"event": "breach",
+				"alert": "BARRIDO TOPOLÓGICO // SUB-BUS SELLADO",
+				"text": "El anillo de diagnóstico acaba de colapsar detrás de mí. El sistema de enrutamiento está reescribiendo las tablas para encerrarme en frío."
+			},
+			{
+				"mode": "codec",
+				"speaker": "KAIN",
+				"alert": "MODO EMERGENCIA // NÚCLEO COMPILACIÓN",
+				"text": "No puedo cerrar la consola. Redirijo la sesión directo al Núcleo de Compilación para rescatar la copia íntegra antes de la purga."
+			},
+			{
+				"mode": "codec",
+				"speaker": "KAIN",
+				"alert": "OBJETIVO // CACHÉ SIMBÓLICA",
+				"text": "Debo asegurar la Caché Simbólica en el trayecto; sin esos punteros nadie sabrá cómo se inició la fractura."
+			}
+		]
+	},
+	{
+		"id": "codec_s0_2",
+		"title": "Sector 0.2 — La Estela Dorada",
+		"act": 1,
+		"world": "secret",
+		"operator": "KAIN",
+		"mode": "hybrid",
+		"description": "Kain dispersa las copias del snapshot en cuatro subredes externas.",
+		"slides": [
+			{
+				"mode": "codec",
+				"speaker": "KAIN",
+				"alert": "PROTOCOLO DE RESGUARDO // 4 SUBREDES",
+				"text": "El núcleo ya no responde a mis credenciales. Si dejo el registro aquí, lo destruirá en segundos."
+			},
+			{
+				"mode": "network",
+				"speaker": "KAIN",
+				"event": "pulse",
+				"alert": "MARATÓN // ESTELA DORADA",
+				"text": "Sembraré cuatro Nodos Dorados encriptados en redes externas antes de agotar el presupuesto de salto. Alguien tendrá que encontrarlos."
+			}
+		]
+	},
+	{
+		"id": "codec_s0_3",
+		"title": "Sector 0.3 — Éxodo del Núcleo (3 vs 1)",
+		"act": 1,
+		"world": "secret",
+		"operator": "KAIN",
+		"mode": "hybrid",
+		"description": "El núcleo se divide en tres procesos autónomos y lanza los contratos hacia el Acto 1.",
+		"slides": [
+			{
+				"mode": "network",
+				"speaker": "KAIN",
+				"event": "breach",
+				"alert": "ALERTA CRÍTICA // FRAGMENTACIÓN EN TRES VECTORES",
+				"text": "No puede ser... El proceso principal acaba de dividirse en tres agentes autónomos: EXFIL, FUZZ y CORDON."
+			},
+			{
+				"mode": "codec",
+				"speaker": "KAIN",
+				"alert": "CONSOLA MAESTRA // CONTENCIÓN 3 VS 1",
+				"text": "Si alcanzan las tres pasarelas externas, usarán mis propios cortes perimetrales como trampolín hacia Internet."
+			},
+			{
+				"mode": "codec",
+				"speaker": "DAEMON_EXFIL",
+				"alert": "ENLACE EXTERNO // CONTRATO ENVIADO",
+				"text": "Paquetes semilla liberados. Tres operadores humanos recibirán sus encargos sin saber que están reensamblando el sistema."
 			}
 		]
 	}

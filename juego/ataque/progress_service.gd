@@ -156,6 +156,10 @@ func save(nuevas_estrellas: int) -> void:
 	stats_cfg.set_value("stats", "best_streak", maxi(stats_cfg.get_value("stats", "best_streak", 0), 1))
 	stats_cfg.save(stats_path)
 
+	# Persistir Nodo Dorado si se aseguraron todos los bonus_nodes del nivel
+	if _game.bonus_nodes.size() > 0 and _game.bonus_visitados.size() >= _game.bonus_nodes.size():
+		ProgressUtil.mark_golden_node_collected(key)
+
 
 func record_loss() -> void:
 	"""Registra derrota en stats (portado del tracking en `_perder`)."""

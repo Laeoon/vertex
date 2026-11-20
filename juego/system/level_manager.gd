@@ -92,6 +92,8 @@ static func _apply_to_scene_params(data: Dictionary) -> void:
 	SceneParams.node_triggers = data.get("node_triggers", {})
 	SceneParams.locked_edges = data.get("locked_edges", [])
 	SceneParams.hidden_nodes = data.get("hidden_nodes", [])
+	SceneParams.stages = data.get("stages", [])
+	SceneParams.multi_daemons = data.get("multi_daemons", [])
 
 
 

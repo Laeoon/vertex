@@ -253,6 +253,20 @@ func draw_frame(d: Dictionary) -> void:
 		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"", {}, false, &"", &"", is_secret_sector)
 
 	draw_pursuers(d.pursuers, d.node_positions, d.node_radius)
+	var m_daemons: Array = d.get("multi_daemons", [])
+	for md_raw in m_daemons:
+		if not (md_raw is Dictionary):
+			continue
+		var md: Dictionary = md_raw
+		var md_pos_key: StringName = md.get("pos", &"")
+		if d.node_positions.has(md_pos_key):
+			var md_pos: Vector2 = d.node_positions[md_pos_key]
+			var md_col: Color = md.get("color", BrandClass.ENEMY)
+			var is_cont: bool = bool(md.get("contained", false))
+			var draw_col: Color = BrandClass.TEXT_DIM if is_cont else md_col
+			_canvas.draw_arc(md_pos, d.node_radius + 7.0, 0.0, TAU, 24, draw_col, 2.5)
+			if font != null:
+				_canvas.draw_string(font, md_pos + Vector2(-24.0, -d.node_radius - 10.0), str(md.get("id", "DAEMON")), HORIZONTAL_ALIGNMENT_CENTER, 48.0, 10, draw_col)
 	if d.show_optimal_overlay:
 		draw_optimal_overlay(d.optimal_overlay_path, d.node_positions, d.node_radius)
 	if d.tutorial_player != null and d.tutorial_player.is_active:

@@ -26,7 +26,7 @@ static func cargar_progreso() -> Dictionary:
 	var cfg := ConfigFile.new()
 	var err: int = cfg.load(get_progress_file_path())
 	if err != OK:
-		return {"seen_cinematics": {}}
+		return {"seen_cinematics": {}, "golden_nodes": {}, "konami_unlocked": false}
 	var result: Dictionary = {}
 	for k in cfg.get_section_keys("estrellas"):
 		if k.ends_with("_mejor_coste"):
@@ -38,6 +38,13 @@ static func cargar_progreso() -> Dictionary:
 			if cfg.get_value("seen_cinematics", k, false):
 				seen[k] = true
 	result["seen_cinematics"] = seen
+	var golden: Dictionary = {}
+	if cfg.has_section("golden_nodes"):
+		for k in cfg.get_section_keys("golden_nodes"):
+			if cfg.get_value("golden_nodes", k, false):
+				golden[k] = true
+	result["golden_nodes"] = golden
+	result["konami_unlocked"] = bool(cfg.get_value("unlocks", "konami_sector0", false))
 	return result
 
 
@@ -88,6 +95,8 @@ static func cargar_misiones(missions: Array[Dictionary]) -> void:
 static func is_world_unlocked(world_id: String, progress: Dictionary) -> bool:
 	if world_id == "tutorials":
 		return true
+	if world_id == "sector0" or world_id == "secret":
+		return is_sector0_unlocked(progress)
 
 	var general_done: bool = progress.get("tutorial1", 0) > 0 and progress.get("tutorial3", 0) > 0
 	if not general_done:
@@ -110,6 +119,10 @@ static func is_world_unlocked(world_id: String, progress: Dictionary) -> bool:
 ## Devuelve la razón de bloqueo o los requisitos faltantes para un mundo.
 static func get_world_lock_reason(world_id: String, progress: Dictionary) -> String:
 	if world_id == "tutorials":
+		return ""
+	if world_id == "sector0" or world_id == "secret":
+		if not is_sector0_unlocked(progress):
+			return "REQ: 3 NODOS DORADOS (JEFES ACTO 1)"
 		return ""
 
 	var general_done: bool = progress.get("tutorial1", 0) > 0 and progress.get("tutorial3", 0) > 0
@@ -161,4 +174,44 @@ static func mark_cinematic_seen(cin_id: String, progress_data: Dictionary = {}) 
 	cfg.load(path)
 	cfg.set_value("seen_cinematics", cin_id, true)
 	cfg.save(path)
+
+
+## Registra de forma persistente el Nodo Dorado obtenido en un nivel jefe.
+static func mark_golden_node_collected(level_id: String, progress_data: Dictionary = {}) -> void:
+	if level_id.is_empty():
+		return
+	if not progress_data.is_empty():
+		if not progress_data.has("golden_nodes") or not (progress_data["golden_nodes"] is Dictionary):
+			progress_data["golden_nodes"] = {}
+		progress_data["golden_nodes"][level_id] = true
+	var path: String = get_progress_file_path()
+	var cfg := ConfigFile.new()
+	cfg.load(path)
+	cfg.set_value("golden_nodes", level_id, true)
+	cfg.save(path)
+
+
+## Verifica si el Nodo Dorado de un nivel específico ya fue asegurado.
+static func has_golden_node(level_id: String, progress_data: Dictionary = {}) -> bool:
+	if level_id.is_empty():
+		return false
+	if not progress_data.is_empty() and progress_data.has("golden_nodes") and progress_data["golden_nodes"] is Dictionary:
+		var g_dict: Dictionary = progress_data["golden_nodes"]
+		return bool(g_dict.get(level_id, false))
+	var cfg := ConfigFile.new()
+	if cfg.load(get_progress_file_path()) == OK:
+		return bool(cfg.get_value("golden_nodes", level_id, false))
+	return false
+
+
+## Desbloqueo de Sector 0: el perfil principal de pruebas (Slot 1) permanece abierto;
+## los perfiles nuevos (Slot 2/3) requieren los 3 Nodos Dorados del Acto 1 o código Konami.
+static func is_sector0_unlocked(progress_data: Dictionary = {}) -> bool:
+	if SlotManagerClass.get_active_slot() == 1:
+		return true
+	if bool(progress_data.get("konami_unlocked", false)):
+		return true
+	return has_golden_node("heist_n5", progress_data) \
+		and has_golden_node("hacker_n5", progress_data) \
+		and has_golden_node("cyber_n4", progress_data)
 

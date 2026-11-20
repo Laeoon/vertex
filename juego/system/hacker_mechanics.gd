@@ -71,7 +71,46 @@ static func create_state(max_exploits: int = MAX_EXPLOITS_DEFAULT) -> Dictionary
 		"active_persists": {},
 		"active_decoys": {},
 		"discovered_vulnerabilities": [],
+		"harvested_nodes": {},
 	}
+
+
+## ─── RIESGO-RECOMPENSA DEL ESCANEO ─────────────────────────────
+
+const NOISE_SCAN_NEW: int = 8
+const NOISE_SCAN_GOLDEN: int = 18
+const GOLDEN_HARVEST_EXTRA_TURNS: int = 2
+const SCAN_EXPLOIT_MIN_NODE_TYPE: int = 2
+
+
+## Aplica el riesgo-recompensa de un escaneo sobre `state`.
+## - `was_new_scan`: el nodo no había sido escaneado antes (suma +8 de ruido).
+## - `node_type_idx`: `NetworkNodeResource.NodeType` como int (>= 2 extrae +1 exploit,
+##   `bypass` o `decoy` alternando por tipo, una sola vez por nodo).
+## - `golden_pending`: el nodo es un Nodo Dorado sin visitar (+18 de ruido y Deep Harvest:
+##   +1 bypass, +1 escalate y +2 turnos máximos, que el llamador aplica al juego).
+## Devuelve {"noise_added", "exploit_gained", "deep_harvest", "extra_turns"}.
+static func apply_scan_risk_reward(state: Dictionary, node_id: StringName, was_new_scan: bool, node_type_idx: int, golden_pending: bool) -> Dictionary:
+	var out: Dictionary = {"noise_added": 0, "exploit_gained": "", "deep_harvest": false, "extra_turns": 0}
+	if not state.has("harvested_nodes"):
+		state["harvested_nodes"] = {}
+	if was_new_scan:
+		add_noise(state, NOISE_SCAN_NEW)
+		out["noise_added"] = int(out["noise_added"]) + NOISE_SCAN_NEW
+		var nid: String = str(node_id)
+		if node_type_idx >= SCAN_EXPLOIT_MIN_NODE_TYPE and not state["harvested_nodes"].has(nid):
+			state["harvested_nodes"][nid] = true
+			var gained: String = EXPLOIT_BYPASS if node_type_idx % 2 == 0 else EXPLOIT_DECOY
+			state["exploits"][gained] = int(state["exploits"].get(gained, 0)) + 1
+			out["exploit_gained"] = gained
+	if golden_pending:
+		add_noise(state, NOISE_SCAN_GOLDEN)
+		out["noise_added"] = int(out["noise_added"]) + NOISE_SCAN_GOLDEN
+		state["exploits"][EXPLOIT_BYPASS] = int(state["exploits"].get(EXPLOIT_BYPASS, 0)) + 1
+		state["exploits"][EXPLOIT_ESCALATE] = int(state["exploits"].get(EXPLOIT_ESCALATE, 0)) + 1
+		out["deep_harvest"] = true
+		out["extra_turns"] = GOLDEN_HARVEST_EXTRA_TURNS
+	return out
 
 
 ## ─── ESCANEO DE NODOS ──────────────────────────────────────────

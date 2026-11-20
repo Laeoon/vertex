@@ -66,6 +66,22 @@ func cargar_params() -> void:
 	_game.triggered_nodes = []
 	_game.level_key = SceneParams.level_key
 
+	if SceneParams.stages.size() > 1 and _game.get("_multi_stage") != null or _game.has_method("_advance_multi_stage"):
+		if SceneParams.stages.size() > 1:
+			var DirectorClass = load("res://juego/ataque/multi_stage_director.gd")
+			if DirectorClass != null:
+				_game._multi_stage = DirectorClass.new()
+				_game._multi_stage.setup(SceneParams.stages)
+		else:
+			_game._multi_stage = null
+	if SceneParams.multi_daemons.size() > 0:
+		var DaemonCtrlClass = load("res://juego/ataque/multi_daemon_controller.gd")
+		if DaemonCtrlClass != null:
+			_game._multi_daemon = DaemonCtrlClass.new()
+			_game._multi_daemon.setup(SceneParams.multi_daemons)
+	else:
+		_game._multi_daemon = null
+
 
 	_game._budget_display = float(_game.max_movement_points)
 

@@ -98,13 +98,26 @@ func take_turn() -> void:
 		_game.mensaje_estado = "Estas al lado de %s, pero la arista esta bloqueada" % target
 		return
 
-	# Modo predictivo (E3): apuntar a la arista de la ruta ubicada 2-3 pasos
-	# adelante del jugador en vez de recorrer río abajo. Sin candidato
-	# elegible a esa distancia se cae al comportamiento legacy sin error.
+	# Modo predictivo (E3): apuntar a aristas ubicadas 1-3 saltos adelante del
+	# jugador (las que realmente afectan su próxima decisión) en vez de recorrer
+	# río abajo. Con varios bloqueos por turno se recalcula la ruta alternativa
+	# tras cada bloqueo. Sin candidato elegible se cae al comportamiento legacy.
 	if _game.ia_predictiva and _game.ai_block_per_turn >= 1:
-		var idx_p: int = _indice_arista_predictiva(path)
-		if idx_p >= 0 and _bloquear_en(path, idx_p):
-			_game.mensaje_estado = "IA bloqueo 1 arista(s)"
+		var pred_blocks: int = 0
+		var cur_path: Array[StringName] = path
+		while pred_blocks < _game.ai_block_per_turn:
+			var idx_p: int = _indice_arista_predictiva(cur_path)
+			if idx_p < 0 or not _bloquear_en(cur_path, idx_p):
+				break
+			pred_blocks += 1
+			if pred_blocks >= _game.ai_block_per_turn:
+				break
+			var alt: Dictionary = DefensivePathfinder.find_path_with_cost(_game.graph, _game.player_pos, target, _game.runtime)
+			if not alt["reachable"] or alt["path"].size() < 2:
+				break
+			cur_path = alt["path"]
+		if pred_blocks > 0:
+			_game.mensaje_estado = "IA bloqueo %d arista(s)" % pred_blocks
 			_cerrar_turno(target)
 			return
 
@@ -124,13 +137,13 @@ func take_turn() -> void:
 	_cerrar_turno(target)
 
 
-## Índice de nodo de la primera arista elegible ubicada 2-3 pasos adelante del
-## jugador en la ruta (índices 2..3), o -1 si la ruta es demasiado corta o si
-## ningún candidato pasa las guardas (ya bloqueada / aislaría al jugador).
+## Índice de nodo de la primera arista elegible ubicada 1-3 saltos adelante del
+## jugador en la ruta (preferencia 2, 3, 1), o -1 si la ruta es demasiado corta
+## o si ningún candidato pasa las guardas (ya bloqueada / aislaría al jugador).
 func _indice_arista_predictiva(path: Array[StringName]) -> int:
-	for i in range(2, 4):
+	for i in [2, 3, 1]:
 		if i + 1 >= path.size():
-			break
+			continue
 		var edge_key: String = "%s→%s" % [path[i], path[i + 1]]
 		if not _game._is_blocked(edge_key) and not would_isolate(edge_key):
 			return i

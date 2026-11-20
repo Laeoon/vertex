@@ -35,6 +35,8 @@ var bonus_trace_on_divert: float = 10.0   # +10% si el atacante fue forzado a de
 var quarantined_nodes: Dictionary = {}    # {StringName: true} nodos en cuarentena / aislados
 var quarantined_count: int = 0
 var ping_pong_mode: bool = true           # 1 acción defensiva = 1 respuesta inmediata del atacante
+const GOLDEN_ANCHOR_TRACE_BONUS: float = 20.0
+var corrupted_golden_nodes: Dictionary = {}  # {StringName: true} Nodos Dorados pisados por el atacante
 var enemy_bypasses: int = 1               # Stock de exploits del atacante hostil (Bypass)
 var last_exploit_used: String = ""        # Telemetría del último exploit ejecutado por la IA
 
@@ -73,6 +75,7 @@ func init() -> void:
 	node_firewalls.clear()
 	quarantined_nodes.clear()
 	quarantined_count = 0
+	corrupted_golden_nodes.clear()
 	forensics_trace = 0.0
 	firewall_mode = false
 	enemy_bypasses = 1
@@ -248,6 +251,19 @@ func resolve_turn() -> void:
 
 func move_enemy() -> void:
 	"""Mueve al atacante con movimiento lateral adaptativo, bifurcación aleatoria y exploits reactivos."""
+	if _game != null and _game.get("_multi_daemon") != null and _game._multi_daemon.is_active():
+		var step_res: Dictionary = _game._multi_daemon.step_daemons(_graph, _runtime)
+		if bool(step_res.get("breached", false)):
+			_lose("¡Brecha crítica! Daemon %s alcanzó su pasarela de salida" % str(step_res.get("breached_id", "")))
+			return
+		if bool(step_res.get("all_contained", false)):
+			_win("¡Tríada contenida! EXFIL, FUZZ y CORDON fueron aislados del perímetro.")
+			return
+		var moved_list: Array = step_res.get("moved", [])
+		message.emit("⚡ 3 DAEMONS ACTIVOS: " + ", ".join(moved_list))
+		state_changed.emit()
+		return
+
 	if enemy_pos == &"":
 		return
 	var target_check: StringName = enemy_target_node if enemy_target_node != &"" else _game.target_node
@@ -346,6 +362,7 @@ func move_enemy() -> void:
 
 	GameLogger.debug("DefenderBrain", "ATACANTE: %s → %s (hacia %s)" % [enemy_pos, next_step, target_check])
 	enemy_pos = next_step
+	_corrupt_golden_if_stepped(enemy_pos)
 	if _game.has_method("_on_enemy_moved"):
 		_game._on_enemy_moved()
 	path_calculated.emit(enemy_pos, enemy_target_node, enemy_path, 0.0)
@@ -396,6 +413,49 @@ func quarantine_node(node_id: StringName) -> void:
 
 func is_node_quarantined(node_id: StringName) -> bool:
 	return quarantined_nodes.has(node_id)
+
+
+## Si el atacante pisa un Nodo Dorado aún no anclado, queda corrompido y ya no
+## se puede anclar.
+func _corrupt_golden_if_stepped(node_id: StringName) -> void:
+	if _game == null:
+		return
+	if node_id in _game.bonus_nodes and not (node_id in _game.bonus_visitados) and not corrupted_golden_nodes.has(node_id):
+		corrupted_golden_nodes[node_id] = true
+		message.emit("☠ Nodo Dorado %s corrompido por el atacante" % str(node_id))
+
+
+func anchor_golden_node(node_id: StringName) -> void:
+	"""Anclaje EDR activo: asegura un Nodo Dorado durante el turno del defensor."""
+	if _game.game_over or node_id == &"":
+		return
+	if not (node_id in _game.bonus_nodes):
+		return
+	if node_id in _game.bonus_visitados:
+		message.emit("✓ Ese Nodo Dorado ya está asegurado")
+		return
+	if node_id == enemy_pos or corrupted_golden_nodes.has(node_id):
+		message.emit("⚠ Nodo comprometido por el atacante: no se puede anclar")
+		return
+	if defender_blocks_placed + 1 > defender_blocks_per_turn:
+		message.emit("⚠ Sin acciones suficientes este turno para anclar el Nodo Dorado")
+		return
+
+	_game.bonus_visitados.append(node_id)
+	defender_blocks_placed += 1
+	defender_blocks_total_used += 1
+	# Recompensa del anclaje: +20% de rastreo forense y +1 bloqueo de presupuesto.
+	forensics_trace = minf(100.0, forensics_trace + GOLDEN_ANCHOR_TRACE_BONUS)
+	defender_max_blocks += 1
+	AudioManager.play_sfx("click")
+	message.emit("🛡 NODO DORADO ANCLADO (%d/%d): %s (+%.0f%% TRACE, +1 bloqueo)" % [_game.bonus_visitados.size(), _game.bonus_nodes.size(), str(node_id), GOLDEN_ANCHOR_TRACE_BONUS])
+	state_changed.emit()
+
+	if forensics_trace >= 100.0:
+		_win("¡Rastreo EDR completado! Origen del ataque neutralizado.")
+		return
+	if ping_pong_mode:
+		resolve_turn()
 
 
 func place_firewall(node_id: StringName) -> void:
@@ -456,6 +516,9 @@ func place_firewall(node_id: StringName) -> void:
 	GameLogger.debug("DefenderBrain", "FIREWALL en %s: %d aristas bloqueadas permanentemente" % [node_id, edges_blocked])
 	message.emit(feedback)
 	state_changed.emit()
+
+	if ping_pong_mode:
+		resolve_turn()
 
 
 func reveal_enemy_path() -> void:

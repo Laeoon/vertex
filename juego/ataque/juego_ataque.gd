@@ -160,7 +160,13 @@ var _game_logic  # GameLogic
 var _game_over_overlay  # GameOverOverlay (capa 2: botones de mouse)
 var _pause_overlay  # PauseOverlay (in-game-pause-and-ui-immersion)
 const TerminalOverlayClass = preload("res://juego/ui/terminal_overlay.gd")
+const MultiStageDirectorClass = preload("res://juego/ataque/multi_stage_director.gd")
+const MultiDaemonControllerClass = preload("res://juego/ataque/multi_daemon_controller.gd")
+const CinematicOverlayClass = preload("res://juego/ui/cinematic_overlay.gd")
 var _terminal_overlay = null
+var _multi_stage = null
+var _multi_daemon = null
+var _codec_overlay: Control = null
 
 # Un solo show por transición a game_over (ganar/perder/defensor won/lost
 # confluyen en el flag); el hide vive en reset_state().
@@ -252,7 +258,7 @@ func _ready() -> void:
 
 
 func _apply_level_positions_override() -> void:
-	if level_key == "secret_root" or graph_path.ends_with("secret_root.tres") or titulo_nivel.find("Sector 0") != -1:
+	if level_key == "secret_root" or graph_path.ends_with("secret_root.tres"):
 		var file_path := "res://juego/secret/secret_root.json"
 		if FileAccess.file_exists(file_path):
 			var file := FileAccess.open(file_path, FileAccess.READ)
@@ -392,8 +398,20 @@ func _nodo_en_posicion_firewall(pos: Vector2) -> StringName:
 func _vecinos_jugador() -> Array: return _game_logic.vecinos_jugador()
 func _mover_jugador(destino: StringName) -> void:
 	var origin_pos: Vector2 = node_positions.get(player_pos, Vector2.ZERO)
+	var stage_before: int = _multi_stage.stage_index if _multi_stage != null else -1
 	_game_logic.mover_jugador(destino)
+	var stage_after: int = _multi_stage.stage_index if _multi_stage != null else -1
 	var target_pos: Vector2 = node_positions.get(player_pos, Vector2.ZERO)
+
+	# El grafo cambió de etapa durante el movimiento: las posiciones viejas ya no
+	# son válidas, así que se hace snap directo al nuevo nodo de inicio.
+	if stage_after != stage_before:
+		if _move_tween != null and _move_tween.is_valid():
+			_move_tween.kill()
+		player_visual_pos = target_pos
+		is_moving = false
+		queue_redraw()
+		return
 
 	if DisplayServer.get_name() == "headless":
 		player_visual_pos = target_pos
@@ -484,6 +502,7 @@ func _connect_input_signals() -> void:
 	_input_handler.defender_block_edge.connect(_on_defender_block_edge)
 	_input_handler.defender_place_firewall.connect(_on_defender_place_firewall)
 	_input_handler.defender_quarantine_node.connect(_on_defender_quarantine_node)
+	_input_handler.defender_anchor_golden_node.connect(_on_defender_anchor_golden_node)
 	_input_handler.defender_hover_edge.connect(_on_defender_hover_edge)
 	_input_handler.tutorial_skipped.connect(_on_tutorial_skipped_input)
 
@@ -519,6 +538,42 @@ func _on_neighbor_hovered(node_id: StringName) -> void:
 func _on_defender_block_edge(edge_key: String) -> void: _game_logic.defender_block_edge(edge_key)
 func _on_defender_place_firewall(node_id: StringName) -> void: _game_logic.defender_place_firewall(node_id)
 func _on_defender_quarantine_node(node_id: StringName) -> void: _game_logic.defender_quarantine_node(node_id)
+func _on_defender_anchor_golden_node(node_id: StringName) -> void: _game_logic.defender_anchor_golden_node(node_id)
+
+
+func _advance_multi_stage() -> void:
+	if _multi_stage == null:
+		return
+	var stage: Dictionary = _multi_stage.advance_stage(self)
+	var cid: String = str(stage.get("cinematic_id", ""))
+	if cid != "":
+		var CinRegistryClass = load("res://juego/system/cinematic_registry.gd")
+		if CinRegistryClass != null:
+			var cin_data: Dictionary = CinRegistryClass.get_cinematic(cid)
+			if not cin_data.is_empty():
+				if _codec_overlay == null:
+					var layer := CanvasLayer.new()
+					layer.layer = 20
+					add_child(layer)
+					_codec_overlay = CinematicOverlayClass.new()
+					_codec_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+					layer.add_child(_codec_overlay)
+				_codec_overlay.position = Vector2.ZERO
+				_codec_overlay.size = get_viewport_rect().size
+				_codec_overlay.focus_mode = Control.FOCUS_ALL
+				if _input_handler != null:
+					_input_handler.set_process_input(false)
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+				if _codec_overlay.has_signal("cinematic_finished"):
+					var resume_cb: Callable = func(_cid: String) -> void:
+						if _input_handler != null:
+							_input_handler.set_process_input(true)
+						Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+					_codec_overlay.connect("cinematic_finished", resume_cb, CONNECT_ONE_SHOT)
+				if _codec_overlay.has_method("play_cinematic_data"):
+					_codec_overlay.call("play_cinematic_data", cin_data)
+				_codec_overlay.grab_focus()
+	queue_redraw()
 func _on_return_to_menu() -> void: SceneTransition.dive_out_to_scene("res://escenas/main_menu.tscn")
 func _on_quit() -> void: _toggle_pause()
 func _on_pause_toggle_requested() -> void: _toggle_pause()
@@ -751,6 +806,7 @@ func _draw() -> void:
 	# sin callables — orquestación en GameRenderer.draw_frame().
 	var frame_data: Dictionary = _game_state.frame_data(vp_size)
 	frame_data["defender_context_node"] = defender_context_node
+	frame_data["multi_daemons"] = _multi_daemon.daemons if _multi_daemon != null else []
 	_renderer.draw_frame(frame_data)
 
 	# Dibujar terminal CLI encima si está activa (garantizando transform neutral de pantalla)

@@ -22,5 +22,8 @@
   "defender_mode": false,
   "difficulty": 5,
   "diversidad_minima": 2,
-  "description": "El asalto final a la infraestructura crítica: penetra múltiples subredes altamente segregadas y compromete la Bóveda Cuántica."
+  "bonus_nodes": [
+    "Vault_KMS"
+  ],
+  "description": "Asalto final a la infraestructura crítica: penetra múltiples subredes altamente segregadas, asegura el Nodo Dorado en Vault_KMS y compromete la Bóveda Cuántica."
 }

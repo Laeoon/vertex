@@ -17,5 +17,8 @@
   "defender_blocks_per_turn": 3,
   "defender_block_duration": 4,
   "enemy_start_node": "AdvancedThreatActor",
-  "enemy_target_node": "QuantumCore"
+  "enemy_target_node": "QuantumCore",
+  "bonus_nodes": [
+    "VaultEnclave"
+  ]
 }

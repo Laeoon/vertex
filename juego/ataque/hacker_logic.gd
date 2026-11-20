@@ -67,11 +67,26 @@ func scan_selected_node() -> void:
 	if node_res == null:
 		return
 	AudioManager.play_sfx("scan")
+	var scan_id: StringName = _game.selected_neighbor
+	var was_new_scan: bool = not _game.hacker_state.get("scanned_nodes", {}).has(str(scan_id))
 	var result: Dictionary = HackerMechanicsClass.scan_node(_game.hacker_state, _game.selected_neighbor, node_res.metadata)
 	_game.scan_results[str(_game.selected_neighbor)] = result
 	var type_label: String = result.get("node_type", "unknown")
 	var hint: String = result.get("exploit_hint", "")
-	_game.mensaje_estado = "ESCANEADO %s → %s | %s" % [str(_game.selected_neighbor), type_label.to_upper(), hint]
+	var golden_pending: bool = (scan_id in _game.bonus_nodes) and not (scan_id in _game.bonus_visitados)
+	var rr: Dictionary = HackerMechanicsClass.apply_scan_risk_reward(_game.hacker_state, scan_id, was_new_scan, int(node_res.node_type), golden_pending)
+	var rr_note: String = ""
+	if int(rr.get("noise_added", 0)) > 0:
+		rr_note += " | +%d ruido" % int(rr["noise_added"])
+	var gained: String = str(rr.get("exploit_gained", ""))
+	if gained != "":
+		rr_note += " | +1 %s" % gained
+	if bool(rr.get("deep_harvest", false)):
+		_game.bonus_visitados.append(scan_id)
+		if _game.max_turns > 0:
+			_game.max_turns += int(rr.get("extra_turns", 0))
+		rr_note += " | DEEP HARVEST: Nodo Dorado capturado (+1 bypass, +1 escalate, +%d turnos)" % int(rr.get("extra_turns", 0))
+	_game.mensaje_estado = "ESCANEADO %s → %s | %s%s" % [str(_game.selected_neighbor), type_label.to_upper(), hint, rr_note]
 	GameLogger.debug("JuegoAtaque", "[SCAN] %s: %s — %s" % [str(_game.selected_neighbor), type_label, hint])
 	# El escaneo es una acción de tutorial (try_scan) → avisar al tutorial
 	# para que marque el paso como cumplido.

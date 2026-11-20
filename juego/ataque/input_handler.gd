@@ -33,6 +33,7 @@ signal defender_toggle_quarantine()
 signal defender_block_edge(edge_key: String)
 signal defender_place_firewall(node_id: StringName)
 signal defender_quarantine_node(node_id: StringName)
+signal defender_anchor_golden_node(node_id: StringName)
 signal defender_hover_edge(edge_key: String)
 
 signal tutorial_skipped()
@@ -700,9 +701,13 @@ func _handle_defender_canvas_click(click_pos: Vector2) -> bool:
 			_mensaje_temp("Modo Firewall cancelado. Haz clic en una arista para bloquear.")
 			return true
 	else:
-		# Si no hay herramienta activa, un clic en un nodo abre el menú contextual
+		# Si no hay herramienta activa, un clic en un Nodo Dorado sin asegurar ejecuta Anclaje EDR;
+		# en otro nodo abre el menú contextual.
 		var node_id: StringName = _find_node_at_pos(click_pos)
 		if node_id != &"":
+			if game != null and (node_id in game.bonus_nodes) and not (node_id in game.bonus_visitados):
+				defender_anchor_golden_node.emit(node_id)
+				return true
 			_defender_context_node = node_id
 			_sync_defender_context()
 			_mensaje_temp("Nodo seleccionado: elige Firewall o Cuarentena")
