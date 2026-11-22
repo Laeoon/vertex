@@ -121,6 +121,24 @@ func load_graph() -> void:
 		_game.node_positions[n.id] = n.position
 		_game._node_cache[n.id] = n
 
+	if not SceneParams.node_positions.is_empty():
+		for nid_key in SceneParams.node_positions.keys():
+			var raw_pos: Variant = SceneParams.node_positions[nid_key]
+			var pos_v: Vector2 = Vector2.ZERO
+			var valid_pos: bool = false
+			if raw_pos is Vector2:
+				pos_v = raw_pos
+				valid_pos = true
+			elif raw_pos is Array and (raw_pos as Array).size() >= 2:
+				var arr: Array = raw_pos
+				pos_v = Vector2(float(arr[0]), float(arr[1]))
+				valid_pos = true
+			if valid_pos:
+				var sn := StringName(str(nid_key))
+				_game.node_positions[sn] = pos_v
+				if _game._node_cache.has(sn) and _game._node_cache[sn] != null:
+					_game._node_cache[sn].position = pos_v
+
 	reset_state()
 
 
@@ -142,11 +160,11 @@ func blocked_edge_keys() -> Dictionary:
 
 ## Puerto del viejo juego_ataque._edge_en_posicion() (P5): hit-test de
 ## aristas para el modo defensor; el input handler lo consume por duck-typing.
-func edge_en_posicion(pos: Vector2) -> String:
+func edge_en_posicion(pos: Vector2, max_dist: float = 30.0) -> String:
 	if _game.graph == null or _game.node_positions.is_empty():
 		return ""
 	var best_edge: String = ""
-	var best_dist: float = 30.0  # Radio de clic en píxeles
+	var best_dist: float = max_dist  # Radio de clic en píxeles
 	for e in _game.graph.edges:
 		if e == null:
 			continue

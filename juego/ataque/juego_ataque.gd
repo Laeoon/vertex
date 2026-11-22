@@ -78,7 +78,7 @@ const ZOOM_MAX: float = 2.5
 const ZOOM_STEP: float = 1.15
 
 # Tutorial
-var tutorial_player = null
+var tutorial_player: Node = null
 var tutorial_path: String = ""
 
 # Detection & Pursuers
@@ -146,26 +146,27 @@ var _budget_display: float = 0.0
 var enemy_visual_pos: Vector2 = Vector2.ZERO
 var _enemy_tween: Tween = null
 
-# Componentes extraídos. Tipos omitidos donde el class_name no se resuelve
-# en CLI headless sin editor (convención del proyecto).
-var _input_handler: InputHandler
-var _defender_brain: DefenderBrain
-var _ai_blocker: AIBlocker
-var _pursuit_system: PursuitSystem
-var _progress_service  # ProgressService
-var _renderer: GameRendererClass
-var _game_state  # GameState
-var _hacker_logic  # HackerLogic
-var _game_logic  # GameLogic
-var _game_over_overlay  # GameOverOverlay (capa 2: botones de mouse)
-var _pause_overlay  # PauseOverlay (in-game-pause-and-ui-immersion)
+# Componentes extraídos tipados mediante constantes preload para compatibilidad
+# tanto en editor como en ejecución headless CLI.
 const TerminalOverlayClass = preload("res://juego/ui/terminal_overlay.gd")
 const MultiStageDirectorClass = preload("res://juego/ataque/multi_stage_director.gd")
 const MultiDaemonControllerClass = preload("res://juego/ataque/multi_daemon_controller.gd")
 const CinematicOverlayClass = preload("res://juego/ui/cinematic_overlay.gd")
-var _terminal_overlay = null
-var _multi_stage = null
-var _multi_daemon = null
+
+var _input_handler: InputHandlerClass
+var _defender_brain: DefenderBrainClass
+var _ai_blocker: AIBlockerClass
+var _pursuit_system: PursuitSystemClass
+var _progress_service: ProgressServiceClass
+var _renderer: GameRendererClass
+var _game_state: GameStateClass
+var _hacker_logic: HackerLogicClass
+var _game_logic: GameLogicClass
+var _game_over_overlay: GameOverOverlayClass
+var _pause_overlay: PauseOverlayClass
+var _terminal_overlay: TerminalOverlayClass = null
+var _multi_stage: MultiStageDirectorClass = null
+var _multi_daemon: MultiDaemonControllerClass = null
 var _codec_overlay: Control = null
 
 # Un solo show por transición a game_over (ganar/perder/defensor won/lost
@@ -242,7 +243,6 @@ func _ready() -> void:
 	_progress_service.setup(self)
 
 	_game_state.load_graph()
-	_apply_level_positions_override()
 	if tutorial_path != "":
 		_setup_tutorial()
 	if _pause_overlay != null and (tutorial_path != "" or (tutorial_player != null and is_instance_valid(tutorial_player))):
@@ -255,27 +255,6 @@ func _ready() -> void:
 
 	reset_pan_zoom()
 	_start_level_music()
-
-
-func _apply_level_positions_override() -> void:
-	if level_key == "secret_root" or graph_path.ends_with("secret_root.tres"):
-		var file_path := "res://juego/secret/secret_root.json"
-		if FileAccess.file_exists(file_path):
-			var file := FileAccess.open(file_path, FileAccess.READ)
-			if file != null:
-				var parsed = JSON.parse_string(file.get_as_text())
-				if parsed is Dictionary and parsed.has("node_positions"):
-					var pos_map: Dictionary = parsed["node_positions"]
-					for nid_str in pos_map:
-						var arr = pos_map[nid_str]
-						if arr is Array and arr.size() >= 2:
-							var pos_v := Vector2(float(arr[0]), float(arr[1]))
-							var sn := StringName(nid_str)
-							node_positions[sn] = pos_v
-							if _node_cache.has(sn):
-								_node_cache[sn].position = pos_v
-					if player_pos != &"" and node_positions.has(player_pos):
-						player_visual_pos = node_positions[player_pos]
 
 
 func _start_level_music() -> void:
@@ -335,34 +314,13 @@ func _show_game_over_overlay() -> void:
 		_game_over_overlay.select_button.text = "[L] Tutoriales"
 func _target_actual() -> StringName: return _game_state.target_actual()
 func mostrar_ruta() -> void: _game_state.mostrar_ruta()
-func _find_node_resource(nid: StringName): return _game_state.find_node_resource(nid)
+func _find_node_resource(nid: StringName) -> NetworkNodeResource: return _game_state.find_node_resource(nid)
 func _is_blocked(edge_key: String) -> bool: return _game_state.is_blocked(edge_key)
 func _block_edge(edge_key: String, from_n: StringName, to_n: StringName) -> void: _game_state.block_edge(edge_key, from_n, to_n)
 func _unblock_edge(edge_key: String) -> void: _game_state.unblock_edge(edge_key)
 func _limpiar_bloqueos_expirados() -> void: _game_state.limpiar_bloqueos_expirados()
 
-func _edge_en_posicion(pos: Vector2) -> String:
-	if graph == null or node_positions.is_empty():
-		return ""
-	var best_edge: String = ""
-	var best_dist: float = 24.0  # Hitbox generoso de al menos 22.0px
-	for e in graph.edges:
-		if e == null:
-			continue
-		var from_pos: Vector2 = node_positions.get(e.from_id, Vector2.ZERO) as Vector2
-		var to_pos: Vector2 = node_positions.get(e.to_id, Vector2.ZERO) as Vector2
-		if from_pos == Vector2.ZERO or to_pos == Vector2.ZERO:
-			continue
-		var ab: Vector2 = to_pos - from_pos
-		var ap: Vector2 = pos - from_pos
-		var t: float = ap.dot(ab) / ab.length_squared() if ab.length_squared() > 0.0 else 0.0
-		t = clampf(t, 0.0, 1.0)
-		var closest: Vector2 = from_pos + ab * t
-		var d: float = pos.distance_to(closest)
-		if d < best_dist:
-			best_dist = d
-			best_edge = "%s→%s" % [e.from_id, e.to_id]
-	return best_edge
+func _edge_en_posicion(pos: Vector2) -> String: return _game_state.edge_en_posicion(pos)
 
 func _nodo_en_posicion(pos: Vector2) -> StringName:
 	if node_positions.is_empty():

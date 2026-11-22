@@ -86,7 +86,10 @@ static func _apply_to_scene_params(data: Dictionary) -> void:
 	SceneParams.pursuer_delay = data.get("pursuer_delay", 2)
 	SceneParams.max_pursuers = data.get("max_pursuers", 4)
 	SceneParams.pursuer_speed = data.get("pursuer_speed", 1)
-	SceneParams.eventos_alarma = data.get("eventos", [])
+	var raw_eventos: Variant = data.get("eventos_alarma", data.get("eventos", []))
+	SceneParams.eventos_alarma = raw_eventos if (raw_eventos is Array) else []
+	var raw_positions: Variant = data.get("node_positions", {})
+	SceneParams.node_positions = raw_positions.duplicate(true) if (raw_positions is Dictionary) else {}
 	SceneParams.ia_predictiva = data.get("ia_predictiva", false)
 	SceneParams.bonus_nodes = data.get("bonus_nodes", [])
 	SceneParams.node_triggers = data.get("node_triggers", {})

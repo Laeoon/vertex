@@ -74,6 +74,10 @@ func _notification(what: int) -> void:
 			vp.size_changed.connect(_resize_rect)
 
 
+func is_transitioning() -> bool:
+	return _is_transitioning
+
+
 func set_next_dive_origin(pos: Vector2) -> void:
 	_next_dive_origin = pos
 	_force_next_dive = true
@@ -205,6 +209,93 @@ func dive_out_to_scene(path: String, origin_pos: Vector2 = Vector2.ZERO, duratio
 	var tween: Tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_method(func(val: float):
+		_dive_progress = val
+		_dive_overlay.queue_redraw()
+	, 0.0, 1.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	await tween.finished
+
+	_dive_mode = DiveMode.NONE
+	_dive_progress = 0.0
+	_dive_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_is_transitioning = false
+	_dive_overlay.queue_redraw()
+
+
+func dive_in_action(action: Callable, origin_pos: Vector2 = Vector2.ZERO, target_tag: String = "WORLD_SELECT", duration: float = 0.38) -> void:
+	if _is_transitioning:
+		return
+	if DisplayServer.get_name() == "headless":
+		if action.is_valid():
+			action.call()
+		return
+
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("dive_in")
+
+	_is_transitioning = true
+	_dive_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_dive_mode = DiveMode.IN
+	_dive_progress = 0.0
+	_dive_center = origin_pos
+	_dive_target_path = target_tag
+
+	var tween: Tween = create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_method(func(val: float) -> void:
+		_dive_progress = val
+		_dive_overlay.queue_redraw()
+	, 0.0, 1.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await tween.finished
+
+	if action.is_valid():
+		action.call()
+	await get_tree().process_frame
+
+	var tween2: Tween = create_tween()
+	tween2.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween2.tween_method(func(val: float) -> void:
+		_dive_progress = val
+		_dive_overlay.queue_redraw()
+	, 1.0, 1.25, 0.15)
+	await tween2.finished
+
+	_dive_mode = DiveMode.NONE
+	_dive_progress = 0.0
+	_dive_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_is_transitioning = false
+	_dive_overlay.queue_redraw()
+
+
+func dive_out_action(action: Callable, origin_pos: Vector2 = Vector2.ZERO, duration: float = 0.38) -> void:
+	if _is_transitioning:
+		return
+	if DisplayServer.get_name() == "headless":
+		if action.is_valid():
+			action.call()
+		return
+
+	var am = get_node_or_null("/root/AudioManager")
+	if am != null and am.has_method("play_sfx"):
+		am.play_sfx("dive_out")
+
+	_is_transitioning = true
+	_dive_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_dive_mode = DiveMode.OUT
+	_dive_progress = 0.0
+	_dive_center = origin_pos
+	_dive_target_path = ""
+
+	_dive_overlay.queue_redraw()
+	await get_tree().process_frame
+
+	if action.is_valid():
+		action.call()
+	await get_tree().process_frame
+
+	var tween: Tween = create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_method(func(val: float) -> void:
 		_dive_progress = val
 		_dive_overlay.queue_redraw()
 	, 0.0, 1.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

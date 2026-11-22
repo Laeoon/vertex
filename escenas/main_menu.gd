@@ -43,27 +43,14 @@ var _cyber_bg := CyberBackgroundClass.new()
 var _world_renderer := WorldSelectRendererClass.new()
 var _operator_advisor := OperatorAdvisorClass.new()
 
-# ─── 3D Orbital Graph Hub & Dive-In / Dive-Out ──────────────────────
-enum DiveMode { NONE, IN, OUT }
-var _dive_mode: DiveMode = DiveMode.NONE
+# ─── 3D Orbital Graph Hub ────────────────────────────────────────────
 var _orbit_rot: float = 0.0
-var _dive_progress: float = 0.0
-var _dive_center: Vector2 = Vector2.ZERO
-var _dive_target_scene: String = ""
-var _dive_target_world: String = ""
-var _dive_target_state: State = State.MAIN_MENU
-var _dive_is_state_change: bool = false
-var _dive_warp_angles: PackedFloat32Array = []
 
 
 func _ready() -> void:
 	font = BrandClass.font_regular()
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
-
-	_dive_warp_angles = PackedFloat32Array()
-	for i in range(32):
-		_dive_warp_angles.append(float(i) * TAU / 32.0)
 
 	_main_items = [
 		{"label": loc("menu.play"), "desc": loc("menu.play_desc"), "action": "play", "icon_path": "res://assets/icons/menu_play.png", "icon_tex": null, "vector_icon": "play"},
@@ -221,7 +208,7 @@ func _get_back_button_rect(_vp: Vector2) -> Rect2:
 
 
 func _input(event: InputEvent) -> void:
-	if _transitioning or _dive_mode != DiveMode.NONE:
+	if _transitioning or SceneTransition.is_transitioning():
 		return
 
 	if event is InputEventKey and event.pressed:
@@ -431,27 +418,6 @@ func _process(delta: float) -> void:
 	var target_angle: float = -float(selected_idx) * (TAU / float(total_items)) + (PI * 0.5)
 	_orbit_rot = lerp_angle(_orbit_rot, target_angle, delta * 8.0)
 
-	# Dive breach transition (IN or OUT)
-	if _dive_mode != DiveMode.NONE:
-		_dive_progress += delta * 2.2
-		if _dive_progress >= 1.0:
-			var was_state_change := _dive_is_state_change
-			var t_state := _dive_target_state
-			var t_scene := _dive_target_scene
-			var t_world := _dive_target_world
-			_dive_mode = DiveMode.NONE
-			if was_state_change:
-				_go_to_state(t_state)
-			else:
-				var sp = get_node_or_null("/root/SceneParams")
-				if sp != null and t_world != "":
-					sp.titulo_nivel = t_world
-				var st = get_node_or_null("/root/SceneTransition")
-				if st != null and st.has_method("fade_to_scene"):
-					st.fade_to_scene(t_scene, 0.22)
-				elif get_tree() != null:
-					get_tree().change_scene_to_file(t_scene)
-
 	if _transitioning:
 		if _transition_stage == 1:
 			_fade_alpha = move_toward(_fade_alpha, 0.0, delta * 8.0)
@@ -520,67 +486,32 @@ func _get_orbital_node_pos(idx: int, total: int, vp: Vector2) -> Vector2:
 
 
 func _start_dive_in(target_scene: String = "", target_world_id: String = "", target_state: State = State.MAIN_MENU, is_state_change: bool = false) -> void:
-	if not is_state_change and target_scene != "":
-		var sp = get_node_or_null("/root/SceneParams")
-		if sp != null and target_world_id != "":
-			sp.titulo_nivel = target_world_id
-		var vp := get_viewport_rect().size
-		var items := _current_items()
-		var center := _get_orbital_node_pos(selected_idx, items.size(), vp)
-		SceneTransition.dive_in_to_scene(target_scene, center)
-		return
-
-	if DisplayServer.get_name() == "headless":
-		if is_state_change:
-			_go_to_state(target_state)
-		return
-
-	_dive_mode = DiveMode.IN
-	_dive_progress = 0.0
-	_dive_target_scene = target_scene
-	_dive_target_world = target_world_id
-	_dive_target_state = target_state
-	_dive_is_state_change = is_state_change
 	var vp := get_viewport_rect().size
 	var items := _current_items()
-	_dive_center = _get_orbital_node_pos(selected_idx, items.size(), vp)
-
-	var am = get_node_or_null("/root/AudioManager")
-	if am != null and am.has_method("play_sfx"):
-		am.play_sfx("dive_in")
+	var center := _get_orbital_node_pos(selected_idx, items.size(), vp)
+	if is_state_change:
+		SceneTransition.dive_in_action(func() -> void: _go_to_state(target_state), center, "WORLD_SELECT")
+		return
+	if target_scene != "":
+		if target_world_id != "":
+			SceneParams.titulo_nivel = target_world_id
+		SceneTransition.dive_in_to_scene(target_scene, center)
 
 
 func _start_dive_out(target_scene: String = "", target_world_id: String = "", target_state: State = State.MAIN_MENU, is_state_change: bool = false) -> void:
-	if DisplayServer.get_name() == "headless":
-		if is_state_change:
-			_go_to_state(target_state)
-			return
-		var sp = get_node_or_null("/root/SceneParams")
-		if sp != null and target_world_id != "":
-			sp.titulo_nivel = target_world_id
-		var st = get_node_or_null("/root/SceneTransition")
-		if st != null and st.has_method("fade_to_scene"):
-			st.fade_to_scene(target_scene)
-		elif get_tree() != null:
-			get_tree().change_scene_to_file(target_scene)
-		return
-
-	_dive_mode = DiveMode.OUT
-	_dive_progress = 0.0
-	_dive_target_scene = target_scene
-	_dive_target_world = target_world_id
-	_dive_target_state = target_state
-	_dive_is_state_change = is_state_change
 	var vp := get_viewport_rect().size
-	_dive_center = Vector2(vp.x * 0.5, vp.y * 0.44)
-
-	var am = get_node_or_null("/root/AudioManager")
-	if am != null and am.has_method("play_sfx"):
-		am.play_sfx("dive_out")
+	var center := Vector2(vp.x * 0.5, vp.y * 0.44)
+	if is_state_change:
+		SceneTransition.dive_out_action(func() -> void: _go_to_state(target_state), center)
+		return
+	if target_scene != "":
+		if target_world_id != "":
+			SceneParams.titulo_nivel = target_world_id
+		SceneTransition.dive_out_to_scene(target_scene, center)
 
 
 func _activate_selected() -> void:
-	if _dive_mode != DiveMode.NONE:
+	if SceneTransition.is_transitioning():
 		return
 	var items := _current_items()
 	if selected_idx < 0 or selected_idx >= items.size():
@@ -689,13 +620,6 @@ func _load_lang_setting() -> void:
 func _draw() -> void:
 	var vp := get_viewport_rect().size
 	_cyber_bg.draw(self, vp)
-
-	if _dive_mode == DiveMode.IN:
-		_draw_dive_in(vp)
-		return
-	elif _dive_mode == DiveMode.OUT:
-		_draw_dive_out(vp)
-		return
 
 	var alpha: float = clampf(_fade_alpha, 0.0, 1.0)
 	var ox: float = _slide_offset_x
@@ -1042,131 +966,4 @@ func _draw_bottom_dock(vp: Vector2, alpha: float, ox: float) -> void:
 	var ver_text := "VERTEX v0.6.0  |  ONLINE"
 	var ver_size := font.get_string_size(ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2)
 	draw_string(font, Vector2(dock_rect.position.x + dock_w - ver_size.x - 16, dock_y + 27), ver_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size - 2, BrandClass.with_alpha(BrandClass.ACCENT, alpha * 0.7))
-
-
-func _draw_dive_in(vp: Vector2) -> void:
-	var p := _dive_progress
-	var veil_alpha := clampf(p * 1.5, 0.0, 0.92)
-	draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.02, 0.05, 0.08, veil_alpha))
-
-	var center := _dive_center
-	if center == Vector2.ZERO:
-		center = vp * 0.5
-
-	# 1. Radial Warp Hyper-drive Lines
-	var max_r := vp.length() * 0.9
-	var warp_count := _dive_warp_angles.size()
-	for i in range(warp_count):
-		var ang: float = _dive_warp_angles[i] + p * 0.2
-		var length_factor: float = 0.2 + fmod(float(i * 7) / float(warp_count), 0.8)
-		var r_start: float = 20.0 + pow(p, 1.8) * max_r * length_factor * 0.5
-		var r_end: float = r_start + (30.0 + p * 400.0 * length_factor)
-		var dir := Vector2(cos(ang), sin(ang))
-		var p0 := center + dir * r_start
-		var p1 := center + dir * r_end
-		var line_alpha: float = clampf((1.0 - p * 0.7) * 0.85, 0.0, 1.0)
-		var col := BrandClass.with_alpha(BrandClass.ACCENT if (i % 3 == 0) else BrandClass.accent_dim(0.7), line_alpha)
-		draw_line(p0, p1, col, 1.5 + p * 2.0)
-
-	# 2. Concentric Shockwave Breach Rings
-	for r_idx in range(4):
-		var ring_p := fmod(p * 2.5 + float(r_idx) * 0.25, 1.0)
-		var ring_r := pow(ring_p, 1.3) * max_r * 0.65
-		var ring_alpha := (1.0 - ring_p) * 0.75 * (1.0 - p * 0.5)
-		draw_arc(center, ring_r, 0, TAU, 36, BrandClass.with_alpha(BrandClass.ACCENT, ring_alpha), 2.0)
-
-	# 3. Expanding Breach Reticle at Center
-	var ret_scale := 1.0 + p * 4.0
-	var ret_r := 35.0 * ret_scale
-	var ret_rot := _pulse * 3.0 + p * 6.0
-	draw_arc(center, ret_r, ret_rot, ret_rot + PI * 0.5, 12, BrandClass.with_alpha(BrandClass.ACCENT, 0.9), 2.0)
-	draw_arc(center, ret_r, ret_rot + PI, ret_rot + PI * 1.5, 12, BrandClass.with_alpha(BrandClass.ACCENT, 0.9), 2.0)
-	draw_line(center - Vector2(ret_r + 15, 0), center - Vector2(ret_r - 5, 0), BrandClass.ACCENT, 2.0)
-	draw_line(center + Vector2(ret_r - 5, 0), center + Vector2(ret_r + 15, 0), BrandClass.ACCENT, 2.0)
-	draw_line(center - Vector2(0, ret_r + 15), center - Vector2(0, ret_r - 5), BrandClass.ACCENT, 2.0)
-	draw_line(center + Vector2(0, ret_r - 5), center + Vector2(0, ret_r + 15), BrandClass.ACCENT, 2.0)
-
-	# 4. Tactical OSD Banner
-	var banner_y := vp.y * 0.50
-	var title_txt := "[ BREACH PENETRATION // INITIATED ]"
-	var tsize := font.get_string_size(title_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, big_font_size - 4)
-	var banner_rect := Rect2(vp.x * 0.5 - tsize.x * 0.5 - 20, banner_y - 20, tsize.x + 40, 60)
-	draw_rect(banner_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.90))
-	draw_rect(banner_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.85), false, 1.5)
-	draw_string(font, Vector2(vp.x * 0.5 - tsize.x * 0.5, banner_y + 10), title_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, big_font_size - 4, BrandClass.ACCENT)
-
-	var target_tag := _dive_target_scene if _dive_target_scene != "" else "WORLD_SELECT"
-	var sub_txt := "ESTABLISHING NEURAL LINK... 0x%08X" % (hash(target_tag) & 0xFFFFFFFF)
-	var ssize := font.get_string_size(sub_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2)
-	draw_string(font, Vector2(vp.x * 0.5 - ssize.x * 0.5, banner_y + 32), sub_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2, BrandClass.TEXT_DIM)
-
-	# 5. Cyber White/Cyan Breach Flash near climax
-	if p > 0.65:
-		var flash_alpha := ((p - 0.65) / 0.35) * 0.95
-		draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.85, 1.0, 1.0, flash_alpha))
-
-
-func _draw_dive_out(vp: Vector2) -> void:
-	var p := _dive_progress
-
-	# 1. Dark veil fading out as camera pulls back
-	var veil_alpha := clampf((1.0 - p) * 0.92, 0.0, 0.92)
-	draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.02, 0.05, 0.08, veil_alpha))
-
-	var center := _dive_center
-	if center == Vector2.ZERO:
-		center = vp * 0.5
-
-	var max_r := vp.length() * 0.9
-	var warp_count := _dive_warp_angles.size()
-	var inv_p := 1.0 - p
-
-	# 2. Reverse Warp Hyper-drive Lines (contracting inward)
-	for i in range(warp_count):
-		var ang: float = _dive_warp_angles[i] - p * 0.2
-		var length_factor: float = 0.2 + fmod(float(i * 7) / float(warp_count), 0.8)
-		var r_start: float = 20.0 + pow(inv_p, 1.8) * max_r * length_factor * 0.5
-		var r_end: float = r_start + (30.0 + inv_p * 400.0 * length_factor)
-		var dir := Vector2(cos(ang), sin(ang))
-		var p0 := center + dir * r_start
-		var p1 := center + dir * r_end
-		var line_alpha: float = clampf(inv_p * 0.85, 0.0, 1.0)
-		var col := BrandClass.with_alpha(BrandClass.ACCENT if (i % 3 == 0) else BrandClass.accent_dim(0.7), line_alpha)
-		draw_line(p0, p1, col, 1.5 + inv_p * 2.0)
-
-	# 3. Contracting Shockwave Breach Rings (collapsing inward)
-	for r_idx in range(4):
-		var ring_p := 1.0 - fmod(p * 2.5 + float(r_idx) * 0.25, 1.0)
-		var ring_r := pow(ring_p, 1.3) * max_r * 0.65
-		var ring_alpha := ring_p * 0.75 * (1.0 - p * 0.3)
-		draw_arc(center, ring_r, 0, TAU, 36, BrandClass.with_alpha(BrandClass.ACCENT, ring_alpha), 2.0)
-
-	# 4. Contracting Lock-in Reticle at Center
-	var ret_scale := 3.5 - p * 2.5
-	var ret_r := 35.0 * ret_scale
-	var ret_rot := _pulse * 3.0 - p * 6.0
-	draw_arc(center, ret_r, ret_rot, ret_rot + PI * 0.5, 12, BrandClass.with_alpha(BrandClass.ACCENT, 0.9 * inv_p), 2.0)
-	draw_arc(center, ret_r, ret_rot + PI, ret_rot + PI * 1.5, 12, BrandClass.with_alpha(BrandClass.ACCENT, 0.9 * inv_p), 2.0)
-	draw_line(center - Vector2(ret_r + 15, 0), center - Vector2(ret_r - 5, 0), BrandClass.with_alpha(BrandClass.ACCENT, inv_p), 2.0)
-	draw_line(center + Vector2(ret_r - 5, 0), center + Vector2(ret_r + 15, 0), BrandClass.with_alpha(BrandClass.ACCENT, inv_p), 2.0)
-	draw_line(center - Vector2(0, ret_r + 15), center - Vector2(0, ret_r - 5), BrandClass.with_alpha(BrandClass.ACCENT, inv_p), 2.0)
-	draw_line(center + Vector2(0, ret_r - 5), center + Vector2(0, ret_r + 15), BrandClass.with_alpha(BrandClass.ACCENT, inv_p), 2.0)
-
-	# 5. Tactical Egress OSD Banner
-	var banner_y := vp.y * 0.50
-	var title_txt := "[ BREACH EGRESS // DISENGAGING ]"
-	var tsize := font.get_string_size(title_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, big_font_size - 4)
-	var banner_rect := Rect2(vp.x * 0.5 - tsize.x * 0.5 - 20, banner_y - 20, tsize.x + 40, 60)
-	draw_rect(banner_rect, BrandClass.with_alpha(BrandClass.PANEL_SOLID, 0.90 * inv_p))
-	draw_rect(banner_rect, BrandClass.with_alpha(BrandClass.ACCENT, 0.85 * inv_p), false, 1.5)
-	draw_string(font, Vector2(vp.x * 0.5 - tsize.x * 0.5, banner_y + 10), title_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, big_font_size - 4, BrandClass.with_alpha(BrandClass.ACCENT, inv_p))
-
-	var sub_txt := "DISCONNECTING NEURAL LINK... RETURNING TO SECURE BASELINE"
-	var ssize := font.get_string_size(sub_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2)
-	draw_string(font, Vector2(vp.x * 0.5 - ssize.x * 0.5, banner_y + 32), sub_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 2, BrandClass.with_alpha(BrandClass.TEXT_DIM, inv_p))
-
-	# 6. Initial flash dissolving
-	if p < 0.28:
-		var flash_alpha := (1.0 - (p / 0.28)) * 0.90
-		draw_rect(Rect2(0, 0, vp.x, vp.y), Color(0.85, 1.0, 1.0, flash_alpha))
 

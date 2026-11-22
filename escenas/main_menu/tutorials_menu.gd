@@ -37,24 +37,6 @@ var _pulse: float = 0.0
 
 var track_lessons: Dictionary = {}
 
-var _sp_instance: Object = null
-var SceneParams: Object:
-	get:
-		if _sp_instance == null:
-			_sp_instance = get_node_or_null("/root/SceneParams")
-			if _sp_instance == null:
-				var sp_script = load("res://core/autoloads/scene_params.gd")
-				if sp_script != null:
-					_sp_instance = sp_script.new()
-		return _sp_instance
-
-var _st_instance: Object = null
-var SceneTransition: Object:
-	get:
-		if _st_instance == null:
-			_st_instance = get_node_or_null("/root/SceneTransition")
-		return _st_instance
-
 
 func _ready() -> void:
 	font = BrandClass.font_regular()

@@ -190,6 +190,9 @@ var locked_edges: Array = []
 ## E4: nodos ocultos inicialmente hasta ser revelados por eventos. Formato: ["NodeId", ...]
 var hidden_nodes: Array = []
 
+## Posiciones personalizadas de nodos cargadas desde JSON de nivel (ej. secret_root).
+var node_positions: Dictionary = {}
+
 
 
 
@@ -240,6 +243,7 @@ func reset() -> void:
 	node_triggers = {}
 	locked_edges = []
 	hidden_nodes = []
+	node_positions = {}
 	stages = []
 	multi_daemons = []
 
