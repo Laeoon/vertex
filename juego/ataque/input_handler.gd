@@ -38,6 +38,8 @@ signal defender_hover_edge(edge_key: String)
 
 signal tutorial_skipped()
 
+const SettingsManagerClass = preload("res://core/autoloads/settings_manager.gd")
+
 enum Scheme {
 	HYBRID = 0,
 	KEYBOARD_ONLY = 1,
@@ -70,6 +72,18 @@ var _defender_context_node: StringName = &""
 
 func _ready() -> void:
 	load_input_scheme()
+	var ev: Node = get_node_or_null("/root/Events")
+	if ev != null and ev.has_signal("settings_changed"):
+		var cb := Callable(self, "_on_settings_changed")
+		if not ev.is_connected("settings_changed", cb):
+			ev.connect("settings_changed", cb)
+
+
+func _on_settings_changed(_section: StringName, key: StringName, value: Variant) -> void:
+	if key == &"input_scheme":
+		var scheme_val: int = int(value)
+		if scheme_val >= Scheme.HYBRID and scheme_val <= Scheme.MOUSE_ONLY:
+			set_input_scheme(scheme_val)
 
 
 func set_input_scheme(scheme: int) -> void:
@@ -89,12 +103,15 @@ func apply_mouse_mode() -> void:
 
 
 func load_input_scheme() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load("user://settings.cfg") == OK:
-		var saved = cfg.get_value("options", "input_scheme", Scheme.HYBRID)
-		if saved is int and saved >= 0 and saved <= 2:
-			set_input_scheme(saved)
-			return
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	var saved: Variant
+	if sm != null and sm.has_method("get_setting"):
+		saved = sm.call("get_setting", "input_scheme", Scheme.HYBRID)
+	else:
+		saved = SettingsManagerClass.read_setting_from_disk("input_scheme")
+	if saved is int and saved >= Scheme.HYBRID and saved <= Scheme.MOUSE_ONLY:
+		set_input_scheme(saved)
+		return
 	set_input_scheme(Scheme.HYBRID)
 
 

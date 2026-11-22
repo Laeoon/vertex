@@ -3,7 +3,13 @@ extends Node
 ## Gestor centralizado de audio con soporte para buses, pooling y sonidos en disco.
 ## Uso: AudioManager.play_sfx("move")
 
+const SettingsManagerClass = preload("res://core/autoloads/settings_manager.gd")
+
 const SFX_POOL_SIZE: int = 8
+
+const SFX_ALIASES: Dictionary = {
+	"hover": "click",
+}
 
 const SFX_PRIORITY: Dictionary = {
 	"win": 100,
@@ -24,6 +30,7 @@ const SFX_PRIORITY: Dictionary = {
 	"block": 30,
 	"move": 10,
 	"click": 5,
+	"hover": 5,
 	"reset": 50,
 }
 
@@ -79,6 +86,7 @@ var _world_music_playlists: Dictionary = {
 func _ready() -> void:
 	_ensure_audio_buses()
 	_load_saved_volumes()
+	_connect_settings_events()
 	_generate_sounds()
 	_load_disk_sounds()
 	_setup_music_player()
@@ -86,24 +94,47 @@ func _ready() -> void:
 	_initialized = true
 
 
+func _connect_settings_events() -> void:
+	var ev: Node = get_node_or_null("/root/Events")
+	if ev != null and ev.has_signal("settings_changed"):
+		var cb := Callable(self, "_on_settings_changed")
+		if not ev.is_connected("settings_changed", cb):
+			ev.connect("settings_changed", cb)
+
+
+func _on_settings_changed(_section: StringName, key: StringName, value: Variant) -> void:
+	match key:
+		&"volume_master":
+			set_bus_volume_percent("Master", int(value))
+		&"volume_music":
+			set_bus_volume_percent("Music", int(value))
+		&"volume_sfx":
+			set_bus_volume_percent("SFX", int(value))
+
+
+func set_bus_volume_percent(bus_name: String, percent: int) -> void:
+	var bus_idx: int = AudioServer.get_bus_index(bus_name)
+	if bus_idx != -1:
+		var clamped: int = clampi(percent, 0, 100)
+		AudioServer.set_bus_volume_db(bus_idx, linear_to_db(float(clamped) / 100.0))
+
+
 func _load_saved_volumes() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load("user://settings.cfg") == OK:
-		var v_master = cfg.get_value("options", "volume_master", 80)
-		var v_music = cfg.get_value("options", "volume_music", 80)
-		var v_sfx = cfg.get_value("options", "volume_sfx", 80)
-
-		var m_idx := AudioServer.get_bus_index("Master")
-		if m_idx != -1:
-			AudioServer.set_bus_volume_db(m_idx, linear_to_db(float(v_master) / 100.0))
-
-		var mu_idx := AudioServer.get_bus_index("Music")
-		if mu_idx != -1:
-			AudioServer.set_bus_volume_db(mu_idx, linear_to_db(float(v_music) / 100.0))
-
-		var s_idx := AudioServer.get_bus_index("SFX")
-		if s_idx != -1:
-			AudioServer.set_bus_volume_db(s_idx, linear_to_db(float(v_sfx) / 100.0))
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	var v_master: int
+	var v_music: int
+	var v_sfx: int
+	if sm != null and sm.has_method("get_setting"):
+		v_master = int(sm.call("get_setting", "volume_master"))
+		v_music = int(sm.call("get_setting", "volume_music"))
+		v_sfx = int(sm.call("get_setting", "volume_sfx"))
+	else:
+		v_master = int(SettingsManagerClass.read_setting_from_disk("volume_master"))
+		v_music = int(SettingsManagerClass.read_setting_from_disk("volume_music"))
+		v_sfx = int(SettingsManagerClass.read_setting_from_disk("volume_sfx"))
+	set_bus_volume_percent("Master", v_master)
+	set_bus_volume_percent("Music", v_music)
+	set_bus_volume_percent("SFX", v_sfx)
 
 
 func _ensure_audio_buses() -> void:
@@ -316,22 +347,28 @@ func _make_sweep_down(dur: float, sr: float) -> AudioStreamWAV:
 	return wav
 
 
+func _resolve_sfx_name(name: String) -> String:
+	return str(SFX_ALIASES.get(name, name))
+
+
 func has_sound(name: String) -> bool:
-	return _disk_sounds.has(name) or _sounds.has(name)
+	var resolved: String = _resolve_sfx_name(name)
+	return _disk_sounds.has(resolved) or _sounds.has(resolved)
 
 
 func play_sfx(name: String, pitch_scale: float = 1.0) -> void:
 	if not _initialized:
 		return
+	var resolved: String = _resolve_sfx_name(name)
 	var stream: AudioStream = null
-	if _disk_sounds.has(name):
-		stream = _disk_sounds[name]
-	elif _sounds.has(name):
-		stream = _sounds[name]
+	if _disk_sounds.has(resolved):
+		stream = _disk_sounds[resolved]
+	elif _sounds.has(resolved):
+		stream = _sounds[resolved]
 	else:
 		return
 
-	var priority: int = SFX_PRIORITY.get(name, 20)
+	var priority: int = SFX_PRIORITY.get(name, SFX_PRIORITY.get(resolved, 20))
 
 	# Si es un sonido de alta prioridad (e.g. win, lose, captured),
 	# detener cualquier SFX de menor prioridad inmediatamente para evitar contaminación sonora.

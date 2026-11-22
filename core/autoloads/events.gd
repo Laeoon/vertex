@@ -40,3 +40,33 @@ signal path_calculated(source: StringName, target: StringName, path: Array[Strin
 ## Emitida por el StrategicAnalyzer cuando identifica un corte mínimo.
 ## Parámetros: source, sink, max_flow, cut_edges (Array[Dictionary]).
 signal min_cut_identified(source: StringName, sink: StringName, max_flow: float, cut_edges: Array)
+
+
+# ─── GAMEPLAY / PROGRESIÓN ────────────────────────────────────────────
+
+## Emitida cuando el jugador completa una misión o nivel.
+signal mission_completed(level_id: StringName, world_id: StringName, stars: int, cost: float, alerts: int)
+
+
+# ─── VAULT / CLI ──────────────────────────────────────────────────────
+
+## Emitida al descifrar un expediente .enc en Termlink.
+signal enc_file_decrypted(file_id: StringName, attempts_left: int)
+
+## Emitida al ejecutar un comando en la consola CLI o Academia.
+signal cli_command_executed(command: String, exit_code: int, context: StringName)
+
+## Emitida al completar una lección de la Academia CLI.
+signal academy_lesson_completed(lesson_id: StringName, course_idx: int)
+
+## Emitida al reproducir una pista en MusicBox.
+signal music_track_played(track_id: StringName)
+
+## Emitida al aplicar una preferencia de personalización o cosmético.
+signal customization_applied(category: StringName, item_id: StringName)
+
+
+# ─── SETTINGS / AUDIO ─────────────────────────────────────────────────
+
+## Emitida cuando SettingsManager actualiza una clave de configuración.
+signal settings_changed(section: StringName, key: StringName, value: Variant)

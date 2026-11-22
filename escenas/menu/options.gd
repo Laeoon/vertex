@@ -7,6 +7,7 @@ var _pulse: float = 0.0
 
 const BrandClass = preload("res://juego/ui/brand.gd")
 const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
+const SettingsManagerClass = preload("res://core/autoloads/settings_manager.gd")
 var _cyber_bg := CyberBackgroundClass.new()
 
 const CYAN: Color = BrandClass.ACCENT
@@ -22,31 +23,32 @@ var _sections: Array[Dictionary] = [
 		"id": "audio",
 		"label": "AUDIO",
 		"items": [
-			{"id": "volume_master", "label": "options.volume_master", "type": "slider", "min": 0, "max": 100, "value": 80},
-			{"id": "volume_music", "label": "options.volume_music", "type": "slider", "min": 0, "max": 100, "value": 60},
-			{"id": "volume_sfx", "label": "options.volume_sfx", "type": "slider", "min": 0, "max": 100, "value": 70},
+			{"id": "volume_master", "label": "options.volume_master", "type": "slider", "min": 0, "max": 100, "value": SettingsManagerClass.DEFAULTS["volume_master"]},
+			{"id": "volume_music", "label": "options.volume_music", "type": "slider", "min": 0, "max": 100, "value": SettingsManagerClass.DEFAULTS["volume_music"]},
+			{"id": "volume_sfx", "label": "options.volume_sfx", "type": "slider", "min": 0, "max": 100, "value": SettingsManagerClass.DEFAULTS["volume_sfx"]},
 		]
 	},
 	{
 		"id": "graphics",
 		"label": "options.section_graphics",
 		"items": [
-			{"id": "fullscreen", "label": "options.fullscreen", "type": "toggle", "value": true},
-			{"id": "vsync", "label": "options.vsync", "type": "toggle", "value": true},
+			{"id": "fullscreen", "label": "options.fullscreen", "type": "toggle", "value": SettingsManagerClass.DEFAULTS["fullscreen"]},
+			{"id": "vsync", "label": "options.vsync", "type": "toggle", "value": SettingsManagerClass.DEFAULTS["vsync"]},
 		]
 	},
 	{
 		"id": "controls",
 		"label": "options.section_controls",
 		"items": [
-			{"id": "show_hints", "label": "options.show_hints", "type": "toggle", "value": true},
+			{"id": "show_hints", "label": "options.show_hints", "type": "toggle", "value": SettingsManagerClass.DEFAULTS["show_hints"]},
+			{"id": "input_scheme", "label": "Esquema de Control", "type": "cycle", "options": ["HÍBRIDO", "TECLADO", "MOUSE"], "box_width": 120.0, "value": SettingsManagerClass.DEFAULTS["input_scheme"]},
 		]
 	},
 	{
 		"id": "language",
 		"label": "options.section_language",
 		"items": [
-			{"id": "lang", "label": "options.language_label", "type": "cycle", "options": ["ES", "EN", "PT"], "value": 0},
+			{"id": "lang", "label": "options.language_label", "type": "cycle", "options": ["ES", "EN", "PT"], "value": SettingsManagerClass.DEFAULTS["lang"]},
 		]
 	},
 ]
@@ -198,13 +200,15 @@ func _input(event: InputEvent) -> void:
 							_item_idx = i
 							item.value = not item.value
 							_apply_graphics(item.id, item.value)
+							_commit_setting(str(item.id), item.value)
 							_play_click_sfx()
 							queue_redraw()
 							return
 					"cycle":
+						var box_w: float = float(item.get("box_width", 50.0))
 						var prev_rect := Rect2(320, by - 12, 30, 24)
-						var text_rect := Rect2(354, by - 12, 54, 24)
-						var next_rect := Rect2(412, by - 12, 30, 24)
+						var text_rect := Rect2(354, by - 12, box_w + 4.0, 24)
+						var next_rect := Rect2(362.0 + box_w, by - 12, 30, 24)
 						if prev_rect.has_point(mpos):
 							_item_idx = i
 							_adjust_value(-1)
@@ -253,6 +257,7 @@ func _update_slider_from_mouse(item: Dictionary, mouse_x: float) -> void:
 	if new_val != item.value:
 		item.value = new_val
 		_apply_audio(item.id, item.value)
+		_commit_setting(str(item.id), item.value)
 
 
 func _adjust_value(dir: int) -> void:
@@ -264,28 +269,34 @@ func _adjust_value(dir: int) -> void:
 		"slider":
 			item.value = clampi(item.value + dir * 10, item.min, item.max)
 			_apply_audio(item.id, item.value)
+			_commit_setting(str(item.id), item.value)
 		"toggle":
 			item.value = not item.value
 			_apply_graphics(item.id, item.value)
+			_commit_setting(str(item.id), item.value)
 		"cycle":
 			item.value = (item.value + dir) % item.options.size()
 			if item.value < 0:
 				item.value = item.options.size() - 1
-			_apply_language(item.value)
+			_apply_cycle(str(item.id), int(item.value))
+			_commit_setting(str(item.id), item.value)
 	queue_redraw()
 
 
 func _apply_audio(id: String, value: int) -> void:
-	var volume_db: float = linear_to_db(value / 100.0)
+	var bus_name: String = ""
 	match id:
 		"volume_master":
-			AudioServer.set_bus_volume_db(0, volume_db)
+			bus_name = "Master"
 		"volume_music":
-			if AudioServer.bus_count > 1:
-				AudioServer.set_bus_volume_db(1, volume_db)
+			bus_name = "Music"
 		"volume_sfx":
-			if AudioServer.bus_count > 2:
-				AudioServer.set_bus_volume_db(2, volume_db)
+			bus_name = "SFX"
+	if bus_name.is_empty():
+		return
+	var bus_idx: int = AudioServer.get_bus_index(bus_name)
+	if bus_idx >= 0:
+		AudioServer.set_bus_volume_db(bus_idx, linear_to_db(float(value) / 100.0))
 
 
 func _apply_graphics(id: String, value: bool) -> void:
@@ -299,10 +310,22 @@ func _apply_graphics(id: String, value: bool) -> void:
 			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if value else DisplayServer.VSYNC_DISABLED)
 
 
+func _apply_cycle(id: String, idx: int) -> void:
+	if id == "lang":
+		_apply_language(idx)
+
+
 func _apply_language(idx: int) -> void:
-	var _langs: Array[String] = ["es", "en", "pt"]
-	var lang: String = _langs[idx]
-	LocUtil.set_locale(self, lang)
+	var clamped: int = clampi(idx, 0, SettingsManagerClass.LANG_CODES.size() - 1)
+	LocUtil.set_locale(self, SettingsManagerClass.LANG_CODES[clamped])
+
+
+func _commit_setting(key: String, value: Variant) -> void:
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	if sm != null and sm.has_method("set_setting"):
+		sm.call("set_setting", key, value, true)
+	else:
+		SettingsManagerClass.write_setting_to_disk(key, value)
 
 
 func _play_click_sfx() -> void:
@@ -312,36 +335,39 @@ func _play_click_sfx() -> void:
 
 
 func _save_settings() -> void:
-	var cfg := ConfigFile.new()
-	cfg.load("user://settings.cfg")
-	for section in _sections:
-		for item in section.items:
-			cfg.set_value("options", item.id, item.value)
-			if item.id == "lang" and item.value is int:
-				var _langs: Array[String] = ["es", "en", "pt"]
-				if item.value >= 0 and item.value < _langs.size():
-					cfg.set_value("locale", "lang", _langs[item.value])
-	cfg.save("user://settings.cfg")
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	if sm != null and sm.has_method("set_setting") and sm.has_method("save_settings"):
+		for section: Dictionary in _sections:
+			for item: Dictionary in section.items:
+				sm.call("set_setting", str(item.id), item.value, false)
+		sm.call("save_settings")
+		return
+	for section: Dictionary in _sections:
+		for item: Dictionary in section.items:
+			SettingsManagerClass.write_setting_to_disk(str(item.id), item.value)
 
 
 func _load_settings() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load("user://settings.cfg") == OK:
-		for section in _sections:
-			for item in section.items:
-				if cfg.has_section_key("options", item.id):
-					var saved_val = cfg.get_value("options", item.id, item.value)
-					if typeof(saved_val) == typeof(item.value):
-						item.value = saved_val
-		for section in _sections:
-			for item in section.items:
-				match item.type:
-					"slider":
-						_apply_audio(item.id, item.value)
-					"toggle":
-						_apply_graphics(item.id, item.value)
-					"cycle":
-						_apply_language(item.value)
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	for section: Dictionary in _sections:
+		for item: Dictionary in section.items:
+			var key: String = str(item.id)
+			var saved_val: Variant
+			if sm != null and sm.has_method("get_setting"):
+				saved_val = sm.call("get_setting", key, item.value)
+			else:
+				saved_val = SettingsManagerClass.read_setting_from_disk(key)
+			if saved_val != null and typeof(saved_val) == typeof(item.value):
+				item.value = saved_val
+	for section: Dictionary in _sections:
+		for item: Dictionary in section.items:
+			match item.type:
+				"slider":
+					_apply_audio(str(item.id), int(item.value))
+				"toggle":
+					_apply_graphics(str(item.id), bool(item.value))
+				"cycle":
+					_apply_cycle(str(item.id), int(item.value))
 
 
 func loc(key: String) -> String:
@@ -477,13 +503,14 @@ func _draw_cycle(pos: Vector2, item: Dictionary, is_sel: bool) -> void:
 
 	# Center text
 	var current_opt: String = item.options[item.value]
-	var text_rect := Rect2(pos.x + 34, pos.y, 50, btn_h)
+	var box_w: float = float(item.get("box_width", 50.0))
+	var text_rect := Rect2(pos.x + 34, pos.y, box_w, btn_h)
 	draw_rect(text_rect, BrandClass.PANEL_SOLID)
 	draw_rect(text_rect, border_col, false, 1.0)
-	draw_string(font, Vector2(pos.x + 49, pos.y + 17), current_opt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BLANCO)
+	draw_string(font, Vector2(pos.x + 44, pos.y + 17), current_opt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size + 1, BLANCO)
 
 	# Right button [>]
-	var next_x := pos.x + 90
+	var next_x: float = pos.x + 40.0 + box_w
 	draw_rect(Rect2(next_x, pos.y, btn_w, btn_h), btn_bg)
 	draw_rect(Rect2(next_x, pos.y, btn_w, btn_h), border_col, false, 1.0)
 	draw_string(font, Vector2(next_x + 10, pos.y + 17), ">", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, CYAN)

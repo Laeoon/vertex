@@ -21,6 +21,7 @@ GameLogger="*res://core/autoloads/logger.gd"
 Events="*res://core/autoloads/events.gd"
 SceneParams="*res://core/autoloads/scene_params.gd"
 LocaleManager="*res://core/locale/locale_manager.tscn"
+SettingsManager="*res://core/autoloads/settings_manager.gd"
 SceneTransition="*res://core/autoloads/scene_transition.gd"
 AudioManager="*res://core/autoloads/audio_manager.gd"
 

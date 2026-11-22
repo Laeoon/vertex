@@ -12,6 +12,7 @@ signal main_menu_requested
 signal input_scheme_changed(scheme: int)
 
 const BrandClass = preload("res://juego/ui/brand.gd")
+const SettingsManagerClass = preload("res://core/autoloads/settings_manager.gd")
 
 var current_view: String = "main"
 
@@ -115,6 +116,7 @@ func show_restart_confirm() -> void:
 
 
 func show_options() -> void:
+	load_options()
 	current_view = "options"
 	_main_box.visible = false
 	_confirm_box.visible = false
@@ -351,55 +353,89 @@ func _build_options_view(parent: Node) -> void:
 	_options_box.add_child(back_options_button)
 
 
+func _bus_to_setting_key(bus_name: String) -> String:
+	match bus_name:
+		"Master":
+			return "volume_master"
+		"Music":
+			return "volume_music"
+		"SFX":
+			return "volume_sfx"
+	return ""
+
+
+func _commit_setting(key: String, value: Variant) -> void:
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	if sm != null and sm.has_method("set_setting"):
+		sm.call("set_setting", key, value, true)
+	else:
+		SettingsManagerClass.write_setting_to_disk(key, value)
+
+
 func _on_volume_changed(bus_name: String, value: float, val_lbl: Label) -> void:
 	val_lbl.text = "%d%%" % int(value)
 	var bus_idx: int = AudioServer.get_bus_index(bus_name)
 	if bus_idx >= 0:
 		var db: float = linear_to_db(value / 100.0)
 		AudioServer.set_bus_volume_db(bus_idx, db)
-	save_options()
+	var key: String = _bus_to_setting_key(bus_name)
+	if not key.is_empty():
+		_commit_setting(key, int(value))
 
 
 func _on_scheme_selected(idx: int) -> void:
-	save_options()
+	_commit_setting("input_scheme", idx)
 	input_scheme_changed.emit(idx)
 
 
 func save_options() -> void:
-	var cfg := ConfigFile.new()
-	cfg.load("user://settings.cfg")
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	if sm != null and sm.has_method("set_setting") and sm.has_method("save_settings"):
+		if master_slider != null:
+			sm.call("set_setting", "volume_master", int(master_slider.value), false)
+		if music_slider != null:
+			sm.call("set_setting", "volume_music", int(music_slider.value), false)
+		if sfx_slider != null:
+			sm.call("set_setting", "volume_sfx", int(sfx_slider.value), false)
+		if scheme_option != null:
+			sm.call("set_setting", "input_scheme", scheme_option.selected, false)
+		sm.call("save_settings")
+		return
 	if master_slider != null:
-		cfg.set_value("options", "volume_master", int(master_slider.value))
+		SettingsManagerClass.write_setting_to_disk("volume_master", int(master_slider.value))
 	if music_slider != null:
-		cfg.set_value("options", "volume_music", int(music_slider.value))
+		SettingsManagerClass.write_setting_to_disk("volume_music", int(music_slider.value))
 	if sfx_slider != null:
-		cfg.set_value("options", "volume_sfx", int(sfx_slider.value))
+		SettingsManagerClass.write_setting_to_disk("volume_sfx", int(sfx_slider.value))
 	if scheme_option != null:
-		cfg.set_value("options", "input_scheme", scheme_option.selected)
-	cfg.save("user://settings.cfg")
+		SettingsManagerClass.write_setting_to_disk("input_scheme", scheme_option.selected)
 
 
 func load_options() -> void:
-	var cfg := ConfigFile.new()
-	var master_val: int = 80
-	var music_val: int = 80
-	var sfx_val: int = 80
-	var scheme_val: int = 0
-
-	if cfg.load("user://settings.cfg") == OK:
-		master_val = int(cfg.get_value("options", "volume_master", 80))
-		music_val = int(cfg.get_value("options", "volume_music", 80))
-		sfx_val = int(cfg.get_value("options", "volume_sfx", 80))
-		scheme_val = int(cfg.get_value("options", "input_scheme", 0))
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	var master_val: int
+	var music_val: int
+	var sfx_val: int
+	var scheme_val: int
+	if sm != null and sm.has_method("get_setting"):
+		master_val = int(sm.call("get_setting", "volume_master"))
+		music_val = int(sm.call("get_setting", "volume_music"))
+		sfx_val = int(sm.call("get_setting", "volume_sfx"))
+		scheme_val = int(sm.call("get_setting", "input_scheme"))
+	else:
+		master_val = int(SettingsManagerClass.read_setting_from_disk("volume_master"))
+		music_val = int(SettingsManagerClass.read_setting_from_disk("volume_music"))
+		sfx_val = int(SettingsManagerClass.read_setting_from_disk("volume_sfx"))
+		scheme_val = int(SettingsManagerClass.read_setting_from_disk("input_scheme"))
 
 	if master_slider != null:
-		master_slider.value = master_val
+		master_slider.set_value_no_signal(master_val)
 		master_val_label.text = "%d%%" % master_val
 	if music_slider != null:
-		music_slider.value = music_val
+		music_slider.set_value_no_signal(music_val)
 		music_val_label.text = "%d%%" % music_val
 	if sfx_slider != null:
-		sfx_slider.value = sfx_val
+		sfx_slider.set_value_no_signal(sfx_val)
 		sfx_val_label.text = "%d%%" % sfx_val
 	if scheme_option != null and scheme_val >= 0 and scheme_val < scheme_option.item_count:
 		scheme_option.selected = scheme_val
