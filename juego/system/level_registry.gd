@@ -3,6 +3,8 @@ class_name LevelRegistry
 ## Registro maestro de niveles por mundo.
 ## Define la estructura de datos, metadatos tácticos y narrativa de cada nivel jugable.
 
+const LevelLoaderV2Class = preload("res://juego/system/level_loader_v2.gd")
+
 const WORLDS: Dictionary = {
 	"heist": {
 		"title": "Heist",
@@ -203,6 +205,22 @@ const WORLDS: Dictionary = {
 			},
 		]
 	},
+	"free_ops": {
+		"title": "Operaciones Libres",
+		"description": "Simulaciones tácticas y contratos libres fuera de línea del protocolo AS-65000.",
+		"operator": "ZERO",
+		"levels": [
+			{
+				"path": "res://juego/free_ops/free_ops_01.level.json",
+				"title": "Simulación 01 — Bypass Perimetral",
+				"difficulty": 2,
+				"act": 1,
+				"operator": "ZERO",
+				"cinematic_id": "",
+				"briefing": "Simulación táctica de reconocimiento sobre red v2: alcanza el Repetidor Alfa y extrae el núcleo simulado.",
+			},
+		]
+	},
 }
 
 
@@ -219,9 +237,9 @@ static func get_levels(world_id: String) -> Array:
 static func get_levels_for_act(world_id: String, act: int) -> Array:
 	var all_levels: Array = get_levels(world_id)
 	var filtered: Array = []
-	for i in all_levels.size():
+	for i in range(all_levels.size()):
 		var lvl: Dictionary = all_levels[i]
-		var lvl_act: int = lvl.get("act", 1 if i < 5 else 2)
+		var lvl_act: int = int(lvl.get("act", 1))
 		if lvl_act == act:
 			filtered.append(lvl)
 	return filtered
@@ -257,19 +275,11 @@ static func find_level(level_id: String) -> Dictionary:
 		var levels: Array = get_levels(world_id)
 		for idx in levels.size():
 			var config: Dictionary = levels[idx]
-			if config.get("path", "").get_file().trim_suffix(".json") == level_id:
+			var clean_id: String = str(config.get("path", "")).get_file().trim_suffix(".level.json").trim_suffix(".json")
+			if clean_id == level_id:
 				return {"world": world_id, "idx": idx, "config": config}
 	return {}
 
 
 static func load_level_data(json_path: String) -> Dictionary:
-	var file: FileAccess = FileAccess.open(json_path, FileAccess.READ)
-	if file == null:
-		push_error("LevelRegistry: no se pudo abrir %s" % json_path)
-		return {}
-	var json_text: String = file.get_as_text()
-	var parsed = JSON.parse_string(json_text)
-	if parsed == null or not parsed is Dictionary:
-		push_error("LevelRegistry: JSON invalido en %s" % json_path)
-		return {}
-	return parsed
+	return LevelLoaderV2Class.load_and_normalize(json_path)

@@ -38,6 +38,7 @@ var _minimap_cache: Dictionary = {}
 var _back_rect: Rect2 = Rect2()
 var _act1_rect: Rect2 = Rect2()
 var _act2_rect: Rect2 = Rect2()
+var _act3_rect: Rect2 = Rect2()
 var _deploy_rect: Rect2 = Rect2()
 var _lore_rect: Rect2 = Rect2()
 var _card_rects: Array[Rect2] = []
@@ -57,12 +58,17 @@ var _selected_node: String:
 	get: return str(_get_global_level_index(selected_idx))
 	set(val):
 		var g_idx := int(val)
-		if g_idx >= 5:
-			current_act = 2
-			selected_idx = g_idx - 5
+		if g_idx >= 0 and g_idx < level_nodes.size():
+			var target_act: int = int(level_nodes[g_idx].get("act", 1))
+			current_act = clampi(target_act, 1, 3)
+			var local_idx: int = 0
+			for i in range(g_idx):
+				if int(level_nodes[i].get("act", 1)) == current_act:
+					local_idx += 1
+			selected_idx = local_idx
 		else:
-			current_act = 1
-			selected_idx = g_idx
+			current_act = clampi((g_idx / 5) + 1, 1, 3)
+			selected_idx = g_idx % 5
 
 
 func _ready() -> void:
@@ -126,7 +132,7 @@ func _load_world_data() -> void:
 
 
 func set_act(act_num: int) -> void:
-	var new_act := clampi(act_num, 1, 2)
+	var new_act := clampi(act_num, 1, 3)
 	if current_act != new_act:
 		current_act = new_act
 		selected_idx = 0
@@ -144,16 +150,22 @@ func _get_current_act_levels() -> Array:
 	var act_levels: Array = []
 	for i in level_nodes.size():
 		var node_data: Dictionary = level_nodes[i]
-		var node_act: int = node_data.get("act", 1 if i < 5 else 2)
+		var node_act: int = int(node_data.get("act", 1))
 		if node_act == current_act:
 			act_levels.append(node_data)
 	return act_levels
 
 
 func _get_global_level_index(act_idx: int) -> int:
-	if current_act == 1:
-		return act_idx
-	return act_idx + 5
+	var count: int = 0
+	for i in range(level_nodes.size()):
+		var node_data: Dictionary = level_nodes[i]
+		var node_act: int = int(node_data.get("act", 1))
+		if node_act == current_act:
+			if count == act_idx:
+				return i
+			count += 1
+	return act_idx
 
 
 func _is_level_unlocked(global_index: int) -> bool:
@@ -210,11 +222,11 @@ func get_spine_node_pill_text(act_index: int) -> String:
 	var g_idx := _get_global_level_index(act_index)
 	var act_levels := _get_current_act_levels()
 	var total_nodes := maxi(1, act_levels.size())
-	var is_boss: bool = (act_index == total_nodes - 1 and total_nodes >= 5) or (act_index == 4)
-	var is_unlocked := _is_level_unlocked(g_idx)
 	var lvl_data: Dictionary = {}
 	if g_idx < level_nodes.size():
 		lvl_data = level_nodes[g_idx]
+	var is_boss: bool = bool(lvl_data.get("is_golden_boss", false)) or bool(lvl_data.get("is_boss", false)) or (act_index == total_nodes - 1 and total_nodes >= 4) or (act_index == 4)
+	var is_unlocked := _is_level_unlocked(g_idx)
 	var title_str: String = lvl_data.get("title", "Misión")
 	if not is_unlocked:
 		title_str = "[ BLOQUEADO ]"
@@ -245,7 +257,11 @@ func get_spine_node_pill_rect(act_index: int, vp: Vector2 = Vector2.ZERO) -> Rec
 
 
 func _get_node_position(_node_data: Dictionary, index: int) -> Vector2:
-	var act_idx := index if current_act == 1 else (index - 5)
+	var act_idx: int = 0
+	var target_act: int = int(level_nodes[index].get("act", current_act)) if (index >= 0 and index < level_nodes.size()) else current_act
+	for i in range(mini(index, level_nodes.size())):
+		if int(level_nodes[i].get("act", 1)) == target_act:
+			act_idx += 1
 	return _get_spine_node_position(act_idx)
 
 
@@ -309,8 +325,8 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				_go_back()
 			KEY_TAB:
-				if world_id != "secret":
-					set_act(2 if current_act == 1 else 1)
+				if world_id != "secret" and world_id != "sector0":
+					set_act((current_act % 3) + 1)
 			KEY_A, KEY_LEFT:
 				_select_delta(-1)
 			KEY_D, KEY_RIGHT:
@@ -341,6 +357,9 @@ func _input(event: InputEvent) -> void:
 					return
 				if _act2_rect.size.x > 0.0 and _act2_rect.has_point(mpos):
 					set_act(2)
+					return
+				if _act3_rect.size.x > 0.0 and _act3_rect.has_point(mpos):
+					set_act(3)
 					return
 				if _deploy_rect.has_point(mpos):
 					_deploy_selected()
@@ -387,6 +406,9 @@ func _input(event: InputEvent) -> void:
 				return
 			if _act2_rect.size.x > 0.0 and _act2_rect.has_point(tpos):
 				set_act(2)
+				return
+			if _act3_rect.size.x > 0.0 and _act3_rect.has_point(tpos):
+				set_act(3)
 				return
 			if _deploy_rect.has_point(tpos):
 				_deploy_selected()
@@ -539,7 +561,13 @@ func _draw_3d_spine_and_nodes(vp: Vector2, theme_col: Color) -> void:
 	var total_nodes := act_levels.size()
 
 	if total_nodes == 0:
-		var msg := "[ ACTO II: COLISIÓN — EN PREPARACIÓN ]"
+		var msg := "[ SECTOR EN PREPARACIÓN ]"
+		if world_id == "free_ops":
+			msg = "[ OPERACIONES LIBRES — EN PREPARACIÓN ]"
+		elif current_act == 2:
+			msg = "[ ACTO II: COLISIÓN — EN PREPARACIÓN ]"
+		elif current_act == 3:
+			msg = "[ ACTO III: CONVERGENCIA — EN PREPARACIÓN ]"
 		var msg_sz := font.get_string_size(msg, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 2) if font else Vector2(280.0, 24.0)
 		draw_string(font, Vector2((vp.x - msg_sz.x) * 0.5, vp.y * 0.45), msg, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 2, BrandClass.TEXT_DIM)
 		return
@@ -600,7 +628,7 @@ func _draw_spine_mission_node(
 ) -> void:
 	if vp == Vector2.ZERO:
 		vp = get_viewport_rect().size
-	var is_boss: bool = (act_idx == 4)
+	var is_boss: bool = bool(lvl_data.get("is_golden_boss", false)) or bool(lvl_data.get("is_boss", false)) or (act_idx == 4)
 	var node_col: Color = Color("ff2a6d") if is_boss else (theme_col if is_unlocked else BrandClass.TEXT_DIM)
 
 	# Halo resplandeciente exterior pulsante con el beat musical
@@ -718,7 +746,7 @@ func _calculate_act_rects(vp: Vector2 = Vector2.ZERO) -> void:
 		vp = _get_viewport_size()
 	if font == null:
 		font = BrandClass.font_regular()
-	if world_id == "secret":
+	if world_id == "secret" or world_id == "sector0":
 		var label := "[ PRECUELA // SECTOR 0 ]"
 		var str_w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 170.0
 		var pill_w := maxf(175.0, str_w + 28.0)
@@ -726,21 +754,26 @@ func _calculate_act_rects(vp: Vector2 = Vector2.ZERO) -> void:
 		var start_x := (vp.x - pill_w) * 0.5
 		_act1_rect = Rect2(start_x, 18.0, pill_w, pill_h)
 		_act2_rect = Rect2(0.0, 0.0, 0.0, 0.0)
+		_act3_rect = Rect2(0.0, 0.0, 0.0, 0.0)
 		return
 
-	var label1 := "[ ACTO I (N1–N5) ]"
-	var label2 := "[ ACTO II (N6–N10) ]"
-	var str1_w := font.get_string_size(label1, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 140.0
-	var str2_w := font.get_string_size(label2, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 140.0
+	var label1 := "[ ACTO I ]"
+	var label2 := "[ ACTO II ]"
+	var label3 := "[ ACTO III ]"
+	var str1_w := font.get_string_size(label1, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 110.0
+	var str2_w := font.get_string_size(label2, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 110.0
+	var str3_w := font.get_string_size(label3, HORIZONTAL_ALIGNMENT_LEFT, -1, small_font_size).x if font else 110.0
 	var pill1_w := maxf(175.0, str1_w + 28.0)
 	var pill2_w := maxf(175.0, str2_w + 28.0)
+	var pill3_w := maxf(175.0, str3_w + 28.0)
 	var gap := 16.0
-	var total_w := pill1_w + gap + pill2_w
-	var start_x := (vp.x - total_w) * 0.5
+	var total_w := pill1_w + pill2_w + pill3_w + gap * 2.0
+	var start_x := maxf(416.0, (vp.x - total_w) * 0.5)
 	var pill_h := 34.0
 
 	_act1_rect = Rect2(start_x, 18.0, pill1_w, pill_h)
 	_act2_rect = Rect2(start_x + pill1_w + gap, 18.0, pill2_w, pill_h)
+	_act3_rect = Rect2(start_x + pill1_w + pill2_w + gap * 2.0, 18.0, pill3_w, pill_h)
 
 
 func get_act1_rect(vp: Vector2 = Vector2.ZERO) -> Rect2:
@@ -750,9 +783,15 @@ func get_act1_rect(vp: Vector2 = Vector2.ZERO) -> Rect2:
 
 
 func get_act2_rect(vp: Vector2 = Vector2.ZERO) -> Rect2:
-	if vp != Vector2.ZERO or (_act2_rect.size.x == 0.0 and world_id != "secret"):
+	if vp != Vector2.ZERO or (_act2_rect.size.x == 0.0 and world_id != "secret" and world_id != "sector0"):
 		_calculate_act_rects(vp if vp != Vector2.ZERO else _get_viewport_size())
 	return _act2_rect
+
+
+func get_act3_rect(vp: Vector2 = Vector2.ZERO) -> Rect2:
+	if vp != Vector2.ZERO or (_act3_rect.size.x == 0.0 and world_id != "secret" and world_id != "sector0"):
+		_calculate_act_rects(vp if vp != Vector2.ZERO else _get_viewport_size())
+	return _act3_rect
 
 
 func _draw_floating_header(vp: Vector2, theme_col: Color) -> void:
@@ -775,11 +814,12 @@ func _draw_floating_header(vp: Vector2, theme_col: Color) -> void:
 	# Selector Flotante Superior Central de Actos
 	_calculate_act_rects(vp)
 
-	if world_id == "secret":
+	if world_id == "secret" or world_id == "sector0":
 		_draw_act_pill(_act1_rect, "[ PRECUELA // SECTOR 0 ]", true, theme_col)
 	else:
-		_draw_act_pill(_act1_rect, "[ ACTO I (N1–N5) ]", current_act == 1, theme_col)
-		_draw_act_pill(_act2_rect, "[ ACTO II (N6–N10) ]", current_act == 2, theme_col)
+		_draw_act_pill(_act1_rect, "[ ACTO I ]", current_act == 1, theme_col)
+		_draw_act_pill(_act2_rect, "[ ACTO II ]", current_act == 2, theme_col)
+		_draw_act_pill(_act3_rect, "[ ACTO III ]", current_act == 3, theme_col)
 
 
 func _draw_act_pill(rect: Rect2, label: String, is_active: bool, theme_col: Color) -> void:
@@ -930,9 +970,12 @@ func _get_or_load_minimap(json_path: String) -> Dictionary:
 	var start_id: String = lvl_data.get("start_node", "")
 	var target_id: String = lvl_data.get("target_node", "")
 
-	if graph_path != "" and ResourceLoader.exists(graph_path):
-		var graph_res = load(graph_path) as NetworkGraphResource
-		if graph_res:
+	var graph_res: NetworkGraphResource = null
+	if lvl_data.get("inline_graph") is NetworkGraphResource:
+		graph_res = lvl_data.get("inline_graph") as NetworkGraphResource
+	elif graph_path != "" and ResourceLoader.exists(graph_path):
+		graph_res = load(graph_path) as NetworkGraphResource
+	if graph_res != null:
 			var raw_nodes: Array = graph_res.nodes
 			var id_to_idx: Dictionary = {}
 			var min_p := Vector2(INF, INF)

@@ -193,6 +193,12 @@ var hidden_nodes: Array = []
 ## Posiciones personalizadas de nodos cargadas desde JSON de nivel (ej. secret_root).
 var node_positions: Dictionary = {}
 
+## Grafo compilado en memoria (niveles v2 *.level.json sin .tres externo).
+var inline_graph: Resource = null
+
+## Contexto tipado de lanzamiento vigente.
+var launch_context: Resource = null
+
 
 
 
@@ -244,6 +250,56 @@ func reset() -> void:
 	locked_edges = []
 	hidden_nodes = []
 	node_positions = {}
+	inline_graph = null
+	launch_context = null
 	stages = []
 	multi_daemons = []
+
+
+func apply_launch_context(ctx: Resource) -> void:
+	if ctx == null:
+		return
+	launch_context = ctx
+	inline_graph = ctx.get("inline_graph")
+	var gp: String = str(ctx.get("graph_path"))
+	if not gp.is_empty():
+		graph_path = gp
+	else:
+		_graph_path = ""
+	var lk: String = str(ctx.get("level_key"))
+	if not lk.is_empty():
+		level_key = lk
+	start_node = ctx.get("start_node")
+	target_node = ctx.get("target_node")
+	waypoints = ctx.get("waypoints")
+	titulo_nivel = str(ctx.get("titulo_nivel"))
+	mensaje_tutorial = str(ctx.get("mensaje_tutorial"))
+	ai_enabled = bool(ctx.get("ai_enabled"))
+	ai_block_per_turn = int(ctx.get("ai_block_per_turn"))
+	ai_bloquea_al_inicio = bool(ctx.get("ai_bloquea_al_inicio"))
+	max_ai_blocks = int(ctx.get("max_ai_blocks"))
+	max_turns = int(ctx.get("max_turns"))
+	max_movement_points = int(ctx.get("max_movement_points"))
+	hacker_mode = bool(ctx.get("hacker_mode"))
+	starting_exploits = ctx.get("starting_exploits")
+	defender_mode = bool(ctx.get("defender_mode"))
+	defender_blocks_per_turn = int(ctx.get("defender_blocks_per_turn"))
+	defender_block_duration = int(ctx.get("defender_block_duration"))
+	defender_max_blocks = int(ctx.get("defender_max_blocks"))
+	enemy_start_node = ctx.get("enemy_start_node")
+	enemy_target_node = ctx.get("enemy_target_node")
+	firewall_cost = int(ctx.get("firewall_cost"))
+	block_duration = int(ctx.get("block_duration"))
+	pursuer_delay = int(ctx.get("pursuer_delay"))
+	max_pursuers = int(ctx.get("max_pursuers"))
+	pursuer_speed = int(ctx.get("pursuer_speed"))
+	eventos_alarma = ctx.get("eventos_alarma")
+	ia_predictiva = bool(ctx.get("ia_predictiva"))
+	bonus_nodes = ctx.get("bonus_nodes")
+	node_triggers = ctx.get("node_triggers")
+	locked_edges = ctx.get("locked_edges")
+	hidden_nodes = ctx.get("hidden_nodes")
+	node_positions = ctx.get("node_positions")
+	stages = ctx.get("stages")
+	multi_daemons = ctx.get("multi_daemons")
 

@@ -45,10 +45,11 @@ const NIVELES: Array[String] = [
 	"res://juego/secret/sector_0_1.json",
 	"res://juego/secret/sector_0_2.json",
 	"res://juego/secret/sector_0_3.json",
+	"res://juego/free_ops/free_ops_01.level.json",
 ]
 
 const CLAVES_MINIMAS: Array[String] = [
-	"id", "world", "graph_path", "start_node", "target_node", "titulo_nivel", "max_turns",
+	"id", "world", "start_node", "target_node", "titulo_nivel", "max_turns",
 ]
 
 var passed: int = 0
@@ -106,10 +107,12 @@ func _unit_extra_min_cut() -> void:
 func _verificar_diversidad_niveles() -> void:
 	for ruta in NIVELES:
 		var nombre: String = ruta.get_file().get_basename()
-		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(ruta))
-		if not (data is Dictionary):
+		var data: Dictionary = Registry.load_level_data(ruta)
+		if data.is_empty():
 			continue
-		var graph = load(data.get("graph_path", ""))
+		var graph = data.get("inline_graph", null)
+		if graph == null:
+			graph = load(str(data.get("graph_path", "")))
 		if graph == null or not ("edges" in graph and "nodes" in graph):
 			continue
 
@@ -167,8 +170,8 @@ func _validar_nivel(ruta: String) -> void:
 		_afirmar(false, "%s: el archivo existe" % nombre)
 		return
 
-	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(ruta))
-	if not (data is Dictionary):
+	var data: Dictionary = Registry.load_level_data(ruta)
+	if data.is_empty():
 		_afirmar(false, "%s: el JSON parsea a Dictionary" % nombre)
 		return
 
@@ -179,13 +182,13 @@ func _validar_nivel(ruta: String) -> void:
 	if data.get("world") != null and not Registry.WORLDS.has(data["world"]):
 		problemas.append("world '%s' no está en WORLDS" % data["world"])
 
-	var graph_path: String = data.get("graph_path", "")
-	if not FileAccess.file_exists(graph_path):
-		problemas.append("graph_path inexistente: %s" % graph_path)
-
-	var graph = null
-	if FileAccess.file_exists(graph_path):
-		graph = load(graph_path)
+	var graph = data.get("inline_graph", null)
+	if graph == null:
+		var graph_path: String = str(data.get("graph_path", ""))
+		if graph_path.is_empty() or not FileAccess.file_exists(graph_path):
+			problemas.append("graph_path inexistente: %s" % graph_path)
+		else:
+			graph = load(graph_path)
 	if graph == null:
 		problemas.append("graph_path no carga como recurso")
 	elif not ("nodes" in graph and "edges" in graph):

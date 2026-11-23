@@ -55,6 +55,8 @@ func calculate_stars() -> int:
 	# legacy o coste óptimo).
 	if not _game.bonus_nodes.is_empty() and _game.bonus_visitados.size() >= _game.bonus_nodes.size():
 		estrellas = maxi(estrellas, 3)
+	if bool(_game.get("route_hint_used")):
+		estrellas = mini(estrellas, 2)
 	return estrellas
 
 

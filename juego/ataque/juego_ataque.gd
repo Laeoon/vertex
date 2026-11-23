@@ -58,6 +58,7 @@ var node_positions: Dictionary = {}
 var showing_path: bool = false
 var selected_neighbor: StringName = &""
 var show_optimal_overlay: bool = false
+var route_hint_used: bool = false
 var optimal_overlay_path: Array[StringName] = []
 var player_total_cost: float = 0.0
 var movement_points: int = 0

@@ -248,7 +248,7 @@ func draw_frame(d: Dictionary) -> void:
 		var enemy_vis: Vector2 = d.get("enemy_visual_pos", Vector2.ZERO)
 		draw_nodes(d.graph, d.node_positions, &"", d.brain_enemy_target, [], d.current_path, d.node_radius, d.game_over, d.alerted_nodes, &"", d.scan_results, d.waypoints, -1, d.brain_firewalls, d.brain_enemy_pos, d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, enemy_vis, false, true, d.brain_enemy_pos, d.get("brain_quarantined_nodes", {}), q_mode_active, enemy_start_node, d.brain_enemy_target, is_secret_sector)
 		if should_draw_enemy_path and d.brain_enemy_path.size() >= 2:
-			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius)
+			draw_optimal_overlay(d.brain_enemy_path, d.node_positions, d.node_radius, d.graph, hidden_nodes)
 	else:
 		draw_nodes(d.graph, d.node_positions, d.player_pos, d.target, d.neighbors, d.current_path, d.node_radius, d.game_over, d.alerted_nodes, d.selected_neighbor, d.scan_results, d.waypoints, d.waypoint_idx, {}, &"", d.enemy_move_flash_time, d.bonus_nodes, d.bonus_visitados, hidden_nodes, d.get("player_visual_pos", Vector2.ZERO), d.get("is_moving", false), false, &"", {}, false, &"", &"", is_secret_sector)
 
@@ -268,7 +268,7 @@ func draw_frame(d: Dictionary) -> void:
 			if font != null:
 				_canvas.draw_string(font, md_pos + Vector2(-24.0, -d.node_radius - 10.0), str(md.get("id", "DAEMON")), HORIZONTAL_ALIGNMENT_CENTER, 48.0, 10, draw_col)
 	if d.show_optimal_overlay:
-		draw_optimal_overlay(d.optimal_overlay_path, d.node_positions, d.node_radius)
+		draw_optimal_overlay(d.optimal_overlay_path, d.node_positions, d.node_radius, d.graph, hidden_nodes)
 	if d.tutorial_player != null and d.tutorial_player.is_active:
 		# Flecha guía del tutorial: en modo defensor no hay jugador.
 		draw_tutorial_highlights(d.tutorial_player, d.node_positions, d.node_radius, d.tutorial_arrow_pos)
@@ -1308,41 +1308,94 @@ func draw_pursuers(pursuers: Array, node_positions: Dictionary, node_radius: flo
 		draw_string(pos + Vector2(s + 5, -4), p_text, HORIZONTAL_ALIGNMENT_LEFT, -1, tiny_font_size, color)
 
 
+func compute_edge_curve_points(
+	from_id: StringName,
+	to_id: StringName,
+	node_positions: Dictionary,
+	node_radius: float,
+	graph: NetworkGraphResource = null
+) -> PackedVector2Array:
+	var puntos := PackedVector2Array()
+	var from_pos: Vector2 = node_positions.get(from_id, Vector2.ZERO) as Vector2
+	var to_pos: Vector2 = node_positions.get(to_id, Vector2.ZERO) as Vector2
+	if from_pos == Vector2.ZERO or to_pos == Vector2.ZERO:
+		return puntos
+	var seg_vec: Vector2 = to_pos - from_pos
+	var seg_len: float = seg_vec.length()
+	if seg_len <= node_radius * 2.0:
+		return puntos
+	var dir: Vector2 = seg_vec / seg_len
+	var inicio: Vector2 = from_pos + dir * node_radius
+	var tip: Vector2 = to_pos - dir * node_radius
+	var centro: Vector2 = (from_pos + to_pos) * 0.5
+	var perp: Vector2 = dir.rotated(PI * 0.5)
+
+	var has_reverse: bool = false
+	if graph != null:
+		for e2 in graph.edges:
+			if e2 != null and e2.from_id == to_id and e2.to_id == from_id:
+				has_reverse = true
+				break
+
+	var bend: float = 0.0
+	if has_reverse:
+		bend = 15.0 * (1.0 if String(from_id) < String(to_id) else -1.0)
+	else:
+		for other_nid in node_positions.keys():
+			if other_nid != from_id and other_nid != to_id:
+				var inter_pos: Vector2 = node_positions[other_nid] as Vector2
+				var closest: Vector2 = Geometry2D.get_closest_point_to_segment(inter_pos, from_pos, to_pos)
+				if closest.distance_to(inter_pos) < 38.0 and seg_len > 80.0:
+					var offset_vec: Vector2 = inter_pos - closest
+					var cross_prod: float = dir.x * offset_vec.y - dir.y * offset_vec.x
+					bend = -45.0 if cross_prod >= 0.0 else 45.0
+					break
+
+	if absf(bend) < 0.5:
+		puntos.append(inicio)
+		puntos.append(tip)
+	else:
+		var ctrl: Vector2 = centro + perp * bend * 2.0
+		for s in range(15):
+			var t: float = float(s) / 14.0
+			puntos.append(inicio.lerp(ctrl, t).lerp(ctrl.lerp(tip, t), t))
+	return puntos
+
+
 func draw_optimal_overlay(
 	optimal_path: Array,
 	node_positions: Dictionary,
-	node_radius: float
+	node_radius: float,
+	graph: NetworkGraphResource = null,
+	hidden_nodes: Array = []
 ) -> void:
 	if optimal_path.size() < 2:
 		return
 	var pulse: float = 0.5 + sin(Time.get_ticks_msec() * 0.005) * 0.3
 
-	# 1. 3-pass Neon Green route lines between consecutive path nodes
+	# 1. 3-pass Neon Green route lines following exact edge curves
 	for i in range(optimal_path.size() - 1):
-		var p1: Vector2 = node_positions.get(optimal_path[i], Vector2.ZERO) as Vector2
-		var p2: Vector2 = node_positions.get(optimal_path[i + 1], Vector2.ZERO) as Vector2
-		if p1 == Vector2.ZERO or p2 == Vector2.ZERO:
+		var from_id: StringName = StringName(optimal_path[i])
+		var to_id: StringName = StringName(optimal_path[i + 1])
+		if hidden_nodes.has(from_id) or hidden_nodes.has(to_id) or hidden_nodes.has(String(from_id)) or hidden_nodes.has(String(to_id)):
 			continue
-		var seg_vec := p2 - p1
-		var seg_len := seg_vec.length()
-		if seg_len <= node_radius * 2.0:
+		var pts: PackedVector2Array = compute_edge_curve_points(from_id, to_id, node_positions, node_radius, graph)
+		if pts.size() < 2:
 			continue
-		var dir := seg_vec / seg_len
-		var start_pt := p1 + dir * node_radius
-		var end_pt := p2 - dir * node_radius
 
 		# 3-pass Neon Green (#39ff88 / Color(0.22, 1.0, 0.53)) route line:
-		# 1) Outer neon glow
-		draw_line(start_pt, end_pt, Color(0.1, 1.0, 0.45, 0.24 * pulse), 10.0)
-		# 2) Mid bloom
-		draw_line(start_pt, end_pt, Color(0.2, 1.0, 0.55, 0.55 * pulse), 5.0)
-		# 3) Bright neon core
-		draw_line(start_pt, end_pt, Color(0.4, 1.0, 0.65, 0.95), 2.5)
+		draw_polyline(pts, Color(0.1, 1.0, 0.45, 0.24 * pulse), 10.0)
+		draw_polyline(pts, Color(0.2, 1.0, 0.55, 0.55 * pulse), 5.0)
+		draw_polyline(pts, Color(0.4, 1.0, 0.65, 0.95), 2.5)
 
-		# Animated directional chevrons / photon pulses traveling along start_pt -> end_pt
-		var progress := fmod((Time.get_ticks_msec() * 0.0012) + float(i) * 0.25, 1.0)
-		var travel_pos := start_pt.lerp(end_pt, progress)
-		var normal := Vector2(-dir.y, dir.x)
+		# Animated directional chevrons / photon pulses traveling along exact curve
+		var progress: float = fmod((Time.get_ticks_msec() * 0.0012) + float(i) * 0.25, 1.0)
+		var f_idx: float = progress * float(pts.size() - 1)
+		var seg_idx: int = clampi(int(floorf(f_idx)), 0, pts.size() - 2)
+		var local_t: float = f_idx - float(seg_idx)
+		var travel_pos: Vector2 = pts[seg_idx].lerp(pts[seg_idx + 1], local_t)
+		var dir: Vector2 = (pts[seg_idx + 1] - pts[seg_idx]).normalized()
+		var normal: Vector2 = Vector2(-dir.y, dir.x)
 		var chev_tip := travel_pos + dir * 6.0
 		var chev_left := travel_pos - dir * 4.0 + normal * 4.5
 		var chev_right := travel_pos - dir * 4.0 - normal * 4.5

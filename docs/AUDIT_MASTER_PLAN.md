@@ -124,6 +124,6 @@ Evolución de `escenas/menu/profile.gd` con columna izquierda fija (`VaultIdCard
 ## 5. Roadmap de Implementación por Fases
 
 - **Fase 1:** `F1.1` (`VaultStore` + aislamiento de slots + `total_stars` + `build_level_rows`), `F1.2` (`SettingsManager` + `Events` + unificación opciones + SFX `"hover"`), `F1.3` (tipado `juego_ataque.gd`, fix `input_handler.gd:708`, `_edge_en_posicion`, shadowing `tutorials_menu.gd`, Dive-In/Out único, `LevelManager` + `secret_root.json`).
-- **Fase 2:** `F2.1` (`*.level.json` v2 + `LevelLaunchContext` + selector dinámico), `F2.2` (`tests/validate_levels.gd`), `F2.3` (núcleo CLI/VFS compartido RW + `ShellResult`).
+- **Fase 2:** `F2.1` (`*.level.json` v2 + `LevelLaunchContext` + selector 3 actos `ACTO I / ACTO II / ACTO III` + `free_ops` + fix ruta curva `[P]` y penalización 2★), `F2.2` (`tests/validate_levels.gd` con solubilidad + Índice de Presión Táctica multivariable), `F2.3` (núcleo CLI/VFS compartido, kit táctico de 10 comandos, `traceroute`/`nmap` sobre grafo vivo, `[TAB]` autocomplete, secretos `sudo` `as65000-root` / `.ENC` / `ssh` y cartuchos `/usr/games/` `breach3d`, `netcycle`, `rogue`, `icebreaker`).
 - **Fase 3:** `F3.1` (Insignias + `ToastOverlay`), `F3.2` (Termlink `HexHackEngine`), `F3.3` (Consola TTY + Academia Bash), `F3.4` (Music Box + `AudioManager`), `F3.5` (Personalización en caliente).
 - **Fase 4:** `F4.1` (Acto II `act2_n1..n4` + `act2_collision_teaser` + `Free Ops`), `F4.2` (partición de god-objects + localización `es`/`en`/`pt` por dominios).

@@ -298,17 +298,31 @@ func reveal_optimal_route() -> void:
 		return
 	_game.show_optimal_overlay = not _game.show_optimal_overlay
 	if _game.show_optimal_overlay:
-		var target: StringName = _game._target_actual()
-		var result: Dictionary = DefensivePathfinderClass.find_path_with_cost(_game.graph, _game.player_pos, target, null)
-		_game.optimal_overlay_path = result["path"]
-		if result["reachable"]:
-			_game.mensaje_estado = "Pista: ruta más corta a %s" % str(target)
-		else:
-			_game.mensaje_estado = "No hay ruta disponible"
+		_game.route_hint_used = true
+		refresh_optimal_overlay_path()
 	else:
 		_game.optimal_overlay_path.clear()
 		_game.mensaje_estado = ""
 	_game.queue_redraw()
+
+
+func refresh_optimal_overlay_path() -> void:
+	var target: StringName = _game._target_actual()
+	var result: Dictionary = DefensivePathfinderClass.find_path_with_cost(_game.graph, _game.player_pos, target, _game.runtime)
+	var raw_path: Array = result.get("path", [])
+	var valid_path: Array[StringName] = []
+	var has_hidden: bool = false
+	for nid in raw_path:
+		if _game.hidden_nodes.has(nid) or _game.hidden_nodes.has(String(nid)):
+			has_hidden = true
+			break
+		valid_path.append(StringName(nid))
+	if bool(result.get("reachable", false)) and not has_hidden and valid_path.size() >= 2:
+		_game.optimal_overlay_path = valid_path
+		_game.mensaje_estado = "Pista [P] (máx 2★): ruta más corta a %s" % str(target)
+	else:
+		_game.optimal_overlay_path.clear()
+		_game.mensaje_estado = "No hay ruta disponible"
 
 
 ## Puerto del body de juego_ataque._on_brain_defender_won() (P5).

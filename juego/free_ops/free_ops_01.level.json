@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "id": "free_ops_01",
+  "world": "free_ops",
+  "act": 1,
+  "order": 1,
+  "meta": {
+    "title": "Simulación 01 — Bypass Perimetral",
+    "operator": "ZERO",
+    "is_golden_boss": false
+  },
+  "rules": {
+    "mode": "heist",
+    "max_movement_points": 12,
+    "max_turns": 10,
+    "ai_enabled": true,
+    "ai_block_per_turn": 1,
+    "ai_bloquea_al_inicio": false,
+    "max_ai_blocks": 3,
+    "ia_predictiva": false
+  },
+  "layout": {
+    "grid_cols": 5,
+    "grid_rows": 3
+  },
+  "graph": {
+    "start_node": "ENTRY_NODE",
+    "target_node": "CORE_NODE",
+    "waypoints": ["RELAY_ALPHA"],
+    "bonus_nodes": ["SHADOW_CACHE"],
+    "nodes": [
+      { "id": "ENTRY_NODE", "type": "INTERNET", "grid": [0, 1], "display_name": "Punto de Entrada" },
+      { "id": "RELAY_ALPHA", "type": "ROUTER", "grid": [2, 0], "display_name": "Repetidor Alfa" },
+      { "id": "SHADOW_CACHE", "type": "SERVER", "grid": [2, 2], "display_name": "Caché Sombra" },
+      { "id": "CORE_NODE", "type": "DATABASE", "grid": [4, 1], "display_name": "Núcleo Simulado" }
+    ],
+    "edges": [
+      { "from": "ENTRY_NODE", "to": "RELAY_ALPHA", "cost": 2.0, "capacity": 2.0, "protocol": "TLS" },
+      { "from": "ENTRY_NODE", "to": "SHADOW_CACHE", "cost": 2.0, "capacity": 1.0, "protocol": "SSH" },
+      { "from": "RELAY_ALPHA", "to": "CORE_NODE", "cost": 3.0, "capacity": 2.0, "protocol": "BGP" },
+      { "from": "SHADOW_CACHE", "to": "RELAY_ALPHA", "cost": 1.0, "capacity": 1.0, "protocol": "TCP" },
+      { "from": "SHADOW_CACHE", "to": "CORE_NODE", "cost": 4.0, "capacity": 1.0, "protocol": "HTTPS" }
+    ]
+  }
+}

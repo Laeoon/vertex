@@ -89,18 +89,22 @@ func cargar_params() -> void:
 ## Puerto del viejo juego_ataque._load_graph() (P5): carga y valida el grafo,
 ## pobla node_positions/_node_cache y resetea el estado.
 func load_graph() -> void:
-	if _game.graph_path == "":
-		_game.mensaje_estado = "ERROR: graph_path vacio"
-		push_error("Juego: graph_path esta vacio")
-		_game.queue_redraw()
-		return
+	var graph_res: NetworkGraphResource = null
+	if SceneParams.inline_graph != null and SceneParams.inline_graph is NetworkGraphResource:
+		graph_res = SceneParams.inline_graph as NetworkGraphResource
+	else:
+		if _game.graph_path == "":
+			_game.mensaje_estado = "ERROR: graph_path vacio"
+			push_error("Juego: graph_path esta vacio")
+			_game.queue_redraw()
+			return
 
-	var graph_res = load(_game.graph_path) as NetworkGraphResource
-	if graph_res == null:
-		_game.mensaje_estado = "ERROR: no se pudo cargar el grafo: %s" % _game.graph_path
-		push_error("Juego: no se pudo cargar ", _game.graph_path)
-		_game.queue_redraw()
-		return
+		graph_res = load(_game.graph_path) as NetworkGraphResource
+		if graph_res == null:
+			_game.mensaje_estado = "ERROR: no se pudo cargar el grafo: %s" % _game.graph_path
+			push_error("Juego: no se pudo cargar ", _game.graph_path)
+			_game.queue_redraw()
+			return
 
 	var errors: Array[String] = graph_res.validate()
 	if not errors.is_empty():
@@ -327,6 +331,7 @@ func reset_state() -> void:
 	# viejo `alerted_nodes.clear()` + `pursuers.clear()` + `_pursuer_next_id=1`).
 	_game._pursuit_system.reset()
 	_game.show_optimal_overlay = false
+	_game.route_hint_used = false
 	_game.optimal_overlay_path.clear()
 	_game.player_total_cost = 0.0
 	# E3: el reinicio limpia las visitas bonus — si no, un [R] preservaba
@@ -425,6 +430,8 @@ func mostrar_ruta() -> void:
 		_game.showing_path = true
 	else:
 		_game.current_path.clear()
+	if _game.show_optimal_overlay and _game._game_logic != null and _game._game_logic.has_method("refresh_optimal_overlay_path"):
+		_game._game_logic.refresh_optimal_overlay_path()
 	_game.queue_redraw()
 
 
