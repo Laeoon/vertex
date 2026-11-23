@@ -11,6 +11,10 @@
   },
   "rules": {
     "mode": "heist",
+    "difficulty": 2,
+    "par_turnos": 3,
+    "par_coste": 5.0,
+    "diversidad_minima": 2,
     "max_movement_points": 12,
     "max_turns": 10,
     "ai_enabled": true,
@@ -38,6 +42,7 @@
       { "from": "ENTRY_NODE", "to": "RELAY_ALPHA", "cost": 2.0, "capacity": 2.0, "protocol": "TLS" },
       { "from": "ENTRY_NODE", "to": "SHADOW_CACHE", "cost": 2.0, "capacity": 1.0, "protocol": "SSH" },
       { "from": "RELAY_ALPHA", "to": "CORE_NODE", "cost": 3.0, "capacity": 2.0, "protocol": "BGP" },
+      { "from": "RELAY_ALPHA", "to": "SHADOW_CACHE", "cost": 1.5, "capacity": 1.0, "protocol": "TCP" },
       { "from": "SHADOW_CACHE", "to": "RELAY_ALPHA", "cost": 1.0, "capacity": 1.0, "protocol": "TCP" },
       { "from": "SHADOW_CACHE", "to": "CORE_NODE", "cost": 4.0, "capacity": 1.0, "protocol": "HTTPS" }
     ]

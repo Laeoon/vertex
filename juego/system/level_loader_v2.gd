@@ -96,6 +96,8 @@ static func normalize_dict(raw_data: Dictionary) -> Dictionary:
 		_copy_if_present(meta, out, "cinematic_outro", "cinematic_outro")
 		_copy_if_present(meta, out, "unlocks", "unlocks")
 		_copy_if_present(meta, out, "mensaje_tutorial", "mensaje_tutorial")
+		_copy_if_present(meta, out, "description", "description")
+		_copy_if_present(meta, out, "difficulty", "difficulty")
 
 	if not rules.is_empty():
 		var mode_str: String = str(rules.get("mode", "")).to_lower()
@@ -115,7 +117,8 @@ static func normalize_dict(raw_data: Dictionary) -> Dictionary:
 			"defender_mode", "defender_blocks_per_turn", "defender_block_duration",
 			"defender_max_blocks", "enemy_start_node", "enemy_target_node", "firewall_cost",
 			"block_duration", "pursuer_delay", "max_pursuers", "pursuer_speed",
-			"eventos_alarma", "ia_predictiva", "stages", "multi_daemons"
+			"eventos_alarma", "ia_predictiva", "stages", "multi_daemons",
+			"par_turnos", "par_coste", "diversidad_minima", "difficulty"
 		]:
 			if rules.has(rk):
 				out[rk] = rules[rk]

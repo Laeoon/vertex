@@ -107,7 +107,7 @@ func _descubrir_pruebas(ruta: String, acumulado: Array[String]) -> void:
 		if dir.current_is_dir():
 			_descubrir_pruebas(ruta_completa, acumulado)
 		elif nombre.ends_with(".gd") and nombre != NOMBRE_RUNNER and nombre != RUTA_LANZADOR.get_file():
-			if nombre.begins_with("test_"):
+			if nombre.begins_with("test_") or nombre == "validate_levels.gd":
 				acumulado.push_back(ruta_completa)
 			elif _incluir_equivalencia and nombre.begins_with("_test_"):
 				acumulado.push_back(ruta_completa)
