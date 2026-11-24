@@ -209,6 +209,7 @@ func _refresh_musicbox_right(container: Control) -> void:
 
 	var eq_control := Control.new()
 	eq_control.custom_minimum_size = Vector2(0, 76)
+	p._eq_control = eq_control
 	eq_control.draw.connect(func() -> void:
 		var mags: PackedFloat32Array = PackedFloat32Array()
 		var am = p.get_node_or_null("/root/AudioManager")

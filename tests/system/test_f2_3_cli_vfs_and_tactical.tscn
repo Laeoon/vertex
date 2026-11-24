@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/system/test_f2_3_cli_vfs_and_tactical.gd" id="1_f23"]
+
+[node name="TestF23CliVfs" type="Node"]
+script = ExtResource("1_f23")

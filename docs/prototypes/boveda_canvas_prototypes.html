@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VERTEX // LA BÓVEDA — Limpieza TUI + Termlink Camuflado + VTX-ACADEMY</title>
+<style>
+  :root {
+    --bg: #05070c;
+    --panel: #0b1018;
+    --border: #1f2b3d;
+    --accent: #00e5ff;
+    --green: #39ff88;
+    --amber: #ffc857;
+    --pink: #ff2e88;
+    --purple: #bf5af2;
+    --text: #eaecf5;
+    --dim: #7a869e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at 50% 20%, #0d1524 0%, #05070c 72%);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 16px 22px;
+    gap: 10px;
+    user-select: none;
+  }
+  .toolbar {
+    width: 100%;
+    max-width: 1280px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: rgba(11, 16, 24, 0.92);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .brand .tag {
+    color: var(--bg);
+    background: var(--accent);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+  .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  button.nav-btn {
+    background: #0e1522;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  button.nav-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+  button.nav-btn.active {
+    color: #05070c;
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  button.nav-btn.acad {
+    color: var(--green);
+    border-color: rgba(57, 255, 136, 0.45);
+  }
+  button.nav-btn.acad:hover, button.nav-btn.acad.active {
+    color: #05070c;
+    background: var(--green);
+    border-color: var(--green);
+    font-weight: 700;
+  }
+  button.nav-btn.dive {
+    color: var(--pink);
+    border-color: rgba(255, 46, 136, 0.45);
+  }
+  button.nav-btn.dive:hover, button.nav-btn.dive.active {
+    color: #05070c;
+    background: var(--pink);
+    border-color: var(--pink);
+    font-weight: 700;
+  }
+  .stage-wrap {
+    width: 100%;
+    max-width: 1280px;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 18px 55px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(0, 229, 255, 0.08);
+    background: #05070c;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: default;
+  }
+  .footer-hint {
+    width: 100%;
+    max-width: 1280px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--dim);
+    padding: 0 4px;
+  }
+  .footer-hint span b { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="brand">
+      <span class="tag">BÓVEDA v4</span>
+      <span>TUI LIMPIO + TERMLINK CAMUFLADO + VTX-ACADEMY</span>
+    </div>
+    <div class="btn-group" id="toolbar-btns">
+      <button class="nav-btn active" data-jump="mode1">01 // INSIGNIAS (5 ÁRBOLES)</button>
+      <button class="nav-btn" data-jump="mode2">02 // TERMLINK .ENC</button>
+      <button class="nav-btn" data-jump="mode3">03 // TERMINAL & LAB</button>
+      <button class="nav-btn" data-jump="mode4">04 // MUSICBOX FFT</button>
+      <button class="nav-btn" data-jump="mode5">05 // ARCADE /usr/games/</button>
+      <button class="nav-btn acad" data-jump="academy">🎓 VTX-ACADEMY</button>
+      <button class="nav-btn dive" data-jump="dive3d">⚡ DIVE-IN 3D</button>
+    </div>
+  </div>
+
+  <div class="stage-wrap">
+    <canvas id="boveda" width="1280" height="720"></canvas>
+  </div>
+
+  <div class="footer-hint">
+    <div><b>Tambor 2.5D:</b> Rueda / ↑↓ / Clic · <b>02 Termlink:</b> Palabras camufladas — pasa el cursor para detectar tokens · <b>03 Terminal:</b> Escribe <code>academy</code></div>
+    <div><b>VTX-ACADEMY:</b> Escribe comandos reales (usa <b>[TAB]</b> o <b>[? PISTA]</b>) · <b>[ESC]</b> vuelve a la Bóveda</div>
+  </div>
+
+<script>
+(() => {
+  'use strict';
+
+  const canvas = document.getElementById('boveda');
+  const ctx = canvas.getContext('2d');
+  const W = 1280;
+  const H = 720;
+
+  const PAL = {
+    bg: '#05070c',
+    panel: '#0b1018',
+    panelAlt: '#0e1522',
+    border: '#1f2b3d',
+    borderHi: '#2f4563',
+    accent: '#00e5ff',
+    green: '#39ff88',
+    phosphor: '#39a874',
+    amber: '#ffc857',
+    pink: '#ff2e88',
+    purple: '#bf5af2',
+    text: '#eaecf5',
+    dim: '#7a869e',
+    muted: '#455168'
+  };
+
+  const MODES = [
+    { id: 0, code: '01', name: 'INSIGNIAS', sub: '5 ÁRBOLES // RANGO', color: PAL.accent },
+    { id: 1, code: '02', name: 'TERMLINK .ENC', sub: 'MEMORIA FORENSE', color: PAL.green },
+    { id: 2, code: '03', name: 'TERMINAL & LAB', sub: 'VTX-SH // YAZI', color: PAL.amber },
+    { id: 3, code: '04', name: 'MUSICBOX FFT', sub: '22 TRACKS // AUDIO', color: PAL.pink },
+    { id: 4, code: '05', name: 'ARCADE /usr/games/', sub: 'CARTUCHOS 3D', color: PAL.purple }
+  ];
+
+  const RARITY_COLORS = {
+    'COMÚN': PAL.accent,
+    'TÁCTICA': PAL.green,
+    'ÉLITE': PAL.amber,
+    'MÍTICA // Ω': PAL.pink
+  };
+
+  // 5 INDEPENDENT SKILL TREES WITH DISTINCT TOPOLOGIES
+  const SKILL_TREES = {
+    GENERAL: {
+      id: 'GENERAL',
+      label: '★ GENERAL (9)',
+      short: 'GENERAL',
+      topology: 'RADIAL // MANDALA CONCÉNTRICO',
+      color: PAL.accent,
+      nodes: [
+        { id: 'omni_master', title: 'OMNI-OPERADOR', glyph: '♛', rarity: 'MÍTICA // Ω', unlocked: false, progress: 0.42, pos: [0.50, 0.50], desc: '100% de logros y coleccionables completados.', req: 'Completar todos los árboles de La Bóveda.' },
+        { id: 'initiate_link', title: 'ENLACE INICIAL', glyph: '◈', rarity: 'COMÚN', unlocked: true, progress: 1.0, pos: [0.50, 0.25], desc: 'Primer nodo conectado con éxito en VERTEX.', req: 'Completar el tutorial inicial de red.' },
+        { id: 'dijkstra_master', title: 'OPTIMIZADOR DIJKSTRA', glyph: '⬡', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.71, 0.35], desc: 'Ruta más corta calculada con precisión óptima.', req: 'Calcular ruta de coste mínimo.' },
+        { id: 'streak_5', title: 'RACHA TÁCTICA 5', glyph: '▲', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.75, 0.58], desc: '5 victorias consecutivas en red.', req: 'Obtener 5 victorias seguidas sin fallos.' },
+        { id: 'speed_run', title: 'VELOCIDAD LUZ', glyph: '◉', rarity: 'ÉLITE', unlocked: false, progress: 0.78, pos: [0.62, 0.77], desc: 'Nivel completado en menos de 30 segundos.', req: 'Superar un nivel en menos de 30s.' },
+        { id: 'no_loss', title: 'IMPERTURBABLE', glyph: '⊕', rarity: 'ÉLITE', unlocked: false, progress: 0.60, pos: [0.38, 0.77], desc: 'Cero fallos en secuencia de enrutamiento.', req: 'Terminar misión compleja sin reintentos.' },
+        { id: 'free_ops', title: 'OPERACIONES LIBRES', glyph: '△', rarity: 'COMÚN', unlocked: true, progress: 1.0, pos: [0.25, 0.58], desc: '10 misiones libres ejecutadas.', req: 'Completar 10 misiones libres.' },
+        { id: 'golden_node', title: 'NODO DORADO', glyph: '★', rarity: 'ÉLITE', unlocked: false, progress: 0.45, pos: [0.29, 0.35], desc: 'Jefe de Acto superado con estela dorada.', req: 'Vencer a un Daemon jefe con estela oro.' },
+        { id: 'collector_24', title: 'COLECCIONISTA', glyph: '✦', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.50, 0.87], desc: 'Explorador de todos los módulos de Bóveda.', req: 'Abrir los 5 modos de La Bóveda.' }
+      ],
+      edges: [
+        [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7],
+        [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 1],
+        [4, 8], [5, 8]
+      ]
+    },
+    HEIST: {
+      id: 'HEIST',
+      label: 'HEIST // EXFIL (8)',
+      short: 'HEIST',
+      topology: 'PIPELINE // RUTAS DE ESCAPE (IZQ → DER)',
+      color: PAL.green,
+      nodes: [
+        { id: 'h_entry', title: 'INFILTRACIÓN CERO', glyph: '▸', rarity: 'COMÚN', unlocked: true, progress: 1.0, pos: [0.11, 0.50], desc: 'Entrada limpia al primer nodo de extracción.', req: 'Iniciar el Acto Heist.' },
+        { id: 'h_ghost', title: 'PASO FANTASMA', glyph: '◈', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.34, 0.28], desc: 'Cero sensores activados en ruta norte.', req: 'Evitar 3 patrullas en sigilo.' },
+        { id: 'h_duct', title: 'DUCTO CIEGO', glyph: '⬡', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.56, 0.28], desc: 'Atajo por conductos de ventilación.', req: 'Usar rutas secundarias en 3 mapas.' },
+        { id: 'h_notrace', title: 'CERO RASTRO', glyph: '❖', rarity: 'ÉLITE', unlocked: false, progress: 0.65, pos: [0.74, 0.28], desc: 'Logs limpiados antes del barrido.', req: 'Salir sin dejar rastro de sesión.' },
+        { id: 'h_flash', title: 'EXTRACTOR FLASH', glyph: '⚡', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.34, 0.72], desc: 'Extracción rápida en ruta sur.', req: 'Completar Heist 1 en menos de 40s.' },
+        { id: 'h_laser', title: 'BYPASS LÁSER', glyph: '⊕', rarity: 'ÉLITE', unlocked: false, progress: 0.50, pos: [0.56, 0.72], desc: 'Desactivación simultánea de barreras.', req: 'Cortar 2 barreras en un turno.' },
+        { id: 'h_loot', title: 'BOTÍN ÍNTEGRO', glyph: '★', rarity: 'ÉLITE', unlocked: false, progress: 0.30, pos: [0.74, 0.72], desc: '100% de paquetes recuperados.', req: 'No perder ni un paquete en Heist.' },
+        { id: 'heist_clear', title: 'GOLPE MAESTRO', glyph: '❖', rarity: 'MÍTICA // Ω', unlocked: true, progress: 1.0, pos: [0.89, 0.50], desc: 'Sector Heist completado al 100%.', req: 'Superar todas las misiones Heist.' }
+      ],
+      edges: [
+        [0, 1], [1, 2], [2, 3], [3, 7],
+        [0, 4], [4, 5], [5, 6], [6, 7],
+        [2, 5]
+      ]
+    },
+    HACKER: {
+      id: 'HACKER',
+      label: 'HACKER // INTRUSIÓN (7)',
+      short: 'HACKER',
+      topology: 'ÁRBOL BINARIO // ESCALADA (ABAJO → ARRIBA)',
+      color: PAL.amber,
+      nodes: [
+        { id: 'hk_port', title: 'PUERTO ABIERTO', glyph: '>_', rarity: 'COMÚN', unlocked: true, progress: 1.0, pos: [0.50, 0.84], desc: 'Primer vector de acceso detectado.', req: 'Escanear un nodo vulnerable.' },
+        { id: 'hk_inj', title: 'INYECCIÓN BÁSICA', glyph: '▣', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.30, 0.60], desc: 'Payload inyectado en memoria.', req: 'Romper 3 nodos con inyección.' },
+        { id: 'hk_sniff', title: 'SNIFFER LOCAL', glyph: '◉', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.70, 0.60], desc: 'Tráfico interno capturado.', req: 'Interceptar 5 paquetes en red.' },
+        { id: 'hk_pivot', title: 'PIVOT SUBRED', glyph: '▲', rarity: 'ÉLITE', unlocked: true, progress: 1.0, pos: [0.18, 0.36], desc: 'Salto lateral entre subredes.', req: 'Cruzar a subred privada sin alerta.' },
+        { id: 'hk_revshell', title: 'SHELL INVERSA', glyph: '⌘', rarity: 'ÉLITE', unlocked: false, progress: 0.70, pos: [0.50, 0.36], desc: 'Conexión persistente establecida.', req: 'Mantener sesión abierta 60s.' },
+        { id: 'hk_sudo', title: 'ESCALADA SUDO', glyph: '⚿', rarity: 'ÉLITE', unlocked: false, progress: 0.40, pos: [0.82, 0.36], desc: 'Privilegios elevados en nodo objetivo.', req: 'Obtener permisos de administrador.' },
+        { id: 'hacker_elite', title: 'INTRUSO DE ÉLITE', glyph: '>_', rarity: 'MÍTICA // Ω', unlocked: true, progress: 1.0, pos: [0.50, 0.14], desc: 'Sector Hacker dominado sin alertas.', req: 'Completar el sector Hacker.' }
+      ],
+      edges: [
+        [0, 1], [0, 2], [1, 3], [1, 4], [2, 4], [2, 5], [3, 6], [4, 6], [5, 6]
+      ]
+    },
+    CYBER: {
+      id: 'CYBER',
+      label: 'CYBER // DEFENSA (8)',
+      short: 'CYBER',
+      topology: 'MALLA HEXAGONAL // ESCUDO PANAL',
+      color: PAL.purple,
+      nodes: [
+        { id: 'cy_fw', title: 'CORTAFUEGOS I', glyph: '⬢', rarity: 'COMÚN', unlocked: true, progress: 1.0, pos: [0.22, 0.50], desc: 'Primera barrera perimetral activa.', req: 'Bloquear 1 ataque entrante.' },
+        { id: 'cy_flt', title: 'FILTRO PAQUETES', glyph: '⊞', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.38, 0.25], desc: 'Tráfico anómalo descartado.', req: 'Filtrar 20 paquetes corruptos.' },
+        { id: 'cy_hp', title: 'HONEYPOT', glyph: '◈', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.38, 0.75], desc: 'Trampa señuelo para intrusos.', req: 'Desviar 3 daemons a un señuelo.' },
+        { id: 'cy_cut', title: 'CORTE MÍNIMO', glyph: '⬡', rarity: 'ÉLITE', unlocked: true, progress: 1.0, pos: [0.54, 0.50], desc: 'Subred aislada con S-T Min-Cut.', req: 'Aislar infección en menos de 5s.' },
+        { id: 'cy_ids', title: 'CENTINELA IDS', glyph: '◉', rarity: 'ÉLITE', unlocked: false, progress: 0.60, pos: [0.68, 0.25], desc: 'Detección temprana de intrusiones.', req: 'Detectar 5 ataques antes del impacto.' },
+        { id: 'cy_zero', title: 'RESPUESTA CERO', glyph: '⊕', rarity: 'ÉLITE', unlocked: false, progress: 0.45, pos: [0.68, 0.75], desc: 'Contramedida automática al instante.', req: 'Responder en < 1.5s a un daemon.' },
+        { id: 'cy_aegis', title: 'BLINDAJE AEGIS', glyph: '⛨', rarity: 'ÉLITE', unlocked: false, progress: 0.30, pos: [0.85, 0.36], desc: 'Protocolo Aegis sincronizado.', req: 'Sostener defensa perfecta 3 rondas.' },
+        { id: 'cyber_shield', title: 'ESCUDO CIBERNÉTICO', glyph: '⬢', rarity: 'MÍTICA // Ω', unlocked: true, progress: 1.0, pos: [0.85, 0.64], desc: 'Cybersecurity asegurado frente a Daemons.', req: 'Neutralizar 10 Daemons de red.' }
+      ],
+      edges: [
+        [0, 1], [0, 2], [0, 3], [1, 3], [2, 3], [1, 4], [2, 5], [3, 4], [3, 5], [4, 6], [5, 7], [6, 7]
+      ]
+    },
+    UNIX: {
+      id: 'UNIX',
+      label: 'UNIX & CRIPTO (8)',
+      short: 'UNIX',
+      topology: 'PCB // TRAZAS ORTOGONALES 90°',
+      color: PAL.pink,
+      nodes: [
+        { id: 'ux_hello', title: 'HOLA BASH', glyph: '>_', rarity: 'COMÚN', unlocked: true, progress: 1.0, pos: [0.14, 0.25], desc: 'Primer comando ejecutado en terminal.', req: 'Completar Nivel 1 de Academy.' },
+        { id: 'ux_vfs', title: 'NAVEGANTE VFS', glyph: '▸', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.14, 0.72], desc: 'Dominio de pwd, ls, cd y cat.', req: 'Superar el Boss de Nivel 1-3.' },
+        { id: 'ux_pipes', title: 'MAGO DE PIPES', glyph: '║', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.38, 0.25], desc: 'Uso limpio de grep y tuberías.', req: 'Usar grep o atajos ingeniosos.' },
+        { id: 'ux_master', title: 'MAESTRO UNIX', glyph: '⌘', rarity: 'ÉLITE', unlocked: true, progress: 1.0, pos: [0.38, 0.72], desc: 'Todos los módulos prácticos superados.', req: 'Completar los 4 módulos de Academy.' },
+        { id: 'ux_termlink', title: 'TERMLINK .ENC', glyph: '▣', rarity: 'TÁCTICA', unlocked: true, progress: 1.0, pos: [0.62, 0.25], desc: 'Primer archivo .ENC descifrado.', req: 'Descifrar un volcado RobCo.' },
+        { id: 'ux_dossiers', title: 'DOSSIERS VEX/N0X', glyph: '◢', rarity: 'ÉLITE', unlocked: false, progress: 0.50, pos: [0.62, 0.72], desc: 'Expedientes confidenciales abiertos.', req: 'Descifrar VEX, N0X y AEGIS.' },
+        { id: 'ux_shamir', title: 'SECRETO SHAMIR', glyph: '⚿', rarity: 'MÍTICA // Ω', unlocked: false, progress: 0.20, pos: [0.85, 0.25], desc: 'Fragmentos criptográficos reunidos.', req: 'Reensamblar clave Shamir 512-bit.' },
+        { id: 'root_genesis', title: 'ROOT GENESIS', glyph: 'Ω', rarity: 'MÍTICA // Ω', unlocked: false, progress: 0.35, pos: [0.85, 0.72], desc: 'Acceso al Sector 0 obtenido.', req: 'Descifrar Kernel Snapshot Sector 0.' }
+      ],
+      edges: [
+        [0, 2], [0, 1], [1, 3], [2, 3], [2, 4], [3, 5], [4, 5], [4, 6], [5, 7], [6, 7]
+      ]
+    }
+  };
+
+  const TREE_KEYS = ['GENERAL', 'HEIST', 'HACKER', 'CYBER', 'UNIX'];
+
+  // Real ENC_FILES
+  const ENC_FILES = [
+    {
+      file: 'SEC_0_KERNEL_SNAPSHOT.enc',
+      title: 'Kain - Snapshot del Kernel Sector 0',
+      pass: 'DIJKSTRA',
+      weight: '48.4 KB',
+      cipher: 'AES-512-SHAMIR',
+      hash: '0x9F4A..8E21',
+      target: 'Kernel Primario Sector 0',
+      affiliation: 'VERTEX Core',
+      classification: 'TOP SECRET // OMEGA',
+      unlocked: false,
+      content: 'REGISTRO NÚCLEO 0x000: El sistema ha alcanzado el umbral de entropía crítica tras la colisión de subredes. Los Daemons autónomos responden al protocolo primigenio establecido por Kain antes del colapso.'
+    },
+    {
+      file: 'DOSSIER_VEX.enc',
+      title: 'Vex - Archivos Confidenciales',
+      pass: 'TOPOLOGY',
+      weight: '32.1 KB',
+      cipher: 'AES-512-SHAMIR',
+      hash: '0x4C2B..11A9',
+      target: 'Ex-Ingeniera Vex (Subred BGP)',
+      affiliation: 'Sindicato Oculto',
+      classification: 'CONFIDENCIAL // TÁCTICA',
+      unlocked: true,
+      content: 'DOSSIER VEX: Ex-ingeniera principal de contramedidas de red en VERTEX. Su lealtad fue puesta en duda tras el incidente BGP en el sector secundario, donde desvió tráfico hacia nodos fantasma.'
+    },
+    {
+      file: 'DOSSIER_NOX.enc',
+      title: 'N0X - Memorias Cifradas',
+      pass: 'DEADLOCK',
+      weight: '64.0 KB',
+      cipher: 'AES-512-SHAMIR',
+      hash: '0x88EE..33F4',
+      target: 'Operador Fantasma N0X',
+      affiliation: 'Desconocida / Anómala',
+      classification: 'RESTRINGIDO // FANTASMA',
+      unlocked: false,
+      content: 'MEMORIAS N0X: Fantasma digital operando en el subsuelo corporativo. Inyecta código en sistemas blindados sin activar los firewalls de Aegis.'
+    },
+    {
+      file: 'DOSSIER_AEGIS.enc',
+      title: 'Aegis - Registros de Defensa',
+      pass: 'FIREWALL',
+      weight: '19.8 KB',
+      cipher: 'AES-512-SHAMIR',
+      hash: '0x1100..FFEE',
+      target: 'Sistema de Contención Aegis',
+      affiliation: 'Defensa Automatizada VERTEX',
+      classification: 'AUTÓNOMO // S-T MIN-CUT',
+      unlocked: false,
+      content: 'REGISTRO AEGIS: Protocolo de contención autónomo para proteger el Kernel ante ataques DDoS mediante algoritmos de corte mínimo (Min-Cut).'
+    }
+  ];
+
+  const TERMLINK_WORDS = [
+    'DIJKSTRA', 'TOPOLOGY', 'DEADLOCK', 'FIREWALL',
+    'BACKBONE', 'HYPERVIS', 'SHAMIRKY', 'ZEROTRST',
+    'PROTOCOL', 'SYNDICAT', 'MAINFRAM', 'SENTINEL'
+  ];
+  const TERMLINK_TRAPS = ['(#?$!)', '[+-=]', '{@%~^}', '<=-_!>', '(^*&)', '[~$#@]'];
+  const NOISE_CHARS = '!@#$%^&*_+-=|;:,.?/';
+
+  // VTX-ACADEMY: 4 Everyday Modules with 3 VERTEX Phases (Guiado, Práctica, Prueba de Campo)
+  const ACADEMY_MODULES = [
+    {
+      id: 'M1',
+      label: '01. ORIENTACIÓN',
+      title: 'Orientación y Movimiento (pwd, ls, cd)',
+      phases: {
+        GUIADO: {
+          ask: 'Entrá a "descargas" y listá todos los archivos, incluidos los ocultos (que empiezan con punto).',
+          hint: 'Escribí "ls -a descargas" (óptimo en 1 paso) o "cd descargas && ls -a".',
+          normalCmd: 'cd descargas && ls -a',
+          cleverCmd: 'ls -a descargas',
+          breakdown: [
+            ['ls', 'lista el contenido de un directorio'],
+            ['-a', 'incluye archivos ocultos (.clave_wifi.txt)'],
+            ['descargas', 'apunta directo sin cambiar de carpeta']
+          ]
+        },
+        PRACTICA: {
+          ask: 'Sin pistas: verificá la ruta actual o saltá directo a tu carpeta raíz (/home/usuario).',
+          hint: 'Usá "pwd" para ver tu ruta, o "cd ~" para volver directo a casa.',
+          normalCmd: 'pwd',
+          cleverCmd: 'cd ~',
+          breakdown: [
+            ['cd', 'cambia el directorio actual'],
+            ['~', 'atajo universal hacia /home/usuario']
+          ]
+        }
+      }
+    },
+    {
+      id: 'M2',
+      label: '02. ARCHIVOS',
+      title: 'Carpetas, Lectura y Limpieza (mkdir, cat, rm)',
+      phases: {
+        GUIADO: {
+          ask: 'Creá dos carpetas nuevas llamadas "musica" y "videos".',
+          hint: 'Podés pasar varios nombres juntos: "mkdir musica videos".',
+          normalCmd: 'mkdir musica',
+          cleverCmd: 'mkdir musica videos',
+          breakdown: [
+            ['mkdir', 'crea directorios nuevos'],
+            ['musica videos', 'crea ambos en una sola ejecución']
+          ]
+        },
+        PRACTICA: {
+          ask: 'Leé "receta.txt" que está dentro de "documentos" sin moverte de /home/usuario.',
+          hint: 'Pasale la ruta relativa directa a "cat".',
+          normalCmd: 'cd documentos && cat receta.txt',
+          cleverCmd: 'cat documentos/receta.txt',
+          breakdown: [
+            ['cat', 'imprime el contenido del archivo'],
+            ['documentos/receta.txt', 'ruta directa sin hacer cd']
+          ]
+        }
+      }
+    },
+    {
+      id: 'M3',
+      label: '03. BÚSQUEDA',
+      title: 'Búsqueda Rápida (grep, find)',
+      phases: {
+        GUIADO: {
+          ask: 'Buscá la palabra "wifi" dentro del archivo "notas.txt".',
+          hint: 'Escribí "grep wifi notas.txt" para evitar un "cat" extra.',
+          normalCmd: 'cat notas.txt | grep wifi',
+          cleverCmd: 'grep wifi notas.txt',
+          breakdown: [
+            ['grep', 'motor de búsqueda por coincidencia'],
+            ['wifi', 'término buscado'],
+            ['notas.txt', 'archivo objetivo directo']
+          ]
+        },
+        PRACTICA: {
+          ask: 'Eliminá el archivo temporal "basura.tmp" de tu carpeta personal.',
+          hint: 'Usá "rm" seguido del nombre del archivo.',
+          normalCmd: 'rm basura.tmp',
+          cleverCmd: 'rm basura.tmp',
+          breakdown: [
+            ['rm', 'elimina archivos del directorio'],
+            ['basura.tmp', 'archivo temporal objetivo']
+          ]
+        }
+      }
+    },
+    {
+      id: 'M4',
+      label: '04. PRUEBA DE CAMPO',
+      title: 'Prueba de Campo Integrada (Boss)',
+      isBoss: true,
+      chain: [
+        {
+          title: 'PASO 1/4 — INSPECCIÓN DE DESCARGAS',
+          ask: 'Listá todos los archivos dentro de "descargas", incluidos los ocultos.',
+          hint: 'Usá "ls -a descargas" en un solo paso.',
+          normalCmd: 'cd descargas && ls -a',
+          cleverCmd: 'ls -a descargas',
+          breakdown: [['ls -a', 'muestra ocultos'], ['descargas', 'inspección directa sin cd']]
+        },
+        {
+          title: 'PASO 2/4 — LECTURA POR RUTA RELATIVA',
+          ask: 'Leé "receta.txt" que está adentro de "documentos".',
+          hint: 'Usá "cat documentos/receta.txt".',
+          normalCmd: 'cd documentos && cat receta.txt',
+          cleverCmd: 'cat documentos/receta.txt',
+          breakdown: [['cat', 'lee texto'], ['documentos/receta.txt', 'acceso directo por ruta']]
+        },
+        {
+          title: 'PASO 3/4 — CREACIÓN EN LOTE',
+          ask: 'Creá las carpetas "musica" y "videos".',
+          hint: 'Usá "mkdir musica videos".',
+          normalCmd: 'mkdir musica',
+          cleverCmd: 'mkdir musica videos',
+          breakdown: [['mkdir', 'crea carpetas'], ['musica videos', 'múltiples argumentos']]
+        },
+        {
+          title: 'PASO 4/4 — FILTRADO LIMPIO',
+          ask: 'Encontrá la línea con "wifi" en "notas.txt".',
+          hint: 'Usá "grep wifi notas.txt".',
+          normalCmd: 'cat notas.txt | grep wifi',
+          cleverCmd: 'grep wifi notas.txt',
+          breakdown: [['grep', 'filtra líneas'], ['wifi', 'patrón'], ['notas.txt', 'sin cat innecesario']]
+        }
+      ]
+    }
+  ];
+
+  // 22 Tracks
+  const TRACKS = [
+    { id: 1, title: 'Pink Bloom', pack: 'Pink Bloom', dur: '3:42', bpm: 118, energy: 0.68 },
+    { id: 2, title: 'Portal to Underworld', pack: 'Pink Bloom', dur: '4:15', bpm: 122, energy: 0.74 },
+    { id: 3, title: 'To the Unknown', pack: 'Pink Bloom', dur: '3:10', bpm: 116, energy: 0.62 },
+    { id: 4, title: 'Valley of Spirits', pack: 'Pink Bloom', dur: '5:02', bpm: 124, energy: 0.79 },
+    { id: 5, title: 'Western Cyberhorse', pack: 'Pink Bloom', dur: '3:55', bpm: 128, energy: 0.85 },
+    { id: 6, title: 'Diamonds on The Ceiling', pack: 'Pink Bloom', dur: '4:20', bpm: 120, energy: 0.71 },
+    { id: 7, title: 'The Hidden One', pack: 'Pink Bloom', dur: '3:30', bpm: 126, energy: 0.80 },
+    { id: 8, title: "Lost Spaceship's Signal", pack: 'Pink Bloom', dur: '4:05', bpm: 115, energy: 0.64 },
+    { id: 9, title: 'Lightyear City', pack: 'Pink Bloom', dur: '4:50', bpm: 130, energy: 0.88 },
+    { id: 10, title: 'Pink Bloom (Reprise)', pack: 'Pink Bloom', dur: '3:15', bpm: 118, energy: 0.66 },
+    { id: 11, title: 'Code Injection Underbeat', pack: 'Code Injection', dur: '3:50', bpm: 132, energy: 0.86 },
+    { id: 12, title: 'Code Injection 02', pack: 'Code Injection', dur: '4:10', bpm: 134, energy: 0.89 },
+    { id: 13, title: 'Code Injection 03', pack: 'Code Injection', dur: '3:25', bpm: 128, energy: 0.82 },
+    { id: 14, title: 'Code Injection 04', pack: 'Code Injection', dur: '4:40', bpm: 136, energy: 0.91 },
+    { id: 15, title: 'Code Injection 06', pack: 'Code Injection', dur: '3:40', bpm: 130, energy: 0.84 },
+    { id: 16, title: 'Code Injection 07', pack: 'Code Injection', dur: '5:12', bpm: 138, energy: 0.93 },
+    { id: 17, title: 'Code Injection 08', pack: 'Code Injection', dur: '4:00', bpm: 126, energy: 0.78 },
+    { id: 18, title: 'Code Injection 09', pack: 'Code Injection', dur: '3:35', bpm: 129, energy: 0.81 },
+    { id: 19, title: 'Code Injection 10', pack: 'Code Injection', dur: '4:25', bpm: 135, energy: 0.90 },
+    { id: 20, title: 'Code Injection 11', pack: 'Code Injection', dur: '3:20', bpm: 125, energy: 0.77 },
+    { id: 21, title: 'Code Injection 12', pack: 'Code Injection', dur: '4:55', bpm: 140, energy: 0.95 },
+    { id: 22, title: 'Code Injection 14', pack: 'Code Injection', dur: '6:15', bpm: 142, energy: 0.97 }
+  ];
+
+  const CARTRIDGES = [
+    { id: 'breach3d', title: 'BREACH-3D', sub: 'CORREDOR WIREFRAME 60FPS', color: PAL.accent, ver: 'v2.4 // VECTOR',
+      desc: 'Infiltración en túnel 3D vectorial con obstáculos ICE y disparo de pulso.' },
+    { id: 'netcycle', title: 'NETCYCLE', sub: 'TRAZADO DE PAQUETES', color: PAL.green, ver: 'v1.8 // GRID',
+      desc: 'Duelo de estelas de luz sobre grilla isométrica de alta velocidad.' },
+    { id: 'rogues0', title: 'ROGUE-S0', sub: 'LABERINTO TÁCTICO', color: PAL.amber, ver: 'v1.2 // CRAWL',
+      desc: 'Descenso por nodos procedurales con sigilo y escaneo de trampas.' },
+    { id: 'icebreaker', title: 'ICEBREAKER', sub: 'DEFENSA DE NÚCLEO', color: PAL.pink, ver: 'v3.0 // PULSE',
+      desc: 'Destruye capas de firewall orbitales con rebotes de frecuencia.' }
+  ];
+
+  const VFS_TREE = [
+    { txt: '▾ /home/usuario', path: '/home/usuario', col: PAL.green, type: 'dir' },
+    { txt: '   ├─ notas.txt', path: '/home/usuario/notas.txt', col: PAL.text, type: 'file', cmd: 'cat notas.txt' },
+    { txt: '   ├─ descargas/', path: '/home/usuario/descargas', col: PAL.accent, type: 'dir' },
+    { txt: '   └─ documentos/', path: '/home/usuario/documentos', col: PAL.accent, type: 'dir' },
+    { txt: '▸ /usr/bin/academy*', path: 'academy', col: PAL.green, type: 'exec', cmd: 'academy' },
+    { txt: '▾ /usr/games', path: '/usr/games', col: PAL.accent, type: 'dir' },
+    { txt: '   ├─ ▶ breach3d', path: '/usr/games/breach3d', col: PAL.pink, type: 'exec', cmd: 'breach3d' },
+    { txt: '   └─ ▶ netcycle', path: '/usr/games/netcycle', col: PAL.pink, type: 'exec', cmd: 'breach3d' }
+  ];
+
+  // RobCo Memory Builder (uniform phosphor camouflage)
+  function buildRobCoMemory(fileIdx, removedDuds) {
+    const targetPass = ENC_FILES[fileIdx].pass;
+    let seed = 1337 + fileIdx * 97;
+    const rand = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed;
+    };
+    const cols = [[], []];
+    const rowWords = {
+      0: { 1: targetPass, 4: 'HYPERVIS', 7: 'BACKBONE', 10: 'PROTOCOL', 13: 'SENTINEL', 15: 'MAINFRAM' },
+      1: { 2: 'SHAMIRKY', 5: 'ZEROTRST', 8: 'SYNDICAT', 11: 'TOPOLOGY', 14: 'DEADLOCK' }
+    };
+    if (fileIdx % 2 === 1) {
+      delete rowWords[0][1];
+      rowWords[1][3] = targetPass;
+    }
+    const rowTraps = {
+      0: { 2: TERMLINK_TRAPS[0], 6: TERMLINK_TRAPS[1], 12: TERMLINK_TRAPS[2] },
+      1: { 0: TERMLINK_TRAPS[3], 6: TERMLINK_TRAPS[4], 12: TERMLINK_TRAPS[5] }
+    };
+    for (let c = 0; c < 2; c++) {
+      const baseAddr = c === 0 ? 0x7f40 : 0x8740;
+      for (let r = 0; r < 16; r++) {
+        const addr = '0x' + (baseAddr + r * 8).toString(16).toUpperCase();
+        const chars = [];
+        for (let i = 0; i < 16; i++) chars.push(NOISE_CHARS[rand() % NOISE_CHARS.length]);
+        const tokens = [];
+        const w = rowWords[c][r];
+        if (w) {
+          const start = rand() % 7;
+          const dead = removedDuds.has(w);
+          for (let k = 0; k < w.length; k++) chars[start + k] = dead ? '.' : w[k];
+          if (!dead) tokens.push({ start, end: start + w.length - 1, text: w, type: 'word' });
+        } else if (rowTraps[c][r]) {
+          const tr = rowTraps[c][r];
+          const start = rand() % (16 - tr.length);
+          const dead = removedDuds.has(`${c}:${r}`);
+          for (let k = 0; k < tr.length; k++) chars[start + k] = dead ? '.' : tr[k];
+          if (!dead) tokens.push({ start, end: start + tr.length - 1, text: tr, type: 'trap', key: `${c}:${r}` });
+        }
+        cols[c].push({ addr, chars, tokens });
+      }
+    }
+    return cols;
+  }
+
+  // State
+  const state = {
+    time: 0,
+    lastTs: performance.now(),
+    mouseX: 0,
+    mouseY: 0,
+    hitboxes: [],
+
+    // Drum 2.5D spring physics
+    activeMode: 0,
+    drumAngle: 0,
+    drumTarget: 0,
+    drumVel: 0,
+    drumLockFlash: 1.0,
+    slotIndex: 0,
+
+    // Mode 1: 5 Skill-Trees
+    activeTree: 'GENERAL',
+    treeTransition: 1.0,
+    selectedNodeIdx: 0,
+    equippedBadgeTitle: 'ENLACE INICIAL',
+    hoverNodeIdx: -1,
+    alias: 'LAEOON',
+    editingAlias: false,
+
+    // Mode 2: RobCo Termlink (camouflaged)
+    termlinkFileIdx: 0,
+    termlinkView: 'HEX',
+    termlinkAttempts: 4,
+    termlinkRemovedDuds: new Set(),
+    termlinkHoverChar: '',
+    termlinkLastLikeness: null,
+    termlinkLogs: ['> KERNEL_LINK v4.08 LISTO', '> ESCANEA LA MEMORIA CON EL CURSOR'],
+
+    // Mode 3: Clean 3-Panel TUI
+    cliContext: 'ACADEMIA',
+    cwd: '/home/usuario',
+    cmdInput: '',
+    terminalFocused: true,
+    terminalLines: [
+      { text: 'VERTEX OS 4.7.2 // TTY1 lista. Operador autenticado.', col: PAL.accent },
+      { text: 'Escribe "academy" para abrir VTX-ACADEMY, o "fastfetch", "ls", "breach3d".', col: PAL.dim }
+    ],
+
+    // Full-Screen App: VTX-ACADEMY (VERTEX Identity)
+    academyActive: false,
+    academyModIdx: 0,
+    academyPhase: 'GUIADO', // 'GUIADO' | 'PRACTICA' | 'CAMPO'
+    bossStepIdx: 0,
+    academyShields: 3,
+    academyScore: 0,
+    academyStreak: 1,
+    academyCwd: '/home/usuario',
+    academyInput: '',
+    academyDirs: ['descargas', 'documentos', 'fotos'],
+    academyHasTrash: true,
+    academyFlashPath: '',
+    academyShowHint: false,
+    academyAnalysis: null, // { cmd, optimal, isOptimal, pts, breakdown, why }
+    academyLines: [
+      { text: 'VTX-ACADEMY // Simulador Táctico de Bash Cotidiano.', col: PAL.accent },
+      { text: 'Escribí tu comando abajo y presioná [ENTER] (usá [TAB] para autocompletar).', col: PAL.dim }
+    ],
+
+    // Mode 4: MusicBox FFT
+    playingTrack: 0,
+    musicPlaying: true,
+    pinMenu: true,
+    pinGame: false,
+    fftBands: new Float32Array(32),
+    fftPeaks: new Float32Array(32),
+
+    // Mode 5 & Dive-In 3D
+    selectedCartridge: 0,
+    diveActive: false,
+    diveSpeed: 1.0,
+    diveScore: 0,
+    divePlayerX: 0,
+    diveObstacles: [],
+    diveLasers: []
+  };
+
+  for (let i = 0; i < 32; i++) {
+    state.fftBands[i] = 0.25 + 0.35 * Math.sin(i * 0.4);
+    state.fftPeaks[i] = state.fftBands[i] + 0.08;
+  }
+
+  function resetDive3D() {
+    state.diveScore = 0;
+    state.divePlayerX = 0;
+    state.diveLasers = [];
+    state.diveObstacles = [];
+    for (let i = 0; i < 7; i++) {
+      state.diveObstacles.push({ z: 0.35 + i * 0.13, x: Math.sin(i * 2.1) * 0.65, w: 0.24, hit: false });
+    }
+  }
+  resetDive3D();
+
+  // Drawing Helpers
+  function regHit(id, x, y, w, h, onClick, cursor = 'pointer') {
+    state.hitboxes.push({ id, x, y, w, h, onClick, cursor });
+  }
+
+  function pointInRect(px, py, r) {
+    return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
+  }
+
+  function drawPanel(x, y, w, h, title, accent = PAL.borderHi, bg = PAL.panel) {
+    ctx.fillStyle = bg;
+    ctx.strokeStyle = PAL.border;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 5);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = accent;
+    ctx.fillRect(x + 10, y, Math.min(w - 20, 90), 2);
+
+    if (title) {
+      ctx.font = '700 11px "JetBrains Mono", monospace';
+      const tw = ctx.measureText(title).width;
+      ctx.fillStyle = PAL.bg;
+      ctx.fillRect(x + 14, y - 7, tw + 12, 14);
+      ctx.fillStyle = accent;
+      ctx.fillText(title, x + 20, y + 4);
+    }
+  }
+
+  function drawTuiBox(x, y, w, h, title, borderCol, active = true) {
+    ctx.fillStyle = '#070a10';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = active ? borderCol : '#243044';
+    ctx.lineWidth = active ? 1.5 : 1.0;
+    ctx.strokeRect(x, y, w, h);
+
+    if (title) {
+      ctx.font = '700 11px "JetBrains Mono", monospace';
+      const tw = ctx.measureText(title).width + 12;
+      ctx.fillStyle = '#070a10';
+      ctx.fillRect(x + 12, y - 8, tw, 16);
+      ctx.fillStyle = active ? borderCol : PAL.dim;
+      ctx.fillText(title, x + 18, y + 4);
+    }
+  }
+
+  function chamferPanel(x, y, w, h, cut, fill, stroke, lineW = 1.2) {
+    ctx.beginPath();
+    ctx.moveTo(x + cut, y);
+    ctx.lineTo(x + w - cut, y);
+    ctx.lineTo(x + w, y + cut);
+    ctx.lineTo(x + w, y + h - cut);
+    ctx.lineTo(x + w - cut, y + h);
+    ctx.lineTo(x + cut, y + h);
+    ctx.lineTo(x, y + h - cut);
+    ctx.lineTo(x, y + cut);
+    ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineW; ctx.stroke(); }
+  }
+
+  function drawPill(x, y, w, h, label, active, color = PAL.accent) {
+    ctx.fillStyle = active ? color : '#0f1726';
+    ctx.strokeStyle = active ? color : PAL.borderHi;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = '700 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = active ? '#05070c' : PAL.text;
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x + w / 2, y + h / 2 + 3.5);
+    ctx.textAlign = 'left';
+  }
+
+  function drawBar(x, y, w, h, pct, color, bg = '#111a29') {
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 3);
+    ctx.fill();
+    const fw = Math.max(0, Math.min(1, pct)) * w;
+    if (fw > 0) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(x, y, fw, h, 3);
+      ctx.fill();
+    }
+  }
+
+  function wrapText(text, x, y, maxW, lh) {
+    const words = text.split(' ');
+    let line = '', cy = y;
+    for (const w of words) {
+      const test = line ? `${line} ${w}` : w;
+      if (ctx.measureText(test).width > maxW) {
+        ctx.fillText(line, x, cy);
+        line = w;
+        cy += lh;
+      } else line = test;
+    }
+    if (line) ctx.fillText(line, x, cy);
+  }
+
+  function drawHolo3D(cx, cy, radius, color, seed = 0, unlocked = true) {
+    const t = state.time * 1.15 + seed;
+    const cosY = Math.cos(t), sinY = Math.sin(t);
+    const cosX = Math.cos(t * 0.55), sinX = Math.sin(t * 0.55);
+
+    const pts3 = [
+      [0, -1.15, 0], [0.95, 0, 0], [0, 0, 0.95],
+      [-0.95, 0, 0], [0, 0, -0.95], [0, 1.15, 0]
+    ];
+    const edges = [
+      [0, 1], [0, 2], [0, 3], [0, 4],
+      [5, 1], [5, 2], [5, 3], [5, 4],
+      [1, 2], [2, 3], [3, 4], [4, 1]
+    ];
+    const proj = pts3.map(([vx, vy, vz]) => {
+      const rx = vx * cosY - vz * sinY;
+      const rz = vx * sinY + vz * cosY;
+      const ry = vy * cosX - rz * sinX;
+      const fz = vy * sinX + rz * cosX;
+      const scale = radius / (2.6 - fz * 0.55);
+      return [cx + rx * scale, cy + ry * scale];
+    });
+
+    const grad = ctx.createRadialGradient(cx, cy, 4, cx, cy, radius * 1.15);
+    grad.addColorStop(0, unlocked ? `${color}38` : '#3b475e25');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx, cy, radius * 1.15, 0, Math.PI * 2); ctx.fill();
+
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.35);
+    ctx.strokeStyle = unlocked ? `${color}55` : '#3d485e66';
+    ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
+    ctx.beginPath(); ctx.ellipse(0, 0, radius * 0.92, radius * 0.32, 0.3, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+
+    ctx.strokeStyle = unlocked ? color : PAL.dim;
+    ctx.lineWidth = unlocked ? 1.8 : 1.1;
+    ctx.beginPath();
+    for (const [a, b] of edges) { ctx.moveTo(proj[a][0], proj[a][1]); ctx.lineTo(proj[b][0], proj[b][1]); }
+    ctx.stroke();
+
+    if (unlocked) {
+      for (let i = 0; i < 6; i++) {
+        const ang = t * 1.6 + i * (Math.PI / 3);
+        const px = cx + Math.cos(ang) * radius * 0.85;
+        const py = cy + Math.sin(ang * 1.3) * radius * 0.42;
+        ctx.fillStyle = i % 2 === 0 ? color : '#ffffff';
+        ctx.beginPath(); ctx.arc(px, py, 2, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+
+  // ─── LEFT 25%: MECHANICAL 2.5D DRUM ───
+  function drawLeftDrum() {
+    const x0 = 16, y0 = 16, w = 292, h = H - 32;
+    drawPanel(x0, y0, w, h, 'LA BÓVEDA // DRUM-2.5D', PAL.accent, '#080c14');
+
+    drawPill(x0 + 14, y0 + 20, 92, 26, '← VOLVER', false, PAL.dim);
+    regHit('volver', x0 + 14, y0 + 20, 92, 26, () => {
+      state.terminalLines.push({ text: '[NAV] Retorno al menú principal simulado.', color: PAL.dim });
+    });
+
+    const slotLabel = `SLOT 0${state.slotIndex + 1}`;
+    drawPill(x0 + 116, y0 + 20, 82, 26, slotLabel, true, PAL.green);
+    regHit('slot', x0 + 116, y0 + 20, 82, 26, () => { state.slotIndex = (state.slotIndex + 1) % 3; });
+
+    ctx.font = '700 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.dim;
+    ctx.fillText('60 FPS', x0 + 216, y0 + 37);
+
+    const drumCx = x0 + w / 2, drumCy = y0 + 345, radiusY = 175;
+    const spinSpeed = Math.abs(state.drumVel) + Math.abs(state.drumTarget - state.drumAngle);
+
+    // Graduated rotor arc
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.22)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x0 + 24, drumCy, 220, -0.75, 0.75); ctx.stroke();
+    for (let deg = -50; deg <= 50; deg += 25) {
+      const ang = (deg * Math.PI) / 180;
+      const tickX = x0 + 24 + Math.cos(ang) * 220, tickY = drumCy + Math.sin(ang) * 220;
+      ctx.fillStyle = deg === 0 ? MODES[state.activeMode].color : PAL.muted;
+      ctx.fillRect(tickX - 4, tickY - 1, 8, 2);
+      ctx.font = '700 8px "JetBrains Mono", monospace';
+      ctx.fillText(deg === 0 ? 'LOCK' : `${deg > 0 ? '+' : ''}${deg}°`, x0 + 10, tickY + 3);
+    }
+    ctx.restore();
+
+    const items = MODES.map((m, idx) => {
+      let delta = idx - state.drumAngle;
+      while (delta > 2.5) delta -= 5;
+      while (delta < -2.5) delta += 5;
+      const theta = delta * 0.58;
+      return { m, idx, delta, zDepth: Math.cos(theta), yPos: drumCy + Math.sin(theta) * radiusY };
+    }).sort((a, b) => a.zDepth - b.zDepth);
+
+    for (const it of items) {
+      const scale = 0.72 + 0.28 * Math.max(0, it.zDepth);
+      const cardW = (w - 38) * scale, cardH = 68 * scale;
+      const cx = drumCx - cardW / 2 + (1 - scale) * 16, cy = it.yPos - cardH / 2;
+      const isSelected = it.idx === state.activeMode && Math.abs(it.delta) < 0.35;
+      const alpha = Math.max(0.25, Math.min(1, 0.28 + it.zDepth * 0.75));
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = isSelected ? '#101b2d' : '#0b111c';
+      ctx.strokeStyle = isSelected ? it.m.color : PAL.borderHi;
+      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.beginPath(); ctx.roundRect(cx, cy, cardW, cardH, 6); ctx.fill(); ctx.stroke();
+
+      if (isSelected) {
+        ctx.fillStyle = it.m.color;
+        ctx.fillRect(cx, cy + 8, 4, cardH - 16);
+        if (state.drumLockFlash > 0.02) {
+          const sweepX = cx + (1 - state.drumLockFlash) * cardW;
+          ctx.fillStyle = `rgba(255, 255, 255, ${state.drumLockFlash * 0.45})`;
+          ctx.fillRect(cx, cy, cardW, 2);
+          ctx.fillRect(sweepX - 6, cy + 4, 12, cardH - 8);
+        }
+        if (it.idx === 3) {
+          for (let b = 0; b < 5; b++) {
+            const bh = 4 + state.fftBands[b * 4] * 18;
+            ctx.fillStyle = PAL.pink;
+            ctx.fillRect(cx + cardW - 36 + b * 5, cy + cardH - 14 - bh, 3, bh);
+          }
+        }
+      }
+
+      ctx.font = `700 ${Math.round(13 * scale)}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = isSelected ? it.m.color : PAL.text;
+      ctx.fillText(`${it.m.code} // ${it.m.name}`, cx + 14 * scale, cy + 27 * scale);
+
+      ctx.font = `400 ${Math.round(10 * scale)}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = PAL.dim;
+      ctx.fillText(it.m.sub, cx + 14 * scale, cy + 46 * scale);
+      ctx.restore();
+
+      regHit(`drum_${it.idx}`, cx, cy, cardW, cardH, () => setActiveMode(it.idx));
+    }
+
+    // Lock-On Jaws
+    const jawSpread = Math.min(18, spinSpeed * 22);
+    ctx.strokeStyle = MODES[state.activeMode].color;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(x0 + 18, drumCy - 26 - jawSpread); ctx.lineTo(x0 + 10, drumCy - 26 - jawSpread);
+    ctx.lineTo(x0 + 10, drumCy + 26 + jawSpread); ctx.lineTo(x0 + 18, drumCy + 26 + jawSpread);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x0 + w - 18, drumCy - 26 - jawSpread); ctx.lineTo(x0 + w - 10, drumCy - 26 - jawSpread);
+    ctx.lineTo(x0 + w - 10, drumCy + 26 + jawSpread); ctx.lineTo(x0 + w - 18, drumCy + 26 + jawSpread);
+    ctx.stroke();
+
+    const fy = y0 + h - 82;
+    ctx.font = '400 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.dim;
+    ctx.fillText('RUEDA / ↑ ↓ / CLIC PARA GIRAR', x0 + 22, fy + 26);
+    ctx.fillStyle = MODES[state.activeMode].color;
+    ctx.fillText(`MODO: ${MODES[state.activeMode].code} // ${MODES[state.activeMode].name}`, x0 + 22, fy + 46);
+  }
+
+  function setActiveMode(idx) {
+    const next = ((idx % 5) + 5) % 5;
+    if (next !== state.activeMode) {
+      state.activeMode = next;
+      state.drumTarget = next;
+      state.drumLockFlash = 1.0;
+    }
+    syncToolbarButtons();
+  }
+
+  // ─── UNIFIED SINGLE-LINE STATUS BAR (ELIMINATES REDUNDANCY) ───
+  function drawTopStatusBar(rx, ry, rw) {
+    const m = MODES[state.activeMode];
+    ctx.fillStyle = '#090e17';
+    ctx.strokeStyle = PAL.border;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(rx, ry, rw, 28, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = m.color;
+    ctx.fillRect(rx, ry + 5, 3, 18);
+
+    ctx.font = '700 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = m.color;
+    ctx.fillText(`${m.code} // ${m.name}`, rx + 14, ry + 18);
+
+    ctx.font = '400 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.dim;
+    ctx.fillText(`│  ◈ ${state.alias}@boveda-lab  │  RANGO II (14★)  │  ★ ${state.equippedBadgeTitle}`, rx + 195, ry + 18);
+
+    ctx.fillStyle = PAL.green;
+    ctx.textAlign = 'right';
+    ctx.fillText('VSYNC 60 FPS', rx + rw - 14, ry + 18);
+    ctx.textAlign = 'left';
+  }
+
+  function drawRightWorkstation() {
+    const rx = 324, ry = 16, rw = W - rx - 16, rh = H - 32;
+    drawTopStatusBar(rx, ry, rw);
+
+    const wy = ry + 38;
+    const wh = rh - 38;
+    if (state.activeMode === 0) drawMode1Insignias(rx, wy, rw, wh);
+    else if (state.activeMode === 1) drawMode2Termlink(rx, wy, rw, wh);
+    else if (state.activeMode === 2) drawMode3TerminalLab(rx, wy, rw, wh);
+    else if (state.activeMode === 3) drawMode4MusicBox(rx, wy, rw, wh);
+    else if (state.activeMode === 4) drawMode5Arcade(rx, wy, rw, wh);
+  }
+
+  // ─── MODE 1: FASTFETCH + 5 DISTINCT SKILL-TREES ───
+  function drawMode1Insignias(rx, ry, rw, rh) {
+    const topH = 148;
+    drawPanel(rx, ry, rw, topH, 'fastfetch::operator-dossier', PAL.accent);
+    drawHolo3D(rx + 80, ry + 78, 44, PAL.accent, 0.4, true);
+
+    const sx = rx + 152;
+    ctx.font = '700 13px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.accent;
+    ctx.fillText(`${state.alias}@vertex-os`, sx, ry + 30);
+
+    const aliasBoxX = sx + 178, aliasBoxY = ry + 14;
+    ctx.fillStyle = state.editingAlias ? '#182438' : '#0f1726';
+    ctx.strokeStyle = state.editingAlias ? PAL.green : PAL.borderHi;
+    ctx.beginPath(); ctx.roundRect(aliasBoxX, aliasBoxY, 134, 22, 4); ctx.fill(); ctx.stroke();
+    ctx.font = '700 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = state.editingAlias ? PAL.green : PAL.text;
+    ctx.fillText(state.editingAlias ? `ALIAS: ${state.alias}_` : '✎ EDITAR ALIAS', aliasBoxX + 10, aliasBoxY + 15);
+    regHit('editAlias', aliasBoxX, aliasBoxY, 134, 22, () => { state.editingAlias = !state.editingAlias; });
+
+    let totalNodes = 0, unlockedNodes = 0;
+    TREE_KEYS.forEach((k) => {
+      totalNodes += SKILL_TREES[k].nodes.length;
+      unlockedNodes += SKILL_TREES[k].nodes.filter((n) => n.unlocked).length;
+    });
+
+    const specs = [
+      ['LOGROS :', `${unlockedNodes}/${totalNodes} EN 5 ÁRBOLES`, PAL.green],
+      ['EQUIP  :', state.equippedBadgeTitle, PAL.amber],
+      ['KERNEL :', 'VertexOS 4.7 Forward+', PAL.dim]
+    ];
+    ctx.font = '400 11px "JetBrains Mono", monospace';
+    specs.forEach((s, i) => {
+      ctx.fillStyle = PAL.dim; ctx.fillText(s[0], sx, ry + 54 + i * 20);
+      ctx.fillStyle = s[2]; ctx.fillText(s[1], sx + 68, ry + 54 + i * 20);
+    });
+
+    [PAL.accent, PAL.green, PAL.amber, PAL.pink, PAL.purple, PAL.text].forEach((col, i) => {
+      ctx.fillStyle = col; ctx.fillRect(sx + i * 26, ry + 120, 20, 12);
+    });
+
+    const bx = rx + 528;
+    ctx.font = '700 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.text;
+    ctx.fillText('btop::skill-trees', bx, ry + 24);
+    TREE_KEYS.forEach((k, idx) => {
+      const tr = SKILL_TREES[k];
+      const done = tr.nodes.filter((n) => n.unlocked).length;
+      const by = ry + 36 + idx * 21;
+      ctx.font = '700 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = tr.color;
+      ctx.fillText(tr.short.padEnd(8, ' '), bx, by + 10);
+      drawBar(bx + 68, by + 2, 260, 8, done / tr.nodes.length, tr.color);
+      ctx.fillStyle = PAL.text;
+      ctx.fillText(`${done}/${tr.nodes.length}`, bx + 338, by + 10);
+    });
+
+    const botY = ry + topH + 14, botH = rh - topH - 14;
+    const leftW = Math.floor(rw * 0.58), rightW = rw - leftW - 14;
+    const tree = SKILL_TREES[state.activeTree];
+
+    drawPanel(rx, botY, leftW, botH, `ÁRBOL ACTIVO // ${tree.topology}`, tree.color, '#070b12');
+
+    let fx = rx + 12;
+    const fy = botY + 18;
+    TREE_KEYS.forEach((k) => {
+      const tr = SKILL_TREES[k];
+      ctx.font = '700 9px "JetBrains Mono", monospace';
+      const cw = ctx.measureText(tr.label).width + 12;
+      drawPill(fx, fy, cw, 22, tr.label, state.activeTree === k, tr.color);
+      regHit(`tree_${k}`, fx, fy, cw, 22, () => {
+        if (state.activeTree !== k) { state.activeTree = k; state.selectedNodeIdx = 0; state.treeTransition = 0; }
+      });
+      fx += cw + 5;
+    });
+
+    drawSkillTreeGraph(rx + 14, botY + 46, leftW - 28, botH - 60, tree);
+    drawHoloInspector(rx + leftW + 14, botY, rightW, botH, tree);
+  }
+
+  function drawTreeNodeShape(cx, cy, r, node, treeId, isSel) {
+    const isMythic = node.rarity === 'MÍTICA // Ω';
+    const baseCol = RARITY_COLORS[node.rarity];
+    const col = isSel ? '#ffffff' : (node.unlocked ? baseCol : PAL.muted);
+
+    if (isMythic) {
+      const pulse = 3 + Math.sin(state.time * 3.5) * 2;
+      ctx.strokeStyle = `${PAL.pink}88`; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(cx, cy, r + pulse + 3, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    ctx.fillStyle = node.unlocked ? '#0e192b' : '#080c14';
+    ctx.strokeStyle = col;
+    ctx.lineWidth = isSel ? 2.6 : (node.unlocked ? 1.8 : 1.1);
+    ctx.beginPath();
+    if (treeId === 'GENERAL') {
+      ctx.moveTo(cx, cy - r * 1.15); ctx.lineTo(cx + r * 1.15, cy);
+      ctx.lineTo(cx, cy + r * 1.15); ctx.lineTo(cx - r * 1.15, cy); ctx.closePath();
+    } else if (treeId === 'CYBER') {
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i - Math.PI / 6;
+        const px = cx + r * 1.05 * Math.cos(a), py = cy + r * 1.05 * Math.sin(a);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    } else if (treeId === 'UNIX' || treeId === 'HEIST') {
+      ctx.roundRect(cx - r * 0.95, cy - r * 0.95, r * 1.9, r * 1.9, 4);
+    } else {
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    }
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = `700 ${isMythic ? 12 : 10}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = node.unlocked ? baseCol : PAL.dim;
+    ctx.textAlign = 'center'; ctx.fillText(node.glyph, cx, cy + 4); ctx.textAlign = 'left';
+  }
+
+  function drawSkillTreeGraph(gx, gy, gw, gh, tree) {
+    const ease = Math.min(1, state.treeTransition);
+    const cx = gx + gw / 2, cy = gy + gh / 2;
+
+    ctx.save();
+    if (tree.id === 'GENERAL') {
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.16)';
+      [68, 138, 195].forEach((rad) => { ctx.beginPath(); ctx.arc(cx, cy, rad * ease, 0, Math.PI * 2); ctx.stroke(); });
+    } else if (tree.id === 'HEIST') {
+      ctx.strokeStyle = 'rgba(57, 255, 136, 0.12)'; ctx.setLineDash([4, 6]);
+      ctx.beginPath();
+      ctx.moveTo(gx + 16, gy + gh * 0.28); ctx.lineTo(gx + gw - 16, gy + gh * 0.28);
+      ctx.moveTo(gx + 16, gy + gh * 0.72); ctx.lineTo(gx + gw - 16, gy + gh * 0.72);
+      ctx.stroke(); ctx.setLineDash([]);
+    } else if (tree.id === 'HACKER') {
+      ctx.strokeStyle = 'rgba(255, 200, 87, 0.12)';
+      [0.36, 0.60, 0.84].forEach((yPct) => {
+        ctx.beginPath(); ctx.moveTo(gx + 16, gy + gh * yPct); ctx.lineTo(gx + gw - 16, gy + gh * yPct); ctx.stroke();
+      });
+    } else if (tree.id === 'UNIX') {
+      ctx.strokeStyle = 'rgba(255, 46, 136, 0.08)';
+      for (let x = gx; x <= gx + gw; x += 36) { ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke(); }
+    }
+    ctx.restore();
+
+    const pxPts = tree.nodes.map((n) => ({
+      x: cx + (gx + n.pos[0] * gw - cx) * ease,
+      y: cy + (gy + n.pos[1] * gh - cy) * ease
+    }));
+
+    tree.edges.forEach(([a, b], eIdx) => {
+      const pa = pxPts[a], pb = pxPts[b], na = tree.nodes[a], nb = tree.nodes[b];
+      const active = na.unlocked && nb.unlocked;
+      ctx.strokeStyle = active ? `${tree.color}aa` : '#1c283b';
+      ctx.lineWidth = active ? 2.1 : 1.1;
+      ctx.beginPath();
+      if (tree.id === 'UNIX') {
+        const midX = (pa.x + pb.x) / 2;
+        ctx.moveTo(pa.x, pa.y); ctx.lineTo(midX, pa.y); ctx.lineTo(midX, pb.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+        ctx.fillStyle = active ? tree.color : '#28364d';
+        ctx.beginPath(); ctx.arc(midX, pa.y, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(midX, pb.y, 2.2, 0, Math.PI * 2); ctx.fill();
+      } else if (tree.id === 'HEIST') {
+        const cpx = (pa.x + pb.x) / 2;
+        ctx.moveTo(pa.x, pa.y); ctx.bezierCurveTo(cpx, pa.y, cpx, pb.y, pb.x, pb.y); ctx.stroke();
+      } else if (tree.id === 'HACKER') {
+        const midY = (pa.y + pb.y) / 2;
+        ctx.moveTo(pa.x, pa.y); ctx.lineTo(pa.x, midY); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      } else {
+        ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      }
+      if (active) {
+        const t = (state.time * 0.75 + eIdx * 0.22) % 1;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(pa.x + (pb.x - pa.x) * t, pa.y + (pb.y - pa.y) * t, 2.3, 0, Math.PI * 2); ctx.fill();
+      }
+    });
+
+    state.hoverNodeIdx = -1;
+    pxPts.forEach((pt, idx) => {
+      const node = tree.nodes[idx], isSel = state.selectedNodeIdx === idx;
+      const r = isSel ? 14 : (node.rarity === 'MÍTICA // Ω' ? 12 : 10);
+      if (Math.hypot(state.mouseX - pt.x, state.mouseY - pt.y) <= r + 6) state.hoverNodeIdx = idx;
+      drawTreeNodeShape(pt.x, pt.y, r, node, tree.id, isSel);
+      if (state.equippedBadgeTitle === node.title) {
+        ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.amber;
+        ctx.textAlign = 'center'; ctx.fillText('★', pt.x, pt.y - r - 4); ctx.textAlign = 'left';
+      }
+      regHit(`tnode_${idx}`, pt.x - 16, pt.y - 16, 32, 32, () => { state.selectedNodeIdx = idx; });
+    });
+
+    if (state.hoverNodeIdx >= 0) {
+      const hn = tree.nodes[state.hoverNodeIdx], hp = pxPts[state.hoverNodeIdx];
+      const label = `${hn.glyph} ${hn.title}`;
+      ctx.font = '700 10px "JetBrains Mono", monospace';
+      const tw = ctx.measureText(label).width + 16;
+      const tx = Math.min(gx + gw - tw - 4, Math.max(gx + 4, hp.x - tw / 2));
+      const ty = Math.max(gy + 4, hp.y - 36);
+      ctx.fillStyle = '#09111d'; ctx.strokeStyle = RARITY_COLORS[hn.rarity];
+      ctx.beginPath(); ctx.roundRect(tx, ty, tw, 22, 4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = PAL.text; ctx.fillText(label, tx + 8, ty + 14);
+    }
+  }
+
+  function drawHoloInspector(ix, iy, iw, ih, tree) {
+    const n = tree.nodes[Math.min(state.selectedNodeIdx, tree.nodes.length - 1)];
+    const col = RARITY_COLORS[n.rarity];
+    drawPanel(ix, iy, iw, ih, 'HOLO-CHIP 2.5D // INSPECTOR', col);
+    drawHolo3D(ix + iw / 2, iy + 100, 58, col, state.selectedNodeIdx * 0.7, n.unlocked);
+
+    ctx.font = '700 22px "JetBrains Mono", monospace'; ctx.fillStyle = n.unlocked ? '#ffffff' : PAL.dim;
+    ctx.textAlign = 'center'; ctx.fillText(n.glyph, ix + iw / 2, iy + 108); ctx.textAlign = 'left';
+
+    ctx.font = '700 14px "JetBrains Mono", monospace'; ctx.fillStyle = col; ctx.fillText(n.title, ix + 18, iy + 194);
+    ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.fillStyle = n.unlocked ? PAL.green : PAL.amber;
+    ctx.fillText(`${tree.short}  |  ${n.rarity}  |  ${n.unlocked ? '✓ DESBLOQUEADA' : '🔒 BLOQUEADA'}`, ix + 18, iy + 214);
+
+    ctx.font = '400 11px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.text;
+    wrapText(n.unlocked ? n.desc : `Requisito: ${n.req}`, ix + 18, iy + 242, iw - 36, 17);
+
+    const py = iy + ih - 94;
+    ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.dim;
+    ctx.fillText(`PROGRESO: ${Math.round(n.progress * 100)}%`, ix + 18, py);
+    drawBar(ix + 18, py + 10, iw - 36, 10, n.progress, col);
+
+    const btnY = iy + ih - 52, isEq = state.equippedBadgeTitle === n.title;
+    const lbl = !n.unlocked ? 'BLOQUEADA — COMPLETA REQUISITO' : isEq ? '★ EQUIPADA EN PERFIL' : '★ EQUIPAR EN PERFIL';
+    drawPill(ix + 18, btnY, iw - 36, 32, lbl, n.unlocked, n.unlocked ? (isEq ? PAL.amber : PAL.green) : PAL.muted);
+    if (n.unlocked) regHit('equipBadge', ix + 18, btnY, iw - 36, 32, () => { state.equippedBadgeTitle = n.title; });
+  }
+
+  // ─── MODE 2: CAMOUFLAGED PHOSPHOR TERMLINK .ENC ───
+  function drawMode2Termlink(rx, ry, rw, rh) {
+    const leftW = 258;
+    drawPanel(rx, ry, leftW, rh, 'expedientes.enc', PAL.green);
+
+    ENC_FILES.forEach((f, idx) => {
+      const fy = ry + 26 + idx * 54, sel = state.termlinkFileIdx === idx;
+      ctx.fillStyle = sel ? '#102420' : '#0b111b';
+      ctx.strokeStyle = sel ? PAL.green : PAL.border;
+      ctx.beginPath(); ctx.roundRect(rx + 12, fy, leftW - 24, 46, 4); ctx.fill(); ctx.stroke();
+
+      ctx.font = '700 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = sel ? PAL.green : PAL.text;
+      ctx.fillText(f.file.slice(0, 26), rx + 20, fy + 18);
+      ctx.font = '400 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = f.unlocked ? PAL.accent : PAL.amber;
+      ctx.fillText(f.unlocked ? '[✓ DESCIFRADO]' : '[🔒 CIFRADO AES-512]', rx + 20, fy + 35);
+
+      regHit(`tl_file_${idx}`, rx + 12, fy, leftW - 24, 46, () => {
+        state.termlinkFileIdx = idx;
+        state.termlinkView = f.unlocked ? 'DOSSIER' : 'HEX';
+        resetTermlink();
+      });
+    });
+
+    const curFile = ENC_FILES[state.termlinkFileIdx];
+    const my = ry + 252;
+    drawPanel(rx + 12, my, leftW - 24, 152, 'METADATOS', PAL.borderHi, '#080e16');
+    ctx.font = '400 10px "JetBrains Mono", monospace';
+    [['PESO :', curFile.weight, PAL.text], ['CIFR :', curFile.cipher, PAL.accent],
+     ['HASH :', curFile.hash, PAL.dim], ['CLAS :', curFile.classification.slice(0, 18), PAL.amber],
+     ['RUTA :', '/home/usuario/exp/', PAL.green]].forEach((m, i) => {
+      ctx.fillStyle = PAL.dim; ctx.fillText(m[0], rx + 22, my + 28 + i * 22);
+      ctx.fillStyle = m[2]; ctx.fillText(m[1], rx + 66, my + 28 + i * 22);
+    });
+
+    drawPill(rx + 12, ry + 418, leftW - 24, 28, '↺ REINICIAR MEMORIA', false, PAL.green);
+    regHit('tl_reset', rx + 12, ry + 418, leftW - 24, 28, resetTermlink);
+
+    const hx = rx + leftW + 14, hw = rw - leftW - 14;
+    drawPanel(hx, ry, hw, rh, 'KERNEL_LINK v4.08 // VOLCADO DE MEMORIA', PAL.green, '#050b09');
+
+    ctx.font = '700 12px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.green;
+    ctx.fillText(`TERMLINK — ${curFile.file}`, hx + 18, ry + 32);
+
+    ctx.font = '700 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = state.termlinkAttempts <= 1 ? PAL.pink : PAL.amber;
+    ctx.fillText(`INTENTOS RESTANTES: ${state.termlinkAttempts}`, hx + 18, ry + 54);
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = i < state.termlinkAttempts ? (state.termlinkAttempts === 1 ? PAL.pink : PAL.green) : '#13241d';
+      ctx.fillRect(hx + 184 + i * 22, ry + 43, 16, 13);
+    }
+
+    // Only show View Switch when file is unlocked (no clutter when locked)
+    if (curFile.unlocked) {
+      drawPill(hx + hw - 266, ry + 20, 118, 26, '⌨ MEMORIA HEX', state.termlinkView === 'HEX', PAL.green);
+      regHit('tl_view_hex', hx + hw - 266, ry + 20, 118, 26, () => { state.termlinkView = 'HEX'; });
+      drawPill(hx + hw - 140, ry + 20, 124, 26, '📄 EXPEDIENTE', state.termlinkView === 'DOSSIER', PAL.accent);
+      regHit('tl_view_dos', hx + hw - 140, ry + 20, 124, 26, () => { state.termlinkView = 'DOSSIER'; });
+    }
+
+    if (state.termlinkView === 'DOSSIER' && curFile.unlocked) {
+      const dy = ry + 78;
+      drawPanel(hx + 18, dy, hw - 36, rh - 96, `EXPEDIENTE DESCIFRADO // ${curFile.classification}`, PAL.accent, '#071117');
+      ctx.font = '700 15px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.green; ctx.fillText(curFile.title, hx + 36, dy + 38);
+      ctx.font = '700 11px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.amber;
+      ctx.fillText(`OBJETIVO: ${curFile.target}   |   AFILIACIÓN: ${curFile.affiliation}`, hx + 36, dy + 62);
+      ctx.font = '400 13px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.text;
+      wrapText(curFile.content, hx + 36, dy + 104, hw - 76, 22);
+      return;
+    }
+
+    // Uniform Phosphor Camouflage Hex Dump: EVERY character has identical font & color!
+    const memCols = buildRobCoMemory(state.termlinkFileIdx, state.termlinkRemovedDuds);
+    state.termlinkHoverChar = '';
+    const charW = 9.5, rowH = 32, startY = ry + 94;
+
+    for (let c = 0; c < 2; c++) {
+      const colX = hx + 18 + c * 226;
+      memCols[c].forEach((row, r) => {
+        const y = startY + r * rowH;
+        ctx.font = '400 12px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#2d7a56';
+        ctx.fillText(row.addr, colX, y);
+
+        const dataX = colX + 54;
+        // Check if mouse hovers any token OR single noise char
+        let hovTok = null;
+        let hovSingleIdx = -1;
+        for (const tok of row.tokens) {
+          const tx0 = dataX + tok.start * charW, tx1 = dataX + (tok.end + 1) * charW;
+          if (state.mouseX >= tx0 && state.mouseX <= tx1 && state.mouseY >= y - 13 && state.mouseY <= y + 5) {
+            hovTok = tok;
+            state.termlinkHoverChar = tok.text;
+            regHit(`tl_tok_${c}_${r}`, tx0, y - 13, tx1 - tx0, 18, () => {
+              if (tok.type === 'word') guessTermlinkWord(tok.text, curFile);
+              else triggerTermlinkTrap(tok);
+            });
+          }
+        }
+        if (!hovTok && state.mouseY >= y - 13 && state.mouseY <= y + 5) {
+          const ci = Math.floor((state.mouseX - dataX) / charW);
+          if (ci >= 0 && ci < 16) {
+            hovSingleIdx = ci;
+            state.termlinkHoverChar = row.chars[ci];
+          }
+        }
+
+        // Draw all 16 chars in identical weight & color unless hovered!
+        ctx.font = '400 12px "JetBrains Mono", monospace';
+        for (let i = 0; i < 16; i++) {
+          const cx = dataX + i * charW;
+          const inTok = hovTok && i >= hovTok.start && i <= hovTok.end;
+          const inSingle = !hovTok && hovSingleIdx === i;
+          if (inTok || inSingle) {
+            ctx.fillStyle = PAL.green;
+            ctx.fillRect(cx - 0.5, y - 13, charW + 0.5, 17);
+            ctx.fillStyle = '#05070c';
+          } else {
+            ctx.fillStyle = PAL.phosphor;
+          }
+          ctx.fillText(row.chars[i], cx, y);
+        }
+      });
+    }
+
+    const cx = hx + 468, cw = hw - 484;
+    drawTuiBox(cx, ry + 78, cw, rh - 96, ' CONSOLA ', PAL.green, true);
+    ctx.font = '400 11px "JetBrains Mono", monospace';
+    state.termlinkLogs.slice(-13).forEach((ln, idx) => {
+      ctx.fillStyle = ln.includes('GRANTED') ? PAL.green : ln.includes('LIKENESS') ? PAL.amber : '#66cdaa';
+      ctx.fillText(ln.slice(0, 24), cx + 10, ry + 106 + idx * 22);
+    });
+
+    if (state.termlinkLastLikeness) {
+      const lm = state.termlinkLastLikeness, my2 = ry + rh - 144;
+      ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.amber;
+      ctx.fillText(`POSICIÓN: ${lm.word} (${lm.score}/8)`, cx + 10, my2);
+      for (let i = 0; i < 8; i++) {
+        const bx = cx + 10 + i * 20;
+        ctx.fillStyle = lm.mask[i] ? PAL.green : '#10221a';
+        ctx.strokeStyle = PAL.green;
+        ctx.fillRect(bx, my2 + 8, 17, 20); ctx.strokeRect(bx, my2 + 8, 17, 20);
+        ctx.fillStyle = lm.mask[i] ? '#05070c' : '#3a6e54';
+        ctx.fillText(lm.mask[i] ? lm.word[i] : '·', bx + 5, my2 + 22);
+      }
+    }
+
+    const blink = Math.floor(state.time * 2.5) % 2 === 0 ? '█' : '';
+    ctx.font = '700 13px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.green;
+    ctx.fillText(`>${state.termlinkHoverChar}${blink}`, cx + 10, ry + rh - 34);
+  }
+
+  function resetTermlink() {
+    state.termlinkAttempts = 4;
+    state.termlinkRemovedDuds.clear();
+    state.termlinkLastLikeness = null;
+    state.termlinkLogs = [`> MOUNTED ${ENC_FILES[state.termlinkFileIdx].file}`, '> ESCANEA LA MEMORIA CON EL CURSOR'];
+  }
+
+  function guessTermlinkWord(word, curFile) {
+    if (state.termlinkAttempts <= 0 || curFile.unlocked) return;
+    if (word === curFile.pass) {
+      curFile.unlocked = true;
+      state.termlinkView = 'DOSSIER';
+      state.termlinkLogs.push(`> ${word}`, '> ACCESS GRANTED!');
+      state.termlinkLastLikeness = { word, score: 8, mask: Array(8).fill(true) };
+      return;
+    }
+    const mask = [];
+    let score = 0;
+    for (let i = 0; i < 8; i++) { const ok = word[i] === curFile.pass[i]; mask.push(ok); if (ok) score++; }
+    state.termlinkLastLikeness = { word, score, mask };
+    state.termlinkAttempts = Math.max(0, state.termlinkAttempts - 1);
+    state.termlinkLogs.push(`> ${word}`, '> ENTRY DENIED', `> LIKENESS=${score}/8`);
+    if (state.termlinkAttempts === 0) state.termlinkLogs.push('> LOCKOUT! REINICIA MEMORIA.');
+  }
+
+  function triggerTermlinkTrap(tok) {
+    state.termlinkRemovedDuds.add(tok.key);
+    const curFile = ENC_FILES[state.termlinkFileIdx];
+    const dud = TERMLINK_WORDS.find((w) => w !== curFile.pass && !state.termlinkRemovedDuds.has(w));
+    if (dud && Math.random() > 0.3) {
+      state.termlinkRemovedDuds.add(dud);
+      state.termlinkLogs.push(`> ${tok.text}`, `> DUD REMOVED: ${dud}`);
+    } else {
+      state.termlinkAttempts = 4;
+      state.termlinkLogs.push(`> ${tok.text}`, '> ALLOWANCE REPLENISHED');
+    }
+  }
+
+  // ─── MODE 3: CLEAN 3-PANEL TUI (ZERO REDUNDANCY) ───
+  function drawMode3TerminalLab(rx, ry, rw, rh) {
+    const leftW = 270, rightX = rx + leftW + 14, rightW = rw - leftW - 14;
+    const opUser = state.cliContext === 'VEX' ? 'vex' : state.alias.toLowerCase();
+    const opHost = state.cliContext === 'VEX' ? 'sector0-node' : 'boveda-lab';
+
+    // Left full-height: yazi::vfs-tree + compact context switch
+    drawTuiBox(rx, ry, leftW, rh, ' yazi::vfs-tree ', PAL.amber, true);
+    drawPill(rx + 12, ry + 18, 118, 22, `CTX: ${state.alias}`, state.cliContext === 'ACADEMIA', PAL.accent);
+    regHit('ctx_op', rx + 12, ry + 18, 118, 22, () => { state.cliContext = 'ACADEMIA'; });
+    drawPill(rx + 138, ry + 18, 118, 22, 'CTX: VEX @ S0', state.cliContext === 'VEX', PAL.pink);
+    regHit('ctx_vex', rx + 138, ry + 18, 118, 22, () => { state.cliContext = 'VEX'; });
+
+    let ty = ry + 68;
+    VFS_TREE.forEach((row, idx) => {
+      const hov = state.mouseX >= rx + 8 && state.mouseX <= rx + leftW - 8 && state.mouseY >= ty - 14 && state.mouseY <= ty + 8;
+      if (hov) { ctx.fillStyle = '#122030'; ctx.fillRect(rx + 8, ty - 14, leftW - 16, 22); }
+      ctx.fillStyle = row.col; ctx.font = '400 11px "JetBrains Mono", monospace';
+      ctx.fillText(row.txt, rx + 14, ty);
+      regHit(`yazi_${idx}`, rx + 8, ty - 14, leftW - 16, 22, () => {
+        if (row.cmd) runShellCmd(row.cmd);
+        else runShellCmd(`cd ${row.path}`);
+      });
+      ty += 34;
+    });
+
+    // Right-Top: fastfetch // btop-monitor (clean, no giant buttons)
+    const ffH = 176;
+    drawTuiBox(rightX, ry, rightW, ffH, ' fastfetch // btop-monitor ', PAL.green, true);
+    const ex = rightX + 66, ey = ry + 86;
+    ctx.strokeStyle = PAL.accent; ctx.lineWidth = 2; ctx.beginPath();
+    for (let k = 0; k < 6; k++) {
+      const a = (k * Math.PI) / 3 + state.time * 0.55;
+      const vx = ex + Math.cos(a) * 40, vy = ey + Math.sin(a) * 40;
+      if (k === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
+    }
+    ctx.closePath(); ctx.stroke();
+    ctx.fillStyle = PAL.green; ctx.font = '700 15px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+    ctx.fillText('VTX', ex, ey + 5); ctx.textAlign = 'left';
+
+    const ffX = rightX + 128;
+    [[`${opUser}@${opHost}`, '', PAL.green],
+     ['OS    :', 'VertexOS 4.7 Forward+', PAL.accent],
+     ['SHELL :', 'vtx-sh (academy, breach3d)', PAL.text],
+     ['CPU   :', 'Capped < 8% (Idle Clean)', PAL.green]].forEach((r, i) => {
+      ctx.font = '700 11px "JetBrains Mono", monospace'; ctx.fillStyle = r[2]; ctx.fillText(r[0], ffX, ry + 34 + i * 21);
+      if (r[1]) { ctx.font = '400 11px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.text; ctx.fillText(r[1], ffX + 54, ry + 34 + i * 21); }
+    });
+
+    [PAL.accent, PAL.green, PAL.amber, PAL.pink, PAL.purple, PAL.text].forEach((col, p) => {
+      ctx.fillStyle = col; ctx.fillRect(ffX + p * 26, ry + 130, 20, 12);
+    });
+
+    const bx = rightX + 444;
+    for (let b = 0; b < 14; b++) {
+      const bh = 12 + Math.abs(Math.sin(state.time * 4 + b * 0.45)) * 86;
+      ctx.fillStyle = b % 2 === 0 ? PAL.accent : PAL.purple;
+      ctx.fillRect(bx + b * 13, ry + 144 - bh, 9, bh);
+    }
+
+    // Right-Bottom: spacious terminal::vtx-sh
+    const termY = ry + ffH + 14, termH = rh - ffH - 14;
+    drawTuiBox(rightX, termY, rightW, termH, ' terminal::vtx-sh ', PAL.accent, true);
+    const tx = rightX + 8, ty0 = termY + 12, tw = rightW - 16, th = termH - 20;
+    chamferPanel(tx, ty0, tw, th, 8, '#06090f', PAL.border, 1.2);
+    regHit('termFocus', tx, ty0, tw, th, () => { state.terminalFocused = true; }, 'text');
+
+    let ly = ty0 + 28;
+    state.terminalLines.slice(-14).forEach((ln) => {
+      ctx.fillStyle = ln.col || PAL.text;
+      ctx.font = '400 12px "JetBrains Mono", monospace';
+      ctx.fillText(ln.text.slice(0, 74), tx + 14, ly);
+      ly += 23;
+    });
+
+    // Subtle single-line guide above prompt
+    ctx.font = '400 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.dim;
+    ctx.fillText("hint: escribe 'academy', 'fastfetch', 'ls', 'cat notas.txt', 'breach3d' o usa [TAB]", tx + 14, ty0 + th - 46);
+
+    ctx.fillStyle = '#0a1019'; ctx.fillRect(tx + 6, ty0 + th - 34, tw - 12, 28);
+    const blink = Math.floor(state.time * 2.5) % 2 === 0 ? '█' : '';
+    ctx.fillStyle = PAL.green; ctx.font = '700 12px "JetBrains Mono", monospace';
+    ctx.fillText(`${opUser}@${opHost}:${state.cwd}$ ${state.cmdInput}${blink}`, tx + 14, ty0 + th - 15);
+  }
+
+  function runShellCmd(raw) {
+    const cmd = raw.trim();
+    if (!cmd) return;
+    const opUser = state.cliContext === 'VEX' ? 'vex' : state.alias.toLowerCase();
+    const opHost = state.cliContext === 'VEX' ? 'sector0-node' : 'boveda-lab';
+    state.terminalLines.push({ text: `${opUser}@${opHost}:${state.cwd}$ ${cmd}`, col: PAL.green });
+
+    if (cmd === 'academy') {
+      launchAcademy();
+      return;
+    } else if (cmd === 'clear') {
+      state.terminalLines = [];
+    } else if (cmd === 'pwd') {
+      state.terminalLines.push({ text: state.cwd, col: PAL.text });
+    } else if (cmd === 'ls' || cmd === 'ls -l') {
+      state.terminalLines.push({ text: 'descargas/   documentos/   fotos/   notas.txt   /usr/games/breach3d*', col: PAL.accent });
+    } else if (cmd === 'fastfetch') {
+      state.terminalLines.push({ text: `OS: VertexOS 4.7 | Host: ${opHost} | User: ${opUser} | 60 FPS`, col: PAL.amber });
+    } else if (cmd.startsWith('cat')) {
+      state.terminalLines.push({ text: 'notas.txt -> "Clave wifi de casa: vertex-2026 | Receta en documentos/"', col: PAL.text });
+    } else if (cmd.startsWith('cd ')) {
+      state.cwd = cmd.slice(3).trim() || '/home/usuario';
+      state.terminalLines.push({ text: `-> cwd = ${state.cwd}`, col: PAL.dim });
+    } else if (cmd === 'breach3d') {
+      launchDive3D();
+    } else {
+      state.terminalLines.push({ text: `vtx-sh: '${cmd}' ejecutado.`, col: PAL.dim });
+    }
+    while (state.terminalLines.length > 26) state.terminalLines.shift();
+  }
+
+  // ─── FULL-SCREEN VTX-ACADEMY (VERTEX TACTICAL IDENTITY, NO CLONE, ZERO CHEAT BUTTONS) ───
+  function launchAcademy() {
+    state.academyActive = true;
+    state.diveActive = false;
+    state.academyShowHint = false;
+    syncToolbarButtons();
+  }
+
+  function drawAcademyFullScreen() {
+    ctx.fillStyle = '#04080e';
+    ctx.fillRect(0, 0, W, H);
+
+    // Compact 1-line Header
+    drawPanel(16, 14, W - 32, 48, 'VTX-ACADEMY // SIMULADOR TÁCTICO BASH', PAL.accent, '#081018');
+    let sx = 28;
+    ACADEMY_MODULES.forEach((m, idx) => {
+      ctx.font = '700 10px "JetBrains Mono", monospace';
+      const sw = ctx.measureText(m.label).width + 16;
+      drawPill(sx, 26, sw, 24, m.label, state.academyModIdx === idx, m.isBoss ? PAL.pink : PAL.accent);
+      regHit(`ac_mod_${idx}`, sx, 26, sw, 24, () => {
+        state.academyModIdx = idx;
+        state.academyAnalysis = null;
+        state.academyShowHint = false;
+        if (m.isBoss) state.academyPhase = 'CAMPO';
+        else if (state.academyPhase === 'CAMPO') state.academyPhase = 'GUIADO';
+      });
+      sx += sw + 6;
+    });
+
+    // Telemetry + Exit
+    ctx.font = '700 11px "JetBrains Mono", monospace';
+    ctx.fillStyle = PAL.amber; ctx.fillText(`PTS: ${state.academyScore}`, W - 390, 42);
+    ctx.fillStyle = PAL.green; ctx.fillText(`RACHA: x${state.academyStreak}`, W - 285, 42);
+    drawPill(W - 178, 26, 150, 24, '[ESC] SALIR', true, PAL.pink);
+    regHit('ac_exit', W - 178, 26, 150, 24, () => { state.academyActive = false; syncToolbarButtons(); });
+
+    const mod = ACADEMY_MODULES[state.academyModIdx];
+
+    // Left Panel (38%): Reactive Directory Visualizer + Module Progress / Session Shields
+    const lx = 16, lw = 468, ly = 76;
+    drawTuiBox(lx, ly, lw, 286, ' DIRECTORIO EN VIVO // /home/usuario ', PAL.accent, true);
+
+    const treeItems = [
+      { label: '/home/usuario', path: '/home/usuario', col: PAL.green, indent: 0 },
+      ...state.academyDirs.map((d) => ({ label: `📁 ${d}/`, path: `/home/usuario/${d}`, col: PAL.accent, indent: 1 })),
+      { label: '📄 notas.txt', path: '/home/usuario/notas.txt', col: PAL.text, indent: 1 },
+      { label: '📄 documentos/receta.txt', path: '/home/usuario/documentos/receta.txt', col: PAL.text, indent: 1 },
+      { label: '👻 descargas/.clave_wifi.txt', path: '/home/usuario/descargas/.clave_wifi.txt', col: PAL.purple, indent: 1 }
+    ];
+    if (state.academyHasTrash) treeItems.push({ label: '🗑️ basura.tmp', path: '/home/usuario/basura.tmp', col: PAL.dim, indent: 1 });
+
+    treeItems.forEach((it, idx) => {
+      const y = ly + 28 + idx * 25;
+      const here = state.academyCwd === it.path;
+      const flashed = state.academyFlashPath && it.path.includes(state.academyFlashPath);
+      if (flashed) { ctx.fillStyle = 'rgba(57, 255, 136, 0.12)'; ctx.fillRect(lx + 10, y - 14, lw - 20, 22); }
+      ctx.font = here ? '700 11px "JetBrains Mono", monospace' : '400 11px "JetBrains Mono", monospace';
+      ctx.fillStyle = it.col;
+      ctx.fillText('  '.repeat(it.indent) + it.label, lx + 16, y);
+      if (here) { ctx.fillStyle = PAL.amber; ctx.fillText('◄ UBICACIÓN ACTUAL', lx + lw - 140, y); }
+    });
+
+    // Bottom Left: Phase Progress OR Boss Session Shields + Chained Sequence
+    const py = ly + 300, ph = H - py - 16;
+    drawTuiBox(lx, py, lw, ph, mod.isBoss ? ' INTEGRIDAD DE SESIÓN // SECUENCIA ' : ' PROGRESO DE ENTRENAMIENTO ', mod.isBoss ? PAL.pink : PAL.green, true);
+
+    if (!mod.isBoss) {
+      // Phase switcher (I. Guiado / II. Práctica)
+      drawPill(lx + 16, py + 24, 206, 26, 'I. LABORATORIO GUIADO', state.academyPhase === 'GUIADO', PAL.accent);
+      regHit('ph_gui', lx + 16, py + 24, 206, 26, () => { state.academyPhase = 'GUIADO'; state.academyAnalysis = null; });
+      drawPill(lx + 236, py + 24, 214, 26, 'II. SIMULACIÓN PRÁCTICA', state.academyPhase === 'PRACTICA', PAL.green);
+      regHit('ph_pra', lx + 236, py + 24, 214, 26, () => { state.academyPhase = 'PRACTICA'; state.academyAnalysis = null; });
+
+      ctx.font = '400 11px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.dim;
+      ctx.fillText('Dominio del módulo:', lx + 16, py + 76);
+      drawBar(lx + 16, py + 86, lw - 32, 10, state.academyPhase === 'PRACTICA' ? 0.75 : 0.35, PAL.green);
+      ctx.fillStyle = PAL.text;
+      wrapText('En Guiado aprendés el concepto; en Práctica resolvés sin ayuda y el analizador compara tu eficiencia.', lx + 16, py + 122, lw - 32, 18);
+    } else {
+      // 3 Session Shields (◈ ◈ ◈)
+      ctx.font = '700 12px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.pink;
+      ctx.fillText('ESCUDOS DE SESIÓN:', lx + 16, py + 34);
+      for (let i = 0; i < 3; i++) {
+        ctx.fillStyle = i < state.academyShields ? PAL.green : PAL.muted;
+        ctx.fillText('◈', lx + 168 + i * 24, py + 34);
+      }
+
+      // Chained Operational Sequence (only active step expanded)
+      mod.chain.forEach((step, idx) => {
+        const sy = py + 58 + idx * 54;
+        const active = idx === state.bossStepIdx;
+        const done = idx < state.bossStepIdx;
+        ctx.fillStyle = active ? '#151c2e' : '#0a0f18';
+        ctx.strokeStyle = active ? PAL.pink : (done ? PAL.green : PAL.border);
+        ctx.beginPath(); ctx.roundRect(lx + 16, sy, lw - 32, 44, 4); ctx.fill(); ctx.stroke();
+        ctx.font = active ? '700 11px "JetBrains Mono", monospace' : '400 11px "JetBrains Mono", monospace';
+        ctx.fillStyle = done ? PAL.green : active ? PAL.pink : PAL.dim;
+        ctx.fillText(done ? `✓ ${step.title}` : active ? `▸ ${step.title}` : `· PASO ${idx + 1}/4 EN COLA`, lx + 28, sy + 26);
+      });
+    }
+
+    // Right Panel (62%): Active Mission + Clean Console + Post-Command Tactical Breakdown
+    const rx = lx + lw + 16, rw = W - rx - 16;
+    const taskObj = mod.isBoss ? mod.chain[state.bossStepIdx] : mod.phases[state.academyPhase === 'PRACTICA' ? 'PRACTICA' : 'GUIADO'];
+
+    // Mission Box
+    drawTuiBox(rx, ly, rw, 108, ` CONSIGNA ACTIVA // ${mod.title} `, mod.isBoss ? PAL.pink : PAL.amber, true);
+    ctx.font = '700 12px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.text;
+    wrapText(taskObj.ask, rx + 18, ly + 32, rw - 130, 19);
+
+    drawPill(rx + rw - 104, ly + 22, 88, 26, '? PISTA', state.academyShowHint, PAL.amber);
+    regHit('ac_hint', rx + rw - 104, ly + 22, 88, 26, () => { state.academyShowHint = !state.academyShowHint; });
+
+    if (state.academyShowHint) {
+      ctx.font = '400 11px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.amber;
+      ctx.fillText(`PISTA: ${taskObj.hint}`, rx + 18, ly + 92);
+    }
+
+    // Console Output + Post-Command Tactical Breakdown
+    const consY = ly + 122, consH = H - consY - 16;
+    drawTuiBox(rx, consY, rw, consH, ' CONSOLA DE EJECUCIÓN (ESCRIBE TU COMANDO + [ENTER]) ', PAL.accent, true);
+
+    const outLimit = state.academyAnalysis ? 9 : 16;
+    let oy = consY + 30;
+    state.academyLines.slice(-outLimit).forEach((ln) => {
+      ctx.font = '400 12px "JetBrains Mono", monospace'; ctx.fillStyle = ln.col || PAL.text;
+      ctx.fillText(ln.text.slice(0, 86), rx + 18, oy);
+      oy += 22;
+    });
+
+    if (state.academyAnalysis) {
+      const an = state.academyAnalysis;
+      const ay = consY + consH - 186;
+      drawPanel(rx + 16, ay, rw - 32, 132, an.isOptimal ? `⚡ EJECUCIÓN ÓPTIMA (+${an.pts} PTS)` : `✓ MISION CUMPLIDA (+${an.pts} PTS)`, an.isOptimal ? PAL.green : PAL.amber, '#08121b');
+
+      ctx.font = '700 11px "JetBrains Mono", monospace';
+      ctx.fillStyle = PAL.text; ctx.fillText(`TU COMANDO      : ${an.cmd}`, rx + 30, ay + 30);
+      ctx.fillStyle = PAL.green; ctx.fillText(`★ ATAJO ÓPTIMO  : ${an.optimal}`, rx + 30, ay + 50);
+
+      // Piece-by-piece breakdown
+      let bx = rx + 30;
+      an.breakdown.forEach(([tok, desc]) => {
+        ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.accent;
+        ctx.fillText(`[${tok}]`, bx, ay + 78);
+        ctx.font = '400 10px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.dim;
+        ctx.fillText(`= ${desc}`, bx + ctx.measureText(`[${tok}]`).width + 6, ay + 78);
+        bx += ctx.measureText(`[${tok}] = ${desc}`).width + 24;
+      });
+
+      ctx.font = '400 10px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.dim;
+      ctx.fillText('Escribí el siguiente comando o cambiá de módulo arriba.', rx + 30, ay + 112);
+    }
+
+    // Real Terminal Input Bar
+    ctx.fillStyle = '#0a121c'; ctx.fillRect(rx + 10, H - 56, rw - 20, 32);
+    const blink = Math.floor(state.time * 2.5) % 2 === 0 ? '█' : '';
+    ctx.font = '700 13px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.green;
+    ctx.fillText(`usuario@boveda:${state.academyCwd}$ ${state.academyInput}${blink}`, rx + 20, H - 35);
+  }
+
+  function runAcademyCmd(raw) {
+    const cmd = raw.trim();
+    if (!cmd) return;
+    state.academyLines.push({ text: `usuario@boveda:${state.academyCwd}$ ${cmd}`, col: PAL.green });
+    state.academyFlashPath = '';
+
+    if (cmd.startsWith('mkdir ')) {
+      cmd.slice(6).trim().split(/\s+/).forEach((d) => {
+        if (d && !state.academyDirs.includes(d)) state.academyDirs.push(d);
+      });
+      state.academyFlashPath = cmd.slice(6).trim().split(/\s+/)[0];
+      state.academyLines.push({ text: `Directorios creados: ${cmd.slice(6)}`, col: PAL.accent });
+    } else if (cmd === 'rm basura.tmp') {
+      state.academyHasTrash = false;
+      state.academyLines.push({ text: 'basura.tmp eliminado.', col: PAL.amber });
+    } else if (cmd === 'cd ~' || cmd === 'cd') {
+      state.academyCwd = '/home/usuario';
+    } else if (cmd.startsWith('cd ')) {
+      const target = cmd.slice(3).split('&&')[0].trim();
+      state.academyCwd = target === '..' ? '/home/usuario' : (target.startsWith('/') ? target : `/home/usuario/${target}`);
+      state.academyFlashPath = target;
+    } else if (cmd.includes('ls')) {
+      state.academyFlashPath = 'descargas';
+      state.academyLines.push({ text: '.clave_wifi.txt   notas.txt   documentos/   fotos/', col: PAL.accent });
+    } else if (cmd.includes('receta.txt')) {
+      state.academyFlashPath = 'receta.txt';
+      state.academyLines.push({ text: 'receta.txt -> "Café fuerte + 2 líneas de Bash al día."', col: PAL.text });
+    } else if (cmd.includes('wifi')) {
+      state.academyFlashPath = 'notas.txt';
+      state.academyLines.push({ text: 'notas.txt:3 -> "Clave wifi de casa: vertex-2026"', col: PAL.text });
+    } else if (cmd === 'pwd') {
+      state.academyLines.push({ text: state.academyCwd, col: PAL.text });
+    } else if (cmd === 'clear') {
+      state.academyLines = [];
+      return;
+    }
+
+    const mod = ACADEMY_MODULES[state.academyModIdx];
+    const targetObj = mod.isBoss ? mod.chain[state.bossStepIdx] : mod.phases[state.academyPhase === 'PRACTICA' ? 'PRACTICA' : 'GUIADO'];
+    const isOptimal = cmd === targetObj.cleverCmd;
+    const isNormal = cmd === targetObj.normalCmd;
+
+    if (isOptimal || isNormal) {
+      const pts = (isOptimal ? 250 : 100) * state.academyStreak;
+      state.academyScore += pts;
+      if (isOptimal) state.academyStreak = Math.min(4, state.academyStreak + 1);
+      state.academyAnalysis = { cmd, optimal: targetObj.cleverCmd, isOptimal, pts, breakdown: targetObj.breakdown };
+      if (mod.isBoss) {
+        if (state.bossStepIdx < mod.chain.length - 1) state.bossStepIdx++;
+        else { state.bossStepIdx = 0; state.academyLines.push({ text: '🏆 PRUEBA DE CAMPO COMPLETADA.', col: PAL.green }); }
+      }
+    } else if (mod.isBoss) {
+      state.academyShields = Math.max(0, state.academyShields - 1);
+      state.academyStreak = 1;
+      if (state.academyShields === 0) {
+        state.academyShields = 3;
+        state.bossStepIdx = 0;
+        state.academyLines.push({ text: '⚠ ESCUDOS AGOTADOS — REINICIANDO SECUENCIA.', col: PAL.pink });
+      }
+    }
+    while (state.academyLines.length > 26) state.academyLines.shift();
+  }
+
+  // ─── MODE 4: MUSICBOX FFT ───
+  function drawMode4MusicBox(rx, ry, rw, rh) {
+    const topH = 286, tr = TRACKS[state.playingTrack];
+    drawPanel(rx, ry, rw, topH, `ncmpcpp::spectrum-fft [${String(tr.id).padStart(2, '0')}/22 ${tr.title}]`, PAL.pink);
+
+    const fx = rx + 24, fy = ry + 36, fw = rw - 48, fh = 162, bw = fw / 32;
+    for (let i = 0; i < 32; i++) {
+      const val = state.fftBands[i], bh = val * fh, x = fx + i * bw + 3, barW = bw - 6;
+      const grad = ctx.createLinearGradient(0, fy + fh - bh, 0, fy + fh);
+      grad.addColorStop(0, PAL.pink); grad.addColorStop(0.55, PAL.purple); grad.addColorStop(1, PAL.accent);
+      ctx.fillStyle = grad; ctx.fillRect(x, fy + fh - bh, barW, bh);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(x, fy + fh - state.fftPeaks[i] * fh - 3, barW, 3);
+    }
+
+    ctx.strokeStyle = PAL.accent; ctx.lineWidth = 1.6; ctx.beginPath();
+    for (let i = 0; i <= 90; i++) {
+      const t = i / 90, wx = fx + t * fw, amp = state.musicPlaying ? (12 + 10 * tr.energy) : 2;
+      const wy = ry + 232 + Math.sin(t * 24 + state.time * 7) * amp * Math.sin(t * Math.PI);
+      if (i === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
+    }
+    ctx.stroke();
+
+    const cy = ry + topH - 38;
+    drawPill(rx + 24, cy, 130, 26, state.musicPlaying ? '❚❚ PAUSAR' : '▶ REPRODUCIR', state.musicPlaying, PAL.pink);
+    regHit('musicPlay', rx + 24, cy, 130, 26, () => { state.musicPlaying = !state.musicPlaying; });
+    drawPill(rx + 170, cy, 175, 26, state.pinMenu ? '★ FIJADO EN MENÚ' : 'FIJAR EN MENÚ', state.pinMenu, PAL.accent);
+    regHit('pinMenu', rx + 170, cy, 175, 26, () => { state.pinMenu = !state.pinMenu; });
+    drawPill(rx + 360, cy, 175, 26, state.pinGame ? '★ FIJADO EN JUEGO' : 'FIJAR EN JUEGO', state.pinGame, PAL.green);
+    regHit('pinGame', rx + 360, cy, 175, 26, () => { state.pinGame = !state.pinGame; });
+
+    ctx.font = '700 11px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.dim; ctx.textAlign = 'right';
+    ctx.fillText(`PACK: ${tr.pack}  |  BPM: ${tr.bpm}  |  DUR: ${tr.dur}`, rx + rw - 24, cy + 17);
+    ctx.textAlign = 'left';
+
+    const botY = ry + topH + 14, botH = rh - topH - 14;
+    drawPanel(rx, botY, rw, botH, 'PLAYLIST // 22 TRACKS (DavidKBD)', PAL.purple);
+    const colW = (rw - 48) / 2;
+    TRACKS.forEach((t, idx) => {
+      const col = idx < 11 ? 0 : 1, row = idx % 11;
+      const tx = rx + 18 + col * (colW + 12), ty = botY + 22 + row * 29;
+      const active = state.playingTrack === idx;
+      ctx.fillStyle = active ? '#1b132b' : 'transparent';
+      ctx.beginPath(); ctx.roundRect(tx, ty, colW, 24, 3); ctx.fill();
+      ctx.font = active ? '700 11px "JetBrains Mono", monospace' : '400 11px "JetBrains Mono", monospace';
+      ctx.fillStyle = active ? PAL.pink : PAL.text;
+      ctx.fillText(`${String(t.id).padStart(2, '0')}. ${t.title}`, tx + 10, ty + 16);
+      ctx.fillStyle = PAL.dim; ctx.textAlign = 'right'; ctx.fillText(t.dur, tx + colW - 10, ty + 16); ctx.textAlign = 'left';
+      regHit(`track_${idx}`, tx, ty, colW, 24, () => { state.playingTrack = idx; state.musicPlaying = true; });
+    });
+  }
+
+  // ─── MODE 5: ARCADE & DIVE-IN 3D ───
+  function drawMode5Arcade(rx, ry, rw, rh) {
+    drawPanel(rx, ry, rw, rh, 'ARCADE // /usr/games/ — CARTUCHOS HOLOGRÁFICOS', PAL.purple);
+    ctx.font = '400 12px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.dim;
+    ctx.fillText('Selecciona un cartucho y pulsa [EJECUTAR DIVE-IN 3D] para entrar al entorno vectorial:', rx + 22, ry + 36);
+
+    const cardW = (rw - 66) / 2, cardH = 216;
+    CARTRIDGES.forEach((c, idx) => {
+      const col = idx % 2, row = Math.floor(idx / 2);
+      const cx = rx + 22 + col * (cardW + 22), cy = ry + 54 + row * (cardH + 18);
+      const sel = state.selectedCartridge === idx;
+      ctx.fillStyle = sel ? '#121a2b' : '#0b1019';
+      ctx.strokeStyle = sel ? c.color : PAL.borderHi;
+      ctx.lineWidth = sel ? 2 : 1;
+      ctx.beginPath(); ctx.roundRect(cx, cy, cardW, cardH, 7); ctx.fill(); ctx.stroke();
+
+      drawHolo3D(cx + 76, cy + 88, 40, c.color, idx * 1.4, true);
+      ctx.font = '700 16px "JetBrains Mono", monospace'; ctx.fillStyle = c.color; ctx.fillText(c.title, cx + 144, cy + 48);
+      ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.dim; ctx.fillText(`${c.sub}  |  ${c.ver}`, cx + 144, cy + 68);
+      ctx.font = '400 11px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.text;
+      wrapText(c.desc, cx + 144, cy + 98, cardW - 166, 17);
+
+      drawPill(cx + 144, cy + cardH - 44, cardW - 166, 30, '⚡ EJECUTAR DIVE-IN 3D', sel, c.color);
+      regHit(`cart_${idx}`, cx, cy, cardW, cardH, () => {
+        if (state.selectedCartridge === idx) launchDive3D();
+        else state.selectedCartridge = idx;
+      });
+    });
+  }
+
+  function launchDive3D() {
+    resetDive3D();
+    state.diveActive = true;
+    state.academyActive = false;
+    syncToolbarButtons();
+  }
+
+  function drawDive3DScene() {
+    ctx.fillStyle = '#03050a'; ctx.fillRect(0, 0, W, H);
+    const cx = W / 2 - state.divePlayerX * 120, cy = H / 2 - 20, maxW = 1120, maxH = 620;
+    for (let i = 0; i < 14; i++) {
+      const z = ((i / 14) + (state.time * 0.95 * state.diveSpeed)) % 1;
+      const scale = Math.pow(z, 1.85), rw = maxW * scale, rh = maxH * scale;
+      ctx.strokeStyle = `rgba(0, 229, 255, ${0.15 + Math.min(1, z * 1.4) * 0.65})`;
+      ctx.lineWidth = 1 + scale * 1.8;
+      ctx.strokeRect(cx - rw / 2, cy - rh / 2, rw, rh);
+    }
+    ctx.strokeStyle = 'rgba(191, 90, 242, 0.38)'; ctx.lineWidth = 1.2;
+    [[cx - maxW / 2, cy - maxH / 2], [cx + maxW / 2, cy - maxH / 2],
+     [cx + maxW / 2, cy + maxH / 2], [cx - maxW / 2, cy + maxH / 2]].forEach(([x, y]) => {
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
+    });
+    state.diveObstacles.forEach((ob) => {
+      if (ob.hit) return;
+      const s = Math.pow(ob.z, 1.85);
+      const ox = cx + ob.x * (maxW * 0.42) * s, oy = cy + 60 * s, ow = ob.w * maxW * s * 0.55, oh = 135 * s;
+      ctx.fillStyle = 'rgba(255, 46, 136, 0.22)'; ctx.strokeStyle = PAL.pink; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.rect(ox - ow / 2, oy - oh / 2, ow, oh); ctx.fill(); ctx.stroke();
+    });
+    state.diveLasers.forEach((lz) => {
+      const s = Math.pow(lz.z, 1.85);
+      const lx = cx + lz.x * (maxW * 0.42) * s, ly = cy + 60 * s;
+      ctx.strokeStyle = PAL.green; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx, ly + 22 * s); ctx.stroke();
+    });
+    const px = W / 2 + state.divePlayerX * 260, py = H - 86;
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.22)'; ctx.strokeStyle = PAL.accent; ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.moveTo(px, py - 24); ctx.lineTo(px + 34, py + 18); ctx.lineTo(px, py + 8); ctx.lineTo(px - 34, py + 18); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    drawPanel(20, 18, 380, 56, `ARCADE // ${CARTRIDGES[state.selectedCartridge].title}`, PAL.pink, 'rgba(8,12,20,0.85)');
+    ctx.font = '700 12px "JetBrains Mono", monospace'; ctx.fillStyle = PAL.text;
+    ctx.fillText(`SCORE: ${state.diveScore}   |   MOVER: ← / →   |   DISPARO: ESPACIO`, 36, 52);
+
+    drawPill(W - 210, 24, 190, 32, '[ESC] VOLVER A BÓVEDA', true, PAL.pink);
+    regHit('exitDive', W - 210, 24, 190, 32, () => { state.diveActive = false; syncToolbarButtons(); });
+  }
+
+  function update(dt) {
+    state.time += dt;
+    const force = (state.drumTarget - state.drumAngle) * 180;
+    state.drumVel = (state.drumVel + force * dt) * Math.exp(-13 * dt);
+    state.drumAngle += state.drumVel * dt;
+    state.drumLockFlash = Math.max(0, state.drumLockFlash - dt * 2.4);
+    state.treeTransition = Math.min(1, state.treeTransition + dt * 5.0);
+
+    const tr = TRACKS[state.playingTrack];
+    for (let i = 0; i < 32; i++) {
+      const target = state.musicPlaying
+        ? Math.max(0.08, Math.min(0.98, 0.32 + tr.energy * 0.45 * Math.abs(Math.sin(state.time * (4 + i * 0.15) + i * 0.55))))
+        : 0.05;
+      state.fftBands[i] += (target - state.fftBands[i]) * Math.min(1, dt * 14);
+      if (state.fftBands[i] > state.fftPeaks[i]) state.fftPeaks[i] = state.fftBands[i];
+      else state.fftPeaks[i] = Math.max(state.fftBands[i], state.fftPeaks[i] - dt * 0.35);
+    }
+
+    if (state.diveActive) {
+      state.diveObstacles.forEach((ob) => {
+        ob.z += dt * 0.55 * state.diveSpeed;
+        if (ob.z > 1.05) { ob.z = 0.12; ob.x = Math.sin(state.time * 3.7 + ob.w * 10) * 0.72; ob.hit = false; state.diveScore += 25; }
+      });
+      state.diveLasers.forEach((lz) => {
+        lz.z -= dt * 1.4;
+        state.diveObstacles.forEach((ob) => {
+          if (!ob.hit && Math.abs(lz.z - ob.z) < 0.08 && Math.abs(lz.x - ob.x) < 0.18) { ob.hit = true; state.diveScore += 100; }
+        });
+      });
+      state.diveLasers = state.diveLasers.filter((lz) => lz.z > 0.05);
+    }
+  }
+
+  function render(now) {
+    const dt = Math.min(0.05, (now - state.lastTs) / 1000);
+    state.lastTs = now;
+    update(dt);
+
+    state.hitboxes = [];
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = PAL.bg;
+    ctx.fillRect(0, 0, W, H);
+
+    if (state.diveActive) drawDive3DScene();
+    else if (state.academyActive) drawAcademyFullScreen();
+    else { drawLeftDrum(); drawRightWorkstation(); }
+
+    let hoverCur = 'default';
+    for (let i = state.hitboxes.length - 1; i >= 0; i--) {
+      if (pointInRect(state.mouseX, state.mouseY, state.hitboxes[i])) {
+        hoverCur = state.hitboxes[i].cursor || 'pointer';
+        break;
+      }
+    }
+    canvas.style.cursor = hoverCur;
+    requestAnimationFrame(render);
+  }
+
+  function canvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: ((e.clientX - rect.left) / rect.width) * W, y: ((e.clientY - rect.top) / rect.height) * H };
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    const p = canvasCoords(e); state.mouseX = p.x; state.mouseY = p.y;
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    const p = canvasCoords(e); state.mouseX = p.x; state.mouseY = p.y;
+    for (let i = state.hitboxes.length - 1; i >= 0; i--) {
+      if (pointInRect(p.x, p.y, state.hitboxes[i])) { state.hitboxes[i].onClick(); break; }
+    }
+  });
+
+  canvas.addEventListener('wheel', (e) => {
+    if (state.diveActive || state.academyActive) return;
+    const p = canvasCoords(e);
+    if (p.x <= 315) { e.preventDefault(); setActiveMode(state.activeMode + (e.deltaY > 0 ? 1 : -1)); }
+  }, { passive: false });
+
+  window.addEventListener('keydown', (e) => {
+    if (state.diveActive) {
+      if (e.key === 'Escape') { state.diveActive = false; syncToolbarButtons(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'a') state.divePlayerX = Math.max(-0.85, state.divePlayerX - 0.14);
+      else if (e.key === 'ArrowRight' || e.key === 'd') state.divePlayerX = Math.min(0.85, state.divePlayerX + 0.14);
+      else if (e.key === ' ') { e.preventDefault(); state.diveLasers.push({ x: state.divePlayerX, z: 0.92 }); }
+      return;
+    }
+
+    if (state.academyActive) {
+      if (e.key === 'Escape') { state.academyActive = false; syncToolbarButtons(); }
+      else if (e.key === 'Enter') { runAcademyCmd(state.academyInput); state.academyInput = ''; }
+      else if (e.key === 'Backspace') state.academyInput = state.academyInput.slice(0, -1);
+      else if (e.key === 'Tab') {
+        e.preventDefault();
+        const cmds = ['ls -a descargas', 'cat documentos/receta.txt', 'mkdir musica videos', 'grep wifi notas.txt', 'cd ~', 'pwd', 'rm basura.tmp', 'clear'];
+        const match = cmds.find((c) => c.startsWith(state.academyInput));
+        if (match) state.academyInput = match;
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) state.academyInput += e.key;
+      return;
+    }
+
+    if (state.editingAlias) {
+      if (e.key === 'Enter' || e.key === 'Escape') state.editingAlias = false;
+      else if (e.key === 'Backspace') state.alias = state.alias.slice(0, -1);
+      else if (e.key.length === 1 && state.alias.length < 12 && /[a-zA-Z0-9_-]/.test(e.key)) state.alias += e.key.toUpperCase();
+      return;
+    }
+
+    if (state.activeMode === 2 && state.terminalFocused) {
+      if (e.key === 'Enter') { runShellCmd(state.cmdInput); state.cmdInput = ''; }
+      else if (e.key === 'Backspace') state.cmdInput = state.cmdInput.slice(0, -1);
+      else if (e.key === 'Tab') {
+        e.preventDefault();
+        const cmds = ['academy', 'fastfetch', 'pwd', 'ls', 'cat notas.txt', 'breach3d', 'clear'];
+        const match = cmds.find((c) => c.startsWith(state.cmdInput));
+        if (match) state.cmdInput = match;
+      } else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveMode(state.activeMode - 1); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); setActiveMode(state.activeMode + 1); }
+      else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) state.cmdInput += e.key;
+      return;
+    }
+
+    if (e.key === 'ArrowUp') { e.preventDefault(); setActiveMode(state.activeMode - 1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); setActiveMode(state.activeMode + 1); }
+  });
+
+  const btns = document.querySelectorAll('#toolbar-btns .nav-btn');
+  function syncToolbarButtons() {
+    btns.forEach((b) => {
+      const j = b.dataset.jump;
+      let act = false;
+      if (state.diveActive) act = j === 'dive3d';
+      else if (state.academyActive) act = j === 'academy';
+      else if (j === 'mode1') act = state.activeMode === 0;
+      else if (j === 'mode2') act = state.activeMode === 1;
+      else if (j === 'mode3') act = state.activeMode === 2;
+      else if (j === 'mode4') act = state.activeMode === 3;
+      else if (j === 'mode5') act = state.activeMode === 4;
+      b.classList.toggle('active', act);
+    });
+  }
+
+  btns.forEach((b) => {
+    b.addEventListener('click', () => {
+      const j = b.dataset.jump;
+      state.diveActive = false;
+      state.academyActive = false;
+      if (j === 'mode1') setActiveMode(0);
+      else if (j === 'mode2') setActiveMode(1);
+      else if (j === 'mode3') setActiveMode(2);
+      else if (j === 'mode4') setActiveMode(3);
+      else if (j === 'mode5') setActiveMode(4);
+      else if (j === 'academy') { setActiveMode(2); launchAcademy(); }
+      else if (j === 'dive3d') { setActiveMode(4); launchDive3D(); }
+      syncToolbarButtons();
+    });
+  });
+
+  syncToolbarButtons();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

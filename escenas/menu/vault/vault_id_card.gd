@@ -92,7 +92,16 @@ func build(parent: Control) -> PanelContainer:
 	le_style.border_width_bottom = 1
 	le_style.border_color = Color("#00F0FF")
 	line_name.add_theme_stylebox_override("normal", le_style)
-	line_name.text_changed.connect(func(new_text: String) -> void: p.player_name = new_text; p._save_profile())
+	line_name.text_changed.connect(func(new_text: String) -> void:
+		p.player_name = new_text
+		p._sync_shell_identity()
+	)
+	line_name.text_submitted.connect(func(_t: String) -> void:
+		p._save_profile()
+	)
+	line_name.focus_exited.connect(func() -> void:
+		p._save_profile()
+	)
 	id_box.add_child(line_name)
 	
 	var feat_panel := PanelContainer.new()

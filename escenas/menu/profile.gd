@@ -5,7 +5,6 @@ extends Control
 ## Implements full interactivity for LA BÓVEDA // 5-Tab Hub using native Control containers.
 
 const BrandClass = preload("res://juego/ui/brand.gd")
-const CyberBackgroundClass = preload("res://juego/ui/cyber_background.gd")
 const LevelRegistryClass = preload("res://juego/system/level_registry.gd")
 const ProfileRendererClass = preload("res://escenas/menu/profile_renderer.gd")
 const ProgressUtilClass = preload("res://juego/utils/progress_util.gd")
@@ -23,8 +22,11 @@ var font_size: int = 14
 var big_font_size: int = 28
 var _pulse: float = 0.0
 
-var _cyber_bg := CyberBackgroundClass.new()
 var _shell_engine: UnixShellEngine = UnixShellEngine.new()
+var _tab_built: Array[bool] = [false, false, false, false, false]
+var _eq_control: Control = null
+var _cosmetics_control: Control = null
+var _courses_completed: Dictionary = {}
 
 var player_name: String = "Jugador"
 var _active_tab_idx: int = 0
@@ -94,6 +96,7 @@ func _ready() -> void:
 	font_size = ThemeDB.fallback_font_size
 	big_font_size = font_size + 14
 	_load_profile()
+	_sync_shell_identity()
 	_load_stats()
 	start_cli_course(0)
 	
@@ -106,7 +109,17 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_pulse += delta
-	queue_redraw()
+	if _active_tab_idx == 3 and _eq_control != null and is_instance_valid(_eq_control):
+		_eq_control.queue_redraw()
+	elif _active_tab_idx == 4 and _cosmetics_control != null and is_instance_valid(_cosmetics_control):
+		_cosmetics_control.queue_redraw()
+
+
+func _sync_shell_identity() -> void:
+	if _shell_engine == null:
+		return
+	var alias: String = _shell_engine.sanitize_username(player_name, "operador")
+	_shell_engine.set_identity(alias, "boveda-lab", "BÓVEDA // KERNEL LAB — " + player_name.to_upper())
 
 
 func _play_click_sfx() -> void:
@@ -117,6 +130,7 @@ func _play_click_sfx() -> void:
 
 func _set_active_tab(idx: int) -> void:
 	_active_tab_idx = clampi(idx, 0, _tab_containers.size() - 1)
+	_ensure_tab_built(_active_tab_idx)
 	_play_click_sfx()
 	for i in range(_tab_containers.size()):
 		_tab_containers[i].visible = (i == _active_tab_idx)
@@ -136,7 +150,6 @@ func _set_active_tab(idx: int) -> void:
 		var cli_input := find_child("CliLineEdit", true, false) as LineEdit
 		if cli_input != null and cli_input.is_inside_tree():
 			cli_input.grab_focus()
-	queue_redraw()
 
 
 func _back_to_menu() -> void:
@@ -157,37 +170,48 @@ func start_cli_course(course_idx: int) -> void:
 	_active_cli_course = course_idx
 	_cli_course_step = 0
 	_cli_output_lines.clear()
+	_sync_shell_identity()
 	var lesson: Dictionary = VaultModules.TERMINAL_ACADEMY_LESSONS[course_idx]
-	_cli_output_lines.append("╔══════════════════════════════════════════════════════╗")
-	_cli_output_lines.append("║ VERTEX // BASH LAB tty1 — " + str(lesson.get("title", "")))
-	_cli_output_lines.append("╚══════════════════════════════════════════════════════╝")
+	_cli_output_lines.append("┌──────────────────────────────────────────────────────┐")
+	_cli_output_lines.append("│ BÓVEDA // KERNEL LAB — " + str(lesson.get("title", "")))
+	_cli_output_lines.append("└──────────────────────────────────────────────────────┘")
 	_cli_output_lines.append("Objetivo: " + str(lesson.get("objective", "")))
 	var steps: Array = lesson.get("steps", [])
 	if steps.size() > 0:
-		_cli_output_lines.append(str(steps[0].get("instruction", "")))
+		_cli_output_lines.append("Paso 1: " + str(steps[0].get("instruction", "")))
 	if _shell_engine != null:
-		_cli_output_lines.append("operator@vertex-vault:" + _shell_engine.vfs.current_path + "$ ls")
+		_cli_output_lines.append(_shell_engine.get_prompt_string() + "ls")
 		var ls_out: String = _shell_engine.execute_command_line("ls")
 		if ls_out != "":
 			_cli_output_lines.append(ls_out)
 
 
 func _execute_cli_command(cmd: String) -> void:
-	_cli_output_lines.append("operator@vertex-vault:~$ " + cmd)
+	_sync_shell_identity()
+	var trimmed: String = cmd.strip_edges()
+	_cli_output_lines.append(_shell_engine.get_prompt_string() + trimmed)
+	var shell_out: String = _shell_engine.execute_command_line(trimmed)
+	if shell_out == "__CLEAR__":
+		_cli_output_lines.clear()
+		return
+	if not shell_out.is_empty():
+		_cli_output_lines.append(shell_out)
+
 	var lesson: Dictionary = VaultModules.TERMINAL_ACADEMY_LESSONS[_active_cli_course]
 	var steps: Array = lesson.get("steps", [])
 	if _cli_course_step < steps.size():
 		var expected: Dictionary = steps[_cli_course_step]
 		var check_sub: String = str(expected.get("check_substr", ""))
-		if check_sub == "" or cmd.contains(check_sub):
+		if check_sub == "" or trimmed.contains(check_sub):
 			_cli_course_step += 1
 			_cli_output_lines.append(str(expected.get("success_msg", "[✓ OK]")))
 			if _cli_course_step < steps.size():
 				_cli_output_lines.append(str(steps[_cli_course_step].get("instruction", "")))
 			else:
+				_courses_completed[_active_cli_course] = true
 				_cli_output_lines.append("[✓] ¡Módulo de Academia completado!")
 		else:
-			_cli_output_lines.append("[!] Comando no esperado para este paso.")
+			_cli_output_lines.append("[!] Tip: prueba '%s' para avanzar al siguiente paso." % str(expected.get("expected_cmd", check_sub)))
 
 
 static func build_level_rows(world_id: String, progress_cfg: ConfigFile, stats_cfg: ConfigFile) -> Array[Dictionary]:
@@ -341,9 +365,18 @@ func _build_ui() -> void:
 		tc.visible = (tab_i == 0)
 		content_margin.add_child(tc)
 		_tab_containers.append(tc)
-		_build_tab_content(tab_i, tc)
+	_ensure_tab_built(0)
 	
 	add_child(ProfileRendererClass.create_crt_overlay())
+
+
+func _ensure_tab_built(tab_idx: int) -> void:
+	if tab_idx < 0 or tab_idx >= _tab_containers.size():
+		return
+	if _tab_built[tab_idx]:
+		return
+	_tab_built[tab_idx] = true
+	_build_tab_content(tab_idx, _tab_containers[tab_idx])
 
 
 
@@ -379,4 +412,5 @@ func _build_tab_cosmeticos(container: Control) -> void:
 	ctrl.draw.connect(func() -> void:
 		ProfileRendererClass.draw_cosmetics_maintenance(ctrl, Rect2(Vector2.ZERO, ctrl.size), font, font_size, big_font_size, _pulse)
 	)
+	_cosmetics_control = ctrl
 	container.add_child(ctrl)

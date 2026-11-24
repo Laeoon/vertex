@@ -11,6 +11,9 @@ class_name ProfileRenderer extends RefCounted
 const BrandClass = preload("res://juego/ui/brand.gd")
 const VaultModules = preload("res://juego/ui/vault_modules.gd")
 
+static var _style_cache: Dictionary = {}
+static var _cached_crt_material: ShaderMaterial = null
+
 const TABS: Array[Dictionary] = [
 	{"id": "expediente", "label": "01 // INSIGNIAS", "color": BrandClass.ACCENT},
 	{"id": "decodificador", "label": "02 // ARCHIVOS .ENC", "color": BrandClass.SUCCESS},
@@ -59,6 +62,9 @@ static func get_rank_info(total_stars: int) -> Dictionary:
 
 
 static func make_surface_style(bg_col: Color, border_col: Color = Color.TRANSPARENT, left_accent: Color = Color.TRANSPARENT, bottom_accent: Color = Color.TRANSPARENT, radius: int = 2) -> StyleBoxFlat:
+	var cache_key: String = "%s|%s|%s|%s|%d" % [bg_col.to_html(), border_col.to_html(), left_accent.to_html(), bottom_accent.to_html(), radius]
+	if _style_cache.has(cache_key):
+		return _style_cache[cache_key] as StyleBoxFlat
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg_col
 	sb.corner_radius_top_left = radius
@@ -83,6 +89,7 @@ static func make_surface_style(bg_col: Color, border_col: Color = Color.TRANSPAR
 		sb.border_width_top = 1
 		sb.border_width_bottom = 1
 		sb.border_color = border_col
+	_style_cache[cache_key] = sb
 	return sb
 
 
@@ -90,8 +97,9 @@ static func create_crt_overlay() -> ColorRect:
 	var cr := ColorRect.new()
 	cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cr.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var shader := Shader.new()
-	shader.code = """
+	if _cached_crt_material == null:
+		var shader := Shader.new()
+		shader.code = """
 shader_type canvas_item;
 void fragment() {
 	vec2 uv = UV;
@@ -101,9 +109,9 @@ void fragment() {
 	COLOR = vec4(0.0, 0.0, 0.0, (0.07 - scanline) * (1.0 - vignette * 0.5));
 }
 """
-	var mat := ShaderMaterial.new()
-	mat.shader = shader
-	cr.material = mat
+		_cached_crt_material = ShaderMaterial.new()
+		_cached_crt_material.shader = shader
+	cr.material = _cached_crt_material
 	return cr
 
 

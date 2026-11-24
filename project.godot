@@ -12,6 +12,7 @@ config_version=5
 
 config/name="Simulador de Ciberseguridad Basado en Teoría de Grafos"
 run/main_scene="res://escenas/main_menu/start_screen.tscn"
+run/max_fps=60
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
