@@ -223,6 +223,30 @@ func execute(full_line: String) -> ShellResult:
 		_emit_cli_event(active_cartridge, result.exit_code)
 		return result
 
+	if line.find(" && ") != -1:
+		var segments: PackedStringArray = line.split(" && ", false)
+		var out_parts: Array[String] = []
+		var last_res: ShellResult = result
+		for seg_raw: String in segments:
+			var seg: String = seg_raw.strip_edges()
+			if seg.is_empty():
+				continue
+			last_res = _execute_line_unit(seg)
+			if not last_res.stdout.is_empty():
+				out_parts.append(last_res.stdout)
+			if last_res.exit_code != 0:
+				last_res.stdout = "\n".join(out_parts)
+				return last_res
+		last_res.stdout = "\n".join(out_parts)
+		return last_res
+
+	return _execute_line_unit(line)
+
+
+func _execute_line_unit(line: String) -> ShellResult:
+	var result := ShellResult.new()
+	result.cwd = vfs.current_path
+
 	var redir_split: Dictionary = _split_redirection(line)
 	var pipeline_str: String = str(redir_split.get("command", line)).strip_edges()
 	var redir_mode: String = str(redir_split.get("mode", ""))
@@ -458,17 +482,26 @@ func _execute_single(cmd_line: String) -> Dictionary:
 			return {"success": false, "output": str(res.get("error", "Error en cd"))}
 		"ls":
 			var show_long: bool = false
+			var show_all: bool = false
 			var target_path: String = ""
 			for a in args:
 				if a.begins_with("-"):
 					if a.find("l") != -1:
 						show_long = true
+					if a.find("a") != -1:
+						show_all = true
 				else:
 					target_path = a
 			var res: Dictionary = vfs.ls(target_path)
 			if not bool(res.get("success", false)):
 				return {"success": false, "output": str(res.get("error", "Error en ls"))}
-			var items: Array = res.get("items", [])
+			var raw_items: Array = res.get("items", [])
+			var items: Array = []
+			for it in raw_items:
+				var it_name: String = str(it).trim_suffix("/")
+				if not show_all and it_name.begins_with("."):
+					continue
+				items.append(it)
 			if show_long:
 				var lines: Array[String] = ["total %d" % items.size()]
 				for it in items:
@@ -669,11 +702,20 @@ func _execute_piped(sub_cmd: String, stdin_text: String) -> Dictionary:
 		return {"success": true, "output": "%d %d %d" % [lines.size(), word_count, stdin_text.length()]}
 	elif cmd == "head":
 		var lines: PackedStringArray = stdin_text.split("\n")
-		return {"success": true, "output": "\n".join(lines.slice(0, mini(10, lines.size())))}
+		var count: int = _parse_line_count_arg(args, 10)
+		return {"success": true, "output": "\n".join(lines.slice(0, mini(count, lines.size())))}
 	elif cmd == "tail":
 		var lines: PackedStringArray = stdin_text.split("\n")
-		var start: int = maxi(0, lines.size() - mini(10, lines.size()))
+		var count: int = _parse_line_count_arg(args, 10)
+		var start: int = maxi(0, lines.size() - mini(count, lines.size()))
 		return {"success": true, "output": "\n".join(lines.slice(start, lines.size()))}
+	elif cmd == "base64":
+		var decode: bool = ("-d" in args) or ("--decode" in args)
+		var clean_in: String = stdin_text.strip_edges()
+		if decode:
+			var b64: String = Marshalls.base64_to_utf8(clean_in)
+			return {"success": true, "output": b64 if not b64.is_empty() else "[Error decodificación base64]"}
+		return {"success": true, "output": Marshalls.utf8_to_base64(clean_in)}
 	return _execute_single(sub_cmd + " " + stdin_text)
 
 
@@ -692,7 +734,7 @@ func _handle_base64(args: Array[String]) -> Dictionary:
 		var resolved: String = vfs.normalize_path(target)
 		if vfs._fs.has(resolved) and (vfs._fs[resolved] as Dictionary).get("type") == "file":
 			content_to_dec = str((vfs._fs[resolved] as Dictionary).get("content", ""))
-		var b64: String = Marshalls.base64_to_utf8(content_to_dec)
+		var b64: String = Marshalls.base64_to_utf8(content_to_dec.strip_edges())
 		return {"success": true, "output": b64 if not b64.is_empty() else "[Error decodificación base64]"}
 	return {"success": true, "output": Marshalls.utf8_to_base64(target)}
 
@@ -746,18 +788,53 @@ func _handle_find(args: Array[String]) -> Dictionary:
 	return {"success": true, "output": "\n".join(results)}
 
 
+func _parse_line_count_arg(args: Array[String], default_val: int = 10) -> int:
+	for i in range(args.size()):
+		if args[i] == "-n" and i + 1 < args.size():
+			return maxi(1, args[i + 1].to_int())
+		elif args[i].begins_with("-") and args[i].length() > 1 and args[i].substr(1).is_valid_int():
+			return maxi(1, args[i].substr(1).to_int())
+	return default_val
+
+
 func _handle_head_tail(args: Array[String], is_head: bool) -> Dictionary:
 	if args.is_empty():
 		return {"success": false, "output": "falta archivo"}
-	var cat_res: Dictionary = vfs.cat(args[0])
+	var count_arg: int = _parse_line_count_arg(args, 10)
+	var file_arg: String = ""
+	var skip_next: bool = false
+	for i in range(args.size()):
+		if skip_next:
+			skip_next = false
+			continue
+		if args[i] == "-n":
+			skip_next = true
+			continue
+		if args[i].begins_with("-") and args[i].substr(1).is_valid_int():
+			continue
+		file_arg = args[i]
+		break
+	if file_arg.is_empty():
+		return {"success": false, "output": "falta archivo"}
+	var cat_res: Dictionary = vfs.cat(file_arg)
 	if not bool(cat_res.get("success", false)):
 		return {"success": false, "output": str(cat_res.get("error", "error leyendo archivo"))}
 	var lines: PackedStringArray = str(cat_res.get("content", "")).split("\n")
-	var count: int = mini(10, lines.size())
+	var count: int = mini(count_arg, lines.size())
 	if is_head:
 		return {"success": true, "output": "\n".join(lines.slice(0, count))}
 	var start: int = maxi(0, lines.size() - count)
 	return {"success": true, "output": "\n".join(lines.slice(start, lines.size()))}
+
+
+func reset_to_custom_vfs(custom_fs: Dictionary, start_cwd: String = "/home/operator", user_str: String = "operador", host_str: String = "vtx-lab") -> void:
+	vfs._fs = custom_fs.duplicate(true)
+	vfs.current_path = start_cwd
+	vfs.is_root = false
+	command_history.clear()
+	active_cartridge = ""
+	cartridge_state.clear()
+	set_identity(user_str, host_str, "VTX // ACADEMY")
 
 
 func _handle_wc(args: Array[String]) -> Dictionary:

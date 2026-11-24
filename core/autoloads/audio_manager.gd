@@ -445,6 +445,7 @@ func play_track(path: String, volume_db: float = -12.0) -> void:
 	if not _initialized or _music_player == null:
 		return
 	if _current_music_path == path and _music_player.playing:
+		_music_player.stream_paused = false
 		return
 	if not ResourceLoader.exists(path):
 		return
@@ -453,7 +454,52 @@ func play_track(path: String, volume_db: float = -12.0) -> void:
 		if res is AudioStreamOggVorbis:
 			res.loop = true
 		_current_music_path = path
+		_music_player.stream_paused = false
 		play_music(res, volume_db)
+
+
+func is_music_playing() -> bool:
+	return _music_player != null and _music_player.playing and not _music_player.stream_paused
+
+
+func is_music_paused() -> bool:
+	return _music_player != null and _music_player.stream_paused
+
+
+func set_music_paused(paused: bool) -> void:
+	if _music_player != null and _music_player.stream != null:
+		_music_player.stream_paused = paused
+
+
+func get_music_playback_position() -> float:
+	if _music_player != null and _music_player.stream != null and (_music_player.playing or _music_player.stream_paused):
+		return _music_player.get_playback_position()
+	return 0.0
+
+
+func get_music_duration() -> float:
+	if _music_player != null and _music_player.stream != null:
+		return _music_player.stream.get_length()
+	return 0.0
+
+
+func seek_music(seconds: float) -> void:
+	if _music_player != null and _music_player.stream != null:
+		var dur: float = _music_player.stream.get_length()
+		var clamped: float = clampf(seconds, 0.0, maxf(0.0, dur - 0.1))
+		_music_player.seek(clamped)
+
+
+func get_current_music_path() -> String:
+	return _current_music_path
+
+
+func get_bus_volume_percent(bus_name: String) -> int:
+	var bus_idx: int = AudioServer.get_bus_index(bus_name)
+	if bus_idx == -1:
+		return 80
+	var lin: float = db_to_linear(AudioServer.get_bus_volume_db(bus_idx))
+	return clampi(int(round(lin * 100.0)), 0, 100)
 
 
 func play_world_music(world_id: String, track_index: int = -1, volume_db: float = -12.0) -> void:

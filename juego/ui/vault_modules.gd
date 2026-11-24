@@ -205,6 +205,115 @@ const BADGES: Array[Dictionary] = [
 	},
 ]
 
+const TREE_KEYS: Array[String] = ["GENERAL", "HEIST", "HACKER", "CYBER", "UNIX"]
+
+const SKILL_TREES: Dictionary = {
+	"GENERAL": {
+		"id": "GENERAL",
+		"label": "★ GENERAL (9)",
+		"short": "GENERAL",
+		"topology": "RADIAL // MANDALA CONCÉNTRICO",
+		"color": Color("#00E5FF"),
+		"nodes": [
+			{"id": "omni_master", "title": "OMNI-OPERADOR", "glyph": "♛", "rarity": "MÍTICA // Ω", "unlocked": false, "progress": 0.42, "pos": Vector2(0.50, 0.50), "desc": "100% de logros y coleccionables completados.", "req": "Completar todos los árboles de La Bóveda."},
+			{"id": "initiate_link", "title": "ENLACE INICIAL", "glyph": "◈", "rarity": "COMÚN", "unlocked": true, "progress": 1.0, "pos": Vector2(0.50, 0.25), "desc": "Primer nodo conectado con éxito en VERTEX.", "req": "Completar el tutorial inicial de red."},
+			{"id": "dijkstra_master", "title": "OPTIMIZADOR DIJKSTRA", "glyph": "⬡", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.71, 0.35), "desc": "Ruta más corta calculada con precisión óptima.", "req": "Calcular ruta de coste mínimo."},
+			{"id": "streak_5", "title": "RACHA TÁCTICA 5", "glyph": "▲", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.75, 0.58), "desc": "5 victorias consecutivas en red.", "req": "Obtener 5 victorias seguidas sin fallos."},
+			{"id": "speed_run", "title": "VELOCIDAD LUZ", "glyph": "◉", "rarity": "ÉLITE", "unlocked": false, "progress": 0.78, "pos": Vector2(0.62, 0.77), "desc": "Nivel completado en menos de 30 segundos.", "req": "Superar un nivel en menos de 30s."},
+			{"id": "no_loss", "title": "IMPERTURBABLE", "glyph": "⊕", "rarity": "ÉLITE", "unlocked": false, "progress": 0.60, "pos": Vector2(0.38, 0.77), "desc": "Cero fallos en secuencia de enrutamiento.", "req": "Terminar misión compleja sin reintentos."},
+			{"id": "free_ops", "title": "OPERACIONES LIBRES", "glyph": "△", "rarity": "COMÚN", "unlocked": true, "progress": 1.0, "pos": Vector2(0.25, 0.58), "desc": "10 misiones libres ejecutadas.", "req": "Completar 10 misiones libres."},
+			{"id": "golden_node", "title": "NODO DORADO", "glyph": "★", "rarity": "ÉLITE", "unlocked": false, "progress": 0.45, "pos": Vector2(0.29, 0.35), "desc": "Jefe de Acto superado con estela dorada.", "req": "Vencer a un Daemon jefe con estela oro."},
+			{"id": "collector_24", "title": "COLECCIONISTA", "glyph": "✦", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.50, 0.87), "desc": "Explorador de todos los módulos de Bóveda.", "req": "Abrir los 5 modos de La Bóveda."},
+		],
+		"edges": [
+			[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7],
+			[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 1],
+			[4, 8], [5, 8],
+		],
+	},
+	"HEIST": {
+		"id": "HEIST",
+		"label": "HEIST // EXFIL (8)",
+		"short": "HEIST",
+		"topology": "PIPELINE // RUTAS DE ESCAPE (IZQ → DER)",
+		"color": Color("#39FF88"),
+		"nodes": [
+			{"id": "h_entry", "title": "INFILTRACIÓN CERO", "glyph": "▸", "rarity": "COMÚN", "unlocked": true, "progress": 1.0, "pos": Vector2(0.11, 0.50), "desc": "Entrada limpia al primer nodo de extracción.", "req": "Iniciar el Acto Heist."},
+			{"id": "h_ghost", "title": "PASO FANTASMA", "glyph": "◈", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.34, 0.28), "desc": "Cero sensores activados en ruta norte.", "req": "Evitar 3 patrullas en sigilo."},
+			{"id": "h_duct", "title": "DUCTO CIEGO", "glyph": "⬡", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.56, 0.28), "desc": "Atajo por conductos de ventilación.", "req": "Usar rutas secundarias en 3 mapas."},
+			{"id": "h_notrace", "title": "CERO RASTRO", "glyph": "❖", "rarity": "ÉLITE", "unlocked": false, "progress": 0.65, "pos": Vector2(0.74, 0.28), "desc": "Logs limpiados antes del barrido.", "req": "Salir sin dejar rastro de sesión."},
+			{"id": "h_flash", "title": "EXTRACTOR FLASH", "glyph": "⚡", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.34, 0.72), "desc": "Extracción rápida en ruta sur.", "req": "Completar Heist 1 en menos de 40s."},
+			{"id": "h_laser", "title": "BYPASS LÁSER", "glyph": "⊕", "rarity": "ÉLITE", "unlocked": false, "progress": 0.50, "pos": Vector2(0.56, 0.72), "desc": "Desactivación simultánea de barreras.", "req": "Cortar 2 barreras en un turno."},
+			{"id": "h_loot", "title": "BOTÍN ÍNTEGRO", "glyph": "★", "rarity": "ÉLITE", "unlocked": false, "progress": 0.30, "pos": Vector2(0.74, 0.72), "desc": "100% de paquetes recuperados.", "req": "No perder ni un paquete en Heist."},
+			{"id": "heist_clear", "title": "GOLPE MAESTRO", "glyph": "❖", "rarity": "MÍTICA // Ω", "unlocked": true, "progress": 1.0, "pos": Vector2(0.89, 0.50), "desc": "Sector Heist completado al 100%.", "req": "Superar todas las misiones Heist."},
+		],
+		"edges": [
+			[0, 1], [1, 2], [2, 3], [3, 7],
+			[0, 4], [4, 5], [5, 6], [6, 7],
+			[2, 5],
+		],
+	},
+	"HACKER": {
+		"id": "HACKER",
+		"label": "HACKER // INTRUSIÓN (7)",
+		"short": "HACKER",
+		"topology": "ÁRBOL BINARIO // ESCALADA (ABAJO → ARRIBA)",
+		"color": Color("#FFC857"),
+		"nodes": [
+			{"id": "hk_port", "title": "PUERTO ABIERTO", "glyph": ">_", "rarity": "COMÚN", "unlocked": true, "progress": 1.0, "pos": Vector2(0.50, 0.84), "desc": "Primer vector de acceso detectado.", "req": "Escanear un nodo vulnerable."},
+			{"id": "hk_inj", "title": "INYECCIÓN BÁSICA", "glyph": "▣", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.30, 0.60), "desc": "Payload inyectado en memoria.", "req": "Romper 3 nodos con inyección."},
+			{"id": "hk_sniff", "title": "SNIFFER LOCAL", "glyph": "◉", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.70, 0.60), "desc": "Tráfico interno capturado.", "req": "Interceptar 5 paquetes en red."},
+			{"id": "hk_pivot", "title": "PIVOT SUBRED", "glyph": "▲", "rarity": "ÉLITE", "unlocked": true, "progress": 1.0, "pos": Vector2(0.18, 0.36), "desc": "Salto lateral entre subredes.", "req": "Cruzar a subred privada sin alerta."},
+			{"id": "hk_revshell", "title": "SHELL INVERSA", "glyph": "⌘", "rarity": "ÉLITE", "unlocked": false, "progress": 0.70, "pos": Vector2(0.50, 0.36), "desc": "Conexión persistente establecida.", "req": "Mantener sesión abierta 60s."},
+			{"id": "hk_sudo", "title": "ESCALADA SUDO", "glyph": "⚿", "rarity": "ÉLITE", "unlocked": false, "progress": 0.40, "pos": Vector2(0.82, 0.36), "desc": "Privilegios elevados en nodo objetivo.", "req": "Obtener permisos de administrador."},
+			{"id": "hacker_elite", "title": "INTRUSO DE ÉLITE", "glyph": ">_", "rarity": "MÍTICA // Ω", "unlocked": true, "progress": 1.0, "pos": Vector2(0.50, 0.14), "desc": "Sector Hacker dominado sin alertas.", "req": "Completar el sector Hacker."},
+		],
+		"edges": [
+			[0, 1], [0, 2], [1, 3], [1, 4], [2, 4], [2, 5], [3, 6], [4, 6], [5, 6],
+		],
+	},
+	"CYBER": {
+		"id": "CYBER",
+		"label": "CYBER // DEFENSA (8)",
+		"short": "CYBER",
+		"topology": "MALLA HEXAGONAL // ESCUDO PANAL",
+		"color": Color("#BF5AF2"),
+		"nodes": [
+			{"id": "cy_fw", "title": "CORTAFUEGOS I", "glyph": "⬢", "rarity": "COMÚN", "unlocked": true, "progress": 1.0, "pos": Vector2(0.22, 0.50), "desc": "Primera barrera perimetral activa.", "req": "Bloquear 1 ataque entrante."},
+			{"id": "cy_flt", "title": "FILTRO PAQUETES", "glyph": "⊞", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.38, 0.25), "desc": "Tráfico anómalo descartado.", "req": "Filtrar 20 paquetes corruptos."},
+			{"id": "cy_hp", "title": "HONEYPOT", "glyph": "◈", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.38, 0.75), "desc": "Trampa señuelo para intrusos.", "req": "Desviar 3 daemons a un señuelo."},
+			{"id": "cy_cut", "title": "CORTE MÍNIMO", "glyph": "⬡", "rarity": "ÉLITE", "unlocked": true, "progress": 1.0, "pos": Vector2(0.54, 0.50), "desc": "Subred aislada con S-T Min-Cut.", "req": "Aislar infección en menos de 5s."},
+			{"id": "cy_ids", "title": "CENTINELA IDS", "glyph": "◉", "rarity": "ÉLITE", "unlocked": false, "progress": 0.60, "pos": Vector2(0.68, 0.25), "desc": "Detección temprana de intrusiones.", "req": "Detectar 5 ataques antes del impacto."},
+			{"id": "cy_zero", "title": "RESPUESTA CERO", "glyph": "⊕", "rarity": "ÉLITE", "unlocked": false, "progress": 0.45, "pos": Vector2(0.68, 0.75), "desc": "Contramedida automática al instante.", "req": "Responder en < 1.5s a un daemon."},
+			{"id": "cy_aegis", "title": "BLINDAJE AEGIS", "glyph": "⛨", "rarity": "ÉLITE", "unlocked": false, "progress": 0.30, "pos": Vector2(0.85, 0.36), "desc": "Protocolo Aegis sincronizado.", "req": "Sostener defensa perfecta 3 rondas."},
+			{"id": "cyber_shield", "title": "ESCUDO CIBERNÉTICO", "glyph": "⬢", "rarity": "MÍTICA // Ω", "unlocked": true, "progress": 1.0, "pos": Vector2(0.85, 0.64), "desc": "Cybersecurity asegurado frente a Daemons.", "req": "Neutralizar 10 Daemons de red."},
+		],
+		"edges": [
+			[0, 1], [0, 2], [0, 3], [1, 3], [2, 3], [1, 4], [2, 5], [3, 4], [3, 5], [4, 6], [5, 7], [6, 7],
+		],
+	},
+	"UNIX": {
+		"id": "UNIX",
+		"label": "UNIX & CRIPTO (8)",
+		"short": "UNIX",
+		"topology": "PCB // TRAZAS ORTOGONALES 90°",
+		"color": Color("#FF2E88"),
+		"nodes": [
+			{"id": "ux_hello", "title": "HOLA BASH", "glyph": ">_", "rarity": "COMÚN", "unlocked": true, "progress": 1.0, "pos": Vector2(0.14, 0.25), "desc": "Primer comando ejecutado en terminal.", "req": "Completar Nivel 1 de Academy."},
+			{"id": "ux_vfs", "title": "NAVEGANTE VFS", "glyph": "▸", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.14, 0.72), "desc": "Dominio de pwd, ls, cd y cat.", "req": "Superar el Boss de Nivel 1-3."},
+			{"id": "ux_pipes", "title": "MAGO DE PIPES", "glyph": "║", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.38, 0.25), "desc": "Uso limpio de grep y tuberías.", "req": "Usar grep o atajos ingeniosos."},
+			{"id": "ux_master", "title": "MAESTRO UNIX", "glyph": "⌘", "rarity": "ÉLITE", "unlocked": true, "progress": 1.0, "pos": Vector2(0.38, 0.72), "desc": "Todos los módulos prácticos superados.", "req": "Completar los 4 módulos de Academy."},
+			{"id": "ux_termlink", "title": "TERMLINK .ENC", "glyph": "▣", "rarity": "TÁCTICA", "unlocked": true, "progress": 1.0, "pos": Vector2(0.62, 0.25), "desc": "Primer archivo .ENC descifrado.", "req": "Descifrar un volcado RobCo."},
+			{"id": "ux_dossiers", "title": "DOSSIERS VEX/N0X", "glyph": "◢", "rarity": "ÉLITE", "unlocked": false, "progress": 0.50, "pos": Vector2(0.62, 0.72), "desc": "Expedientes confidenciales abiertos.", "req": "Descifrar VEX, N0X y AEGIS."},
+			{"id": "ux_shamir", "title": "SECRETO SHAMIR", "glyph": "⚿", "rarity": "MÍTICA // Ω", "unlocked": false, "progress": 0.20, "pos": Vector2(0.85, 0.25), "desc": "Fragmentos criptográficos reunidos.", "req": "Reensamblar clave Shamir 512-bit."},
+			{"id": "root_genesis", "title": "ROOT GENESIS", "glyph": "Ω", "rarity": "MÍTICA // Ω", "unlocked": false, "progress": 0.35, "pos": Vector2(0.85, 0.72), "desc": "Acceso al Sector 0 obtenido.", "req": "Descifrar Kernel Snapshot Sector 0."},
+		],
+		"edges": [
+			[0, 2], [0, 1], [1, 3], [2, 3], [2, 4], [3, 5], [4, 5], [4, 6], [5, 7], [6, 7],
+		],
+	},
+}
+
 const MUSIC_TRACKS: Array[Dictionary] = [
 	{
 		"id": "track_01",
@@ -298,7 +407,7 @@ const MUSIC_TRACKS: Array[Dictionary] = [
 	},
 	{
 		"id": "track_11",
-		"name": "Code Injection Underbeat",
+		"name": "Underbeat",
 		"pack": "Code Injection",
 		"duration": "3:50",
 		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 01 - Underbeat.ogg",
@@ -307,100 +416,100 @@ const MUSIC_TRACKS: Array[Dictionary] = [
 	},
 	{
 		"id": "track_12",
-		"name": "Code Injection 02",
+		"name": "Behind the Darkness",
 		"pack": "Code Injection",
 		"duration": "4:10",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 02 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 02 - Behind the Darkness-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_13",
-		"name": "Code Injection 03",
+		"name": "Synthetic Whisper",
 		"pack": "Code Injection",
 		"duration": "3:25",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 03 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 03 - Synthetic Whisper-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_14",
-		"name": "Code Injection 04",
+		"name": "Secret Dissonance",
 		"pack": "Code Injection",
 		"duration": "4:40",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 04 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 04 - Secret Dissonance-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_15",
-		"name": "Code Injection 06",
+		"name": "Electric Inferno",
 		"pack": "Code Injection",
 		"duration": "3:40",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 06 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 06 - Electric Inferno-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_16",
-		"name": "Code Injection 07",
+		"name": "Binary Chaos",
 		"pack": "Code Injection",
 		"duration": "5:12",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 07 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 07 - Binary Chaos-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_17",
-		"name": "Code Injection 08",
+		"name": "Sentinel Cloud",
 		"pack": "Code Injection",
 		"duration": "4:00",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 08 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 08 - Sentinel Cloud-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_18",
-		"name": "Code Injection 09",
+		"name": "Ghost Steps",
 		"pack": "Code Injection",
 		"duration": "3:35",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 09 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 09 - Ghost Steps-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_19",
-		"name": "Code Injection 10",
+		"name": "Space Echoes",
 		"pack": "Code Injection",
 		"duration": "4:25",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 10 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 10 - Space Echoes-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_20",
-		"name": "Code Injection 11",
+		"name": "I.A.'s Growl",
 		"pack": "Code Injection",
 		"duration": "3:20",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 11 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 11 - I.A.'s Growl-loop.ogg",
 		"unlocked_by_default": true,
 		"unlock_req": "Disponible por defecto"
 	},
 	{
 		"id": "track_21",
-		"name": "Code Injection 12",
+		"name": "Faceless Crowd",
 		"pack": "Code Injection",
 		"duration": "4:55",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 12 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 12 - Faceless Crowd-loop.ogg",
 		"unlocked_by_default": false,
 		"unlock_req": "Desbloqueo: Desencriptar expediente .ENC"
 	},
 	{
 		"id": "track_22",
-		"name": "Code Injection 14",
+		"name": "There's Someone Here",
 		"pack": "Code Injection",
 		"duration": "6:15",
-		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 14 - Code Injection.ogg",
+		"path": "res://assets/audio/music/hacker/DavidKBD - Code injection Pack - 14 - There's Someone Here-loop.ogg",
 		"unlocked_by_default": false,
 		"unlock_req": "Desbloqueo: Acceso Sector 0: Root Genesis"
 	},

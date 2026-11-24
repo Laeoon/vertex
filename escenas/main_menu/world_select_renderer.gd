@@ -515,6 +515,30 @@ func _sim_hacker(canvas: CanvasItem, rect: Rect2, alpha: float, pulse: float) ->
 	canvas.draw_string(BrandClass.font_regular(), bar_r.position + Vector2(10.0, 16.0), "RUIDO IDS: %d%% [SIGILO CONTROLADO]" % noise_pct, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, BrandClass.with_alpha(BrandClass.TEXT, alpha))
 
 
+static func sample_polyline(pts: PackedVector2Array, t: float) -> Vector2:
+	if pts.is_empty():
+		return Vector2.ZERO
+	if pts.size() == 1:
+		return pts[0]
+	var total_len: float = 0.0
+	var seg_lens: Array[float] = []
+	for i: int in range(pts.size() - 1):
+		var d: float = pts[i].distance_to(pts[i + 1])
+		seg_lens.append(d)
+		total_len += d
+	if total_len <= 0.0001:
+		return pts[0]
+	var target_dist: float = clampf(t, 0.0, 1.0) * total_len
+	var accum: float = 0.0
+	for i: int in range(seg_lens.size()):
+		var sl: float = seg_lens[i]
+		if accum + sl >= target_dist or i == seg_lens.size() - 1:
+			var local_t: float = (target_dist - accum) / sl if sl > 0.0001 else 0.0
+			return pts[i].lerp(pts[i + 1], clampf(local_t, 0.0, 1.0))
+		accum += sl
+	return pts[pts.size() - 1]
+
+
 func _sim_cyber(canvas: CanvasItem, rect: Rect2, alpha: float, pulse: float) -> void:
 	var top_banner: Rect2 = Rect2(rect.position.x + 10.0, rect.position.y + 8.0, rect.size.x - 20.0, 26.0)
 	canvas.draw_rect(top_banner, BrandClass.with_alpha(BrandClass.PANEL_SOLID, alpha * 0.9))
@@ -547,10 +571,11 @@ func _sim_cyber(canvas: CanvasItem, rect: Rect2, alpha: float, pulse: float) -> 
 		canvas.draw_circle(r_pos, 9.0, BrandClass.with_alpha(BrandClass.get_world_color("cybersecurity"), alpha * 0.8), false, 1.5)
 		canvas.draw_arc(r_pos, 14.0 + sin(pulse * 3.0) * 2.0, 0, TAU, 12, BrandClass.with_alpha(BrandClass.WARNING, alpha * 0.7), 1.0)
 
-		# Animated packet streaming from n_apt to cut_x firewall barrier
-		var cut_pt: Vector2 = Vector2(cut_x, r_pos.y)
+		# Animated packet streaming along [n_apt, r_pos, cut_pt] where cut_pt lies exactly on r_pos -> n_core
+		var cut_frac: float = clampf((cut_x - r_pos.x) / maxf(1.0, n_core.x - r_pos.x), 0.0, 1.0)
+		var cut_pt: Vector2 = r_pos.lerp(n_core, cut_frac)
 		var pkt_t: float = fmod(_time * 1.5 + float(relays.find(r_pos)) * 0.33, 1.0)
-		var pkt_pos: Vector2 = n_apt.lerp(cut_pt, pkt_t)
+		var pkt_pos: Vector2 = sample_polyline(PackedVector2Array([n_apt, r_pos, cut_pt]), pkt_t)
 		canvas.draw_circle(pkt_pos, 4.0, BrandClass.with_alpha(BrandClass.ENEMY, alpha * 0.95))
 		canvas.draw_circle(cut_pt, 6.0 + sin(pulse * 4.0) * 2.0, BrandClass.with_alpha(BrandClass.WARNING, alpha * 0.8))
 

@@ -15,11 +15,11 @@ static var _style_cache: Dictionary = {}
 static var _cached_crt_material: ShaderMaterial = null
 
 const TABS: Array[Dictionary] = [
-	{"id": "expediente", "label": "01 // INSIGNIAS", "color": BrandClass.ACCENT},
-	{"id": "decodificador", "label": "02 // ARCHIVOS .ENC", "color": BrandClass.SUCCESS},
-	{"id": "terminal_lab", "label": "03 // ACADEMIA CLI", "color": BrandClass.WARNING},
-	{"id": "musicbox", "label": "04 // MUSICBOX", "color": Color("bf5af2")},
-	{"id": "cosmeticos", "label": "05 // COSMÉTICOS", "color": Color("00d2ff")},
+	{"id": "expediente", "code": "01", "name": "INSIGNIAS", "sub": "5 ÁRBOLES // RANGO", "label": "01 // INSIGNIAS", "color": Color("#00E5FF")},
+	{"id": "decodificador", "code": "02", "name": "TERMLINK .ENC", "sub": "MEMORIA FORENSE", "label": "02 // TERMLINK .ENC", "color": Color("#39FF88")},
+	{"id": "terminal_lab", "code": "03", "name": "TERMINAL & LAB", "sub": "VTX-SH // YAZI", "label": "03 // TERMINAL & LAB", "color": Color("#FFC857")},
+	{"id": "musicbox", "code": "04", "name": "MUSICBOX FFT", "sub": "22 TRACKS // AUDIO", "label": "04 // MUSICBOX FFT", "color": Color("#FF2E88")},
+	{"id": "cosmeticos", "code": "05", "name": "ARCADE /usr/games/", "sub": "CARTUCHOS 3D", "label": "05 // ARCADE /usr/games/", "color": Color("#BF5AF2")},
 ]
 
 
@@ -950,3 +950,250 @@ func _draw_tab_cosmeticos(canvas: CanvasItem, rect: Rect2, font: Font, font_size
 	canvas.draw_string(font, Vector2(warn_box.position.x + 20.0, warn_box.position.y + 28.0), "[ ⚠ SUBSISTEMA DE COSMÉTICOS EN MANTENIMIENTO // PRÓXIMA ACTUALIZACIÓN ]", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, BrandClass.WARNING)
 	canvas.draw_string(font, Vector2(warn_box.position.x + 20.0, warn_box.position.y + 56.0), "Los protocolos de personalización estética de nodos coaxiales y estelas de red se encuentran", HORIZONTAL_ALIGNMENT_LEFT, int(warn_box.size.x - 40.0), font_size - 1, BrandClass.TEXT)
 	canvas.draw_string(font, Vector2(warn_box.position.x + 20.0, warn_box.position.y + 80.0), "actualmente en fase de pruebas en La Bóveda de Sector 0. Estará disponible próximamente.", HORIZONTAL_ALIGNMENT_LEFT, int(warn_box.size.x - 40.0), font_size - 1, BrandClass.TEXT)
+
+
+
+static func compute_shell_hitboxes(rect: Rect2, drum_angle: float = 0.0) -> Array[Dictionary]:
+	var hitboxes: Array[Dictionary] = []
+	var x0: float = 16.0
+	var y0: float = 16.0
+	var w: float = 292.0
+	var h: float = maxf(360.0, rect.size.y - 32.0)
+	hitboxes.append({"id": "volver", "rect": Rect2(x0 + 14.0, y0 + 20.0, 92.0, 26.0)})
+	hitboxes.append({"id": "slot", "rect": Rect2(x0 + 116.0, y0 + 20.0, 82.0, 26.0)})
+	var drum_cx: float = x0 + w * 0.5
+	var drum_cy: float = clampf(y0 + h * 0.50, y0 + 240.0, y0 + 360.0)
+	var radius_y: float = minf(175.0, (h - 190.0) * 0.36)
+	for idx: int in range(TABS.size()):
+		var delta: float = float(idx) - drum_angle
+		while delta > 2.5:
+			delta -= 5.0
+		while delta < -2.5:
+			delta += 5.0
+		var theta: float = delta * 0.58
+		var z_depth: float = cos(theta)
+		var y_pos: float = drum_cy + sin(theta) * radius_y
+		var scale_f: float = 0.72 + 0.28 * maxf(0.0, z_depth)
+		var card_w: float = (w - 38.0) * scale_f
+		var card_h: float = 68.0 * scale_f
+		var cx: float = drum_cx - card_w * 0.5 + (1.0 - scale_f) * 16.0
+		var cy: float = y_pos - card_h * 0.5
+		hitboxes.append({"id": "drum_%d" % idx, "rect": Rect2(cx, cy, card_w, card_h)})
+	return hitboxes
+
+
+static func draw_boveda_shell(canvas: CanvasItem, rect: Rect2, font: Font, state: Dictionary) -> Array[Dictionary]:
+	var hitboxes: Array[Dictionary] = []
+	if rect.size.x <= 1.0 or rect.size.y <= 1.0:
+		return hitboxes
+
+	# 1. Full-screen background before any transform
+	canvas.draw_rect(Rect2(Vector2.ZERO, rect.size), Color("#05070C"))
+
+	# 2. Left 25%: Mechanical 2.5D Rotating Drum
+	_draw_left_drum(canvas, rect, font, state, hitboxes)
+
+	# 3. Right 75%: Unified 1-line zjstatus bar
+	var rx: float = 324.0
+	var rw: float = maxf(200.0, rect.size.x - rx - 16.0)
+	_draw_top_status_bar(canvas, Rect2(rx, 16.0, rw, 28.0), font, state)
+
+	return hitboxes
+
+
+static func _draw_shell_panel(canvas: CanvasItem, r: Rect2, font: Font, title: String, accent: Color, bg: Color = Color("#0B1018")) -> void:
+	canvas.draw_rect(r, bg)
+	canvas.draw_rect(r, Color("#1F2B3D"), false, 1.0)
+	canvas.draw_rect(Rect2(r.position.x + 10.0, r.position.y, minf(r.size.x - 20.0, 90.0), 2.0), accent)
+	if title != "" and font != null:
+		var tsize: Vector2 = font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 11)
+		canvas.draw_rect(Rect2(r.position.x + 14.0, r.position.y - 7.0, tsize.x + 12.0, 14.0), Color("#05070C"))
+		canvas.draw_string(font, Vector2(r.position.x + 20.0, r.position.y + 4.0), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, accent)
+
+
+static func _draw_shell_pill(canvas: CanvasItem, r: Rect2, font: Font, label: String, active: bool, accent: Color) -> void:
+	var bg: Color = accent if active else Color("#0F1726")
+	var border: Color = accent if active else Color("#2F4563")
+	canvas.draw_rect(r, bg)
+	canvas.draw_rect(r, border, false, 1.0)
+	if font != null:
+		var fg: Color = Color("#05070C") if active else Color("#EAECF5")
+		var tsize: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10)
+		var tx: float = r.position.x + (r.size.x - tsize.x) * 0.5
+		var ty: float = r.position.y + r.size.y * 0.5 + 3.5
+		canvas.draw_string(font, Vector2(tx, ty), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, fg)
+
+
+static func _draw_left_drum(canvas: CanvasItem, rect: Rect2, font: Font, state: Dictionary, hitboxes: Array[Dictionary]) -> void:
+	var x0: float = 16.0
+	var y0: float = 16.0
+	var w: float = 292.0
+	var h: float = maxf(360.0, rect.size.y - 32.0)
+	_draw_shell_panel(canvas, Rect2(x0, y0, w, h), font, "LA BÓVEDA // DRUM-2.5D", Color("#00E5FF"), Color("#080C14"))
+
+	var volver_rect := Rect2(x0 + 14.0, y0 + 20.0, 92.0, 26.0)
+	_draw_shell_pill(canvas, volver_rect, font, "← VOLVER", false, Color("#7A869E"))
+	hitboxes.append({"id": "volver", "rect": volver_rect})
+
+	var slot_idx: int = int(state.get("slot_index", 1))
+	var slot_rect := Rect2(x0 + 116.0, y0 + 20.0, 82.0, 26.0)
+	_draw_shell_pill(canvas, slot_rect, font, "SLOT 0%d" % slot_idx, true, Color("#39FF88"))
+	hitboxes.append({"id": "slot", "rect": slot_rect})
+
+	if font != null:
+		canvas.draw_string(font, Vector2(x0 + 216.0, y0 + 37.0), "60 FPS", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#7A869E"))
+
+	var active_mode: int = clampi(int(state.get("active_mode", 0)), 0, TABS.size() - 1)
+	var drum_angle: float = float(state.get("drum_angle", 0.0))
+	var drum_target: float = float(state.get("drum_target", 0.0))
+	var drum_vel: float = float(state.get("drum_vel", 0.0))
+	var drum_lock_flash: float = float(state.get("drum_lock_flash", 0.0))
+	var pulse: float = float(state.get("pulse", 0.0))
+
+	var drum_cx: float = x0 + w * 0.5
+	var drum_cy: float = clampf(y0 + h * 0.50, y0 + 240.0, y0 + 360.0)
+	var radius_y: float = minf(175.0, (h - 190.0) * 0.36)
+	var spin_speed: float = absf(drum_vel) + absf(drum_target - drum_angle)
+
+	var active_tab: Dictionary = TABS[active_mode]
+	var active_col: Color = active_tab.get("color", Color("#00E5FF"))
+
+	# Graduated mechanical rotor arc behind cards
+	canvas.draw_arc(Vector2(x0 + 24.0, drum_cy), 220.0, -0.75, 0.75, 28, Color(0.0, 0.9, 1.0, 0.22), 1.5)
+	for deg: int in [-50, -25, 0, 25, 50]:
+		var ang: float = deg_to_rad(float(deg))
+		var tick_x: float = x0 + 24.0 + cos(ang) * 220.0
+		var tick_y: float = drum_cy + sin(ang) * 220.0
+		var tick_col: Color = active_col if deg == 0 else Color("#455168")
+		canvas.draw_rect(Rect2(tick_x - 4.0, tick_y - 1.0, 8.0, 2.0), tick_col)
+		if font != null:
+			var deg_lbl: String = "LOCK" if deg == 0 else (("+%d°" % deg) if deg > 0 else ("%d°" % deg))
+			canvas.draw_string(font, Vector2(x0 + 10.0, tick_y + 3.0), deg_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, tick_col)
+
+	# Build & sort 5 drum cards back-to-front by z_depth
+	var items: Array[Dictionary] = []
+	for idx: int in range(TABS.size()):
+		var delta: float = float(idx) - drum_angle
+		while delta > 2.5:
+			delta -= 5.0
+		while delta < -2.5:
+			delta += 5.0
+		var theta: float = delta * 0.58
+		var z_depth: float = cos(theta)
+		var y_pos: float = drum_cy + sin(theta) * radius_y
+		items.append({
+			"idx": idx,
+			"tab": TABS[idx],
+			"delta": delta,
+			"z_depth": z_depth,
+			"y_pos": y_pos,
+		})
+
+	items.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a.get("z_depth", 0.0)) < float(b.get("z_depth", 0.0))
+	)
+
+	for it: Dictionary in items:
+		var idx: int = int(it.get("idx", 0))
+		var tab: Dictionary = it.get("tab", {})
+		var delta: float = float(it.get("delta", 0.0))
+		var z_depth: float = float(it.get("z_depth", 1.0))
+		var y_pos: float = float(it.get("y_pos", drum_cy))
+
+		var scale_f: float = 0.72 + 0.28 * maxf(0.0, z_depth)
+		var card_w: float = (w - 38.0) * scale_f
+		var card_h: float = 68.0 * scale_f
+		var cx: float = drum_cx - card_w * 0.5 + (1.0 - scale_f) * 16.0
+		var cy: float = y_pos - card_h * 0.5
+		var is_sel: bool = (idx == active_mode and absf(delta) < 0.35)
+		var alpha: float = clampf(0.28 + z_depth * 0.75, 0.25, 1.0)
+		var m_col: Color = tab.get("color", Color("#00E5FF"))
+
+		var card_rect := Rect2(cx, cy, card_w, card_h)
+		var bg_col: Color = Color("#101B2D") if is_sel else Color("#0B111C")
+		bg_col.a = alpha
+		var brd_col: Color = m_col if is_sel else Color("#2F4563")
+		brd_col.a = alpha
+		canvas.draw_rect(card_rect, bg_col)
+		canvas.draw_rect(card_rect, brd_col, false, 2.0 if is_sel else 1.0)
+
+		if is_sel:
+			canvas.draw_rect(Rect2(cx, cy + 8.0, 4.0, card_h - 16.0), m_col)
+			if drum_lock_flash > 0.02:
+				var sweep_x: float = cx + (1.0 - drum_lock_flash) * card_w
+				canvas.draw_rect(Rect2(cx, cy, card_w, 2.0), Color(1.0, 1.0, 1.0, drum_lock_flash * 0.45))
+				canvas.draw_rect(Rect2(sweep_x - 6.0, cy + 4.0, 12.0, card_h - 8.0), Color(1.0, 1.0, 1.0, drum_lock_flash * 0.35))
+
+			if idx == 3:
+				for b: int in range(5):
+					var bh: float = 4.0 + absf(sin(pulse * 5.0 + float(b) * 0.7)) * 16.0
+					canvas.draw_rect(Rect2(cx + card_w - 36.0 + float(b) * 5.0, cy + card_h - 14.0 - bh, 3.0, bh), Color("#FF2E88"))
+			elif idx == 0 and font != null:
+				canvas.draw_string(font, Vector2(cx + card_w - 54.0, cy + 25.0), "5 TREES", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#00E5FF"))
+			elif idx == 2 and font != null:
+				canvas.draw_string(font, Vector2(cx + card_w - 54.0, cy + 25.0), "ACADEMY", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#FFC857"))
+
+		if font != null:
+			var title_col: Color = m_col if is_sel else Color("#EAECF5")
+			title_col.a = alpha
+			var sub_col: Color = Color("#7A869E")
+			sub_col.a = alpha
+			var title_fs: int = maxi(9, int(round(13.0 * scale_f)))
+			var sub_fs: int = maxi(8, int(round(10.0 * scale_f)))
+			var code_str: String = str(tab.get("code", "0%d" % (idx + 1)))
+			var name_str: String = str(tab.get("name", ""))
+			var sub_str: String = str(tab.get("sub", ""))
+			canvas.draw_string(font, Vector2(cx + 14.0 * scale_f, cy + 27.0 * scale_f), "%s // %s" % [code_str, name_str], HORIZONTAL_ALIGNMENT_LEFT, -1, title_fs, title_col)
+			canvas.draw_string(font, Vector2(cx + 14.0 * scale_f, cy + 46.0 * scale_f), sub_str, HORIZONTAL_ALIGNMENT_LEFT, -1, sub_fs, sub_col)
+
+		hitboxes.append({"id": "drum_%d" % idx, "rect": card_rect})
+
+	# Lock-On Jaws around center card
+	var jaw_spread: float = minf(18.0, spin_speed * 22.0)
+	var j_top: float = drum_cy - 26.0 - jaw_spread
+	var j_bot: float = drum_cy + 26.0 + jaw_spread
+	canvas.draw_polyline(PackedVector2Array([
+		Vector2(x0 + 18.0, j_top),
+		Vector2(x0 + 10.0, j_top),
+		Vector2(x0 + 10.0, j_bot),
+		Vector2(x0 + 18.0, j_bot),
+	]), active_col, 2.2)
+	canvas.draw_polyline(PackedVector2Array([
+		Vector2(x0 + w - 18.0, j_top),
+		Vector2(x0 + w - 10.0, j_top),
+		Vector2(x0 + w - 10.0, j_bot),
+		Vector2(x0 + w - 18.0, j_bot),
+	]), active_col, 2.2)
+
+	if font != null:
+		var fy: float = y0 + h - 42.0
+		canvas.draw_string(font, Vector2(x0 + 20.0, fy), "RUEDA / ↑ ↓ / CLIC PARA GIRAR", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#7A869E"))
+		canvas.draw_string(font, Vector2(x0 + 20.0, fy + 18.0), "MODO: %s // %s" % [str(active_tab.get("code", "")), str(active_tab.get("name", ""))], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, active_col)
+
+
+static func _draw_top_status_bar(canvas: CanvasItem, bar_rect: Rect2, font: Font, state: Dictionary) -> void:
+	var active_mode: int = clampi(int(state.get("active_mode", 0)), 0, TABS.size() - 1)
+	var tab: Dictionary = TABS[active_mode]
+	var m_col: Color = tab.get("color", Color("#00E5FF"))
+
+	canvas.draw_rect(bar_rect, Color("#090E17"))
+	canvas.draw_rect(bar_rect, Color("#1F2B3D"), false, 1.0)
+	canvas.draw_rect(Rect2(bar_rect.position.x, bar_rect.position.y + 5.0, 3.0, 18.0), m_col)
+
+	if font == null:
+		return
+
+	var base_y: float = bar_rect.position.y + 18.0
+	var mode_txt: String = "%s // %s" % [str(tab.get("code", "")), str(tab.get("name", ""))]
+	canvas.draw_string(font, Vector2(bar_rect.position.x + 14.0, base_y), mode_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, m_col)
+
+	var alias_str: String = str(state.get("player_name", "JUGADOR")).to_upper()
+	var tier_str: String = str(state.get("rank_tier", "RANGO I"))
+	var stars_val: int = int(state.get("total_stars", 0))
+	var badge_str: String = str(state.get("featured_badge", "ENLACE INICIAL"))
+	var info_txt: String = "│  ◈ %s@boveda-lab  │  %s (%d★)  │  ★ %s" % [alias_str, tier_str, stars_val, badge_str]
+	canvas.draw_string(font, Vector2(bar_rect.position.x + 195.0, base_y), info_txt, HORIZONTAL_ALIGNMENT_LEFT, int(maxf(80.0, bar_rect.size.x - 310.0)), 11, Color("#7A869E"))
+
+	var fps_txt: String = "VSYNC 60 FPS"
+	var fps_sz: Vector2 = font.get_string_size(fps_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 11)
+	canvas.draw_string(font, Vector2(bar_rect.position.x + bar_rect.size.x - fps_sz.x - 14.0, base_y), fps_txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#39FF88"))
